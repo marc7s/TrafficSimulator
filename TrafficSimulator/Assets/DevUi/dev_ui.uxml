@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement style="height: 167px;">
+        <ui:Button text="Camera1" display-tooltip-when-elided="true" name="Camera1" style="width: 5%; right: -94%; left: auto; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; top: 1%;" />
+        <ui:Button text="Camera2" display-tooltip-when-elided="true" name="Camera2" style="width: 5%; right: -94%; left: auto; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; top: 1%;" />
+        <ui:Button text="2D" display-tooltip-when-elided="true" name="Camera_2D" style="width: 5%; right: -94%; left: auto; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; top: 1%;" />
+        <ui:Button text="FPV" display-tooltip-when-elided="true" name="Camera_FPV" style="width: 5%; right: -94%; left: auto; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; top: 1%;" />
+    </ui:VisualElement>
+</ui:UXML>
