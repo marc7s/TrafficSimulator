@@ -4,61 +4,61 @@ using UnityEngine.InputSystem;
 public class CinemachineSwitcher : MonoBehaviour
 {
     [SerializeField] 
-    private InputAction Camera1;
+    private InputAction camera1;
     [SerializeField] 
-    private InputAction Camera2;
+    private InputAction camera2;
     [SerializeField] 
-    private InputAction Camera_2D;
+    private InputAction camera_2D;
     [SerializeField] 
-    private InputAction Camera_FPV;
-    private Animator Anim;
+    private InputAction camera_FPV;
+    private Animator anim;
     
 
     void Awake()
     {
-        Anim = GetComponent<Animator>();
+        anim = GetComponent<Animator>();
     }
     void Start()
     {
-        Camera1.performed += _ => SwitchCamera(1);
-        Camera2.performed += _ => SwitchCamera(2);
-        Camera_2D.performed += _ => SwitchCamera(3);
-        Camera_FPV.performed += _ => SwitchCamera(4);
+        camera1.performed += _ => SwitchCamera(1);
+        camera2.performed += _ => SwitchCamera(2);
+        camera_2D.performed += _ => SwitchCamera(3);
+        camera_FPV.performed += _ => SwitchCamera(4);
 
     }
 
     public void OnEnable()
     {
-        Camera1.Enable();
-        Camera2.Enable();
-        Camera_2D.Enable();
-        Camera_FPV.Enable();
+        camera1.Enable();
+        camera2.Enable();
+        camera_2D.Enable();
+        camera_FPV.Enable();
     }
 
     public void OnDisable()
     {
-        Camera1.Disable();
-        Camera2.Disable();
-        Camera_2D.Disable();
-        Camera_FPV.Disable();
+        camera1.Disable();
+        camera2.Disable();
+        camera_2D.Disable();
+        camera_FPV.Disable();
     }
 
     // Plays animation and changes camera depending on the button pressed
-    public void SwitchCamera(int Camera)
+    public void SwitchCamera(int camera)
     {
-        switch (Camera)
+        switch (camera)
         {
             case 1:
-                Anim.Play("FreeLookCamera");
+                anim.Play("FreeLookCamera");
                 break;
             case 2:
-                Anim.Play("FreeLookCamera2");
+                anim.Play("FreeLookCamera2");
                 break;
             case 3:
-                Anim.Play("2DCamera");
+                anim.Play("2DCamera");
                 break;
             case 4:
-                Anim.Play("FPVCamera");
+                anim.Play("FPVCamera");
                 break;
         }
     }
