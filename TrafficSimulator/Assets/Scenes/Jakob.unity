@@ -2817,38 +2817,38 @@ MonoBehaviour:
       m_Action: Camera 2
       m_Flags: 0
     m_Flags: 0
-  _camera_2D:
-    m_Name: Camera_2D
+  _camera2D:
+    m_Name: Camera 2D
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 369ab1c2-b5ca-4afd-a0e1-fe2a0b332c7d
+    m_Id: 4dec7693-e356-4bae-83d4-b43715d82cff
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 28b5caeb-5cc4-4624-8e98-4e015efc8bda
+      m_Id: 81c0749b-e715-4fff-9ecf-963f585cb72e
       m_Path: <Keyboard>/3
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Camera_2D
+      m_Action: Camera 2D
       m_Flags: 0
     m_Flags: 0
-  _camera_FPV:
-    m_Name: Camera_FPV
+  _cameraFpv:
+    m_Name: Camera Fpv
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 947c7add-df5f-465e-a954-b5e296cb1f8e
+    m_Id: 5098a0bb-9530-463d-b7b3-3b790cd71bc1
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 153b6cac-cdaf-49c0-a064-0de5213b77dc
+      m_Id: 3f41e643-d928-4a66-818f-b9954b189a66
       m_Path: <Keyboard>/4
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Camera_FPV
+      m_Action: Camera Fpv
       m_Flags: 0
     m_Flags: 0
 --- !u!95 &1813163037

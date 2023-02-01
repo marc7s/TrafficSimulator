@@ -5,10 +5,10 @@ public class DevUi : MonoBehaviour
 {
     [SerializeField]
     private UIDocument _uiDocument;
-    private Button _camera1_Button;
-    private Button _camera2_Button;
-    private Button _camera_2D_Button;
-    private Button _camera_FPV_Button;
+    private Button _camera1Button;
+    private Button _camera2Button;
+    private Button _camera2DButton;
+    private Button _cameraFpvButton;
     public CinemachineSwitcher Cinemachineswitcher;
 
     void Start()
@@ -21,24 +21,24 @@ public class DevUi : MonoBehaviour
         Cinemachineswitcher = go.GetComponent<CinemachineSwitcher>();
 
         // Map buttons
-        _camera1_Button = RootElement.Q<Button>("Camera1");
-        _camera2_Button = RootElement.Q<Button>("Camera2");
-        _camera_2D_Button = RootElement.Q<Button>("Camera_2D");
-        _camera_FPV_Button = RootElement.Q<Button>("Camera_FPV");
+        _camera1Button = RootElement.Q<Button>("Camera1");
+        _camera2Button = RootElement.Q<Button>("Camera2");
+        _camera2DButton = RootElement.Q<Button>("Camera_2D");
+        _cameraFpvButton = RootElement.Q<Button>("Camera_FPV");
 
         // Add listeners
-        _camera1_Button.clickable.clicked += () => OnButtonClicked(1);
-        _camera2_Button.clickable.clicked += () => OnButtonClicked(2);
-        _camera_2D_Button.clickable.clicked += () => OnButtonClicked(3);
-        _camera_FPV_Button.clickable.clicked += () => OnButtonClicked(4);
+        _camera1Button.clickable.clicked += () => OnButtonClicked(1);
+        _camera2Button.clickable.clicked += () => OnButtonClicked(2);
+        _camera2DButton.clickable.clicked += () => OnButtonClicked(3);
+        _cameraFpvButton.clickable.clicked += () => OnButtonClicked(4);
     }
  
    private void OnDestroy()
    {
-        _camera1_Button.clickable.clicked -= () => OnButtonClicked(1);
-        _camera2_Button.clickable.clicked -= () => OnButtonClicked(2);
-        _camera_2D_Button.clickable.clicked -= () => OnButtonClicked(3);
-        _camera_FPV_Button.clickable.clicked -= () => OnButtonClicked(4);
+        _camera1Button.clickable.clicked -= () => OnButtonClicked(1);
+        _camera2Button.clickable.clicked -= () => OnButtonClicked(2);
+        _camera2DButton.clickable.clicked -= () => OnButtonClicked(3);
+        _cameraFpvButton.clickable.clicked -= () => OnButtonClicked(4);
    }
 
    private void OnButtonClicked(int button)

@@ -8,9 +8,9 @@ public class CinemachineSwitcher : MonoBehaviour
     [SerializeField] 
     private InputAction _camera2;
     [SerializeField] 
-    private InputAction _camera_2D;
+    private InputAction _camera2D;
     [SerializeField] 
-    private InputAction _camera_FPV;
+    private InputAction _cameraFpv;
     private Animator _anim;
     
 
@@ -22,8 +22,8 @@ public class CinemachineSwitcher : MonoBehaviour
     {
         _camera1.performed += _ => SwitchCamera(1);
         _camera2.performed += _ => SwitchCamera(2);
-        _camera_2D.performed += _ => SwitchCamera(3);
-        _camera_FPV.performed += _ => SwitchCamera(4);
+        _camera2D.performed += _ => SwitchCamera(3);
+        _cameraFpv.performed += _ => SwitchCamera(4);
 
     }
 
@@ -31,16 +31,16 @@ public class CinemachineSwitcher : MonoBehaviour
     {
         _camera1.Enable();
         _camera2.Enable();
-        _camera_2D.Enable();
-        _camera_FPV.Enable();
+        _camera2D.Enable();
+        _cameraFpv.Enable();
     }
 
     public void OnDisable()
     {
         _camera1.Disable();
         _camera2.Disable();
-        _camera_2D.Disable();
-        _camera_FPV.Disable();
+        _camera2D.Disable();
+        _cameraFpv.Disable();
     }
 
     // Plays animation and changes camera depending on the button pressed
