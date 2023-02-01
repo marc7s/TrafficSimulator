@@ -9,7 +9,7 @@ public class DevUi : MonoBehaviour
     private Button _camera2Button;
     private Button _camera2DButton;
     private Button _cameraFpvButton;
-    public CinemachineSwitcher Cinemachineswitcher;
+    public CinemachineSwitcher CinemachineSwitcher;
 
     void Start()
     {
@@ -18,7 +18,7 @@ public class DevUi : MonoBehaviour
 
         // Find the GameObject with the CinemachineSwitcher script
         GameObject go = GameObject.Find("Cameras"); 
-        Cinemachineswitcher = go.GetComponent<CinemachineSwitcher>();
+        CinemachineSwitcher = go.GetComponent<CinemachineSwitcher>();
 
         // Map buttons
         _camera1Button = RootElement.Q<Button>("Camera1");
@@ -44,6 +44,6 @@ public class DevUi : MonoBehaviour
    private void OnButtonClicked(int button)
     {
         // Call the SwitchCamera method in the CinemachineSwitcher script
-        Cinemachineswitcher.SwitchCamera(button);
+        CinemachineSwitcher.SwitchCamera(button);
     }
 }
