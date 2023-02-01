@@ -1889,7 +1889,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ab70f3f99f1ad945b23182ad84a73a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiDocument: {fileID: 1394322971}
+  _uiDocument: {fileID: 1394322971}
   Cinemachineswitcher: {fileID: 0}
 --- !u!114 &1394322971
 MonoBehaviour:
@@ -2783,16 +2783,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29e4ec523af69af439235fb0541dfc30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camera1:
+  _camera1:
     m_Name: Camera 1
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 659f1521-7d3b-474f-8b14-4cd976078636
+    m_Id: 6bab9186-c6c8-4d90-8936-2d2b4593e9e3
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: acbb9211-c60e-46c1-9527-7de4a62fcd68
+      m_Id: 52ad3126-eadb-4651-beec-b21f4688b6bd
       m_Path: <Keyboard>/1
       m_Interactions: 
       m_Processors: 
@@ -2800,16 +2800,16 @@ MonoBehaviour:
       m_Action: Camera 1
       m_Flags: 0
     m_Flags: 0
-  camera2:
+  _camera2:
     m_Name: Camera 2
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 19091f15-1a9e-4372-b136-0fcf8233d526
+    m_Id: 71d0c8c4-c7b6-4457-8648-61744a2a5e53
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: ba431ff6-6793-48d0-b6be-117220a01298
+      m_Id: 3ca5c0b2-44e4-4c60-9a45-4cc64e567eed
       m_Path: <Keyboard>/2
       m_Interactions: 
       m_Processors: 
@@ -2817,16 +2817,16 @@ MonoBehaviour:
       m_Action: Camera 2
       m_Flags: 0
     m_Flags: 0
-  camera_2D:
+  _camera_2D:
     m_Name: Camera_2D
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: d10c6078-8bb7-4628-abcc-d25845aad4fd
+    m_Id: 369ab1c2-b5ca-4afd-a0e1-fe2a0b332c7d
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 3e0d8d52-9daf-47dc-bbb2-b7fa546c2980
+      m_Id: 28b5caeb-5cc4-4624-8e98-4e015efc8bda
       m_Path: <Keyboard>/3
       m_Interactions: 
       m_Processors: 
@@ -2834,16 +2834,16 @@ MonoBehaviour:
       m_Action: Camera_2D
       m_Flags: 0
     m_Flags: 0
-  camera_FPV:
+  _camera_FPV:
     m_Name: Camera_FPV
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 1c457dc2-a3c8-40a9-8543-f98a0fe8a5c8
+    m_Id: 947c7add-df5f-465e-a954-b5e296cb1f8e
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 1c7229df-55c8-4411-b586-0401ff6b3a75
+      m_Id: 153b6cac-cdaf-49c0-a064-0de5213b77dc
       m_Path: <Keyboard>/4
       m_Interactions: 
       m_Processors: 
