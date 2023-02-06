@@ -16659,8 +16659,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   laneObject: {fileID: 1851742272}
-  showTargetLine: 1
+  mode: 1
+  showTargetLine: 0
   maxRepositioningSpeed: 5
+  targetLookaheadDistance: 10
+  speed: 20
 --- !u!120 &2018074034
 LineRenderer:
   m_ObjectHideFlags: 0
