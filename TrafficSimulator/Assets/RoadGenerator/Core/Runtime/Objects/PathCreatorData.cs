@@ -61,7 +61,7 @@ namespace RoadGenerator {
                 _bezierPath.OnModified -= BezierPathEdited;
             }
 
-            var space = (defaultIs2D) ? PathSpace.xy : PathSpace.xyz;
+            var space = PathSpace.xz;
             _bezierPath = new BezierPath (centre, false, space);
 
             _bezierPath.OnModified += BezierPathEdited;
