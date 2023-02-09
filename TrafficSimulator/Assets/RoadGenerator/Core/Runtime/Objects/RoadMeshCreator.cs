@@ -14,7 +14,7 @@ namespace RoadGenerator {
         [Header ("Material settings")]
         public Material roadMaterial;
         public Material undersideMaterial;
-        public float textureTiling = 100;
+        public float textureTilingScale = 100;
 
         [SerializeField, HideInInspector]
         GameObject meshHolder;
@@ -149,9 +149,9 @@ namespace RoadGenerator {
         void AssignMaterials () {
             if (roadMaterial != null && undersideMaterial != null) {
                 meshRenderer.sharedMaterials = new Material[] { roadMaterial, undersideMaterial, undersideMaterial };
+                float textureTiling = (path.length / roadMaterial.mainTexture.height) * textureTilingScale;
                 meshRenderer.sharedMaterials[0].mainTextureScale = new Vector3 (1, textureTiling);
             }
         }
-
     }
 }
