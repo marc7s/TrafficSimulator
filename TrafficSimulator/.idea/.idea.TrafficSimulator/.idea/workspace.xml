@@ -9,7 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="97ab82c2-e343-4b13-9162-1f266ca88cd9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.TrafficSimulator/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.TrafficSimulator/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Car/PlayerInputActions.inputactions" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Car/PlayerInputActions.inputactions" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/CameraSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/CameraSystem.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +75,7 @@
       <workItem from="1675594089520" duration="124000" />
       <workItem from="1675633320494" duration="5808000" />
       <workItem from="1675639178508" duration="9516000" />
-      <workItem from="1675949186396" duration="3095000" />
+      <workItem from="1675949186396" duration="3702000" />
     </task>
     <servers />
   </component>
