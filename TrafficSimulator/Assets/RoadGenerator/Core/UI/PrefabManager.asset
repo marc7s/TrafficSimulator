@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c56abf2c7bdb63743b865c8015af92f4, type: 3}
+  m_Name: PrefabManager
+  m_EditorClassIdentifier: 
+  RoadSystem: {fileID: 798415014314360587, guid: 81687df71b013f14fb1e3209bca12fa5, type: 3}
+  Intersection: {fileID: 7981450104967385736, guid: 17ec948fcb0838a48adafe5412208c2f, type: 3}
+  Signs:
+    StopSign: {fileID: 4825263326744654715, guid: d945c309c5faf7b47b400e9d4832b381, type: 3}
+    YieldSign: {fileID: 3662518801653661679, guid: 0b94c3740fcc5b4478539e8358381be1, type: 3}
