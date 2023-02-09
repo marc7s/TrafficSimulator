@@ -2,6 +2,78 @@
     "name": "PlayerInputActions",
     "maps": [
         {
+            "name": "Default",
+            "id": "f13f64ef-05b6-4db9-9d32-a3a5599bcb13",
+            "actions": [
+                {
+                    "name": "Move",
+                    "type": "Value",
+                    "id": "bafa80d8-7147-46e9-972d-591e4ce839be",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "2D Vector",
+                    "id": "65eb94cb-fef0-49ec-bbe2-0886913df82e",
+                    "path": "2DVector",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "up",
+                    "id": "b889c2c0-65d0-4971-9eb3-8959c255df7c",
+                    "path": "<Keyboard>/w",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "down",
+                    "id": "bb0d79b2-2303-471d-91a3-914e6ce80fb1",
+                    "path": "<Keyboard>/s",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "14508c4d-f604-48ef-b940-414918f19434",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "right",
+                    "id": "dedb97df-3554-4468-82a1-f9c8bde77532",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
+        },
+        {
             "name": "Car",
             "id": "f7f02c33-ef5d-42f2-8780-20a68fd5147b",
             "actions": [
