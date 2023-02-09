@@ -30,7 +30,7 @@ namespace PathCreation
 		[SerializeField, HideInInspector]
 		PathSpace space;
 		[SerializeField, HideInInspector]
-		ControlMode controlMode;
+		ControlMode controlMode = ControlMode.Automatic;
 		[SerializeField, HideInInspector]
 		float autoControlLength = .3f;
 		[SerializeField, HideInInspector]
