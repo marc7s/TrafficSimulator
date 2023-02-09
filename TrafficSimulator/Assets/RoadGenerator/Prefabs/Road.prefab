@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4211003387211000974}
   - component: {fileID: -7222773781664253429}
   - component: {fileID: -8363121987229429450}
+  - component: {fileID: 5117696255831828102}
   m_Layer: 0
   m_Name: Road
   m_TagString: Untagged
@@ -88,7 +89,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 1
+    vertexPathUpToDate: 0
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 0
@@ -161,3 +162,17 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5117696255831828102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7492f488fd0840543b1c569a4b1bc2ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  road: {fileID: 0}
+  roadSystem: {fileID: 0}

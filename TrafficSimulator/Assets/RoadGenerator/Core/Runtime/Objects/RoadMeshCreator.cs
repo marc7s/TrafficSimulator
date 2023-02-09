@@ -148,9 +148,10 @@ namespace RoadGenerator {
 
         void AssignMaterials () {
             if (roadMaterial != null && undersideMaterial != null) {
-                meshRenderer.sharedMaterials = new Material[] { roadMaterial, undersideMaterial, undersideMaterial };
                 float textureTiling = (path.length / roadMaterial.mainTexture.height) * textureTilingScale;
-                meshRenderer.sharedMaterials[0].mainTextureScale = new Vector3 (1, textureTiling);
+                
+                meshRenderer.sharedMaterials = new Material[] { roadMaterial, undersideMaterial, undersideMaterial };
+                meshRenderer.sharedMaterials[0].mainTextureScale = new Vector3(1, textureTiling);
             }
         }
     }
