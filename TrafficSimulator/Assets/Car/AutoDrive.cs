@@ -32,6 +32,9 @@ namespace Car {
         [Range(0, 100f)]
         public float Speed = 20f;
 
+        [SerializeField]
+        private float _brakeDistance = 10f;
+
         // Shared variables
 
         // Quality variables
@@ -45,9 +48,12 @@ namespace Car {
         private int _repositioningOffset = 1;
         private Status _status = Status.Driving;
 
+
         // Performance variables
         private int _positionIndex = 0;
 
+        // constants
+        private const int FORWARD_RAYCAST_Y_OFFSET = 1;
         void Start()
         {
             // Get the lane positions
@@ -92,6 +98,11 @@ namespace Car {
                 if (ShowTargetLine)
                 {
                     Q_DrawTargetLine();
+                }
+                // If there is an object in front of the car, brake
+                if (IsObjectInFront())
+                {
+                    _wheelController.SetBrakingForcePercent(1);
                 }
             }
             else if (Mode == Mode.Performance)
@@ -214,6 +225,21 @@ namespace Car {
                 }
             }
             transform.position = target;
+        }
+
+        bool IsObjectInFront(){
+            Vector3 position = transform.position;
+            position.y += FORWARD_RAYCAST_Y_OFFSET;
+            // Raycast infront of car
+            Ray ray = new Ray(position, transform.forward);
+            RaycastHit hit;
+            // If there is something in front of the car
+            if (Physics.Raycast(ray, out hit, _brakeDistance))
+            {
+                print("There is something in front of the car!");
+                return true;
+            }
+            return false;
         }
 
         private Vector3 P_GetLerpPosition(Vector3 target)
