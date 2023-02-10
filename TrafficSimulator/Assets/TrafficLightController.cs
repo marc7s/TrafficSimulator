@@ -14,7 +14,6 @@ public class TrafficLightController : MonoBehaviour
 
     private Mode currentMode = Mode.FIRST;
 
-
     void Start()
     {
         trafficLightsCount = trafficLightsPair1.Length + trafficLightsPair2.Length;
@@ -24,7 +23,6 @@ public class TrafficLightController : MonoBehaviour
     {
         if (Time.time - lastSwitchTime > delay)
         {
-            Debug.Log("Switching traffic lights : " + Time.time);
             Controller(trafficLightsPair1, trafficLightsPair2);
             lastSwitchTime = Time.time;
         }
@@ -54,7 +52,6 @@ public class TrafficLightController : MonoBehaviour
                 for (int i = 0; i < trafficLightsPair1.Length; i++)
                     {
                         trafficLightsPair1[i].Go();
-                        //Debug.Log("Traffic light " + i + " is turning green");
                     }
                 currentMode = Mode.SECOND;
                 break;
@@ -62,7 +59,6 @@ public class TrafficLightController : MonoBehaviour
                 for (int i = 0; i < trafficLightsPair1.Length; i++)
                     {
                         trafficLightsPair1[i].Stop();
-                        //Debug.Log("Traffic light " + i + " is turning red");
                     }
                 currentMode = Mode.FIRST;
                 break;
@@ -74,19 +70,17 @@ public class TrafficLightController : MonoBehaviour
         switch (currentMode)
         {
             case Mode.FIRST:
+                trafficLightsPair2[0].Stop();
                 for (int i = 0; i < trafficLightsPair1.Length; i++)
                     {
                         trafficLightsPair1[i].Go();
-                        //Debug.Log("Traffic light " + i + " is turning green");
                     }
-                trafficLightsPair2[0].Stop();
                 currentMode = Mode.SECOND;
                 break;
             case Mode.SECOND:
                 for (int i = 0; i < trafficLightsPair1.Length; i++)
                     {
                         trafficLightsPair1[i].Stop();
-                        //Debug.Log("Traffic light " + i + " is turning red");
                     }
                 trafficLightsPair2[0].Go();
                 currentMode = Mode.FIRST;
@@ -99,15 +93,13 @@ public class TrafficLightController : MonoBehaviour
         switch (currentMode)
         {
             case Mode.FIRST:
-                for (int i = 0; i < trafficLightsPair1.Length; i++)
-                    {
-                        trafficLightsPair1[i].Go();
-                        //Debug.Log("Traffic light " + i + " is turning green");
-                    }
                 for (int i = 0; i < trafficLightsPair2.Length; i++)
                     {
                         trafficLightsPair2[i].Stop();
-                        //Debug.Log("Traffic light " + i + " is turning red");
+                    }
+                for (int i = 0; i < trafficLightsPair1.Length; i++)
+                    {
+                        trafficLightsPair1[i].Go();
                     }
                 currentMode = Mode.SECOND;
                 break;
@@ -115,12 +107,10 @@ public class TrafficLightController : MonoBehaviour
                 for (int i = 0; i < trafficLightsPair1.Length; i++)
                     {
                         trafficLightsPair1[i].Stop();
-                        //Debug.Log("Traffic light " + i + " is turning red");
                     }
                 for (int i = 0; i < trafficLightsPair2.Length; i++)
                     {
                         trafficLightsPair2[i].Go();
-                        //Debug.Log("Traffic light " + i + " is turning green");
                     }
                 currentMode = Mode.FIRST;
                 break;
