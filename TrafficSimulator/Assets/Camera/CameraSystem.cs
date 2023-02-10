@@ -22,9 +22,14 @@ public class CameraSystem : MonoBehaviour
     private float _rotateDirection;
 
     private float _targetZoom = 50f;
-
+    
+    public Transform followTarget;
     private void Update()
     {
+        if(followTarget != null)
+        {
+            transform.position = followTarget.position;
+        }
         HandleMovement();
         HandleRotation();
         HandleZoom();
@@ -51,6 +56,7 @@ public class CameraSystem : MonoBehaviour
 
     private void OnMove(InputValue value)
     {
+        followTarget = null;
         _playerMovementInput = value.Get<Vector2>();
         _moveDirection = TranslateDirectionToForward(_playerMovementInput.y, _playerMovementInput.x);
     }
@@ -76,6 +82,25 @@ public class CameraSystem : MonoBehaviour
         else if (_playerPointInput.x > Screen.width - _edgeScrollSize) sideways = 1f;
 
         _moveDirection = TranslateDirectionToForward(forward, sideways);
+    }
+    
+    private void OnClick(InputValue value)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if(Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
+        {
+            followTarget = hitInfo.transform;
+            Debug.Log("Object detected: " + hitInfo.transform.name);
+        }
+        else
+        {
+            if(followTarget != null)
+            {
+                transform.position = followTarget.position;
+                followTarget = null;
+            }
+
+        }
     }
 
     private void OnZoom(InputValue value)

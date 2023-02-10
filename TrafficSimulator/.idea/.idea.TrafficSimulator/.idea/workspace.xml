@@ -9,10 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="97ab82c2-e343-4b13-9162-1f266ca88cd9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.TrafficSimulator/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.TrafficSimulator/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/CameraSystem.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/CameraSystem.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Camera/CameraSystem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Camera/CameraSystem.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Car/PlayerInputActions.inputactions" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Car/PlayerInputActions.inputactions" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Felix.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Felix.unity" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
