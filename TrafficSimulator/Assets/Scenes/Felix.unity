@@ -774,7 +774,7 @@ MonoBehaviour:
   m_LookAt: {fileID: 892938135}
   m_Follow: {fileID: 892938135}
   m_Lens:
-    FieldOfView: 40
+    FieldOfView: 49.99999
     OrthographicSize: 10
     NearClipPlane: 0.1
     FarClipPlane: 5000
@@ -8563,8 +8563,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 765b99a7384676a479ee9d56255290a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _enableEdgeScrolling: 0
   _movementSpeed: 50
   _rotationSpeed: 150
+  _minZoom: 50
+  _maxZoom: 10
+  _zoomSpeed: 20
+  _cinemachineVirtualCamera: {fileID: 81382482}
 --- !u!1 &899263785
 GameObject:
   m_ObjectHideFlags: 0
@@ -15650,7 +15655,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 49.99999
   orthographic: 0
   orthographic size: 10
   m_Depth: -1
