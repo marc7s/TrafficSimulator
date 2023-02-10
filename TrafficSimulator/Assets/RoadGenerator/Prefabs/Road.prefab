@@ -50,14 +50,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathCreator: {fileID: 4211003387211000974}
   autoUpdate: 1
-  laneWidth: 4
-  laneAmount: 1
-  thickness: 0.15
-  flattenSurface: 0
-  laneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
-  bottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
-  textureTilingScale: 80
-  meshHolder: {fileID: 3821395399200801449}
+  LaneWidth: 4
+  LaneAmount: 1
+  Thickness: 0.15
+  FlattenSurface: 0
+  LaneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
+  BottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
+  TextureTilingScale: 100
+  _meshHolder: {fileID: 3821395399200801449}
 --- !u!114 &4211003387211000974
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -90,7 +90,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 1
+    vertexPathUpToDate: 0
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 0
@@ -139,8 +139,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
-  - {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
+  - {fileID: 0}
+  - {fileID: 0}
   - {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
   - {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
   m_StaticBatchInfo:
