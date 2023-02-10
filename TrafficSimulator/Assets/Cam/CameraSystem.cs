@@ -24,11 +24,12 @@ public class CameraSystem : MonoBehaviour
     private float _targetZoom = 50f;
     
     public Transform followTarget;
+    public Transform cameraAim;
     private void Update()
     {
         if(followTarget != null)
         {
-            transform.position = followTarget.position;
+            cameraAim.transform.position = followTarget.position;
         }
         HandleMovement();
         HandleRotation();
@@ -37,12 +38,12 @@ public class CameraSystem : MonoBehaviour
 
     private void HandleMovement()
     {
-        transform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
+        cameraAim.transform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
     }
 
     private void HandleRotation()
     {
-        transform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
+        cameraAim.transform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
     }
 
     private void HandleZoom()
@@ -96,7 +97,7 @@ public class CameraSystem : MonoBehaviour
         {
             if(followTarget != null)
             {
-                transform.position = followTarget.position;
+                cameraAim.transform.position = followTarget.position;
                 followTarget = null;
             }
 
@@ -110,6 +111,6 @@ public class CameraSystem : MonoBehaviour
 
     private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
     {
-        return transform.forward * forwardScalar + transform.right * sidewaysScalar;
+        return cameraAim.transform.forward * forwardScalar + transform.right * sidewaysScalar;
     }
 }
