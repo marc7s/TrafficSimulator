@@ -521,7 +521,7 @@ namespace RoadGeneratorEditor
         	{
 				return true;
 			}
-			Debug.Log("Click on an object to add a road segment");
+
 			return false;
 		}
 
