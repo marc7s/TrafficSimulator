@@ -423,6 +423,9 @@ namespace RoadGeneratorEditor
 			{
 				if (e.type == EventType.MouseDown && e.button == 0 && e.shift)
 				{
+					// If the mouse isn't over an object, return
+					if (!IsMouseOverObject(e))
+						return;
 					UpdatePathMouseInfo();
 					// Insert point along selected segment
 					if (selectedSegmentIndex != -1 && selectedSegmentIndex < bezierPath.NumSegments)
@@ -507,6 +510,19 @@ namespace RoadGeneratorEditor
 
 			shiftLastFrame = e.shift;
 
+		}
+		bool IsMouseOverObject(Event e){
+			// Raycast to the mouse position
+			Ray mouseRay = HandleUtility.GUIPointToWorldRay(e.mousePosition);
+			RaycastHit hitData;
+			Physics.Raycast(mouseRay, out hitData);
+			Debug.DrawRay(mouseRay.origin, mouseRay.direction * 10000);
+			if (Physics.Raycast(mouseRay, out hitData))
+        	{
+				return true;
+			}
+			Debug.Log("Click on an object to add a road segment");
+			return false;
 		}
 
 		void DrawBezierPathSceneEditor()
