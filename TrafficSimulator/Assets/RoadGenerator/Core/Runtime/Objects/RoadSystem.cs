@@ -26,7 +26,7 @@ namespace RoadGenerator
             road.roadSystem = this;
             road.GetComponent<PathSceneTool>().TriggerUpdate();
 
-            AddRoad(road);            
+            AddRoad(road);
         }
 
         private bool addRoad(UnityEngine.Object instance)
