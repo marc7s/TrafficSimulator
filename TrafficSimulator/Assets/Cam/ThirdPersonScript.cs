@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class ThirdPersonScript : MonoBehaviour
+public class ThirdPersonScript : MonoBehaviour, IAimable
 {
 
     private float _rotateDirection;
@@ -16,12 +16,17 @@ public class ThirdPersonScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
 
     // Update is called once per frame
     void Update()
     {
         followTarget.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
+    }
+
+    public void SetAimTarget(Transform aimTarget)
+    {
+        followTarget = aimTarget;
     }
 }

@@ -1,8 +1,9 @@
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
-public class CameraSystem : MonoBehaviour
+public class CameraSystem : MonoBehaviour, IAimable
 {
     [SerializeField] private bool _enableEdgeScrolling;
     [SerializeField] private float _movementSpeed = 50f;
@@ -23,13 +24,13 @@ public class CameraSystem : MonoBehaviour
 
     private float _targetZoom = 50f;
     
-    public Transform followTarget;
-    public Transform cameraAim;
+    [SerializeField] public Transform followGameObject;
+    public Transform cameraTarget;
     private void Update()
     {
-        if(followTarget != null)
+        if(followGameObject != null)
         {
-            cameraAim.transform.position = followTarget.position;
+            cameraTarget.transform.position = followGameObject.position;
         }
         HandleMovement();
         HandleRotation();
@@ -38,12 +39,12 @@ public class CameraSystem : MonoBehaviour
 
     private void HandleMovement()
     {
-        cameraAim.transform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
+        cameraTarget.transform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
     }
 
     private void HandleRotation()
     {
-        cameraAim.transform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
+        cameraTarget.transform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
     }
 
     private void HandleZoom()
@@ -57,7 +58,7 @@ public class CameraSystem : MonoBehaviour
 
     private void OnMove(InputValue value)
     {
-        followTarget = null;
+        followGameObject = null;
         _playerMovementInput = value.Get<Vector2>();
         _moveDirection = TranslateDirectionToForward(_playerMovementInput.y, _playerMovementInput.x);
     }
@@ -90,15 +91,15 @@ public class CameraSystem : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
         if(Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
         {
-            followTarget = hitInfo.transform;
+            followGameObject = hitInfo.transform;
             Debug.Log("Object detected: " + hitInfo.transform.name);
         }
         else
         {
-            if(followTarget != null)
+            if(followGameObject != null)
             {
-                cameraAim.transform.position = followTarget.position;
-                followTarget = null;
+                cameraTarget.transform.position = followGameObject.position;
+                followGameObject = null;
             }
 
         }
@@ -111,6 +112,11 @@ public class CameraSystem : MonoBehaviour
 
     private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
     {
-        return cameraAim.transform.forward * forwardScalar + transform.right * sidewaysScalar;
+        return cameraTarget.transform.forward * forwardScalar + transform.right * sidewaysScalar;
+    }
+
+    public void SetAimTarget(Transform aimTarget)
+    {
+        cameraTarget = aimTarget;
     }
 }
