@@ -482,6 +482,67 @@ namespace RoadGeneratorEditor
 					Repaint();
 				}
 			}
+			// Intersection Creation
+			// TODO remove anchors inside intersection
+			// Currently only for 2d roads, can change the line intercept method to work for 3d roads
+			if (e.type == EventType.KeyDown && e.keyCode == KeyCode.I) {
+				UpdatePathMouseInfo();
+				selectedSegmentIndex = pathMouseInfo.closestSegmentIndex;
+				Vector3 newPathPoint = pathMouseInfo.closestWorldPointToMouse;
+				newPathPoint = MathUtility.InverseTransformPoint(newPathPoint, creator.transform, bezierPath.Space);
+				Undo.RecordObject(creator, "Split segment");
+
+				// Create Intersection object
+				RoadSystem roadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
+
+				Quaternion rotation = creator.path.GetRotationAtDistance(pathMouseInfo.distanceAlongPathWorld);
+				rotation.x = 0;
+				rotation.z = 0;
+				Intersection intersection = roadSystem.AddNewIntersection(newPathPoint, rotation);
+
+				Vector3 intersectionPoint1 = intersection.StartConnectionPoint;
+				Vector3 intersectionPoint2 = intersection.EndConnectionPoint;
+				Vector3 intersectionPoint3 = intersection.ConnectionPointOtherDirection1;
+				Vector3 intersectionPoint4 = intersection.ConnectionPointOtherDirection2;
+
+				bezierPath.SplitSegment(intersectionPoint1, selectedSegmentIndex, creator.path.GetClosestTimeOnPath(intersectionPoint1));
+				bezierPath.SplitSegment(intersectionPoint2, selectedSegmentIndex + 1, creator.path.GetClosestTimeOnPath(intersectionPoint2));
+				List<Road> roads = roadSystem.Roads;
+				Road thisRoad = null;
+				foreach (Road road in roads) {
+					if (road.road.GetComponent<PathCreator>() == creator) {
+						thisRoad = road;
+						break;
+					}
+				}
+				if (thisRoad == null) {
+					Debug.Log("ERROR, Road not found");
+					return;
+				}
+				
+				foreach(Road road in roads) {
+					PathCreator pathCreator = road.road.GetComponent<PathCreator>();
+					if (road == thisRoad) {
+						continue;
+					}
+					
+					for (int i = 0; i < pathCreator.bezierPath.NumSegments; i++) {
+						Vector3 point1 = pathCreator.bezierPath.GetPointsInSegment(i)[0];
+						Vector3 point2 = pathCreator.bezierPath.GetPointsInSegment(i)[3];
+						if (IsLineIntersecting(point1, point2, intersectionPoint1, intersectionPoint2)) {
+							Debug.Log("Intersection foundDFGJÖLSGFJHIKFSD");
+							if (Vector3.Distance(point1, intersectionPoint3) < Vector3.Distance(point1, intersectionPoint4)) {
+								pathCreator.bezierPath.SplitSegment(intersectionPoint3, i, creator.path.GetClosestTimeOnPath(intersectionPoint3));
+								pathCreator.bezierPath.SplitSegment(intersectionPoint4, i + 1, creator.path.GetClosestTimeOnPath(intersectionPoint4));
+							} else {
+								pathCreator.bezierPath.SplitSegment(intersectionPoint4, i, creator.path.GetClosestTimeOnPath(intersectionPoint4));
+								pathCreator.bezierPath.SplitSegment(intersectionPoint3, i + 1, creator.path.GetClosestTimeOnPath(intersectionPoint3));
+							}
+							break;
+						}
+					}
+				}
+			}
 
 			// Holding shift and moving mouse (but mouse not over a handle/dragging a handle)
 			if (draggingHandleIndex == -1 && mouseOverHandleIndex == -1)
@@ -523,6 +584,53 @@ namespace RoadGeneratorEditor
 			}
 			Debug.Log("Click on an object to add a road segment");
 			return false;
+		}
+		// https://www.habrador.com/tutorials/math/5-line-line-intersection/
+		bool IsLineIntersecting(Vector3 point1, Vector3 point2, Vector3 point3, Vector3 point4)
+		{
+			//3d -> 2d
+			Vector2 p1 = new Vector2(point1.x, point1.z);
+			Vector2 p2 = new Vector2(point2.x, point2.z);
+
+			Vector2 p3 = new Vector2(point3.x, point3.z);
+			Vector2 p4 = new Vector2(point4.x, point4.z);
+			return AreLinesIntersecting(p1, p2, p3, p4, true);
+		}
+		public static bool AreLinesIntersecting(Vector2 l1_p1, Vector2 l1_p2, Vector2 l2_p1, Vector2 l2_p2, bool shouldIncludeEndPoints)
+		{
+			//To avoid floating point precision issues we can add a small value
+			float epsilon = 0.001f;
+
+			bool isIntersecting = false;
+
+			float denominator = (l2_p2.y - l2_p1.y) * (l1_p2.x - l1_p1.x) - (l2_p2.x - l2_p1.x) * (l1_p2.y - l1_p1.y);
+
+			//Make sure the denominator is > 0, if not the lines are parallel
+			if (denominator != 0f)
+			{
+				float u_a = ((l2_p2.x - l2_p1.x) * (l1_p1.y - l2_p1.y) - (l2_p2.y - l2_p1.y) * (l1_p1.x - l2_p1.x)) / denominator;
+				float u_b = ((l1_p2.x - l1_p1.x) * (l1_p1.y - l2_p1.y) - (l1_p2.y - l1_p1.y) * (l1_p1.x - l2_p1.x)) / denominator;
+
+				//Are the line segments intersecting if the end points are the same
+				if (shouldIncludeEndPoints)
+				{
+					//Is intersecting if u_a and u_b are between 0 and 1 or exactly 0 or 1
+					if (u_a >= 0f + epsilon && u_a <= 1f - epsilon && u_b >= 0f + epsilon && u_b <= 1f - epsilon)
+					{
+						isIntersecting = true;
+					}
+				}
+				else
+				{
+					//Is intersecting if u_a and u_b are between 0 and 1
+					if (u_a > 0f + epsilon && u_a < 1f - epsilon && u_b > 0f + epsilon && u_b < 1f - epsilon)
+					{
+						isIntersecting = true;
+					}
+				}
+			}
+
+			return isIntersecting;
 		}
 
 		void DrawBezierPathSceneEditor()

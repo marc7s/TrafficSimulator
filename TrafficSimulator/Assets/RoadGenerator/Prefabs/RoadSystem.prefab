@@ -45,8 +45,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99d3254aebf865b4bae3f8ccb1ed178e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roadContainer: {fileID: 2382052090468904982}
-  roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
+  _roadContainer: {fileID: 0}
+  _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
+  _intersectionPrefab: {fileID: 6036389765570556929, guid: 699ce805f09f498438fc0c29f8fbba32, type: 3}
 --- !u!1 &2382052090468904982
 GameObject:
   m_ObjectHideFlags: 0

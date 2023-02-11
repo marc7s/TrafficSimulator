@@ -31,6 +31,6 @@ MonoBehaviour:
   highlightedPath: {r: 1, g: 0.6, b: 0, a: 1}
   bounds: {r: 1, g: 1, b: 1, a: 0.4}
   segmentBounds: {r: 1, g: 1, b: 1, a: 0.4}
-  vertexPath: {r: 1, g: 1, b: 1, a: 1}
+  vertexPath: {r: 1, g: 0.0141509175, b: 0.775427, a: 1}
   normals: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   normalsLength: 0.198

@@ -6,5 +6,10 @@ namespace RoadGenerator
 	{
         public GameObject road;
         public RoadSystem roadSystem;
+    
+        void OnDestroy()
+        {
+            roadSystem.RemoveRoad(this);
+        }
     }
 }

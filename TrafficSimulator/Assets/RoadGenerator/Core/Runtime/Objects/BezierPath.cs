@@ -40,7 +40,7 @@ namespace RoadGenerator
 
 		// Normals settings
 		[SerializeField, HideInInspector]
-		List<float> perAnchorNormalsAngle;
+		public List<float> perAnchorNormalsAngle;
 		[SerializeField, HideInInspector]
 		float globalNormalsAngle;
 		[SerializeField, HideInInspector]
