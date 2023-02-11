@@ -33,7 +33,7 @@ namespace RoadGenerator
             road.roadSystem = this;
             road.GetComponent<PathSceneTool>().TriggerUpdate();
 
-            AddRoad(road);            
+            AddRoad(road);
         }
 
         public Intersection AddNewIntersection(Vector3 position, Quaternion rotation){

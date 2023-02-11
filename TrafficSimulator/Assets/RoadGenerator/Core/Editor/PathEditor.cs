@@ -582,7 +582,7 @@ namespace RoadGeneratorEditor
         	{
 				return true;
 			}
-			Debug.Log("Click on an object to add a road segment");
+
 			return false;
 		}
 		// https://www.habrador.com/tutorials/math/5-line-line-intersection/
