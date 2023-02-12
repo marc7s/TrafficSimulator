@@ -1,10 +1,11 @@
 using System;
+using Cam;
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
-public class CameraSystem : MonoBehaviour, IAimable
+public class CameraSystem : ControllableCamera
 {
     [SerializeField] private bool _enableEdgeScrolling;
     [SerializeField] private float _movementSpeed = 50f;
@@ -12,11 +13,10 @@ public class CameraSystem : MonoBehaviour, IAimable
     [SerializeField] private float _minZoom = 40f;
     [SerializeField] private float _maxZoom = 10f;
     [SerializeField] private float _zoomSpeed = 5f;
-    [SerializeField] private CinemachineVirtualCamera _cinemachineVirtualCamera;
 
     // Should be set by a function of the current screen size
     private readonly int _edgeScrollSize = 20;
-    private Vector3 _moveDirection;
+
 
     private Vector2 _playerMovementInput;
     private Vector2 _playerPointInput;
@@ -25,24 +25,35 @@ public class CameraSystem : MonoBehaviour, IAimable
 
     private float _targetZoom = 50f;
     
-    [SerializeField] public Transform followGameObject;
-    public Transform cameraTarget;
-
-
-
-
-
+    public GameObject followGameObject;
+    
     private InputAction movementInput;
-
-    private void Awake()
+    
+    protected override void SetupInputActions()
     {
-        
-
         movementInput = UserInputManager.PlayerInputActions.Default.Move;
+    }
+
+    protected override void OnActivation()
+    {
         movementInput.performed += OnMovementChanged;
         movementInput.canceled += OnMovementChanged;
     }
+
+    protected override void OnDeactivation()
+    {
+        movementInput.performed -= OnMovementChanged;
+        movementInput.canceled -= OnMovementChanged;
+    }
+
+    private void Awake()
+    {
+        _cmVirtualCamera = GetComponent<CinemachineVirtualCamera>();
+        SetPriority(1);
+        SetupInputActions();
+    }
     
+    private Vector3 _moveDirection;
     private void OnMovementChanged(InputAction.CallbackContext ctx)
     {
         _moveDirection = ctx.ReadValue<Vector2>();
@@ -50,19 +61,12 @@ public class CameraSystem : MonoBehaviour, IAimable
         
     }
     
-    
-
-
-    private void Start()
-    {
-        
-    }
-
     private void Update()
     {
+        if (!IsActive) return;
         if(followGameObject != null)
         {
-            cameraTarget.transform.position = followGameObject.position;
+            SetFollowTransform(followGameObject.transform);
         }
         
         HandleMovement();
@@ -72,19 +76,19 @@ public class CameraSystem : MonoBehaviour, IAimable
 
     private void HandleMovement()
     {
-        cameraTarget.transform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
+        followTransform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
     }
 
     private void HandleRotation()
     {
-        cameraTarget.transform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
+        followTransform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
     }
 
     private void HandleZoom()
     {
         _targetZoom -= _playerZoomInput;
         _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
-        _cinemachineVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(_cinemachineVirtualCamera.m_Lens.FieldOfView,
+        _cmVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(_cmVirtualCamera.m_Lens.FieldOfView,
             _targetZoom, Time.deltaTime * _zoomSpeed);
     }
 
@@ -123,14 +127,14 @@ public class CameraSystem : MonoBehaviour, IAimable
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
         if(Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
         {
-            followGameObject = hitInfo.transform;
+            followGameObject = hitInfo.transform.gameObject;
             Debug.Log("Object detected: " + hitInfo.transform.name);
         }
         else
         {
             if(followGameObject != null)
             {
-                cameraTarget.transform.position = followGameObject.position;
+                followTransform.transform.position = followGameObject.transform.position;
                 followGameObject = null;
             }
 
@@ -144,11 +148,8 @@ public class CameraSystem : MonoBehaviour, IAimable
 
     private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
     {
-        return cameraTarget.transform.forward * forwardScalar + transform.right * sidewaysScalar;
+        return followTransform.forward * forwardScalar + transform.right * sidewaysScalar;
     }
 
-    public void SetAimTarget(Transform aimTarget)
-    {
-        cameraTarget = aimTarget;
-    }
+
 }
