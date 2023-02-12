@@ -38,9 +38,9 @@ namespace RoadGenerator
             // Set the lane count to avoid having to cast the enum to an int everytime
             _laneCount = (int)LaneAmount;
 
-            // Create a copy of the lane material if it is not set
+            // Create a copy of the lane material if it is not set, or the material is updated
             // This makes the material independent from other roads
-            if(_laneMaterial == null)
+            if((_laneMaterial == null && LaneMaterial != null) || (_laneMaterial != null && LaneMaterial != null && _laneMaterial.name != LaneMaterial.name))
             {
                 _laneMaterial = new Material(LaneMaterial);
             }
@@ -400,7 +400,7 @@ namespace RoadGenerator
         }
 
         void AssignMaterials() {
-            if (LaneMaterial != null && BottomMaterial != null) 
+            if (_laneMaterial != null && BottomMaterial != null) 
             {
                 // Calculate the texture tiling based on the length of the road and the texture height
                 float textureTiling = (path.length / LaneMaterial.mainTexture.height) * TextureTilingScale;
