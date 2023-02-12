@@ -1,3 +1,4 @@
+using System;
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,12 +27,44 @@ public class CameraSystem : MonoBehaviour, IAimable
     
     [SerializeField] public Transform followGameObject;
     public Transform cameraTarget;
+
+
+
+
+
+    private InputAction movementInput;
+
+    private void Awake()
+    {
+        
+
+        movementInput = UserInputManager.PlayerInputActions.Default.Move;
+        movementInput.performed += OnMovementChanged;
+        movementInput.canceled += OnMovementChanged;
+    }
+    
+    private void OnMovementChanged(InputAction.CallbackContext ctx)
+    {
+        _moveDirection = ctx.ReadValue<Vector2>();
+        _moveDirection = TranslateDirectionToForward(_moveDirection.y, _moveDirection.x);
+        
+    }
+    
+    
+
+
+    private void Start()
+    {
+        
+    }
+
     private void Update()
     {
         if(followGameObject != null)
         {
             cameraTarget.transform.position = followGameObject.position;
         }
+        
         HandleMovement();
         HandleRotation();
         HandleZoom();
@@ -50,7 +83,6 @@ public class CameraSystem : MonoBehaviour, IAimable
     private void HandleZoom()
     {
         _targetZoom -= _playerZoomInput;
-
         _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
         _cinemachineVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(_cinemachineVirtualCamera.m_Lens.FieldOfView,
             _targetZoom, Time.deltaTime * _zoomSpeed);
