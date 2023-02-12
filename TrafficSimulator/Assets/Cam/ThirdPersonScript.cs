@@ -1,32 +1,62 @@
+using System;
+using Cam;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class ThirdPersonScript : MonoBehaviour, IAimable
+public class ThirdPersonScript : ControllableCamera
 {
 
-    private float _rotateDirection;
     [Range(0,1)][SerializeField] private float _rotateSpeed = 1f;
-    public Transform followTarget;
+    private float _rotateDirection;
     
-    private void OnRotate(InputValue value)
+    private InputAction rotationInput;
+    
+    private void Awake()
     {
-        _rotateDirection = value.Get<float>();
-        print(_rotateDirection);
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+        SetupInputActions();
     }
 
-    // Update is called once per frame
+    protected override void SetupInputActions()
+    {
+        rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
+    }
+
+    private void OnRotation(InputAction.CallbackContext ctx)
+    {
+        _rotateDirection = ctx.ReadValue<float>();
+    }
+
     void Update()
     {
-        followTarget.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
+        followTransform.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
     }
 
     public void SetAimTarget(Transform aimTarget)
     {
-        followTarget = aimTarget;
+        followTransform = aimTarget;
+    }
+    
+    protected override void OnActivation()
+    {
+        rotationInput.performed += OnRotation;
+        rotationInput.canceled += OnRotation;
+    }
+
+    protected override void OnDeactivation()
+    {
+        rotationInput.performed -= OnRotation;
+        rotationInput.canceled -= OnRotation;
+        
+        SetPriority(0);
+    }
+    
+    private void OnEnable()
+    {
+        OnActivation();
+    }
+
+    private void OnDisable()
+    {
+        OnDeactivation();
     }
 }
