@@ -7,25 +7,16 @@ namespace Cam
     public abstract class ControllableCamera : MonoBehaviour
     {
         [SerializeField] public Transform followTransform;
+        public CameraSwitcher CameraSwitcher;
 
         protected CinemachineVirtualCamera _cmVirtualCamera;
         public bool IsActive { get; private set; }
 
-        private void OnEnable()
-        {
-            OnActivation();
-        }
-
-        private void OnDisable()
-        {
-            OnDeactivation();
-        }
-
         protected abstract void SetupInputActions();
 
-        protected abstract void OnActivation();
+        public abstract void OnActivation();
 
-        protected abstract void OnDeactivation();
+        public abstract void OnDeactivation();
 
         public void SetPriority(int priority)
         {
@@ -36,6 +27,7 @@ namespace Cam
         {
             followTransform = aimTarget.transform;
         }
+
 
         public void SetActive(bool isActive)
         {

@@ -80,6 +80,15 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""DoubleClick"",
+                    ""type"": ""Button"",
+                    ""id"": ""18303f8e-2abb-4f18-80a7-d5d440aaab6e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": ""MultiTap"",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -214,6 +223,17 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""DebugButtonPressed"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""48fb0d6a-4c45-4975-95cd-c302891db2dc"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DoubleClick"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -340,6 +360,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         m_Default_Zoom = m_Default.FindAction("Zoom", throwIfNotFound: true);
         m_Default_Click = m_Default.FindAction("Click", throwIfNotFound: true);
         m_Default_DebugButtonPressed = m_Default.FindAction("DebugButtonPressed", throwIfNotFound: true);
+        m_Default_DoubleClick = m_Default.FindAction("DoubleClick", throwIfNotFound: true);
         // Car
         m_Car = asset.FindActionMap("Car", throwIfNotFound: true);
         m_Car_Acceleration = m_Car.FindAction("Acceleration", throwIfNotFound: true);
@@ -410,6 +431,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_Default_Zoom;
     private readonly InputAction m_Default_Click;
     private readonly InputAction m_Default_DebugButtonPressed;
+    private readonly InputAction m_Default_DoubleClick;
     public struct DefaultActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -420,6 +442,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         public InputAction @Zoom => m_Wrapper.m_Default_Zoom;
         public InputAction @Click => m_Wrapper.m_Default_Click;
         public InputAction @DebugButtonPressed => m_Wrapper.m_Default_DebugButtonPressed;
+        public InputAction @DoubleClick => m_Wrapper.m_Default_DoubleClick;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -447,6 +470,9 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                 @DebugButtonPressed.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDebugButtonPressed;
                 @DebugButtonPressed.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDebugButtonPressed;
                 @DebugButtonPressed.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDebugButtonPressed;
+                @DoubleClick.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDoubleClick;
+                @DoubleClick.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDoubleClick;
+                @DoubleClick.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDoubleClick;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -469,6 +495,9 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                 @DebugButtonPressed.started += instance.OnDebugButtonPressed;
                 @DebugButtonPressed.performed += instance.OnDebugButtonPressed;
                 @DebugButtonPressed.canceled += instance.OnDebugButtonPressed;
+                @DoubleClick.started += instance.OnDoubleClick;
+                @DoubleClick.performed += instance.OnDoubleClick;
+                @DoubleClick.canceled += instance.OnDoubleClick;
             }
         }
     }
@@ -530,6 +559,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         void OnZoom(InputAction.CallbackContext context);
         void OnClick(InputAction.CallbackContext context);
         void OnDebugButtonPressed(InputAction.CallbackContext context);
+        void OnDoubleClick(InputAction.CallbackContext context);
     }
     public interface ICarActions
     {

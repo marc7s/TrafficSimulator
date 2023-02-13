@@ -1,19 +1,28 @@
-using System;
 using Cam;
+using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class ThirdPersonScript : ControllableCamera
 {
-
-    [Range(0,1)][SerializeField] private float _rotateSpeed = 1f;
+    [Range(0, 1)] [SerializeField] private float _rotateSpeed = 1f;
     private float _rotateDirection;
-    
+
     private InputAction rotationInput;
-    
+
     private void Awake()
     {
-        SetupInputActions();
+        _cmVirtualCamera = GetComponent<CinemachineVirtualCamera>();
+    }
+
+    private void Update()
+    {
+        //followTransform.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
+    }
+    
+    private void OnDisable()
+    {
+        OnDeactivation();
     }
 
     protected override void SetupInputActions()
@@ -21,42 +30,22 @@ public class ThirdPersonScript : ControllableCamera
         rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
     }
 
-    private void OnRotation(InputAction.CallbackContext ctx)
+    private void OnRotationInput(InputAction.CallbackContext ctx)
     {
+        print("hi");
         _rotateDirection = ctx.ReadValue<float>();
     }
 
-    void Update()
+    public override void OnActivation()
     {
-        followTransform.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
+        SetupInputActions();
+        rotationInput.performed += OnRotationInput;
+        rotationInput.canceled += OnRotationInput;
     }
 
-    public void SetAimTarget(Transform aimTarget)
+    public override void OnDeactivation()
     {
-        followTransform = aimTarget;
-    }
-    
-    protected override void OnActivation()
-    {
-        rotationInput.performed += OnRotation;
-        rotationInput.canceled += OnRotation;
-    }
-
-    protected override void OnDeactivation()
-    {
-        rotationInput.performed -= OnRotation;
-        rotationInput.canceled -= OnRotation;
-        
-        SetPriority(0);
-    }
-    
-    private void OnEnable()
-    {
-        OnActivation();
-    }
-
-    private void OnDisable()
-    {
-        OnDeactivation();
+        rotationInput.performed -= OnRotationInput;
+        rotationInput.canceled -= OnRotationInput;
     }
 }

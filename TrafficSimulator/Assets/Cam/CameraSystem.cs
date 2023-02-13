@@ -1,9 +1,7 @@
-using System;
 using Cam;
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 public class CameraSystem : ControllableCamera
 {
@@ -14,37 +12,22 @@ public class CameraSystem : ControllableCamera
     [SerializeField] private float _maxZoom = 10f;
     [SerializeField] private float _zoomSpeed = 5f;
 
+
+    public GameObject toggledGameObject;
+
     // Should be set by a function of the current screen size
     private readonly int _edgeScrollSize = 20;
 
-
+    private Vector3 _moveDirection;
     private Vector2 _playerMovementInput;
     private Vector2 _playerPointInput;
     private float _playerZoomInput;
     private float _rotateDirection;
-
     private float _targetZoom = 50f;
-    
-    public GameObject followGameObject;
-    
+    private InputAction clickInput;
+
     private InputAction movementInput;
-    
-    protected override void SetupInputActions()
-    {
-        movementInput = UserInputManager.PlayerInputActions.Default.Move;
-    }
-
-    protected override void OnActivation()
-    {
-        movementInput.performed += OnMovementChanged;
-        movementInput.canceled += OnMovementChanged;
-    }
-
-    protected override void OnDeactivation()
-    {
-        movementInput.performed -= OnMovementChanged;
-        movementInput.canceled -= OnMovementChanged;
-    }
+    private InputAction doubleClickInput;
 
     private void Awake()
     {
@@ -52,26 +35,70 @@ public class CameraSystem : ControllableCamera
         SetPriority(1);
         SetupInputActions();
     }
-    
-    private Vector3 _moveDirection;
-    private void OnMovementChanged(InputAction.CallbackContext ctx)
-    {
-        _moveDirection = ctx.ReadValue<Vector2>();
-        _moveDirection = TranslateDirectionToForward(_moveDirection.y, _moveDirection.x);
-        
-    }
-    
+
     private void Update()
     {
         if (!IsActive) return;
-        if(followGameObject != null)
+        if(toggledGameObject != null)
         {
-            SetFollowTransform(followGameObject.transform);
+            followTransform.position = toggledGameObject.transform.position;
         }
-        
+
         HandleMovement();
         HandleRotation();
         HandleZoom();
+    }
+
+    protected override void SetupInputActions()
+    {
+        movementInput = UserInputManager.PlayerInputActions.Default.Move;
+        clickInput = UserInputManager.PlayerInputActions.Default.Click;
+        doubleClickInput = UserInputManager.PlayerInputActions.Default.DoubleClick;
+    }
+
+    public override void OnActivation()
+    {
+        movementInput.performed += OnMovementInput;
+        movementInput.canceled += OnMovementInput;
+
+        clickInput.performed += OnClickInput;
+        doubleClickInput.performed += OnDoubleClickInput;
+    }
+
+    private void OnDoubleClickInput(InputAction.CallbackContext obj)
+    {
+        var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.gameObject.Equals(toggledGameObject))
+        {
+            OnDeactivation();
+            CameraSwitcher.ToggleThirdPersonCamera();
+        }
+    }
+
+    private void OnClickInput(InputAction.CallbackContext ctx)
+    {
+        var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
+        {
+            toggledGameObject = hitInfo.collider.gameObject;
+            Debug.Log("Object detected: " + hitInfo.transform.name);
+        }
+        else
+        {
+            toggledGameObject = null;
+        }
+    }
+
+    public override void OnDeactivation()
+    {
+        movementInput.performed -= OnMovementInput;
+        movementInput.canceled -= OnMovementInput;
+    }
+
+    private void OnMovementInput(InputAction.CallbackContext ctx)
+    {
+        _moveDirection = ctx.ReadValue<Vector2>();
+        _moveDirection = TranslateDirectionToForward(_moveDirection.y, _moveDirection.x);
     }
 
     private void HandleMovement()
@@ -94,7 +121,7 @@ public class CameraSystem : ControllableCamera
 
     private void OnMove(InputValue value)
     {
-        followGameObject = null;
+        toggledGameObject = null;
         _playerMovementInput = value.Get<Vector2>();
         _moveDirection = TranslateDirectionToForward(_playerMovementInput.y, _playerMovementInput.x);
     }
@@ -121,25 +148,7 @@ public class CameraSystem : ControllableCamera
 
         _moveDirection = TranslateDirectionToForward(forward, sideways);
     }
-    
-    private void OnClick(InputValue value)
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if(Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
-        {
-            followGameObject = hitInfo.transform.gameObject;
-            Debug.Log("Object detected: " + hitInfo.transform.name);
-        }
-        else
-        {
-            if(followGameObject != null)
-            {
-                followTransform.transform.position = followGameObject.transform.position;
-                followGameObject = null;
-            }
 
-        }
-    }
 
     private void OnZoom(InputValue value)
     {
@@ -150,6 +159,4 @@ public class CameraSystem : ControllableCamera
     {
         return followTransform.forward * forwardScalar + transform.right * sidewaysScalar;
     }
-
-
 }
