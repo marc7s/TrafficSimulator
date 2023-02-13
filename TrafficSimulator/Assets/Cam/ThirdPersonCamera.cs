@@ -6,11 +6,18 @@ using UnityEngine.InputSystem;
 public class ThirdPersonCamera : ControllableCamera
 {
     [Range(0, 1)] [SerializeField] private float _rotateSpeed = 1f;
-    private float _rotateDirection;
 
-    private InputAction rotationInput;
-    private InputAction escapeInput;
-    private InputAction zoomInput;
+    [SerializeField] private float _minZoom = 50f;
+    [SerializeField] private float _maxZoom = 10f;
+    [SerializeField] private float _zoomSpeed = 1f;
+    
+    private float _playerZoomInput;
+    private float _rotateDirection;
+    private float _targetZoom = 50f;
+    
+    private InputAction _rotationInput;
+    private InputAction _zoomInput;
+    private InputAction _escapeInput;
 
     private void Awake()
     {
@@ -19,22 +26,20 @@ public class ThirdPersonCamera : ControllableCamera
 
     private void Update()
     {
-        if(followTransform != null)
-        followTransform.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
+        if (followTransform != null)
+            followTransform.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
         HandleZoom();
     }
-    
+
+    private void OnEnable()
+    {
+        SetupInputActions();
+    }
+
     private void OnDisable()
     {
         OnDeactivation();
     }
-    
-    
-    [SerializeField] private float _minZoom = 40f;
-    [SerializeField] private float _maxZoom = 10f;
-    private float _playerZoomInput;
-    [SerializeField] private float _zoomSpeed = 1f;
-    private float _targetZoom = 50f;
 
     private void HandleZoom()
     {
@@ -44,44 +49,41 @@ public class ThirdPersonCamera : ControllableCamera
             _targetZoom, Time.deltaTime * _zoomSpeed);
     }
     
+    protected override void SetupInputActions()
+    {
+        _rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
+        _zoomInput = UserInputManager.PlayerInputActions.Default.Zoom;
+        _escapeInput = UserInputManager.PlayerInputActions.Default.Escape;
+    }
+
+    private void OnRotationInput(InputAction.CallbackContext ctx)
+    {
+        _rotateDirection = ctx.ReadValue<float>();
+    }
+
     private void OnZoomInput(InputAction.CallbackContext ctx)
     {
         _playerZoomInput = Mathf.Clamp(ctx.ReadValue<float>(), -1f, 1f);
     }
 
-    protected override void SetupInputActions()
-    {
-        rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
-        zoomInput = UserInputManager.PlayerInputActions.Default.Zoom;
-        escapeInput = UserInputManager.PlayerInputActions.Default.Escape;
-    }
-
-    private void OnRotationInput(InputAction.CallbackContext ctx)
-    {
-        print("hi");
-        _rotateDirection = ctx.ReadValue<float>();
-    }
-
-    public override void OnActivation()
-    {
-        SetupInputActions();
-        rotationInput.performed += OnRotationInput;
-        rotationInput.canceled += OnRotationInput;
-
-        zoomInput.performed += OnZoomInput;
-        zoomInput.canceled += OnZoomInput;
-
-        escapeInput.performed += OnEscapeInput;
-    }
 
     private void OnEscapeInput(InputAction.CallbackContext obj)
     {
         CameraSwitcher.TogglePreviousCamera();
     }
 
+    public override void OnActivation()
+    {
+        _rotationInput.performed += OnRotationInput;
+        _rotationInput.canceled += OnRotationInput;
+        _zoomInput.performed += OnZoomInput;
+        _zoomInput.canceled += OnZoomInput;
+        _escapeInput.performed += OnEscapeInput;
+    }
+
     public override void OnDeactivation()
     {
-        rotationInput.performed -= OnRotationInput;
-        rotationInput.canceled -= OnRotationInput;
+        _rotationInput.performed -= OnRotationInput;
+        _rotationInput.canceled -= OnRotationInput;
     }
 }
