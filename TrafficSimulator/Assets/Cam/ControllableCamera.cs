@@ -1,12 +1,13 @@
 using Cinemachine;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Cam
 {
     [RequireComponent(typeof(CinemachineVirtualCamera))]
     public abstract class ControllableCamera : MonoBehaviour
     {
-        [SerializeField] public Transform followTransform;
+        [SerializeField] public Transform FollowTransform;
         public CameraSwitcher CameraSwitcher;
 
         protected CinemachineVirtualCamera _cmVirtualCamera;
@@ -25,10 +26,9 @@ namespace Cam
 
         public void SetFollowTransform(Transform aimTarget)
         {
-            followTransform = aimTarget.transform;
+            FollowTransform = aimTarget.transform;
         }
-
-
+        
         public void SetActive(bool isActive)
         {
             if (IsActive == isActive) return;

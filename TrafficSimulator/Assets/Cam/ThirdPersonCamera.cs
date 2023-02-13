@@ -29,8 +29,8 @@ public class ThirdPersonCamera : ControllableCamera
 
     private void Update()
     {
-        if (followTransform != null)
-            followTransform.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
+        if (FollowTransform != null)
+            FollowTransform.rotation *= Quaternion.AngleAxis(_rotateDirection * _rotateSpeed, Vector3.up);
         HandleZoom();
     }
 

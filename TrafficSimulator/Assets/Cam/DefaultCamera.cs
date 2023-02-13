@@ -31,8 +31,7 @@ public class DefaultCamera : ControllableCamera
     private float _rotateDirection;
     private Vector3 _moveDirection;
     #endregion
-
-
+    
     private void Awake()
     {
         _cmVirtualCamera = GetComponent<CinemachineVirtualCamera>();
@@ -46,7 +45,7 @@ public class DefaultCamera : ControllableCamera
 
     private void Update()
     {
-        if (_toggledGameObject != null) followTransform.position = _toggledGameObject.transform.position;
+        if (_toggledGameObject != null) FollowTransform.position = _toggledGameObject.transform.position;
 
         HandleMovement();
         HandleRotation();
@@ -157,12 +156,12 @@ public class DefaultCamera : ControllableCamera
 
     private void HandleMovement()
     {
-        followTransform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
+        FollowTransform.position += _moveDirection * (_movementSpeed * Time.deltaTime);
     }
 
     private void HandleRotation()
     {
-        followTransform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
+        FollowTransform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
     }
 
     private void HandleZoom()
@@ -175,6 +174,6 @@ public class DefaultCamera : ControllableCamera
 
     private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
     {
-        return followTransform.forward * forwardScalar + transform.right * sidewaysScalar;
+        return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;
     }
 }
