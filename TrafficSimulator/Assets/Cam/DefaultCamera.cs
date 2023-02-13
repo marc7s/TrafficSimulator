@@ -11,25 +11,27 @@ public class DefaultCamera : ControllableCamera
     [SerializeField] private float _minZoom = 40f;
     [SerializeField] private float _maxZoom = 10f;
     [SerializeField] private float _zoomSpeed = 5f;
-
+    
     // Should be set by a function of the current screen size
-    private readonly int _edgeScrollSize = 20;
-
-    private Vector3 _moveDirection;
-    private Vector2 _playerMovementInput;
-    private Vector2 _playerPointInput;
-    private float _playerZoomInput;
-    private float _rotateDirection;
+    private const int _edgeScrollSize = 20;
     private float _targetZoom = 50f;
 
     private GameObject _toggledGameObject;
 
+    #region Input Fields
     private InputAction _clickInput;
     private InputAction _doubleClickInput;
     private InputAction _movementInput;
     private InputAction _pointInput;
     private InputAction _rotationInput;
     private InputAction _zoomInput;
+    
+    private Vector2 _playerPoint;
+    private float _playerZoom;
+    private float _rotateDirection;
+    private Vector3 _moveDirection;
+    #endregion
+
 
     private void Awake()
     {
@@ -44,7 +46,6 @@ public class DefaultCamera : ControllableCamera
 
     private void Update()
     {
-        if (!IsActive) return;
         if (_toggledGameObject != null) followTransform.position = _toggledGameObject.transform.position;
 
         HandleMovement();
@@ -83,16 +84,16 @@ public class DefaultCamera : ControllableCamera
     {
         if (!_enableEdgeScrolling) return;
 
-        _playerPointInput = ctx.ReadValue<Vector2>();
+        _playerPoint = ctx.ReadValue<Vector2>();
         float forward = 0;
         float sideways = 0;
-        if (_playerPointInput.y < _edgeScrollSize)
+        if (_playerPoint.y < _edgeScrollSize)
             forward = -1f;
-        else if (_playerPointInput.y > Screen.height - _edgeScrollSize) forward = 1f;
+        else if (_playerPoint.y > Screen.height - _edgeScrollSize) forward = 1f;
 
-        if (_playerPointInput.x < _edgeScrollSize)
+        if (_playerPoint.x < _edgeScrollSize)
             sideways = -1f;
-        else if (_playerPointInput.x > Screen.width - _edgeScrollSize) sideways = 1f;
+        else if (_playerPoint.x > Screen.width - _edgeScrollSize) sideways = 1f;
 
         _moveDirection = TranslateDirectionToForward(forward, sideways);
     }
@@ -104,7 +105,7 @@ public class DefaultCamera : ControllableCamera
 
     private void OnDoubleClickInput(InputAction.CallbackContext obj)
     {
-        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
         if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.gameObject.Equals(_toggledGameObject))
         {
             OnDeactivation();
@@ -144,7 +145,7 @@ public class DefaultCamera : ControllableCamera
 
     private void OnZoomInput(InputAction.CallbackContext ctx)
     {
-        _playerZoomInput = Mathf.Clamp(ctx.ReadValue<float>(), -1f, 1f);
+        _playerZoom = Mathf.Clamp(ctx.ReadValue<float>(), -1f, 1f);
     }
 
     private void OnMovementInput(InputAction.CallbackContext ctx)
@@ -166,7 +167,7 @@ public class DefaultCamera : ControllableCamera
 
     private void HandleZoom()
     {
-        _targetZoom -= _playerZoomInput;
+        _targetZoom -= _playerZoom;
         _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
         _cmVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(_cmVirtualCamera.m_Lens.FieldOfView,
             _targetZoom, Time.deltaTime * _zoomSpeed);

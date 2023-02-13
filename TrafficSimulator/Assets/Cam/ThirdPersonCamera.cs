@@ -1,3 +1,4 @@
+using System;
 using Cam;
 using Cinemachine;
 using UnityEngine;
@@ -6,18 +7,20 @@ using UnityEngine.InputSystem;
 public class ThirdPersonCamera : ControllableCamera
 {
     [Range(0, 1)] [SerializeField] private float _rotateSpeed = 1f;
-
     [SerializeField] private float _minZoom = 50f;
     [SerializeField] private float _maxZoom = 10f;
     [SerializeField] private float _zoomSpeed = 1f;
-    
-    private float _playerZoomInput;
-    private float _rotateDirection;
+
     private float _targetZoom = 50f;
-    
+
+    #region Input Fields
     private InputAction _rotationInput;
     private InputAction _zoomInput;
     private InputAction _escapeInput;
+    
+    private float _playerZoom;
+    private float _rotateDirection;
+    #endregion
 
     private void Awake()
     {
@@ -31,7 +34,7 @@ public class ThirdPersonCamera : ControllableCamera
         HandleZoom();
     }
 
-    private void OnEnable()
+    private void Start()
     {
         SetupInputActions();
     }
@@ -43,7 +46,7 @@ public class ThirdPersonCamera : ControllableCamera
 
     private void HandleZoom()
     {
-        _targetZoom -= _playerZoomInput;
+        _targetZoom -= _playerZoom;
         _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
         _cmVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(_cmVirtualCamera.m_Lens.FieldOfView,
             _targetZoom, Time.deltaTime * _zoomSpeed);
@@ -63,7 +66,7 @@ public class ThirdPersonCamera : ControllableCamera
 
     private void OnZoomInput(InputAction.CallbackContext ctx)
     {
-        _playerZoomInput = Mathf.Clamp(ctx.ReadValue<float>(), -1f, 1f);
+        _playerZoom = Mathf.Clamp(ctx.ReadValue<float>(), -1f, 1f);
     }
 
 

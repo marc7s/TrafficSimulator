@@ -813,13 +813,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   followTransform: {fileID: 0}
   CameraSwitcher: {fileID: 0}
-  _enableEdgeScrolling: 0
+  _enableEdgeScrolling: 1
   _movementSpeed: 50
   _rotationSpeed: 50
   _minZoom: 40
   _maxZoom: 10
   _zoomSpeed: 5
-  toggledGameObject: {fileID: 0}
 --- !u!134 &82065595
 PhysicMaterial:
   m_ObjectHideFlags: 0
