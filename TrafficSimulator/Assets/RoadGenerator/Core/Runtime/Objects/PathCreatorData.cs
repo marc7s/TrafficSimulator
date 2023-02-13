@@ -125,7 +125,7 @@ namespace RoadGenerator {
             }
         }
 
-        void BezierPathEdited () {
+        public void BezierPathEdited () {
             vertexPathUpToDate = false;
             if (bezierOrVertexPathModified != null) {
                 bezierOrVertexPathModified ();

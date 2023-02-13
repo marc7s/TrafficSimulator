@@ -16,10 +16,17 @@ public class Intersection : MonoBehaviour
     public Vector3 ConnectionPointOtherDirection1;
     public Vector3 ConnectionPointOtherDirection2;
 
-    void Start()
-    {
+    public Vector3 IntersectionPosition;
 
-    }
+    public (int, int) Road1SegmentIndex;
+
+    public Road road1;
+
+    public PathCreator otherRoadCreator;
+
+    public const float RADIUS = 5f;
+
+    // TODO find out why this is not being called
     void OnDestroy()
     {
         Debug.Log("Intersection Destroyed");

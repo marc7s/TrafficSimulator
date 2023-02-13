@@ -5,6 +5,7 @@ using UnityEditor;
 
 namespace RoadGenerator
 {
+    [Serializable]
 	public class RoadSystem : MonoBehaviour
 	{
         public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
@@ -43,6 +44,7 @@ namespace RoadGenerator
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
             intersection.IntersectionObject = intersectionObject;
             intersection.SetConnectionPoints();
+            intersection.IntersectionPosition = position;
             AddIntersection(intersection);
             
             return intersection;

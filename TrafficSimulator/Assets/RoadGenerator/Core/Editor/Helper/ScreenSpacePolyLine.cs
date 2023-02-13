@@ -14,7 +14,7 @@ namespace RoadGeneratorEditor
 
 		public readonly List<Vector3> verticesWorld;
 		// For each point in the polyline, says which bezier segment it belongs to
-		readonly List<int> vertexToPathSegmentMap;
+		public readonly List<int> vertexToPathSegmentMap;
 		// Stores the index in the vertices list where the start point of each segment is
 		readonly int[] segmentStartIndices;
 
@@ -146,6 +146,28 @@ namespace RoadGeneratorEditor
 				prevCamIsOrtho = Camera.current.orthographic;
 			}
 		}
+		
+		public int ClosestSegmentIndexFromPosition(Vector3 position){
+			ComputeScreenSpace();
+			Vector2 guiPosition = HandleUtility.WorldToGUIPoint(position);
+			float minDst = float.MaxValue;
+			int closestPolyLineSegmentIndex = 0;
+			int closestBezierSegmentIndex = 0;
+
+			for (int i = 0; i < points.Length - 1; i++)
+			{
+				float dst = HandleUtility.DistancePointToLineSegment(guiPosition, points[i], points[i + 1]);
+
+				if (dst < minDst)
+				{
+					minDst = dst;
+					closestPolyLineSegmentIndex = i;
+					closestBezierSegmentIndex = vertexToPathSegmentMap[i];
+				}
+			}
+			return closestBezierSegmentIndex;
+
+		}
 
 		public MouseInfo CalculateMouseInfo()
 		{
@@ -188,6 +210,7 @@ namespace RoadGeneratorEditor
 
 			return new MouseInfo(minDst, closestPoint3D, distanceAlongPathWorld, timeAlongPath, timeAlongBezierSegment, closestBezierSegmentIndex);
 		}
+
 
 		public bool TransformIsOutOfDate()
 		{

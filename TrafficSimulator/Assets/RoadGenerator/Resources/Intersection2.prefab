@@ -110,7 +110,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4250033333612757034}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: ConnectionPoiontOtherDirection2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -141,7 +141,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4250033333890661358}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: StartConnectionPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -272,7 +272,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4250033334292746910}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: EndConnectionPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -303,7 +303,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4250033334420275010}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: ConnectionPointOtherDirection1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -370,8 +370,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fe983f4c8631b24ab4c047047091ba0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _intersectionPrefab: {fileID: 4250033334480819983}
+  IntersectionObject: {fileID: 0}
   StartConnectionPoint: {x: 0, y: 0, z: 0}
   EndConnectionPoint: {x: 0, y: 0, z: 0}
   ConnectionPointOtherDirection1: {x: 0, y: 0, z: 0}
   ConnectionPointOtherDirection2: {x: 0, y: 0, z: 0}
+  IntersectionPosition: {x: 0, y: 0, z: 0}
+  road1: {fileID: 0}
