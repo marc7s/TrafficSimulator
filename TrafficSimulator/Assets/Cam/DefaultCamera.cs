@@ -1,9 +1,10 @@
+using System;
 using Cam;
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class CameraSystem : ControllableCamera
+public class DefaultCamera : ControllableCamera
 {
     [SerializeField] private bool _enableEdgeScrolling;
     [SerializeField] private float _movementSpeed = 50f;
@@ -28,11 +29,17 @@ public class CameraSystem : ControllableCamera
 
     private InputAction movementInput;
     private InputAction doubleClickInput;
+    private InputAction rotationInput;
+    private InputAction zoomInput;
 
     private void Awake()
     {
         _cmVirtualCamera = GetComponent<CinemachineVirtualCamera>();
         SetPriority(1);
+    }
+
+    private void Start()
+    {
         SetupInputActions();
     }
 
@@ -52,6 +59,9 @@ public class CameraSystem : ControllableCamera
     protected override void SetupInputActions()
     {
         movementInput = UserInputManager.PlayerInputActions.Default.Move;
+        rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
+        zoomInput = UserInputManager.PlayerInputActions.Default.Zoom;
+        
         clickInput = UserInputManager.PlayerInputActions.Default.Click;
         doubleClickInput = UserInputManager.PlayerInputActions.Default.DoubleClick;
     }
@@ -61,8 +71,19 @@ public class CameraSystem : ControllableCamera
         movementInput.performed += OnMovementInput;
         movementInput.canceled += OnMovementInput;
 
+        rotationInput.performed += OnRotationInput;
+        rotationInput.canceled += OnRotationInput;
+
+        zoomInput.performed += OnZoomInput;
+        zoomInput.canceled += OnZoomInput;
+        
         clickInput.performed += OnClickInput;
         doubleClickInput.performed += OnDoubleClickInput;
+    }
+
+    private void OnRotationInput(InputAction.CallbackContext ctx)
+    {
+        _rotateDirection = ctx.ReadValue<float>();
     }
 
     private void OnDoubleClickInput(InputAction.CallbackContext obj)
@@ -93,10 +114,26 @@ public class CameraSystem : ControllableCamera
     {
         movementInput.performed -= OnMovementInput;
         movementInput.canceled -= OnMovementInput;
+
+        rotationInput.performed -= OnRotationInput;
+        rotationInput.canceled -= OnRotationInput;
+
+        zoomInput.performed -= OnZoomInput;
+        zoomInput.canceled -= OnZoomInput;
+        
+        
+        clickInput.performed -= OnClickInput;
+        doubleClickInput.performed -= OnDoubleClickInput;
+    }
+
+    private void OnZoomInput(InputAction.CallbackContext ctx)
+    {
+        _playerZoomInput = Mathf.Clamp(ctx.ReadValue<float>(), -1f, 1f);
     }
 
     private void OnMovementInput(InputAction.CallbackContext ctx)
     {
+        toggledGameObject = null;
         _moveDirection = ctx.ReadValue<Vector2>();
         _moveDirection = TranslateDirectionToForward(_moveDirection.y, _moveDirection.x);
     }

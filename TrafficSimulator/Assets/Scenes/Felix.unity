@@ -183,7 +183,7 @@ MonoBehaviour:
   Damping: {x: 0.1, y: 0.5, z: 0.3}
   ShoulderOffset: {x: 0.5, y: 6, z: -15}
   VerticalArmLength: 0.4
-  CameraSide: 1
+  CameraSide: 0.5
   CameraDistance: 2
   CameraCollisionFilter:
     serializedVersion: 2
@@ -737,9 +737,9 @@ GameObject:
   m_Component:
   - component: {fileID: 81382483}
   - component: {fileID: 81382482}
-  - component: {fileID: 81382485}
+  - component: {fileID: 81382484}
   m_Layer: 0
-  m_Name: CM_VirtualCamera_3D
+  m_Name: CM_VirtualCamera_Default
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -799,7 +799,7 @@ Transform:
   m_Father: {fileID: 1503537948}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &81382485
+--- !u!114 &81382484
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -811,14 +811,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 765b99a7384676a479ee9d56255290a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  followTransform: {fileID: 774340907}
+  followTransform: {fileID: 0}
   CameraSwitcher: {fileID: 0}
   _enableEdgeScrolling: 0
   _movementSpeed: 50
-  _rotationSpeed: 150
-  _minZoom: 50
+  _rotationSpeed: 50
+  _minZoom: 40
   _maxZoom: 10
-  _zoomSpeed: 20
+  _zoomSpeed: 5
   toggledGameObject: {fileID: 0}
 --- !u!134 &82065595
 PhysicMaterial:
@@ -4306,7 +4306,7 @@ GameObject:
   - component: {fileID: 468449789}
   - component: {fileID: 468449791}
   m_Layer: 0
-  m_Name: CM_VirtualCamera_3P
+  m_Name: CM_VirtualCamera_ThirdPerson
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4358,7 +4358,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 468449788}
   m_LocalRotation: {x: 0.17896931, y: -0.014463709, z: 0.0026313325, w: 0.98374486}
-  m_LocalPosition: {x: 0.5, y: 6.4, z: -17}
+  m_LocalPosition: {x: 0, y: 6.4, z: -17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4378,9 +4378,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88ef6ab741a4c5f4a9cc962edd8d66a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  followTransform: {fileID: 989052508}
+  followTransform: {fileID: 0}
   CameraSwitcher: {fileID: 0}
   _rotateSpeed: 1
+  _minZoom: 80
+  _maxZoom: 50
+  _zoomSpeed: 1
 --- !u!1 &484890660
 GameObject:
   m_ObjectHideFlags: 0
@@ -12929,9 +12932,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cameras:
-  - {fileID: 81382485}
+  - {fileID: 81382484}
   - {fileID: 468449791}
   _currentActiveCameraIndex: 0
+  _previousActiveCameraIndex: 0
+  cameraTarget: {fileID: 774340907}
 --- !u!4 &1503537948
 Transform:
   m_ObjectHideFlags: 0

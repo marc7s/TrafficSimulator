@@ -89,6 +89,15 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": ""MultiTap"",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Escape"",
+                    ""type"": ""Button"",
+                    ""id"": ""3b64df3f-5571-49e2-824f-63d4129796e3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -234,6 +243,17 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""DoubleClick"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c48c7553-a8e1-4e1b-9f98-ed03c70f85c7"",
+                    ""path"": ""<Keyboard>/escape"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Escape"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -361,6 +381,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         m_Default_Click = m_Default.FindAction("Click", throwIfNotFound: true);
         m_Default_DebugButtonPressed = m_Default.FindAction("DebugButtonPressed", throwIfNotFound: true);
         m_Default_DoubleClick = m_Default.FindAction("DoubleClick", throwIfNotFound: true);
+        m_Default_Escape = m_Default.FindAction("Escape", throwIfNotFound: true);
         // Car
         m_Car = asset.FindActionMap("Car", throwIfNotFound: true);
         m_Car_Acceleration = m_Car.FindAction("Acceleration", throwIfNotFound: true);
@@ -432,6 +453,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_Default_Click;
     private readonly InputAction m_Default_DebugButtonPressed;
     private readonly InputAction m_Default_DoubleClick;
+    private readonly InputAction m_Default_Escape;
     public struct DefaultActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -443,6 +465,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         public InputAction @Click => m_Wrapper.m_Default_Click;
         public InputAction @DebugButtonPressed => m_Wrapper.m_Default_DebugButtonPressed;
         public InputAction @DoubleClick => m_Wrapper.m_Default_DoubleClick;
+        public InputAction @Escape => m_Wrapper.m_Default_Escape;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -473,6 +496,9 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                 @DoubleClick.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDoubleClick;
                 @DoubleClick.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDoubleClick;
                 @DoubleClick.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnDoubleClick;
+                @Escape.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnEscape;
+                @Escape.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnEscape;
+                @Escape.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnEscape;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -498,6 +524,9 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                 @DoubleClick.started += instance.OnDoubleClick;
                 @DoubleClick.performed += instance.OnDoubleClick;
                 @DoubleClick.canceled += instance.OnDoubleClick;
+                @Escape.started += instance.OnEscape;
+                @Escape.performed += instance.OnEscape;
+                @Escape.canceled += instance.OnEscape;
             }
         }
     }
@@ -560,6 +589,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         void OnClick(InputAction.CallbackContext context);
         void OnDebugButtonPressed(InputAction.CallbackContext context);
         void OnDoubleClick(InputAction.CallbackContext context);
+        void OnEscape(InputAction.CallbackContext context);
     }
     public interface ICarActions
     {

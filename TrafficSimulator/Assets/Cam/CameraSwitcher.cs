@@ -8,6 +8,9 @@ public class CameraSwitcher : MonoBehaviour
 {
     [SerializeField] private ControllableCamera[] _cameras;
     [SerializeField] private int _currentActiveCameraIndex = 0;
+    [SerializeField] private int _previousActiveCameraIndex;
+    [SerializeField] private Transform cameraTarget;
+    
     
     private void Start()
     {
@@ -15,6 +18,7 @@ public class CameraSwitcher : MonoBehaviour
         {
             cam.CameraSwitcher = this;
         }
+        _cameras[_currentActiveCameraIndex].GetComponent<ControllableCamera>().SetFollowTransform(cameraTarget);
         _cameras[_currentActiveCameraIndex].GetComponent<ControllableCamera>().SetPriority(1);
         _cameras[_currentActiveCameraIndex].GetComponent<ControllableCamera>().SetActive(true);
     }
@@ -22,29 +26,24 @@ public class CameraSwitcher : MonoBehaviour
     public void ToggleThirdPersonCamera()
     {
         SwitchPriority(1);
+        
+    }
+    
+    public void TogglePreviousCamera()
+    {
+        SwitchPriority(_previousActiveCameraIndex);
     }
     
     private void SwitchPriority(int i)
     {
-        _cameras[_currentActiveCameraIndex].SetPriority(0);
-        _cameras[_currentActiveCameraIndex].OnDeactivation();
+        _previousActiveCameraIndex = _currentActiveCameraIndex;
+        
+        _cameras[_previousActiveCameraIndex].SetPriority(0);
+        _cameras[_previousActiveCameraIndex].OnDeactivation();
         _currentActiveCameraIndex = i;
         _cameras[_currentActiveCameraIndex].SetPriority(1);
+        _cameras[_currentActiveCameraIndex].SetFollowTransform(cameraTarget);
         _cameras[_currentActiveCameraIndex].OnActivation();
-
-        /*
-        if(_currentActiveCameraIndex == 0)
-        {
-            _cameras[1].SetActive(true);
-            _cameras[0].SetActive(false);
-            _currentActiveCameraIndex = 1;
-        }
-        else
-        {
-            _cameras[1].SetActive(false); 
-            _cameras[0].SetActive(true);
-            _currentActiveCameraIndex = 0;
-        }*/
     }
     
     
