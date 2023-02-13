@@ -118,7 +118,6 @@ public class DefaultCamera : ControllableCamera
         if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
         {
             _toggledGameObject = hitInfo.collider.gameObject;
-            Debug.Log("Object detected: " + hitInfo.transform.name);
         }
         else
         {
