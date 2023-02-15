@@ -9,18 +9,11 @@ namespace TrafficLight
         [SerializeField] private TrafficLight[] _trafficLightsGroup1; // Starts green
         [SerializeField] private TrafficLight[] _trafficLightsGroup2; // Starts red
 
-        private int _trafficLightsCount;
-
         public float Delay = 10f;
         public float TransitionDelay = 2f;
         private float _lastSwitchTime = 0f;
 
         private Mode _currentMode = Mode.FIRST;
-
-        void Start()
-        {
-            _trafficLightsCount = _trafficLightsGroup1.Length + _trafficLightsGroup2.Length;
-        }
 
         void Update()
         {
