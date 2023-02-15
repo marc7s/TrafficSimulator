@@ -2285,7 +2285,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _laneObject: {fileID: 0}
   _mode: 1
-  _showTargetLine: 0
+  _showTargetLines: 1
   _targetLookaheadDistance: 10
   _speed: 20
 --- !u!1 &1577973480899416901
