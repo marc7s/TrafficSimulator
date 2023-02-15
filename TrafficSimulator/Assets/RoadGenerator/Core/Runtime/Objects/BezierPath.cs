@@ -130,6 +130,33 @@ namespace RoadGenerator
 
 		#region Public methods and accessors
 
+		/// <summary> Creates a path offset in the normal direction from an existing path </summary>
+		///<param name="offset"> The amount to offset. Note that this will be used in a local context, so each point will be offset in its respective normal direction </param>
+		///<param name="transform"> The transform to create the path at. </param>
+		///<param name="reverse"> Reverses the path </param>
+		public BezierPath OffsetInNormalDirection(float offset, Transform transform, float vertexSpacing, bool reverse = false)
+		{
+			// Create an empty list of points
+			List<Vector3> points = new List<Vector3>();
+
+			// Get the vertex path for this bezier path
+			VertexPath vertexPath = new VertexPath(this, transform, vertexSpacing);
+
+			// Loop through each point in the vertex path, offset it and then add it to the points
+			for (int i = 0; i < vertexPath.NumPoints; i++)
+			{
+				points.Add(vertexPath.localPoints[i] + vertexPath.GetNormal(i) * offset);
+			}
+
+			// Reverse the points if needed
+			if(reverse)
+			{
+				points.Reverse();
+			}
+
+			return new BezierPath(points, this.isClosed, this.space);
+		}
+
 		/// Get world space position of point
 		public Vector3 this[int i]
 		{
