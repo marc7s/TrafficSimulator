@@ -287,10 +287,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63d1d8ab13ac095458e28db5a57e9b2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  redLight: {fileID: 7883341040502925283}
-  yellowLight: {fileID: 2897907762785910788}
-  greenLight: {fileID: 2597174309010225489}
-  switchTime: 2
+  RedLight: {fileID: 7883341040502925283}
+  YellowLight: {fileID: 2897907762785910788}
+  GreenLight: {fileID: 2597174309010225489}
+  SwitchTime: 3
 --- !u!1 &7883341040502925283
 GameObject:
   m_ObjectHideFlags: 0

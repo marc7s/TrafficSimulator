@@ -1,121 +1,87 @@
 using UnityEngine;
 
-enum Mode{FIRST, SECOND};
-
-public class TrafficLightController : MonoBehaviour
+namespace TrafficLight
 {
-    [SerializeField] private TrafficLight[] _trafficLightsPair1; // Starts green
-    [SerializeField] private TrafficLight[] _trafficLightsPair2; // Starts red
+    enum Mode{FIRST, SECOND, TOFIRST, TOSECOND};
 
-    private int _trafficLightsCount;
-
-    public float Delay = 10f;
-    float lastSwitchTime = 0f;
-
-    private Mode _currentMode = Mode.FIRST;
-
-    void Start()
+    public class TrafficLightController : MonoBehaviour
     {
-        _trafficLightsCount = _trafficLightsPair1.Length + _trafficLightsPair2.Length;
-    }
+        [SerializeField] private TrafficLight[] _trafficLightsGroup1; // Starts green
+        [SerializeField] private TrafficLight[] _trafficLightsGroup2; // Starts red
 
-    void Update()
-    {
-        if (Time.time - lastSwitchTime > Delay)
+        private int _trafficLightsCount;
+
+        public float Delay = 10f;
+        public float TransitionDelay = 2f;
+        private float _lastSwitchTime = 0f;
+
+        private Mode _currentMode = Mode.FIRST;
+
+        void Start()
         {
-            Controller(_trafficLightsPair1, _trafficLightsPair2);
-            lastSwitchTime = Time.time;
+            _trafficLightsCount = _trafficLightsGroup1.Length + _trafficLightsGroup2.Length;
+        }
+
+        void Update()
+        {
+            if (_currentMode == Mode.FIRST || _currentMode == Mode.SECOND)
+            {
+                if (Time.time - _lastSwitchTime > Delay)
+                {
+                    SwitchToTransitionalMode();
+                    _lastSwitchTime = Time.time;
+                }
+            } else
+            {
+                if (Time.time - _lastSwitchTime > TransitionDelay)
+                {
+                    SwitchToFinalMode();
+                    _lastSwitchTime = Time.time;
+                }
+            }
+        }
+
+        private void SwitchToFinalMode()
+        {
+            switch (_currentMode)
+            {
+                case Mode.TOFIRST:
+                    SetGroupState(_trafficLightsGroup2, true);
+                    _currentMode = Mode.FIRST;
+                    break;
+                case Mode.TOSECOND:
+                    SetGroupState(_trafficLightsGroup1, true);
+                    _currentMode = Mode.SECOND;
+                    break;
+            }
+        }
+
+        private void SwitchToTransitionalMode()
+        {
+            switch (_currentMode)
+            {
+                case Mode.FIRST:
+                    SetGroupState(_trafficLightsGroup1, false);
+                    SetGroupState(_trafficLightsGroup2, false);
+                    _currentMode = Mode.TOSECOND;
+                    break;
+                case Mode.SECOND:
+                    SetGroupState(_trafficLightsGroup1, false);
+                    SetGroupState(_trafficLightsGroup2, false);
+                    _currentMode = Mode.TOFIRST;
+                    break;
+            }
+        }
+
+        private void SetGroupState(TrafficLight[] group, bool isGo)
+        {
+            foreach(TrafficLight trafficLight in group)
+            {
+                if (isGo)
+                    trafficLight.Go();
+                else
+                    trafficLight.Stop();
+            }
         }
     }
-
-    private void Controller(TrafficLight[] _trafficLightsPair1, TrafficLight[] _trafficLightsPair2)
-    {
-        switch (_trafficLightsCount)
-        {
-            case 2:
-                TwowayController(_trafficLightsPair1, _trafficLightsPair2);
-                break;
-            case 3:
-                ThreewayController(_trafficLightsPair1, _trafficLightsPair2);
-                break;
-            case 4:
-                FourwayController(_trafficLightsPair1, _trafficLightsPair2);
-                break;
-        }
-    }
-
-    private void TwowayController(TrafficLight[] _trafficLightsPair1, TrafficLight[] _trafficLightsPair2)
-    {
-        switch (_currentMode)
-        {
-            case Mode.FIRST:
-                for (int i = 0; i < _trafficLightsPair1.Length; i++)
-                    {
-                        _trafficLightsPair1[i].Go();
-                    }
-                _currentMode = Mode.SECOND;
-                break;
-            case Mode.SECOND:
-                for (int i = 0; i < _trafficLightsPair1.Length; i++)
-                    {
-                        _trafficLightsPair1[i].Stop();
-                    }
-                _currentMode = Mode.FIRST;
-                break;
-        }   
-    }
-
-    private void ThreewayController(TrafficLight[] _trafficLightsPair1, TrafficLight[] _trafficLightsPair2)
-    {
-        switch (_currentMode)
-        {
-            case Mode.FIRST:
-                _trafficLightsPair2[0].Stop();
-                for (int i = 0; i < _trafficLightsPair1.Length; i++)
-                    {
-                        _trafficLightsPair1[i].Go();
-                    }
-                _currentMode = Mode.SECOND;
-                break;
-            case Mode.SECOND:
-                for (int i = 0; i < _trafficLightsPair1.Length; i++)
-                    {
-                        _trafficLightsPair1[i].Stop();
-                    }
-                _trafficLightsPair2[0].Go();
-                _currentMode = Mode.FIRST;
-                break;
-        }
-    }
-
-    private void FourwayController(TrafficLight[] _trafficLightsPair1, TrafficLight[] _trafficLightsPair2)
-    {
-        switch (_currentMode)
-        {
-            case Mode.FIRST:
-                for (int i = 0; i < _trafficLightsPair2.Length; i++)
-                    {
-                        _trafficLightsPair2[i].Stop();
-                    }
-                for (int i = 0; i < _trafficLightsPair1.Length; i++)
-                    {
-                        _trafficLightsPair1[i].Go();
-                    }
-                _currentMode = Mode.SECOND;
-                break;
-            case Mode.SECOND:
-                for (int i = 0; i < _trafficLightsPair1.Length; i++)
-                    {
-                        _trafficLightsPair1[i].Stop();
-                    }
-                for (int i = 0; i < _trafficLightsPair2.Length; i++)
-                    {
-                        _trafficLightsPair2[i].Go();
-                    }
-                _currentMode = Mode.FIRST;
-                break;
-        }
-    }
-
-
 }
