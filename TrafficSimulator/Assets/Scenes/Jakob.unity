@@ -2488,11 +2488,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74db488e55dbffc4a966b46c6868d7cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _trafficLightsPair1:
+  _trafficLightsGroup1:
   - {fileID: 2252085758498328179}
+  _trafficLightsGroup2:
   - {fileID: 1710822983}
-  _trafficLightsPair2: []
   Delay: 10
+  TransitionDelay: 5
 --- !u!4 &399430897
 Transform:
   m_ObjectHideFlags: 0
