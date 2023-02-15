@@ -2,14 +2,15 @@ using UnityEngine;
 
 namespace RoadGenerator
 {
+    [ExecuteInEditMode()]
 	public class Road : MonoBehaviour
 	{
-        public GameObject road;
-        public RoadSystem roadSystem;
+        public GameObject RoadObject;
+        public RoadSystem RoadSystem;
     
         void OnDestroy()
         {
-            roadSystem.RemoveRoad(this);
+            RoadSystem.RemoveRoad(this);
         }
     }
 }

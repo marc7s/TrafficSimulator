@@ -1,56 +1,58 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace RoadGenerator
 {
+[ExecuteInEditMode()]
 public class Intersection : MonoBehaviour
 {
+    [HideInInspector]
     [SerializeField]
     public GameObject IntersectionObject;
-
-    private RoadSystem _roadSystem;
-
-    public Vector3 StartConnectionPoint;
-    public Vector3 EndConnectionPoint;
-    public Vector3 ConnectionPointOtherDirection1;
-    public Vector3 ConnectionPointOtherDirection2;
-
+    [HideInInspector]
+    public RoadSystem RoadSystem;
+    [HideInInspector]
     public Vector3 IntersectionPosition;
-
+    [HideInInspector]
     public Road Road1;
-
+    [HideInInspector]
     public Road Road2;
+    [HideInInspector]
+    public PathCreator Road1PathCreator;
+    [HideInInspector]
+    public PathCreator Road2PathCreator;
+    [HideInInspector]
+    public Vector3 Road1AnchorPoint1;
+    [HideInInspector]
+    public Vector3 Road1AnchorPoint2;
+    [HideInInspector]
+    public Vector3 Road2AnchorPoint1;
+    [HideInInspector]
+    public Vector3 Road2AnchorPoint2;
 
-    public PathCreator otherRoadCreator;
-
-    public const float RADIUS = 5f;
-
-    // TODO find out why this is not being called
-    [ExecuteInEditMode]
+    public float IntersectionLength = 20f;
     void OnDestroy()
     {
-        Debug.Log("Intersection Destroyed");
-        _roadSystem.RemoveIntersection(this);
-    }
-    void OnDisable()
-    {
-        Debug.Log("Intersection Disabled");
-        _roadSystem.RemoveIntersection(this);
-    }
-  [ExecuteInEditMode]
-    void OnUndoRedo()
-    {
-        Debug.Log("Intersection UndoRedo");
-        _roadSystem.RemoveIntersection(this);
-    }
-
-    public void SetConnectionPoints()
-    {
-        StartConnectionPoint = IntersectionObject.transform.GetChild(1).GetChild(0).transform.position;
-        EndConnectionPoint = IntersectionObject.transform.GetChild(1).GetChild(1).transform.position;
-        ConnectionPointOtherDirection1 = IntersectionObject.transform.GetChild(0).GetChild(0).transform.position;
-        ConnectionPointOtherDirection2 = IntersectionObject.transform.GetChild(0).GetChild(1).transform.position;
+        // Remove reference to intersection in the road system
+        RoadSystem.RemoveIntersection(this);
+        // Finding the intersection anchors and remove them
+        for (int i = 0; i < Road1PathCreator.bezierPath.NumPoints; i += 3)
+        {
+            int handleIndex = i % Road1PathCreator.bezierPath.NumPoints;
+            if (Road1PathCreator.bezierPath[handleIndex] == Road1AnchorPoint1 || Road1PathCreator.bezierPath[handleIndex] == Road1AnchorPoint2) {
+                Road1PathCreator.bezierPath.DeleteSegment(handleIndex);
+                Road1PathCreator.bezierPath.DeleteSegment(handleIndex);
+                break;
+            }
+        }
+        for (int i = 0; i < Road2PathCreator.bezierPath.NumPoints; i += 3)
+        {
+            int handleIndex = i % Road2PathCreator.bezierPath.NumPoints;
+            if (Road2PathCreator.bezierPath[handleIndex] == Road2AnchorPoint1 || Road2PathCreator.bezierPath[handleIndex] == Road2AnchorPoint2) {
+                Road2PathCreator.bezierPath.DeleteSegment(handleIndex);
+                Road2PathCreator.bezierPath.DeleteSegment(handleIndex);
+                break;
+            }
+        }
     }
 }
 }

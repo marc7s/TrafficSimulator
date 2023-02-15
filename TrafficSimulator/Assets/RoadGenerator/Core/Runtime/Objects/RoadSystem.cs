@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
-using UnityEditor;
 
 namespace RoadGenerator
 {
@@ -30,31 +29,25 @@ namespace RoadGenerator
             roadObj.transform.parent = _roadContainer.transform;
             Road road = roadObj.GetComponent<Road>();
             
-            road.road = roadObj;
-            road.roadSystem = this;
+            road.RoadObject = roadObj;
+            road.RoadSystem = this;
             road.GetComponent<PathSceneTool>().TriggerUpdate();
 
             AddRoad(road);
         }
 
         public Intersection AddNewIntersection(Vector3 position, Quaternion rotation){
+            
             GameObject intersectionObject = Instantiate(_intersectionPrefab, position, rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = this.transform;
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
             intersection.IntersectionObject = intersectionObject;
-            intersection.SetConnectionPoints();
+            intersection.RoadSystem = this;
             intersection.IntersectionPosition = position;
             AddIntersection(intersection);
             
             return intersection;
-        }
-
-        private bool addRoad(UnityEngine.Object instance)
-        {
-            GameObject roadObject = instance as GameObject;
-            Debug.Log(roadObject);
-            return true;
         }
 
         public int RoadCount {
