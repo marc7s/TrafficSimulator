@@ -4,15 +4,15 @@ enum State{RED, TOGO, TOSTOP, GREEN};
 
 public class TrafficLight : MonoBehaviour
 {
-    public GameObject redLight;
-    public GameObject yellowLight;
-    public GameObject greenLight;
+    public GameObject RedLight;
+    public GameObject YellowLight;
+    public GameObject GreenLight;
 
     float lastSwitchTime;
-    public float switchTime = 3f;
+    public float SwitchTime = 3f;
 
-    private State currentState = State.RED;
-    private State lastState = State.RED;
+    private State _currentState = State.RED;
+    private State _lastState = State.RED;
     
     void Start()
     {
@@ -25,14 +25,14 @@ public class TrafficLight : MonoBehaviour
         Vector3 trafficLightPosition = transform.position;
 
         // Get the light sources
-        GameObject redLight = GameObject.Find("RedLight");
-        GameObject yellowLight = GameObject.Find("YellowLight");
-        GameObject greenLight = GameObject.Find("GreenLight");
+        GameObject RedLight = GameObject.Find("redLight");
+        GameObject YellowLight = GameObject.Find("yellowLight");
+        GameObject GreenLight = GameObject.Find("greenLight");
 
         // Timer
-        if(Time.time - lastSwitchTime > switchTime)
+        if(Time.time - lastSwitchTime > SwitchTime)
         {
-            switch (currentState)
+            switch (_currentState)
             {
                 case State.TOGO:
                     setState(State.GREEN);
@@ -46,7 +46,7 @@ public class TrafficLight : MonoBehaviour
 
     // Red light to green light
     public void Go() {
-        switch (currentState)
+        switch (_currentState)
         {
             case State.RED:
             case State.TOSTOP:
@@ -57,7 +57,7 @@ public class TrafficLight : MonoBehaviour
 
     // Green light to red light
     public void Stop() {
-        switch (currentState)
+        switch (_currentState)
         {
             case State.GREEN:
             case State.TOGO:
@@ -70,35 +70,35 @@ public class TrafficLight : MonoBehaviour
     private void setState(State newState)
     {
         lastSwitchTime = Time.time;
-        lastState = currentState;
-        currentState = newState;
-        UpdateLightColor(redLight, yellowLight, greenLight);
+        _lastState = _currentState;
+        _currentState = newState;
+        UpdateLightColor(RedLight, YellowLight, GreenLight);
     }
 
     // Change the light color
-    private void UpdateLightColor(GameObject redLight, GameObject yellowLight, GameObject greenLight)
+    private void UpdateLightColor(GameObject RedLight, GameObject YellowLight, GameObject GreenLight)
     {
-        switch (currentState)
+        switch (_currentState)
         {
             case State.RED:
-                redLight.GetComponent<Light>().enabled = true;
-                yellowLight.GetComponent<Light>().enabled = false;
-                greenLight.GetComponent<Light>().enabled = false;
+                RedLight.GetComponent<Light>().enabled = true;
+                YellowLight.GetComponent<Light>().enabled = false;
+                GreenLight.GetComponent<Light>().enabled = false;
                 break;
             case State.TOSTOP:
-                redLight.GetComponent<Light>().enabled = false;
-                yellowLight.GetComponent<Light>().enabled = true;
-                greenLight.GetComponent<Light>().enabled = false;
+                RedLight.GetComponent<Light>().enabled = false;
+                YellowLight.GetComponent<Light>().enabled = true;
+                GreenLight.GetComponent<Light>().enabled = false;
                 break;
             case State.TOGO:
-                redLight.GetComponent<Light>().enabled = true;
-                yellowLight.GetComponent<Light>().enabled = true;
-                greenLight.GetComponent<Light>().enabled = false;
+                RedLight.GetComponent<Light>().enabled = true;
+                YellowLight.GetComponent<Light>().enabled = true;
+                GreenLight.GetComponent<Light>().enabled = false;
                 break;
             case State.GREEN:
-                redLight.GetComponent<Light>().enabled = false;
-                yellowLight.GetComponent<Light>().enabled = false;
-                greenLight.GetComponent<Light>().enabled = true;
+                RedLight.GetComponent<Light>().enabled = false;
+                YellowLight.GetComponent<Light>().enabled = false;
+                GreenLight.GetComponent<Light>().enabled = true;
                 break;
         }
     }
