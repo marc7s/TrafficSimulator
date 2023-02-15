@@ -124,7 +124,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250033333612757035}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -10, y: -0.1, z: 0}
+  m_LocalPosition: {x: -11, y: -0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -155,7 +155,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250033333890661359}
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 9.7, y: -0.1, z: 0.43}
+  m_LocalPosition: {x: 11, y: -0.1, z: 0}
   m_LocalScale: {x: 0.49999988, y: 1, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -286,7 +286,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250033334292746911}
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -9.4, y: -0.1, z: 0.26}
+  m_LocalPosition: {x: -11, y: -0.1, z: 0}
   m_LocalScale: {x: 0.49999988, y: 1, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -317,7 +317,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250033334420275011}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 10.4, y: -0.1, z: 0}
+  m_LocalPosition: {x: 11, y: -0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -377,3 +377,4 @@ MonoBehaviour:
   ConnectionPointOtherDirection2: {x: 0, y: 0, z: 0}
   IntersectionPosition: {x: 0, y: 0, z: 0}
   road1: {fileID: 0}
+  otherRoadCreator: {fileID: 0}

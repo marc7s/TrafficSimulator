@@ -402,9 +402,9 @@ namespace RoadGeneratorEditor
 		void ProcessBezierPathInput(Event e)
 		{
 			// when the handles are being moves, update the intersections
-			if (draggingHandleIndex != -1)
+			if (draggingHandleIndex != -1 && e.type == EventType.MouseUp)
 			{
-				//UpdateIntersections();
+				UpdateIntersections();
 			}
 			
 			// Find which handle mouse is over. Start by looking at previous handle index first, as most likely to still be closest to mouse
@@ -423,7 +423,6 @@ namespace RoadGeneratorEditor
 					break;
 				}
 			}
-			
 
 			// Shift-left click (when mouse not over a handle) to split or add segment
 			if (mouseOverHandleIndex == -1)
@@ -468,10 +467,8 @@ namespace RoadGeneratorEditor
 							bezierPath.AddSegmentToEnd(newPointLocal);
 						}
 					}
-					
 					UpdateIntersections();
 				}
-				
 			}
 
 			// Control click or backspace/delete to remove point
@@ -496,12 +493,6 @@ namespace RoadGeneratorEditor
 				DeleteAllIntersections();
 			}
 
-			// Intersection Creation
-			// TODO remove anchors inside intersection
-			// Currently only for 2d roads, can change the line intercept method to work for 3d roads
-			if (e.type == EventType.KeyDown && e.keyCode == KeyCode.I) {
-				//UpdateIntersections();
-			}
 
 			// Holding shift and moving mouse (but mouse not over a handle/dragging a handle)
 			if (draggingHandleIndex == -1 && mouseOverHandleIndex == -1)
@@ -532,16 +523,12 @@ namespace RoadGeneratorEditor
 
 		}
 
-		int SegmentFromPosition(Vector3 position)
+		Road GetRoad(PathCreator pathCreator)
 		{
-			UpdatePathMouseInfo();
-			return pathMouseInfo.closestSegmentIndex;
-		}
-		Road GetActiveRoad(){
 			RoadSystem roadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
 			Road thisRoad = null;
 			foreach (Road road in roadSystem.Roads) {
-				if (road.road.GetComponent<PathCreator>() == creator) {
+				if (road.road.GetComponent<PathCreator>() == pathCreator) {
 					thisRoad = road;
 					break;
 				}
@@ -567,7 +554,6 @@ namespace RoadGeneratorEditor
 				{
 
 					int handleIndex1 = i % bezierPath.NumPoints;
-					//Debug.Log(bezierPath[handleIndex]);
 					if (bezierPath[handleIndex1] == intersection.StartConnectionPoint || bezierPath[handleIndex1] == intersection.EndConnectionPoint) {
 						bezierPath.DeleteSegment(handleIndex1);
 						intersectionsToRemove.Add(intersection);
@@ -578,24 +564,19 @@ namespace RoadGeneratorEditor
 				for (int o = 0; o < 2; o ++ ){
 				for (int i = 0; i < intersection.otherRoadCreator.bezierPath.NumPoints; i += 3)
 				{
-
 					int handleIndex1 = i % intersection.otherRoadCreator.bezierPath.NumPoints;
-					//Debug.Log(bezierPath[handleIndex]);
 					if (intersection.otherRoadCreator.bezierPath[handleIndex1] == intersection.ConnectionPointOtherDirection1 || intersection.otherRoadCreator.bezierPath[handleIndex1] == intersection.ConnectionPointOtherDirection2) {
 						intersection.otherRoadCreator.bezierPath.DeleteSegment(handleIndex1);
-						//intersectionsToRemove.Add(intersection);
-						//DestroyImmediate(intersection.IntersectionObject);
 					}
 				}
 				}
 				
+			}
+			for (var i = 0; i < roadSystem.Intersections.Count; i++)
+			{
+				roadSystem.RemoveIntersection(roadSystem.Intersections[i]);
+			}
 
-				
-			}
-			
-			foreach (Intersection intersection in intersectionsToRemove) {
-				roadSystem.RemoveIntersection(intersection);
-			}
 		}
 		void UpdateIntersections() {
 			//DeleteAllIntersections();
@@ -604,76 +585,100 @@ namespace RoadGeneratorEditor
 				return;
 			}
 			RoadSystem roadSystem = thisRoad.roadSystem;
-			List<Road> roads = roadSystem.Roads;
-			List<Vector2> intersectionPositionsToAdd = new List<Vector2>();
-			List<Quaternion> intersectionRotationsToAdd = new List<Quaternion>();
-			List<PathCreator> intersectionPathCreatorsToAdd = new List<PathCreator>();
-			// Look if other roads are crossing this road and create intersections if they are
-			foreach(Road road in roads) {
-				if (road == thisRoad) {
-					continue;
-				}
+			Vector3[] segment1 = creator.bezierPath.GetPointsInSegment(creator.bezierPath.NumSegments -1);
+			int startingVertexIndexThisRoad = creator.path.GetPointClosestPointIndex(segment1[0]);
+			int endingVertexIndexThisRoad = creator.path.GetPointClosestPointIndex(segment1[3], false);
+			List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
+
+			foreach(Road road in roadSystem.Roads) {
+                if (road == thisRoad)
+                    continue;
+
 				PathCreator pathCreator = road.road.GetComponent<PathCreator>();
 
-				// Loop through all vertex points of this road
-				for (int j = 0; j < creator.path.NumPoints-1; j++) 
+				// If the two road bounds are not overlapping, then intersection is not possible
+				if (!creator.bezierPath.PathBounds.Intersects(pathCreator.bezierPath.PathBounds)) {
+					continue;
+				}
+
+				// Loop through all bezier anchor points of the other road
+				for (int i = 0; i < pathCreator.bezierPath.NumSegments; i++) 
 				{
-					// Loop through all vertex points of the other road
-					for (int i = 0; i < pathCreator.path.NumPoints-1; i++) 
-					{
-						Vector3 thisRoadVortexPoint1 = creator.path.GetPoint(j);
-						Vector2 point3_2D = new Vector2(thisRoadVortexPoint1.x, thisRoadVortexPoint1.z);
-						Vector3 thisRoadVortexPoint2 = creator.path.GetPoint(j+1);
-						Vector2 point4_2D = new Vector2(thisRoadVortexPoint2.x, thisRoadVortexPoint2.z);
-						Vector3 otherRoadVortexPoint1 = pathCreator.path.GetPoint(i);
-						Vector2 point1_2D = new Vector2(otherRoadVortexPoint1.x, otherRoadVortexPoint1.z);
-						Vector3 otherRoadVortexPoint2 = pathCreator.path.GetPoint(i+1);
-						Vector2 point2_2D = new Vector2(otherRoadVortexPoint2.x, otherRoadVortexPoint2.z);
-
-						Vector2 intersectionPoint;
-
-						if (LineUtil.IntersectLineSegments2D(point1_2D, point2_2D, point3_2D, point4_2D, out intersectionPoint)) 
-						{
-
-							bool alreadyExists = false;
-							foreach(Intersection intersection in roadSystem.Intersections) {
-								Vector3 po = intersection.IntersectionPosition;
-								if (Vector3.Distance(po, new Vector3(intersectionPoint.x, 0, intersectionPoint.y)) < 3f) {
-									alreadyExists = true;
-									continue;
-								}
-							}
-							if(alreadyExists) {
-								continue;
-							}
-
-							Quaternion rotation =  Quaternion.FromToRotation(Vector3.forward, thisRoadVortexPoint1 - thisRoadVortexPoint2);
-							// Create the interfaces after the loop to avoid issues with the coming iterations 
-							intersectionPositionsToAdd.Add(intersectionPoint);
-							intersectionRotationsToAdd.Add(rotation);
-							intersectionPathCreatorsToAdd.Add(pathCreator);
-						
+					Vector3[] segment2 = pathCreator.bezierPath.GetPointsInSegment(i);
+					// If the two segment bounds are not overlapping, then intersection is not possible
+					if (!IsBezierPathIntersectionPossible(segment1, segment2)) {
+						continue;
 					}
-					}
+					intersectionPointDatas.AddRange(GetBezierPathIntersections(startingVertexIndexThisRoad, endingVertexIndexThisRoad, pathCreator, segment2));
 				}
             }
-			for (int i = 0; i < intersectionPositionsToAdd.Count; i++) {
-				CreateIntersectionAtPosition(intersectionPositionsToAdd[i], intersectionRotationsToAdd[i], intersectionPathCreatorsToAdd[i]);
+
+			for (int i = 0; i < intersectionPointDatas.Count; i++) {
+				CreateIntersectionAtPosition(intersectionPointDatas[i]);
 			}
 		}
 
-		void CreateIntersectionAtPosition(Vector2 intersectionPoint, Quaternion rotation, PathCreator otherRoadCreator)
+		/// <summary> Quick check find out if the bezier paths could be intersecting  </summary>
+		bool IsBezierPathIntersectionPossible(Vector3[] segment1, Vector3[] segment2) {
+			// If the rectangle made up of the bezier control points are not overlapping with each other, then the bezier path is not overlapping
+			Bounds bound1 = CubicBezierUtility.CalculateSegmentBounds(segment1[0], segment1[1], segment1[2], segment1[3]);
+			Bounds bound2 = CubicBezierUtility.CalculateSegmentBounds(segment2[0], segment2[1], segment2[2], segment2[3]);
+			if (bound1.Intersects(bound2)) {
+				return true;
+			}
+			return false;
+		}
+
+		/// <summary> Check if the bezier paths are intersecting </summary>
+		List<IntersectionPointData> GetBezierPathIntersections(int startingVertexIndexThisRoad, int endingVertexIndexThisRoad, PathCreator otherRoadPathCreator, Vector3[] segment2)
+		{
+		List<IntersectionPointData> intersectionsPoints = new List<IntersectionPointData>();
+		Vector3 segmentPoint3 = segment2[0];
+		Vector3 segmentPoint4 = segment2[3];
+
+		int startingVertexIndexOtherRoad = otherRoadPathCreator.path.GetPointClosestPointIndex(segmentPoint3);
+		int endingVertexIndexOtherRoad = otherRoadPathCreator.path.GetPointClosestPointIndex(segmentPoint4, false);
+
+		for (int i = 0; i < endingVertexIndexThisRoad - startingVertexIndexThisRoad; i++)
+		{
+			for (int j = 0; j < endingVertexIndexOtherRoad - startingVertexIndexOtherRoad; j++)
+			{
+			Vector3 thisRoadVortexPoint1 = creator.path.GetPoint(startingVertexIndexThisRoad + i);
+			Vector2 point3_2D = new Vector2(thisRoadVortexPoint1.x, thisRoadVortexPoint1.z);
+			Vector3 thisRoadVortexPoint2 = creator.path.GetPoint(startingVertexIndexThisRoad + i+1);
+			Vector2 point4_2D = new Vector2(thisRoadVortexPoint2.x, thisRoadVortexPoint2.z);
+			Vector3 otherRoadVortexPoint1 = otherRoadPathCreator.path.GetPoint(startingVertexIndexOtherRoad + j);
+			Vector2 point1_2D = new Vector2(otherRoadVortexPoint1.x, otherRoadVortexPoint1.z);
+			Vector3 otherRoadVortexPoint2 = otherRoadPathCreator.path.GetPoint(startingVertexIndexOtherRoad + j+1);
+			Vector2 point2_2D = new Vector2(otherRoadVortexPoint2.x, otherRoadVortexPoint2.z);
+
+			Vector2 intersectionPoint;
+
+			if (LineUtil.IntersectLineSegments2D(point1_2D, point2_2D, point3_2D, point4_2D, out intersectionPoint))
+			{
+				Quaternion rotation =  Quaternion.FromToRotation(Vector3.forward, thisRoadVortexPoint1 - thisRoadVortexPoint2);
+				IntersectionPointData intersectionPointData = new IntersectionPointData(intersectionPoint, rotation, otherRoadPathCreator);
+				intersectionsPoints.Add(intersectionPointData);
+			}
+			}
+		}
+		return intersectionsPoints;
+		}
+
+		void CreateIntersectionAtPosition(IntersectionPointData intersectionPointData)
 		{
 			RoadSystem roadSystem = thisRoad.roadSystem;
-			Intersection intersection = roadSystem.AddNewIntersection(new Vector3(intersectionPoint.x, 0, intersectionPoint.y), rotation);
-			intersection.road1 = thisRoad;
+			Vector3 intersectionPoint3D = new Vector3(intersectionPointData.intersectionPoint.x, 0, intersectionPointData.intersectionPoint.y);
+			Intersection intersection = roadSystem.AddNewIntersection(intersectionPoint3D, intersectionPointData.rotation);
+			PathCreator otherRoadCreator = intersectionPointData.otherRoadPathCreator;
 			intersection.otherRoadCreator = otherRoadCreator;
-			Vector3 intersectionPoint3D = new Vector3(intersectionPoint.x, 0, intersectionPoint.y);
+			intersection.Road1 = thisRoad;
+			intersection.Road2 = GetRoad(otherRoadCreator);
+			
 
 			screenSpaceLine = new ScreenSpacePolyLine(bezierPath, creator.transform, screenPolylineMaxAngleError, screenPolylineMinVertexDst);
 			int segmentIndex = screenSpaceLine.ClosestSegmentIndexFromPosition(intersectionPoint3D);
 			Vector3 segmentStartPoint = bezierPath.GetPointsInSegment(segmentIndex)[0];
-			Vector3 segmentEndPoint = bezierPath.GetPointsInSegment(segmentIndex)[3];
 			if (Vector3.Distance(segmentStartPoint, intersection.StartConnectionPoint) < Vector3.Distance(segmentStartPoint, intersection.EndConnectionPoint))
 			{
 				bezierPath.SplitSegment(intersection.StartConnectionPoint, segmentIndex, creator.path.GetClosestTimeOnPath(intersection.StartConnectionPoint));
@@ -684,13 +689,10 @@ namespace RoadGeneratorEditor
 				bezierPath.SplitSegment(intersection.EndConnectionPoint, segmentIndex, creator.path.GetClosestTimeOnPath(intersection.EndConnectionPoint));
 				bezierPath.SplitSegment(intersection.StartConnectionPoint, segmentIndex + 1, creator.path.GetClosestTimeOnPath(intersection.StartConnectionPoint));
 			}
-			
-
 			ScreenSpacePolyLine screenSpaceLineOtherRoad = new ScreenSpacePolyLine(otherRoadCreator.bezierPath, otherRoadCreator.transform, screenPolylineMaxAngleError, screenPolylineMinVertexDst);
 			segmentIndex = screenSpaceLineOtherRoad.ClosestSegmentIndexFromPosition(intersectionPoint3D);
 			segmentStartPoint = otherRoadCreator.bezierPath.GetPointsInSegment(segmentIndex)[0];
-			segmentEndPoint = otherRoadCreator.bezierPath.GetPointsInSegment(segmentIndex)[3];
-			
+
 			if (Vector3.Distance(segmentStartPoint, intersection.ConnectionPointOtherDirection1) < Vector3.Distance(segmentStartPoint, intersection.ConnectionPointOtherDirection2))
 			{
 				otherRoadCreator.bezierPath.SplitSegment(intersection.ConnectionPointOtherDirection1, segmentIndex, otherRoadCreator.path.GetClosestTimeOnPath(intersection.ConnectionPointOtherDirection1));
@@ -700,6 +702,27 @@ namespace RoadGeneratorEditor
 			{
 				otherRoadCreator.bezierPath.SplitSegment(intersection.ConnectionPointOtherDirection2, segmentIndex, otherRoadCreator.path.GetClosestTimeOnPath(intersection.ConnectionPointOtherDirection2));
 				otherRoadCreator.bezierPath.SplitSegment(intersection.ConnectionPointOtherDirection1, segmentIndex + 1, otherRoadCreator.path.GetClosestTimeOnPath(intersection.ConnectionPointOtherDirection1));
+			}
+
+
+			DeleteAnchorsInsideIntersectionBounds(intersection);
+		}
+		void DeleteAnchorsInsideIntersectionBounds(Intersection intersection)
+		{
+			float distanceToInterfaceAnchor = Vector3.Distance(intersection.IntersectionPosition, intersection.StartConnectionPoint);
+			Bounds intersectionBounds = new Bounds(intersection.IntersectionPosition, new Vector3(distanceToInterfaceAnchor*2.5f, 1, distanceToInterfaceAnchor*2.5f));
+			// If there is an existing handle in the intersection area, delete it
+			for (int i = 0; i < intersection.otherRoadCreator.bezierPath.NumPoints; i += 3)
+			{
+				int handleIndex1 = i % intersection.otherRoadCreator.bezierPath.NumPoints;
+				// don't delete the intersection handles
+				if (intersection.otherRoadCreator.bezierPath[handleIndex1] == intersection.ConnectionPointOtherDirection1 || intersection.otherRoadCreator.bezierPath[handleIndex1] == intersection.ConnectionPointOtherDirection2) 
+				{
+					continue;
+				}
+				if (intersectionBounds.Contains(intersection.otherRoadCreator.bezierPath[handleIndex1])){
+					intersection.otherRoadCreator.bezierPath.DeleteSegment(handleIndex1);
+				}
 			}
 		}
 		
@@ -925,7 +948,7 @@ namespace RoadGeneratorEditor
 		void OnEnable()
 		{
 			creator = (PathCreator)target;
-			thisRoad = GetActiveRoad();
+			thisRoad = GetRoad(creator);
 			bool in2DEditorMode = EditorSettings.defaultBehaviorMode == EditorBehaviorMode.Mode2D;
 			creator.InitializeEditorData(in2DEditorMode);
 
@@ -1080,6 +1103,19 @@ namespace RoadGeneratorEditor
 
 	}
 
+}
+public class IntersectionPointData {
+	public Vector2 intersectionPoint;
+	public Quaternion rotation;
+    public PathCreator otherRoadPathCreator;
+
+    public IntersectionPointData(Vector2 intersectionPoint, Quaternion rotation, PathCreator otherRoadPathCreator)
+    {
+		
+        this.intersectionPoint = intersectionPoint;
+        this.rotation = rotation;
+        this.otherRoadPathCreator = otherRoadPathCreator;
+    }
 }
 public static class LineUtil {
     public static void Swap<T>(ref T lhs, ref T rhs) {

@@ -18,20 +18,33 @@ public class Intersection : MonoBehaviour
 
     public Vector3 IntersectionPosition;
 
-    public (int, int) Road1SegmentIndex;
+    public Road Road1;
 
-    public Road road1;
+    public Road Road2;
 
     public PathCreator otherRoadCreator;
 
     public const float RADIUS = 5f;
 
     // TODO find out why this is not being called
+    [ExecuteInEditMode]
     void OnDestroy()
     {
         Debug.Log("Intersection Destroyed");
         _roadSystem.RemoveIntersection(this);
     }
+    void OnDisable()
+    {
+        Debug.Log("Intersection Disabled");
+        _roadSystem.RemoveIntersection(this);
+    }
+  [ExecuteInEditMode]
+    void OnUndoRedo()
+    {
+        Debug.Log("Intersection UndoRedo");
+        _roadSystem.RemoveIntersection(this);
+    }
+
     public void SetConnectionPoints()
     {
         StartConnectionPoint = IntersectionObject.transform.GetChild(1).GetChild(0).transform.position;
