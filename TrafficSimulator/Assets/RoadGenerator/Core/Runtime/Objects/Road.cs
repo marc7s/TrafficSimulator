@@ -11,6 +11,7 @@ namespace RoadGenerator
         Three = 3,
         Four = 4
     }
+
     [ExecuteInEditMode()]
     [RequireComponent(typeof(PathCreator))]
     [RequireComponent(typeof(PathSceneTool))]
@@ -18,7 +19,6 @@ namespace RoadGenerator
 	{
         [Header ("Connections")]
         public GameObject RoadObject;
- 
         public RoadSystem RoadSystem;
         
         [Header ("Road settings")]

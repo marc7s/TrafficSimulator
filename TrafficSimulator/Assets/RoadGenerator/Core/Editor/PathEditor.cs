@@ -485,7 +485,6 @@ namespace RoadGeneratorEditor
 					mouseOverHandleIndex = -1;
 					Repaint();
 				}
-				//CreateIntersectionIfRoadsAreCrossing();
 			}
 
 			// Holding shift and moving mouse (but mouse not over a handle/dragging a handle)

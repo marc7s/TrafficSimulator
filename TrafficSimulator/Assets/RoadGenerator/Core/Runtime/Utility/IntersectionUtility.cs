@@ -102,8 +102,8 @@ public static class IntersectionUtility {
         Bounds bound2 = CubicBezierUtility.CalculateSegmentBounds(segment2[0], segment2[1], segment2[2], segment2[3]);
         return bound1.Intersects(bound2);
     }
-    /// <summary> Converts vector3 xy plane to vector2 </summary>
-    public static Vector2 Get2DPointFromXZPlane(Vector3 point) {
+    /// <summary> Projects a vector3 coordinate to the xz plane </summary>
+    public static Vector2 GetXZPlaneProjection(Vector3 point) {
         return new Vector2(point.x, point.z);
     }
 

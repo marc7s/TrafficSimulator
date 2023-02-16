@@ -157,7 +157,7 @@ namespace RoadGenerator
 			return new BezierPath(points, this.isClosed, this.space);
 		}
 
-		/// Get world space position of point
+		/// <summary>Get world space position of point</summary>
 		public Vector3 this[int i]
 		{
 			get
@@ -166,13 +166,13 @@ namespace RoadGenerator
 			}
 		}
 
-		/// Get world space position of point
+		/// <summary>Get world space position of point</summary>
 		public Vector3 GetPoint(int i)
 		{
 			return points[i];
 		}
 
-		/// Get world space position of point
+		/// <summary>Get world space position of point</summary>
 		public void SetPoint(int i, Vector3 localPosition, bool suppressPathModifiedEvent = false)
 		{
 			points[i] = localPosition;
@@ -182,7 +182,7 @@ namespace RoadGenerator
 			}
 		}
 
-		/// Total number of points in the path (anchors and controls)
+		/// <summary>Total number of points in the path (anchors and controls)</summary>
 		public int NumPoints
 		{
 			get
@@ -191,16 +191,16 @@ namespace RoadGenerator
 			}
 		}
 
-		/// Number of anchor points making up the path
+		/// <summary>Number of anchor points making up the path</summary>
 		public int NumAnchorPoints
 		{
 			get
 			{
-				return (IsClosed) ? points.Count / 3 : (points.Count + 2) / 3;
+				return IsClosed ? points.Count / 3 : (points.Count + 2) / 3;
 			}
 		}
 
-		/// Number of bezier curves making up this path
+		/// <summary>Number of bezier curves making up this path</summary>
 		public int NumSegments
 		{
 			get
@@ -209,8 +209,8 @@ namespace RoadGenerator
 			}
 		}
 
-		/// Path can exist in 3D (xyz), 2D (xy), or Top-Down (xz) space
-		/// In xy or xz space, points will be clamped to that plane (so in a 2D path, for example, points will always be at 0 on z axis)
+		/// <summary>Path can exist in 3D (xyz), 2D (xy), or Top-Down (xz) space.
+		///	In xy or xz space, points will be clamped to that plane (so in a 2D path, for example, points will always be at 0 on z axis)</summary>
 		public PathSpace Space
 		{
 			get
@@ -228,7 +228,7 @@ namespace RoadGenerator
 			}
 		}
 
-		/// If closed, path will loop back from end point to start point
+		/// <summary>If closed, path will loop back from end point to start point</summary>
 		public bool IsClosed
 		{
 			get
@@ -271,7 +271,7 @@ namespace RoadGenerator
 			}
 		}
 
-		/// When using automatic control point placement, this value scales how far apart controls are placed
+		/// <summary>When using automatic control point placement, this value scales how far apart controls are placed</summary>
 		public float AutoControlLength
 		{
 			get
@@ -290,7 +290,7 @@ namespace RoadGenerator
 			}
 		}
 
-		/// Add new anchor point to end of the path
+		/// <summary>Add new anchor point to end of the path</summary>
 		public void AddSegmentToEnd(Vector3 anchorPos)
 		{
 			if (isClosed)
@@ -323,7 +323,7 @@ namespace RoadGenerator
 			NotifyPathModified();
 		}
 
-		/// Add new anchor point to start of the path
+		/// <summary>Add new anchor point to start of the path</summary>
 		public void AddSegmentToStart(Vector3 anchorPos)
 		{
 			if (isClosed)
@@ -354,7 +354,7 @@ namespace RoadGenerator
 			NotifyPathModified();
 		}
 
-		/// Insert new anchor point at given position. Automatically place control points around it so as to keep shape of curve the same
+		/// <summary>Insert new anchor point at given position. Automatically place control points around it so as to keep shape of curve the same</summary>
 		public void SplitSegment(Vector3 anchorPos, int segmentIndex, float splitTime)
 		{
 			if (float.IsNaN(splitTime))
@@ -399,7 +399,7 @@ namespace RoadGenerator
 			NotifyPathModified();
 		}
 
-		/// Delete the anchor point at given index, as well as its associated control points
+		/// <summary>Delete the anchor point at given index, as well as its associated control points</summary>
 		public void DeleteSegment(int anchorIndex)
 		{
 			// Don't delete segment if its the last one remaining (or if only two segments in a closed path)

@@ -9,7 +9,8 @@ namespace RoadGenerator
         Left = 1,
         Right = -1
     }
-    //[Serializable]
+    
+    [Serializable]
 	public class RoadSystem : MonoBehaviour
 	{
         [Header("Connections")]       

@@ -18,7 +18,7 @@ public class Intersection : MonoBehaviour
     [HideInInspector] public Vector3 Road2AnchorPoint1;
     [HideInInspector] public Vector3 Road2AnchorPoint2;
     public const float IntersectionLength = 20f;
-
+    public const float IntersectionBoundsLengthMultiplier = 1.2f;
     
     /// <summary>Cleans up the intersection and removes the references to it from the road system and roads</summary>
     void OnDestroy()
