@@ -1,48 +1,123 @@
 using System;
-using Cam;
-using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
-public class CameraSwitcher : MonoBehaviour
+namespace Cam
 {
-    [SerializeField] private ControllableCamera[] _cameras;
-    [SerializeField] private int _currentActiveCameraIndex = 0;
-    [SerializeField] private int _previousActiveCameraIndex;
-    [SerializeField] private Transform _cameraTarget;
-    
-    private void Start()
+    public class CameraSwitcher : MonoBehaviour
     {
-        foreach (ControllableCamera cam in _cameras)
-        {
-            cam.CameraSwitcher = this;
-        }
-        _cameras[_currentActiveCameraIndex].GetComponent<ControllableCamera>().SetFollowTransform(_cameraTarget);
-        _cameras[_currentActiveCameraIndex].GetComponent<ControllableCamera>().SetPriority(1);
-        _cameras[_currentActiveCameraIndex].GetComponent<ControllableCamera>().SetActive(true);
-    }
+        [SerializeField] private CameraState[] _cameras;
+        [SerializeField] private int _currentActiveCameraIndex = 0;
+        [SerializeField] private int _previousActiveCameraIndex;
+        [SerializeField] public Transform CameraTarget;
+        private CameraState CurrentActiveCamera => _cameras[_currentActiveCameraIndex];
+        
 
-    public void ToggleThirdPersonCamera()
-    {
-        SwitchPriority(1);
-        
-    }
+        #region User Input
+        private InputAction _movementInput;
+        private InputAction _rotationInput;
+        private InputAction _zoomInput;
+        private InputAction _clickInput;
+        private InputAction _doubleClickInput;
+        private InputAction _pointInput;
     
-    public void TogglePreviousCamera()
-    {
-        SwitchPriority(_previousActiveCameraIndex);
-    }
-    
-    private void SwitchPriority(int i)
-    {
-        _previousActiveCameraIndex = _currentActiveCameraIndex;
+        // Cached input values
+        private Vector2 _movementFromUser;
+        private float _rotationFromUser;
+        private float _zoomFromUser;
         
-        _cameras[_previousActiveCameraIndex].SetPriority(0);
-        _cameras[_previousActiveCameraIndex].OnDeactivation();
-        _currentActiveCameraIndex = i;
-        _cameras[_currentActiveCameraIndex].SetPriority(1);
-        _cameras[_currentActiveCameraIndex].SetFollowTransform(_cameraTarget);
-        _cameras[_currentActiveCameraIndex].OnActivation();
+        private void SetupInputActions()
+        {
+            _movementInput = UserInputManager.PlayerInputActions.Default.Move;
+            _rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
+            _zoomInput = UserInputManager.PlayerInputActions.Default.Zoom;
+            _clickInput = UserInputManager.PlayerInputActions.Default.Click;
+            _doubleClickInput = UserInputManager.PlayerInputActions.Default.DoubleClick;
+            _pointInput = UserInputManager.PlayerInputActions.Default.Point;
+        }
+        
+        private void SubscribeToInput()
+        {
+            _movementInput.performed += OnMovementInput;
+            _movementInput.canceled += OnMovementInput;
+            _rotationInput.performed += OnRotationInput;
+            _rotationInput.canceled += OnRotationInput;
+            _zoomInput.performed += OnZoomInput;
+            _zoomInput.canceled += OnZoomInput;
+            
+            _pointInput.performed += OnPointInput;
+            _clickInput.performed += OnClickInput;
+            _doubleClickInput.performed += OnDoubleClickInput;
+
+        }
+    
+        private void OnMovementInput(InputAction.CallbackContext ctx)
+        {
+            _movementFromUser = ctx.ReadValue<Vector2>();
+        }
+    
+        private void OnRotationInput(InputAction.CallbackContext ctx)
+        {
+            _rotationFromUser = ctx.ReadValue<float>();
+        }
+    
+        private void OnZoomInput(InputAction.CallbackContext ctx)
+        {
+            _zoomFromUser = ctx.ReadValue<float>();
+        }
+    
+        private void OnPointInput(InputAction.CallbackContext ctx)
+        {
+            print(ctx.ReadValue<Vector2>());
+            CurrentActiveCamera.HandlePointInput(ctx.ReadValue<Vector2>());
+        }
+    
+        private void OnClickInput(InputAction.CallbackContext ctx)
+        {
+            CurrentActiveCamera.HandleClickInput(ctx);
+        }
+
+        private void OnDoubleClickInput(InputAction.CallbackContext ctx)
+        {
+            CurrentActiveCamera.HandleDoubleClickInput(ctx);
+        }
+        #endregion
+    
+        private void Update()
+        {
+            CurrentActiveCamera.Move(_movementFromUser);
+            CurrentActiveCamera.RotateHorizontal(_rotationFromUser);
+            CurrentActiveCamera.Zoom(_zoomFromUser);
+        }
+    
+        private void Awake()
+        {
+            _cameras[_currentActiveCameraIndex].GetComponent<CameraState>().SetActive(this);
+        }
+
+        private void Start()
+        {
+            SetupInputActions();
+            SubscribeToInput();
+        }
+
+        public void ToggleThirdPersonCamera()
+        {
+            SwitchPriority(1);
+        }
+    
+        public void TogglePreviousCamera()
+        {
+            SwitchPriority(_previousActiveCameraIndex);
+        }
+    
+        private void SwitchPriority(int newIndex)
+        {
+            _previousActiveCameraIndex = _currentActiveCameraIndex;
+            _currentActiveCameraIndex = newIndex;
+        
+            _cameras[_previousActiveCameraIndex].SetInactive(this);
+            _cameras[_currentActiveCameraIndex].SetActive(this);
+        }
     }
 }

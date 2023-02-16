@@ -1,23 +1,26 @@
 using UnityEngine;
 
-public class UserInputManager : MonoBehaviour
+namespace Cam
 {
-    private PlayerInputActions _playerInputActions;
-    public static UserInputManager Instance { get; private set; }
-    public static PlayerInputActions PlayerInputActions => Instance._playerInputActions;
-
-    private void Awake()
+    public class UserInputManager : MonoBehaviour
     {
-        if (Instance != null && Instance != this)
-            Destroy(this);
-        else
-            Instance = this;
+        private PlayerInputActions _playerInputActions;
+        public static UserInputManager Instance { get; private set; }
+        public static PlayerInputActions PlayerInputActions => Instance._playerInputActions;
 
-        _playerInputActions = new PlayerInputActions();
-    }
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+                Destroy(this);
+            else
+                Instance = this;
+            
+            _playerInputActions = new PlayerInputActions();
+        }
 
-    private void OnEnable()
-    {
-        if (this != null) _playerInputActions.Default.Enable();
+        private void OnEnable()
+        {
+            if (this != null) _playerInputActions.Default.Enable();
+        }
     }
 }

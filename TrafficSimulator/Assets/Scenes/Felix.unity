@@ -811,9 +811,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 765b99a7384676a479ee9d56255290a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  followTransform: {fileID: 0}
-  CameraSwitcher: {fileID: 0}
-  _enableEdgeScrolling: 1
+  FollowTransform: {fileID: 0}
+  IsDefault: 1
+  _enableEdgeScrolling: 0
   _movementSpeed: 50
   _rotationSpeed: 50
   _minZoom: 40
@@ -4377,7 +4377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88ef6ab741a4c5f4a9cc962edd8d66a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  followTransform: {fileID: 0}
+  FollowTransform: {fileID: 0}
   CameraSwitcher: {fileID: 0}
   _rotateSpeed: 1
   _minZoom: 80
@@ -12932,10 +12932,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cameras:
   - {fileID: 81382484}
-  - {fileID: 468449791}
   _currentActiveCameraIndex: 0
   _previousActiveCameraIndex: 0
-  cameraTarget: {fileID: 774340907}
+  CameraTarget: {fileID: 774340907}
 --- !u!4 &1503537948
 Transform:
   m_ObjectHideFlags: 0

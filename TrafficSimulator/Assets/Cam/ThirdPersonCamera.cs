@@ -54,9 +54,9 @@ public class ThirdPersonCamera : ControllableCamera
     
     protected override void SetupInputActions()
     {
-        _rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
-        _zoomInput = UserInputManager.PlayerInputActions.Default.Zoom;
-        _escapeInput = UserInputManager.PlayerInputActions.Default.Escape;
+        // _rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
+        // _zoomInput = UserInputManager.PlayerInputActions.Default.Zoom;
+        // _escapeInput = UserInputManager.PlayerInputActions.Default.Escape;
     }
 
     private void OnRotationInput(InputAction.CallbackContext ctx)
