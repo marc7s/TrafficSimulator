@@ -4,34 +4,51 @@ using System;
 
 namespace RoadGenerator
 {
-    [Serializable]
+    public enum DrivingSide
+    {
+        Left = 1,
+        Right = -1
+    }
+    //[Serializable]
 	public class RoadSystem : MonoBehaviour
 	{
-        public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
-        public List<Road> Roads {get; private set;} = new List<Road>();
-        [SerializeField]
-        private GameObject _roadContainer;
-        [SerializeField]
-        private GameObject _roadPrefab;
-        [SerializeField]
-        public GameObject _intersectionPrefab;
+        [Header("Connections")]       
+        [SerializeField] private GameObject _roadContainer;
+        [SerializeField] private GameObject _roadPrefab;
+        [SerializeField] private GameObject _intersectionPrefab;
 
-        public void AddRoad(Road road) => Roads.Add(road);
-        public void RemoveRoad(Road road) => Roads.Remove(road);
+        [Header("Road system settings")]
+        public DrivingSide DrivingSide = DrivingSide.Right;
+
+        private List<Road> _roads = new List<Road>();
+
+        public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
 
         public void AddIntersection(Intersection intersection) => Intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => Intersections.Remove(intersection);
+        public void AddRoad(Road road) => _roads.Add(road);
 
+        public void RemoveRoad(Road road) => _roads.Remove(road);
         public void AddNewRoad()
         {
+            // Instantiate a new road prefab
             GameObject roadObj = Instantiate(_roadPrefab, _roadContainer.transform.position, Quaternion.identity);
+            
+            // Set the name of the road
             roadObj.name = "Road" + RoadCount;
+            
+            // Set the road as a child of the road container
             roadObj.transform.parent = _roadContainer.transform;
+            
+            // Get the road from the prefab
             Road road = roadObj.GetComponent<Road>();
             
+            // Set the road pointers
             road.RoadObject = roadObj;
             road.RoadSystem = this;
-            road.GetComponent<PathSceneTool>().TriggerUpdate();
+            
+            // Update the road to display it
+            road.Update();
 
             AddRoad(road);
         }
@@ -71,12 +88,18 @@ namespace RoadGenerator
             }
             return false;
         }
-
-        public int RoadCount {
-            get => Roads.Count;
-        }
-        public int IntersectionCount {
+        public int IntersectionCount 
+        {
             get => Intersections.Count;
+        }
+        /// <summary>Returns the number of roads in the road system</summary>
+        public int RoadCount 
+        {
+            get => _roads.Count;
+        }
+        public List<Road> Roads 
+        {
+            get => _roads;
         }
     }
 }

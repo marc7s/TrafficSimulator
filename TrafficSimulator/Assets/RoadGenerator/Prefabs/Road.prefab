@@ -9,11 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7618677454007702438}
+  - component: {fileID: 5117696255831828102}
   - component: {fileID: 2234105199191049172}
   - component: {fileID: 4211003387211000974}
   - component: {fileID: -7222773781664253429}
   - component: {fileID: -8363121987229429450}
-  - component: {fileID: 5117696255831828102}
   m_Layer: 0
   m_Name: Road
   m_TagString: Untagged
@@ -36,6 +36,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5117696255831828102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7492f488fd0840543b1c569a4b1bc2ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  road: {fileID: 3821395399200801449}
+  roadSystem: {fileID: 0}
+  LaneAmount: 1
+  LaneWidth: 4
+  Thickness: 0.15
+  LaneVertexSpacing: 1
+  DrawLanes: 0
 --- !u!114 &2234105199191049172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -50,9 +69,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathCreator: {fileID: 4211003387211000974}
   autoUpdate: 1
-  LaneWidth: 4
-  LaneAmount: 1
-  Thickness: 0.15
   FlattenSurface: 0
   LaneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
   BottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
@@ -164,17 +180,3 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5117696255831828102
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3821395399200801449}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7492f488fd0840543b1c569a4b1bc2ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  road: {fileID: 0}
-  roadSystem: {fileID: 0}

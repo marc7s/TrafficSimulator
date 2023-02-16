@@ -48,6 +48,7 @@ MonoBehaviour:
   _roadContainer: {fileID: 2382052090468904982}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _intersectionPrefab: {fileID: 4250033334480819983, guid: c8424ec9ba73bd34d9a4f9a7352db496, type: 3}
+  DrivingSide: -1
 --- !u!1 &2382052090468904982
 GameObject:
   m_ObjectHideFlags: 0

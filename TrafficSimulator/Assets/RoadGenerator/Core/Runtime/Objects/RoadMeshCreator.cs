@@ -3,20 +3,9 @@ using UnityEngine;
 
 namespace RoadGenerator 
 {
-    public enum LaneAmount 
-    {
-        One = 1,
-        Two = 2,
-        Three = 3,
-        Four = 4
-    }
+    [RequireComponent(typeof(Road))]
     public class RoadMeshCreator : PathSceneTool 
     {
-        [Header ("Road settings")]
-        public float LaneWidth = 4f;
-        public LaneAmount LaneAmount = LaneAmount.One;
-        [Range (0, .5f)]
-        public float Thickness = .15f;
         public bool FlattenSurface;
 
         [Header ("Material settings")]
@@ -24,6 +13,7 @@ namespace RoadGenerator
         public Material BottomMaterial;
         public float TextureTilingScale = 100;
         private int _laneCount;
+        private float _thickness;
         private Material _laneMaterial;
 
         [SerializeField, HideInInspector]
@@ -32,15 +22,22 @@ namespace RoadGenerator
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
         private Mesh _mesh;
+        private Road _road;
 
         protected override void PathUpdated() 
         {
+            // Get the road
+            _road = GetComponent<Road>();
+            
             // Set the lane count to avoid having to cast the enum to an int everytime
-            _laneCount = (int)LaneAmount;
+            _laneCount = (int)_road.LaneAmount;
+            
+            // Get the thickness of the road
+            _thickness = _road.Thickness;
 
-            // Create a copy of the lane material if it is not set
+            // Create a copy of the lane material if it is not set, or the material is updated
             // This makes the material independent from other roads
-            if(_laneMaterial == null)
+            if((_laneMaterial == null && LaneMaterial != null) || (_laneMaterial != null && LaneMaterial != null && _laneMaterial.name != LaneMaterial.name))
             {
                 _laneMaterial = new Material(LaneMaterial);
             }
@@ -48,6 +45,9 @@ namespace RoadGenerator
             
             if (pathCreator != null) 
             {
+                // Update the road
+                _road.DoNotUse_TriggerUpdate();
+                
                 AssignMeshComponents();
                 AssignMaterials();
                 CreateRoadMesh();
@@ -192,8 +192,8 @@ namespace RoadGenerator
 
                 // Find position to left and right of current path vertex
                 Vector3 vertCenter = path.GetPoint(i);
-                Vector3 vertSideA = vertCenter - localRight * Mathf.Abs(LaneWidth) * _laneCount;
-                Vector3 vertSideB = vertCenter + localRight * Mathf.Abs(LaneWidth) * _laneCount;
+                Vector3 vertSideA = vertCenter - localRight * Mathf.Abs(_road.LaneWidth) * _laneCount;
+                Vector3 vertSideB = vertCenter + localRight * Mathf.Abs(_road.LaneWidth) * _laneCount;
 
 
                 /*** Add top of road vertices ***/
@@ -220,11 +220,11 @@ namespace RoadGenerator
                     // The UV offset is based on the current lane. 
                     // Since the lanes are created in pairs around the center, the offset is calculated with 0.5 as a starting point
                     // Then, it is scaled with the current lane distance from the center
-                    float uvOffset = 0.5f * (float)(l + 1) / (float)LaneAmount;
+                    float uvOffset = 0.5f * (float)(l + 1) / (float)_laneCount;
 
                     // The lane vertices are created by offsetting the center vertices with the lane width
-                    verts[vertIndex + 3 + index] = vertCenter - localRight * Mathf.Abs(LaneWidth) * (l + 1);
-                    verts[vertIndex + 4 + index] = vertCenter + localRight * Mathf.Abs(LaneWidth) * (l + 1);
+                    verts[vertIndex + 3 + index] = vertCenter - localRight * Mathf.Abs(_road.LaneWidth) * (l + 1);
+                    verts[vertIndex + 4 + index] = vertCenter + localRight * Mathf.Abs(_road.LaneWidth) * (l + 1);
                     
                     // The lanes have normals pointing up
                     normals[vertIndex + 3 + index] = localUp;
@@ -240,8 +240,8 @@ namespace RoadGenerator
                 
                 
                 /*** Add bottom of road vertices ***/
-                verts[laneOffset + vertIndex + 3] = vertSideA - localUp * Thickness;
-                verts[laneOffset + vertIndex + 4] = vertSideB - localUp * Thickness;
+                verts[laneOffset + vertIndex + 3] = vertSideA - localUp * _thickness;
+                verts[laneOffset + vertIndex + 4] = vertSideB - localUp * _thickness;
                 
                 // The bottom of the road has normals pointing down
                 normals[laneOffset + vertIndex + 3] = -localUp;
@@ -400,7 +400,7 @@ namespace RoadGenerator
         }
 
         void AssignMaterials() {
-            if (LaneMaterial != null && BottomMaterial != null) 
+            if (_laneMaterial != null && BottomMaterial != null) 
             {
                 // Calculate the texture tiling based on the length of the road and the texture height
                 float textureTiling = (path.length / LaneMaterial.mainTexture.height) * TextureTilingScale;
