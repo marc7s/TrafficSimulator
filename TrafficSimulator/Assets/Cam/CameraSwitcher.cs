@@ -117,13 +117,11 @@ namespace Cam
 
         public void ToggleThirdPersonCamera()
         {
-            _cameras[1].SetFollowTransform(CameraTarget);
             SwitchActiveCamera(1);
         }
     
         public void TogglePreviousCamera()
         {
-            _cameras[_previousActiveCameraIndex].SetFollowTransform(CameraTarget);
             SwitchActiveCamera(_previousActiveCameraIndex);
         }
     
@@ -133,6 +131,7 @@ namespace Cam
             _currentActiveCameraIndex = newIndex;
         
             _cameras[_previousActiveCameraIndex].SetInactive(this);
+            _cameras[_currentActiveCameraIndex].SetFollowTransform(CameraTarget);
             _cameras[_currentActiveCameraIndex].SetActive(this);
         }
     }
