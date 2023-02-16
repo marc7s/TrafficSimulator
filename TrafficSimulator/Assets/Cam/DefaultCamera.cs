@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,9 +17,11 @@ namespace Cam
         private float _targetZoom = 50f;
 
         private GameObject _toggledGameObject;
+        private bool _hasToggledGameObject;
+        
         private Vector3 _moveDirection;
 
-        private void Awake()
+        protected override void Awake()
         {
             IsDefault = true;
             base.Awake();
@@ -28,7 +29,7 @@ namespace Cam
     
         private void Update()
         {
-            if (_toggledGameObject != null) FollowTransform.position = _toggledGameObject.transform.position;
+            if (_hasToggledGameObject) FollowTransform.position = _toggledGameObject.transform.position;
         }
     
         public override void HandlePointInput(Vector2 userPoint)
@@ -50,7 +51,27 @@ namespace Cam
 
         public override void HandleClickInput(InputAction.CallbackContext ctx)
         {
-            throw new NotImplementedException();
+            var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
+            {
+                SetToggledGameObject(hitInfo.collider.gameObject);
+            }
+            else
+            {
+                SetToggledGameObjectToNull();
+            }
+        }
+        
+        private void SetToggledGameObjectToNull()
+        {
+            _toggledGameObject = null;
+            _hasToggledGameObject = false;
+        }
+
+        private void SetToggledGameObject(GameObject toggledGameObject)
+        {
+            _toggledGameObject = toggledGameObject;
+            _hasToggledGameObject = true;
         }
 
         public override void HandleDoubleClickInput(InputAction.CallbackContext ctx)
@@ -58,73 +79,34 @@ namespace Cam
             var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.gameObject.Equals(_toggledGameObject))
             {
+                CameraSwitcher.CameraTarget = FollowTransform;
                 CameraSwitcher.ToggleThirdPersonCamera();
             }
         }
 
-        private void OnClickInput(InputAction.CallbackContext ctx)
-        {
-            var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
-            {
-                _toggledGameObject = hitInfo.collider.gameObject;
-            }
-            else
-            {
-                _toggledGameObject = null;
-            }
-        }
-        //
-        // private void OnZoomInput(InputAction.CallbackContext ctx)
-        // {
-        //     _playerZoom = Mathf.Clamp(ctx.ReadValue<float>(), -1f, 1f);
-        // }
-
-        private void OnMovementInput(InputAction.CallbackContext ctx)
-        {
-            _toggledGameObject = null;
-            _moveDirection = ctx.ReadValue<Vector2>();
-            _moveDirection = TranslateDirectionToForward(_moveDirection.y, _moveDirection.x);
-        }
-    
         public override void Move(Vector3 direction)
         {
+            if (direction.sqrMagnitude != 0) _toggledGameObject = null;
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
             FollowTransform.position += translatedDirection * (_movementSpeed * Time.deltaTime);
         }
 
         public override void RotateHorizontal(float horizontalRotation)
         {
-            throw new NotImplementedException();
+            FollowTransform.eulerAngles += new Vector3(0, horizontalRotation * _rotationSpeed * Time.deltaTime, 0);
         }
 
         public override void Zoom(float zoomValue)
         {
-            throw new NotImplementedException();
+            _targetZoom -= zoomValue;
+            _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
+            VirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(VirtualCamera.m_Lens.FieldOfView,
+                _targetZoom, Time.deltaTime * _zoomSpeed);
         }
-
-
-        /*private void HandleRotationInput()
-    {
-        FollowTransform.eulerAngles += new Vector3(0, _rotateDirection * _rotationSpeed * Time.deltaTime, 0);
-    }
-
-    private void HandleZoom()
-    {
-        _targetZoom -= _playerZoom;
-        _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
-        _cmVirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(_cmVirtualCamera.m_Lens.FieldOfView,
-            _targetZoom, Time.deltaTime * _zoomSpeed);
-    }*/
 
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
         {
             return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;
-        }
-
-        public override void SetInactive(CameraSwitcher cameraSwitcher)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

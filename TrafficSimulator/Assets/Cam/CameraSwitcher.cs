@@ -12,7 +12,6 @@ namespace Cam
         [SerializeField] public Transform CameraTarget;
         private CameraState CurrentActiveCamera => _cameras[_currentActiveCameraIndex];
         
-
         #region User Input
         private InputAction _movementInput;
         private InputAction _rotationInput;
@@ -20,12 +19,14 @@ namespace Cam
         private InputAction _clickInput;
         private InputAction _doubleClickInput;
         private InputAction _pointInput;
+        private InputAction _escapeInput;
     
         // Cached input values
         private Vector2 _movementFromUser;
         private float _rotationFromUser;
         private float _zoomFromUser;
-        
+
+
         private void SetupInputActions()
         {
             _movementInput = UserInputManager.PlayerInputActions.Default.Move;
@@ -34,6 +35,7 @@ namespace Cam
             _clickInput = UserInputManager.PlayerInputActions.Default.Click;
             _doubleClickInput = UserInputManager.PlayerInputActions.Default.DoubleClick;
             _pointInput = UserInputManager.PlayerInputActions.Default.Point;
+            _escapeInput = UserInputManager.PlayerInputActions.Default.Escape;
         }
         
         private void SubscribeToInput()
@@ -48,9 +50,10 @@ namespace Cam
             _pointInput.performed += OnPointInput;
             _clickInput.performed += OnClickInput;
             _doubleClickInput.performed += OnDoubleClickInput;
+            _escapeInput.performed += OnEscapeInput;
 
         }
-    
+        
         private void OnMovementInput(InputAction.CallbackContext ctx)
         {
             _movementFromUser = ctx.ReadValue<Vector2>();
@@ -68,7 +71,6 @@ namespace Cam
     
         private void OnPointInput(InputAction.CallbackContext ctx)
         {
-            print(ctx.ReadValue<Vector2>());
             CurrentActiveCamera.HandlePointInput(ctx.ReadValue<Vector2>());
         }
     
@@ -81,6 +83,12 @@ namespace Cam
         {
             CurrentActiveCamera.HandleDoubleClickInput(ctx);
         }
+        
+        private void OnEscapeInput(InputAction.CallbackContext ctx)
+        {
+            CurrentActiveCamera.HandleEscapeInput(ctx);
+        }
+
         #endregion
     
         private void Update()
@@ -103,15 +111,17 @@ namespace Cam
 
         public void ToggleThirdPersonCamera()
         {
-            SwitchPriority(1);
+            _cameras[1].SetFollowTransform(CameraTarget);
+            SwitchActiveCamera(1);
         }
     
         public void TogglePreviousCamera()
         {
-            SwitchPriority(_previousActiveCameraIndex);
+            _cameras[_previousActiveCameraIndex].SetFollowTransform(CameraTarget);
+            SwitchActiveCamera(_previousActiveCameraIndex);
         }
     
-        private void SwitchPriority(int newIndex)
+        private void SwitchActiveCamera(int newIndex)
         {
             _previousActiveCameraIndex = _currentActiveCameraIndex;
             _currentActiveCameraIndex = newIndex;
