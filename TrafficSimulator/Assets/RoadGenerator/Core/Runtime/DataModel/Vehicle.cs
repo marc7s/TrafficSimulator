@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DataModel
 {
-    class Vehicle
+    public class Vehicle
     {
         private string _id;
         private GameObject _vehicle;

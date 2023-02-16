@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace RoadGenerator
 {
-    public enum LaneAmount 
+    /// <summary>The amount of lanes in each direction of a road. In total the road will have twice as many lanes</summary>
+    public enum LaneAmount
     {
         One = 1,
         Two = 2,
@@ -27,28 +28,104 @@ namespace RoadGenerator
         [Header ("Lane settings")]
         [Range(0.1f, 10f)] public float LaneVertexSpacing = 1f;
         public bool DrawLanes = false;
+        private bool started = true;
         
+        private RoadNode _start = new RoadNode(Vector3.zero, RoadNodeType.End);
         private List<Lane> _lanes = new List<Lane>();
         private GameObject _laneContainer;
-        private static string LANE_NAME = "Lane";
+        private VertexPath _path;
+        private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
+        
+        private const string LANE_NAME = "Lane";
+        private const string LANE_CONTAINER_NAME = "Lanes";
 
-        public List<Lane> Lanes
+        /// <summary>Function that runs once when the road is updated the first time</summary>
+        void OnStart()
         {
-            get => _lanes;
+            // Look for an existing lane container
+            foreach(Transform t in road.transform)
+            {
+                if(t.name == LANE_CONTAINER_NAME)
+                {
+                    _laneContainer = t.gameObject;
+                }
+            }
         }
+
+        /// <summary>Used to trigger an update of the road through the PathSceneTool</summary>
         public void Update()
         {
-            PathSceneTool pst = road.GetComponent<PathSceneTool>();
-            pst.TriggerUpdate();
+            PathSceneTool pathSceneTool = road.GetComponent<PathSceneTool>();
+            pathSceneTool.TriggerUpdate();
         }
+        
+        /// <summary>DO NOT USE. Used by the mesh generation to trigger an update of the road</summary>
+        public void DoNotUse_TriggerUpdate()
+        {
+            // Run the OnStart method once
+            if(started)
+            {
+                OnStart();
+                started = false;
+            }
+
+            UpdateRoadNodes();
+            UpdateLanes();
+        }
+        
+        /// <summary>Updates the road nodes</summary>
+        private void UpdateRoadNodes()
+        {
+            // Create the vertex path for the road
+            BezierPath path = road.GetComponent<PathCreator>().bezierPath;
+            _path = new VertexPath(path, transform, LaneVertexSpacing);
+
+            // Set the end of path instruction depending on if the path is closed or not
+            this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
+
+            // Create the start node for the road. The start node must be an end node
+            this._start = new RoadNode(_path.GetPoint(0), RoadNodeType.End);
+            
+            // Create a previous and current node that will be used when creating the linked list
+            RoadNode prev = null;
+            RoadNode curr = _start;
+
+            // Go through each point in the path of the road
+            for(int i = 1; i < _path.NumPoints; i++)
+            {
+                // The current node type is assumed to be default
+                RoadNodeType currentType = RoadNodeType.Default;
+                
+                // If the current node is the last node in the path, then the current node type is an end node
+                if(i == _path.NumPoints - 1)
+                {
+                    currentType = RoadNodeType.End;
+                }
+
+                // Update the previous node and create a new current node
+                prev = curr;
+                curr = new RoadNode(_path.GetPoint(i), currentType, prev, null);
+
+                // Set the next pointer for the previous node
+                prev.Next = curr;
+            }
+        }
+
+        /// <summary>Updates the lanes</summary>
         public void UpdateLanes()
         {
             // Get the lane count
             int laneCount = (int)LaneAmount;
+
+            // Use the driving side as a coefficient to offset the lanes in the correct direction based on the driving side
             int drivingSide = (int)roadSystem.DrivingSide;
 
             // Remove all lanes
             _lanes.Clear();
+
+            // The primary lane starts with the first road node, but since the secondary lane goes in the opposite direction it starts with the last road node
+            RoadNode primaryLaneNodeStart = _start;
+            RoadNode secondaryLaneNodeStart = _start.Reverse();
 
             // Create the lanes
             for(int i = 0; i < laneCount; i++)
@@ -65,23 +142,25 @@ namespace RoadGenerator
                 VertexPath secondaryLaneVertexPath = new VertexPath(secondaryLaneBezierPath, transform, LaneVertexSpacing);
                 
                 // Create the primary and secondary lanes
-                Lane primaryLane = new Lane(new LaneType(LaneSide.PRIMARY, i), primaryLaneVertexPath);
-                Lane secondaryLane = new Lane(new LaneType(LaneSide.SECONDARY, i), secondaryLaneVertexPath);
+                Lane primaryLane = new Lane(this, primaryLaneNodeStart, new LaneType(LaneSide.PRIMARY, i), primaryLaneVertexPath);
+                Lane secondaryLane = new Lane(this, secondaryLaneNodeStart, new LaneType(LaneSide.SECONDARY, i), secondaryLaneVertexPath);
 
                 // Add the lanes to the list
                 _lanes.Add(primaryLane);
                 _lanes.Add(secondaryLane);
             }
 
-            // Clear the lane container
+            // Destroy the lane container, and with it all the previous lanes
             if(_laneContainer != null)
+            {
                 DestroyImmediate(_laneContainer);
+            }
 
             // Draw the lines if the setting is enabled
             if(DrawLanes)
             {
                 // Create a new lane container
-                _laneContainer = new GameObject("Lanes");
+                _laneContainer = new GameObject(LANE_CONTAINER_NAME);
                 _laneContainer.transform.parent = transform;
                 
                 // Draw each lane
@@ -92,8 +171,28 @@ namespace RoadGenerator
             }
         }
 
+        /// <summary>Returns true if the road is a closed loop</summary>
+        public bool IsClosed()
+        {
+            return road.GetComponent<PathCreator>().bezierPath.IsClosed;
+        }
+        
+        /// <summary>Get the position at a distance from the start of the path</summary>
+        public Vector3 GetPositionAtDistance(float distance, EndOfPathInstruction? endOfPathInstruction = null)
+        {
+            EndOfPathInstruction eopi = endOfPathInstruction == null ? _endOfPathInstruction : (EndOfPathInstruction)endOfPathInstruction;
+            return _path.GetPointAtDistance(distance, eopi);
+        }
+        
+        /// <summary>Get the rotation at a distance from the start of the path</summary>
+        public Quaternion GetRotationAtDistance(float distance, EndOfPathInstruction? endOfPathInstruction = null)
+        {
+            EndOfPathInstruction eopi = endOfPathInstruction == null ? _endOfPathInstruction : (EndOfPathInstruction)endOfPathInstruction;
+            return _path.GetRotationAtDistance(distance, eopi);
+        }
+
         /// <summary>Returns a color based on the seed</summary>
-        public static Color GetColor(int seed) 
+        public static Color GetColor(int seed)
         {
             List<Color> colors = new List<Color>(){ Color.red, Color.blue, Color.green, Color.cyan, Color.magenta };
             return colors[seed % colors.Count];
@@ -116,14 +215,14 @@ namespace RoadGenerator
             lr.endWidth = width;
             
             // Set the positions
-            lr.positionCount = lane.Path.localPoints.Length;
-            lr.SetPositions(lane.Path.localPoints);
+            lr.positionCount = lane.Start.Count;
+            lr.SetPositions(lane.Start.GetPositions());
         }
 
         /// <summary>Draws a lane</summary>
         private static void DrawLane(Road road, Lane lane, Color color, GameObject parent)
         {
-            if(lane.Path.localPoints.Length < 1) return;
+            if(lane.Start.Count < 1) return;
             
             // Create the lane object
             GameObject laneObject = new GameObject();
@@ -140,6 +239,19 @@ namespace RoadGenerator
             
             // Draw the lane path
             DrawLanePath(laneObject, lane, color: color);
+        }
+
+        public List<Lane> Lanes
+        {
+            get => _lanes;
+        }
+        public RoadNode Start
+        {
+            get => _start;
+        }
+        public EndOfPathInstruction EndOfPathInstruction
+        {
+            get => _endOfPathInstruction;
         }
     }
 }

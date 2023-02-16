@@ -16,7 +16,7 @@ namespace RoadGenerator
         public float speed = 15;
         float distanceTravelled;
 
-        private VertexPath _path;
+        private Lane _lane;
         private float _height = 0;
 
         void Start() {
@@ -25,7 +25,7 @@ namespace RoadGenerator
                 // If the road has not updated yet there will be no lanes, so update them first
                 if(Road.Lanes.Count == 0)
                 {
-                    Road.UpdateLanes();
+                    Road.Update();
                 }
                 
                 // Check that the provided lane index is valid
@@ -36,20 +36,20 @@ namespace RoadGenerator
                 }
                 
                 // Get the height of the object to offset it so it follows on top of the lane
-                Bounds bounds = GetComponent<Renderer>().bounds;
-                _height = bounds.size.y;
+                _height = GetComponent<Renderer>().bounds.size.y;
                 
-                _path = Road.Lanes[LaneIndex].Path;
+                // Get the lane from the road
+                _lane = Road.Lanes[LaneIndex];
             }
         }
 
         void Update()
         {
-            if (_path != null)
+            if (_lane != null)
             {
                 distanceTravelled += speed * Time.deltaTime;
-                transform.position = _path.GetPointAtDistance(distanceTravelled, endOfPathInstruction) + _height / 2 * Vector3.up;
-                transform.rotation = _path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+                transform.position = _lane.GetPositionAtDistance(distanceTravelled, endOfPathInstruction) + _height / 2 * Vector3.up;
+                transform.rotation = _lane.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
             }
         }
     }

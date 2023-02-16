@@ -45,7 +45,8 @@ namespace RoadGenerator
             
             if (pathCreator != null) 
             {
-                _road.UpdateLanes();
+                // Update the road
+                _road.DoNotUse_TriggerUpdate();
                 
                 AssignMeshComponents();
                 AssignMaterials();

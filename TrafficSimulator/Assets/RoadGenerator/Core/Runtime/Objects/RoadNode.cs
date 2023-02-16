@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using UnityEngine;
 using System.Linq;
 
 namespace RoadGenerator
@@ -9,34 +9,32 @@ namespace RoadGenerator
         ThreeWayIntersection,
         FourWayIntersection,
         Roundabout,
+        JunctionEdge,
         End
     }
 
-	public class RoadNode
+    /// <summary>Represents a single node in a road</summary>
+	public class RoadNode : Node<RoadNode>
 	{
-        private RoadNode _next;
-        private RoadNode _prev;
         private RoadNodeType _type;
-        public RoadNode(RoadNodeType type) : this(type, null, null){}
-        public RoadNode(RoadNodeType type, RoadNode next, RoadNode prev)
+        // A list of all intersection types
+        private static RoadNodeType[] _intersectionTypes = new RoadNodeType[]{ RoadNodeType.ThreeWayIntersection, RoadNodeType.FourWayIntersection, RoadNodeType.Roundabout };
+        
+        public RoadNode(Vector3 position, RoadNodeType type) : this(position, type, null, null){}
+        public RoadNode(Vector3 position, RoadNodeType type, RoadNode prev, RoadNode next)
         {
+            _position = position;
             _type = type;
-            _next = next;
             _prev = prev;
+            _next = next;
         }
-        public bool IsIntersection() => new RoadNodeType[]{ RoadNodeType.ThreeWayIntersection, RoadNodeType.FourWayIntersection, RoadNodeType.Roundabout }.Contains(_type);
+
+        /// <summary>Returns `true` if this node is an intersection</summary>
+        public bool IsIntersection() => _intersectionTypes.Contains(_type);
 
         public RoadNodeType Type
         {
             get => _type;
-        }
-        public RoadNode Next
-        {
-            get => _next;
-        }
-        public RoadNode Prev
-        {
-            get => _prev;
         }
     }
 }

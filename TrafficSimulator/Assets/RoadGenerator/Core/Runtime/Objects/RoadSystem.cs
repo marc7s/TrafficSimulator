@@ -27,26 +27,31 @@ namespace RoadGenerator
 
         public void AddNewRoad()
         {
+            // Instantiate a new road prefab
             GameObject roadObj = Instantiate(RoadPrefab, RoadContainer.transform.position, Quaternion.identity);
+            
+            // Set the name of the road
             roadObj.name = "Road" + RoadCount;
+            
+            // Set the road as a child of the road container
             roadObj.transform.parent = RoadContainer.transform;
+            
+            // Get the road from the prefab
             Road road = roadObj.GetComponent<Road>();
             
+            // Set the road pointers
             road.road = roadObj;
             road.roadSystem = this;
-            road.GetComponent<PathSceneTool>().TriggerUpdate();
+            
+            // Update the road to display it
+            road.Update();
 
             AddRoad(road);
         }
 
-        private bool addRoad(UnityEngine.Object instance)
+        /// <summary>Returns the number of roads in the road system</summary>
+        public int RoadCount 
         {
-            GameObject roadObject = instance as GameObject;
-            Debug.Log(roadObject);
-            return true;
-        }
-
-        public int RoadCount {
             get => _roads.Count;
         }
     }
