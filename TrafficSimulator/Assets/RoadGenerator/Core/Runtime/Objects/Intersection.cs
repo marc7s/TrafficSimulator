@@ -30,7 +30,7 @@ public class Intersection : MonoBehaviour
     [HideInInspector]
     public Vector3 Road2AnchorPoint2;
 
-    public float IntersectionLength = 20f;
+    static public float IntersectionLength = 20f;
     void OnDestroy()
     {
         // Remove reference to intersection in the road system

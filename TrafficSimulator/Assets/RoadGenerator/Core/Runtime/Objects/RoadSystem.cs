@@ -37,24 +37,39 @@ namespace RoadGenerator
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2){
-
-            Vector3 position = new Vector3(intersectionPointData.IntersectionPosition.x, 0, intersectionPointData.IntersectionPosition.y);
-            GameObject intersectionObject = Instantiate(_intersectionPrefab, position, intersectionPointData.rotation);
+            Vector3 intersectionPosition = new Vector3(intersectionPointData.IntersectionPosition.x, 0, intersectionPointData.IntersectionPosition.y);
+            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPosition, intersectionPointData.Rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = this.transform;
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
-            intersection.IntersectionPosition = position;
+            intersection.IntersectionPosition = intersectionPosition;
             intersection.Road1PathCreator = intersectionPointData.Road1PathCreator;
             intersection.Road2PathCreator = intersectionPointData.Road2PathCreator;
             intersection.Road1 = road1;
             intersection.Road2 = road2;
+            intersection.Road1AnchorPoint1 = intersectionPointData.Road1AnchorPoint1;
+            intersection.Road1AnchorPoint2 = intersectionPointData.Road1AnchorPoint2;
+            intersection.Road2AnchorPoint1 = intersectionPointData.Road2AnchorPoint1;
+            intersection.Road2AnchorPoint2 = intersectionPointData.Road2AnchorPoint2;
             road1.Intersections.Add(intersection);
             road2.Intersections.Add(intersection);
             AddIntersection(intersection);
             
             return intersection;
+        }
+        /// <summary> Checks if an intersection already exists at the given position </summary>
+        public bool DoesIntersectionExist(Vector3 position)
+        {
+            foreach (Intersection intersection in Intersections)
+            {
+                if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public int RoadCount {
