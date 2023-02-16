@@ -36,15 +36,22 @@ namespace RoadGenerator
             AddRoad(road);
         }
 
-        public Intersection AddNewIntersection(Vector3 position, Quaternion rotation){
-            
-            GameObject intersectionObject = Instantiate(_intersectionPrefab, position, rotation);
+        public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2){
+
+            Vector3 position = new Vector3(intersectionPointData.IntersectionPosition.x, 0, intersectionPointData.IntersectionPosition.y);
+            GameObject intersectionObject = Instantiate(_intersectionPrefab, position, intersectionPointData.rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = this.transform;
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
             intersection.IntersectionPosition = position;
+            intersection.Road1PathCreator = intersectionPointData.Road1PathCreator;
+            intersection.Road2PathCreator = intersectionPointData.Road2PathCreator;
+            intersection.Road1 = road1;
+            intersection.Road2 = road2;
+            road1.Intersections.Add(intersection);
+            road2.Intersections.Add(intersection);
             AddIntersection(intersection);
             
             return intersection;

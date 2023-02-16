@@ -1,5 +1,6 @@
 using UnityEngine;
 
+
 namespace RoadGenerator
 {
 [ExecuteInEditMode()]
@@ -53,6 +54,11 @@ public class Intersection : MonoBehaviour
                 break;
             }
         }
+        // Remove reference to intersection in the roads
+        if (Road1?.Intersections.Contains(this) == true)
+            Road1.Intersections.Remove(this);
+        if (Road2?.Intersections.Contains(this) == true)
+            Road2.Intersections.Remove(this);
     }
 }
 }

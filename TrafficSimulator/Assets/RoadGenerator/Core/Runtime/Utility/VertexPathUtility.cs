@@ -127,6 +127,7 @@ namespace RoadGenerator.Utility
 			return splitData;
 		}
 
+
        
 	   public class PathSplitData {
 		   public List<Vector3> vertices = new List<Vector3>();

@@ -131,6 +131,5 @@ namespace RoadGenerator.Utility {
             }
             return times;
         }
-
-    }
+        }
 }
