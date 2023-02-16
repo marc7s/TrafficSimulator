@@ -404,7 +404,7 @@ namespace RoadGeneratorEditor
 			// when the handles are being moves, update the intersections
 			if (draggingHandleIndex != -1 && e.type == EventType.MouseUp)
 			{
-				IntersectionCreator.UpdateIntersections(creator, thisRoad);
+				IntersectionCreator.UpdateIntersections(thisRoad);
 			}
 			
 			// Find which handle mouse is over. Start by looking at previous handle index first, as most likely to still be closest to mouse
@@ -467,7 +467,7 @@ namespace RoadGeneratorEditor
 							bezierPath.AddSegmentToEnd(newPointLocal);
 						}
 					}
-					IntersectionCreator.UpdateIntersections(creator, thisRoad);
+					IntersectionCreator.UpdateIntersections(thisRoad);
 				}
 			}
 

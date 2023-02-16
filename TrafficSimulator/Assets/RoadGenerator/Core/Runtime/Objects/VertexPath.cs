@@ -253,10 +253,12 @@ namespace RoadGenerator {
             TimeOnPathData data = CalculateClosestPointOnPathData(localPoint);
             return Mathf.Lerp (cumulativeLengthAtEachVertex[data.previousIndex], cumulativeLengthAtEachVertex[data.nextIndex], data.percentBetweenIndices);
         }
-        public int GetPointClosestPointIndex (Vector3 worldPoint, bool getPrevious = true) {
+
+        /// Finds the closest point index on the path from any point in the world
+        public int GetClosestIndexOnPath (Vector3 worldPoint, bool getPreviousPoint = true) {
             Vector3 localPoint = MathUtility.InverseTransformPoint(worldPoint, transform, space);
             TimeOnPathData data = CalculateClosestPointOnPathData(localPoint);
-            if (getPrevious) 
+            if (getPreviousPoint) 
             return data.previousIndex;
             else
             return data.nextIndex;

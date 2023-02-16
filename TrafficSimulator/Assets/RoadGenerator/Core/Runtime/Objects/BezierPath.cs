@@ -432,6 +432,17 @@ namespace RoadGenerator
 				NotifyPathModified();
 			}
 		}
+		public void RemoveAnchors(List<Vector3> anchors)
+		{
+			for (int i = NumPoints * 3 - 1; i >= 0; i -= 3)
+			{
+				int handleIndex = i % NumPoints;
+				if (anchors.Contains(points[handleIndex]))
+				{
+					DeleteSegment(handleIndex);
+				}
+			}
+		}
 
 		/// Returns an array of the 4 points making up the segment (anchor1, control1, control2, anchor2)
 		public Vector3[] GetPointsInSegment(int segmentIndex)

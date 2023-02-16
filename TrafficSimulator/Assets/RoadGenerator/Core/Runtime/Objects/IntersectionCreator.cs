@@ -5,14 +5,18 @@ using RoadGenerator.Utility;
 namespace RoadGenerator{
     public static class IntersectionCreator
     {
-        public static void UpdateIntersections(PathCreator creator, Road thisRoad)
+        const int SEGMENT_ANCHOR1_INDEX = 0;
+        const int SEGMENT_ANCHOR2_INDEX = 3;
+
+        public static void UpdateIntersections(Road thisRoad)
         {
             RoadSystem roadSystem = thisRoad.RoadSystem;
+            PathCreator creator = thisRoad.RoadObject.GetComponent<PathCreator>();
             for (int road1SegmentIndex = 0; road1SegmentIndex < creator.bezierPath.NumSegments; road1SegmentIndex++)
             {
                 Vector3[] segment1 = creator.bezierPath.GetPointsInSegment(road1SegmentIndex);
-                int startingVertexIndexThisRoad = creator.path.GetPointClosestPointIndex(segment1[0]);
-                int endingVertexIndexThisRoad = creator.path.GetPointClosestPointIndex(segment1[3], false);
+                int startingVertexIndexThisRoad = creator.path.GetClosestIndexOnPath(segment1[SEGMENT_ANCHOR1_INDEX]);
+                int endingVertexIndexThisRoad = creator.path.GetClosestIndexOnPath(segment1[SEGMENT_ANCHOR2_INDEX], false);
                 List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
                 foreach(Road road in roadSystem.Roads) 
                 {
@@ -38,7 +42,7 @@ namespace RoadGenerator{
                 }
 
                 foreach (IntersectionPointData intersectionPointData in intersectionPointDatas) {
-                    Vector3 intersectionPosition = new Vector3(intersectionPointData.IntersectionPosition.x, 0, intersectionPointData.IntersectionPosition.y);
+                    Vector3 intersectionPosition = new Vector3(intersectionPointData.Position.x, 0, intersectionPointData.Position.y);
                     // If the vertex count is small in a segment, then there is a possibility that the same intersection is added multiple times
                     // Therefore before creating the intersection check if the intersection already exists
                     if (!roadSystem.DoesIntersectionExist(intersectionPosition))
@@ -68,11 +72,11 @@ namespace RoadGenerator{
         static List<IntersectionPointData> GetBezierPathIntersections(int startingVertexIndexRoad1, int endingVertexIndexRoad1, PathCreator road1PathCreator, PathCreator road2PathCreator, Vector3[] Road2SegmentPoints)
         {
         List<IntersectionPointData> intersectionsPoints = new List<IntersectionPointData>();
-        Vector3 Road2SegmentAnchorPosition1 = Road2SegmentPoints[0];
-        Vector3 Road2SegmentAnchorPosition2 = Road2SegmentPoints[3];
+        Vector3 Road2SegmentAnchorPosition1 = Road2SegmentPoints[SEGMENT_ANCHOR1_INDEX];
+        Vector3 Road2SegmentAnchorPosition2 = Road2SegmentPoints[SEGMENT_ANCHOR2_INDEX];
 
-        int startingVertexIndexRoad2 = road2PathCreator.path.GetPointClosestPointIndex(Road2SegmentAnchorPosition1);
-        int endingVertexIndexRoad2 = road2PathCreator.path.GetPointClosestPointIndex(Road2SegmentAnchorPosition2, false);
+        int startingVertexIndexRoad2 = road2PathCreator.path.GetClosestIndexOnPath(Road2SegmentAnchorPosition1);
+        int endingVertexIndexRoad2 = road2PathCreator.path.GetClosestIndexOnPath(Road2SegmentAnchorPosition2, false);
 
         for (int i = 0; i < endingVertexIndexRoad1 - startingVertexIndexRoad1; i++)
         {
@@ -121,7 +125,7 @@ namespace RoadGenerator{
         /// <summary> Creates an intersection at the given position </summary>
         static void CreateIntersectionAtPosition(IntersectionPointData intersectionPointData, Road thisRoad)
         {
-            Vector3 segmentStartPoint = intersectionPointData.Road1PathCreator.bezierPath.GetPointsInSegment(intersectionPointData.Road1SegmentIndex)[0];
+            Vector3 segmentStartPoint = intersectionPointData.Road1PathCreator.bezierPath.GetPointsInSegment(intersectionPointData.Road1SegmentIndex)[SEGMENT_ANCHOR1_INDEX];
             PathCreator road1PathCreator = intersectionPointData.Road1PathCreator;
             PathCreator road2PathCreator = intersectionPointData.Road2PathCreator;
             Intersection intersection = thisRoad.RoadSystem.AddNewIntersection(intersectionPointData, thisRoad, GetRoad(road2PathCreator));
@@ -136,7 +140,7 @@ namespace RoadGenerator{
                 road1PathCreator.bezierPath.SplitSegment(intersection.Road1AnchorPoint1, intersectionPointData.Road1SegmentIndex + 1, road1PathCreator.path.GetClosestTimeOnPath(intersection.Road1AnchorPoint1));
             }
 
-            segmentStartPoint = road2PathCreator.bezierPath.GetPointsInSegment(intersectionPointData.Road2SegmentIndex)[0];
+            segmentStartPoint = road2PathCreator.bezierPath.GetPointsInSegment(intersectionPointData.Road2SegmentIndex)[SEGMENT_ANCHOR1_INDEX];
             if (Vector3.Distance(segmentStartPoint, intersection.Road2AnchorPoint1) < Vector3.Distance(segmentStartPoint, intersection.Road2AnchorPoint2))
             {
                 road2PathCreator.bezierPath.SplitSegment(intersection.Road2AnchorPoint1, intersectionPointData.Road2SegmentIndex, road2PathCreator.path.GetClosestTimeOnPath(intersection.Road2AnchorPoint1));
@@ -159,8 +163,8 @@ namespace RoadGenerator{
         float positionDistance = creator.path.GetClosestDistanceAlongPath(position);
         for (int i = 0; i < creator.bezierPath.NumSegments; i++)
         {
-            float segmentPoint1 = creator.path.GetClosestDistanceAlongPath(creator.bezierPath.GetPointsInSegment(i)[0]);
-            float segmentPoint2 = creator.path.GetClosestDistanceAlongPath(creator.bezierPath.GetPointsInSegment(i)[3]);
+            float segmentPoint1 = creator.path.GetClosestDistanceAlongPath(creator.bezierPath.GetPointsInSegment(i)[SEGMENT_ANCHOR1_INDEX]);
+            float segmentPoint2 = creator.path.GetClosestDistanceAlongPath(creator.bezierPath.GetPointsInSegment(i)[SEGMENT_ANCHOR2_INDEX]);
             if (positionDistance >= segmentPoint1 && positionDistance <= segmentPoint2)
             {
                 return i;
@@ -222,7 +226,7 @@ namespace RoadGenerator{
 
     /// <summary> Data structure for storing information about an intersection point </summary>
     public class IntersectionPointData {
-        public Vector2 IntersectionPosition;
+        public Vector2 Position;
         public Quaternion Rotation;
         public PathCreator Road1PathCreator;
         public PathCreator Road2PathCreator;
@@ -233,9 +237,9 @@ namespace RoadGenerator{
         public int Road1SegmentIndex;
         public int Road2SegmentIndex;
 
-        public IntersectionPointData(Vector2 intersectionPosition, Quaternion rotation, PathCreator road1PathCreator, PathCreator road2PathCreator, Vector3 road1AnchorPoint1, Vector3 road1AnchorPoint2, Vector3 road2AnchorPoint1, Vector3 road2AnchorPoint2, int road1SegmentIndex, int road2SegmentIndex) {
-            IntersectionPosition = intersectionPosition;
-            this.Rotation = rotation;
+        public IntersectionPointData(Vector2 position, Quaternion rotation, PathCreator road1PathCreator, PathCreator road2PathCreator, Vector3 road1AnchorPoint1, Vector3 road1AnchorPoint2, Vector3 road2AnchorPoint1, Vector3 road2AnchorPoint2, int road1SegmentIndex, int road2SegmentIndex) {
+            Position = position;
+            Rotation = rotation;
             Road1PathCreator = road1PathCreator;
             Road2PathCreator = road2PathCreator;
             Road1AnchorPoint1 = road1AnchorPoint1;

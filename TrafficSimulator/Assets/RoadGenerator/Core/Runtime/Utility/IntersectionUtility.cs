@@ -95,7 +95,8 @@ public static class IntersectionUtility {
         }
     }
     /// <summary> Quick check find out if the bezier paths could be intersecting  </summary>
-    public static bool IsBezierPathIntersectionPossible(Vector3[] segment1, Vector3[] segment2) {
+    public static bool IsBezierPathIntersectionPossible(Vector3[] segment1, Vector3[] segment2) 
+    {
         // If the rectangle made up of the bezier control points are not overlapping with each other, then the bezier path is not overlapping
         Bounds bound1 = CubicBezierUtility.CalculateSegmentBounds(segment1[0], segment1[1], segment1[2], segment1[3]);
         Bounds bound2 = CubicBezierUtility.CalculateSegmentBounds(segment2[0], segment2[1], segment2[2], segment2[3]);
