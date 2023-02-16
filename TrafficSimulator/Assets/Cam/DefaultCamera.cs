@@ -3,8 +3,16 @@ using UnityEngine.InputSystem;
 
 namespace Cam
 {
+    /// <summary>
+    /// Represents the initial camera state. It provides functionality for moving, rotating,
+    /// and zooming the camera, as well as handling input and toggling between objects.
+    /// It also has a number of serialized fields for configuring movement and zoom speed,
+    /// minimum and maximum zoom, and edge scrolling
+    /// behavior (which is not yet implemented).
+    /// </summary>
     public class DefaultCamera : CameraState
     {
+        // Edge Scrolling is not implemented yet!
         [SerializeField] private bool _enableEdgeScrolling;
         [SerializeField] private float _movementSpeed = 50f;
         [SerializeField] private float _rotationSpeed = 50f;
@@ -32,6 +40,7 @@ namespace Cam
             if (_hasToggledGameObject) FollowTransform.position = _toggledGameObject.transform.position;
         }
     
+        /*
         public override void HandlePointInput(Vector2 userPoint)
         {
             if (!_enableEdgeScrolling) return;
@@ -48,6 +57,7 @@ namespace Cam
 
             _moveDirection = TranslateDirectionToForward(forward, sideways);
         }
+        */
 
         public override void HandleClickInput(InputAction.CallbackContext ctx)
         {
@@ -60,18 +70,6 @@ namespace Cam
             {
                 SetToggledGameObjectToNull();
             }
-        }
-        
-        private void SetToggledGameObjectToNull()
-        {
-            _toggledGameObject = null;
-            _hasToggledGameObject = false;
-        }
-
-        private void SetToggledGameObject(GameObject toggledGameObject)
-        {
-            _toggledGameObject = toggledGameObject;
-            _hasToggledGameObject = true;
         }
 
         public override void HandleDoubleClickInput(InputAction.CallbackContext ctx)
@@ -86,7 +84,7 @@ namespace Cam
 
         public override void Move(Vector3 direction)
         {
-            if (direction.sqrMagnitude != 0) _toggledGameObject = null;
+            if (direction.sqrMagnitude != 0) SetToggledGameObjectToNull();
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
             FollowTransform.position += translatedDirection * (_movementSpeed * Time.deltaTime);
         }
@@ -103,7 +101,19 @@ namespace Cam
             VirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(VirtualCamera.m_Lens.FieldOfView,
                 _targetZoom, Time.deltaTime * _zoomSpeed);
         }
+        
+        private void SetToggledGameObjectToNull()
+        {
+            _toggledGameObject = null;
+            _hasToggledGameObject = false;
+        }
 
+        private void SetToggledGameObject(GameObject toggledGameObject)
+        {
+            _toggledGameObject = toggledGameObject;
+            _hasToggledGameObject = true;
+        }
+        
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
         {
             return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;

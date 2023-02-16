@@ -4378,7 +4378,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FollowTransform: {fileID: 0}
-  CameraSwitcher: {fileID: 0}
+  IsDefault: 0
   _rotateSpeed: 1
   _minZoom: 80
   _maxZoom: 50
@@ -12932,6 +12932,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _cameras:
   - {fileID: 81382484}
+  - {fileID: 468449791}
   _currentActiveCameraIndex: 0
   _previousActiveCameraIndex: 0
   CameraTarget: {fileID: 774340907}

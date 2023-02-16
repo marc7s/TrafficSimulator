@@ -5,6 +5,13 @@ using UnityEngine.InputSystem;
 
 namespace Cam
 {
+    /// <summary>
+    /// The CameraState class is an abstract class that extends MonoBehaviour and defines the basic functionality for a camera state.
+    /// It requires the CinemachineVirtualCamera component to be attached and provides methods for setting the state as active or inactive,
+    /// setting the follow transform of the active camera, and handling virtual input methods. The virtual input methods
+    /// include handling escape input, point input, click input, double-click input, movement, horizontal rotation, and zooming. These methods
+    /// does nothing until they have been overriden. 
+    /// </summary>
     [RequireComponent(typeof(CinemachineVirtualCamera))]
     public abstract class CameraState : MonoBehaviour
     {
@@ -73,8 +80,5 @@ namespace Cam
             return;
         }
         #endregion
-
-        
-
     }
 }

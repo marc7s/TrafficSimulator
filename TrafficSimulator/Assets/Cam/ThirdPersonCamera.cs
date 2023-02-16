@@ -3,6 +3,11 @@ using UnityEngine.InputSystem;
 
 namespace Cam
 {
+    /// <summary>
+    /// Represents a third-person camera state.  It allows the camera to rotate horizontally, zoom in and out, and handle
+    /// the Escape key input to switch to the previous camera. The class has several configurable properties,
+    /// including rotate speed, minimum and maximum zoom, and zoom speed.
+    /// </summary>
     public class ThirdPersonCamera : CameraState
     {
         [Range(0, 1)] [SerializeField] private float _rotateSpeed = 1f;

@@ -4,6 +4,12 @@ using UnityEngine.InputSystem;
 
 namespace Cam
 {
+    /// <summary>
+    /// State manager used to handle cameras. It allows switching between multiple camera states,
+    /// with the current active camera defined by an index. The script also handles user input for camera movement, rotation, zoom, and other actions,
+    /// and toggling between different cameras based on user input. Additionally, the script contains methods for setting up input actions and subscribing
+    /// to user input events.
+    /// </summary>
     public class CameraSwitcher : MonoBehaviour
     {
         [SerializeField] private CameraState[] _cameras;
