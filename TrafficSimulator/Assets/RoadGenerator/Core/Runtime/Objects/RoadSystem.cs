@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEditor;
 using System.Collections.Generic;
 using System;
 
@@ -10,6 +11,7 @@ namespace RoadGenerator
         Right = -1
     }
     
+    [ExecuteInEditMode()]
     [Serializable]
 	public class RoadSystem : MonoBehaviour
 	{
@@ -21,6 +23,7 @@ namespace RoadGenerator
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
+        [SerializeField] private bool _spawnRoadsAtOrigin = false;
 
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
@@ -33,8 +36,25 @@ namespace RoadGenerator
         public void RemoveRoad(Road road) => _roads.Remove(road);
         public void AddNewRoad()
         {
+            Vector3 spawnPoint = Vector3.zero;
+            if(!_spawnRoadsAtOrigin)
+            {
+                RaycastHit hit;
+                SceneView sceneView = SceneView.lastActiveSceneView;
+                Camera camera = sceneView.camera;
+                
+                // Get the nearest point on the surface the camera is looking at
+                if(!camera || !Physics.Raycast(camera.transform.position, camera.transform.forward, out hit))
+                {
+                    Debug.LogError("No surface found in line of sight to spawn road. Make sure the surface you are looking at has a collider");
+                    return;
+                }
+                spawnPoint = hit.point;
+            }
+            
+
             // Instantiate a new road prefab
-            GameObject roadObj = Instantiate(_roadPrefab, _roadContainer.transform.position, Quaternion.identity);
+            GameObject roadObj = Instantiate(_roadPrefab, Vector3.zero, Quaternion.identity);
             
             // Set the name of the road
             roadObj.name = "Road" + RoadCount;
@@ -44,6 +64,10 @@ namespace RoadGenerator
             
             // Get the road from the prefab
             Road road = roadObj.GetComponent<Road>();
+
+            // Move the road to the spawn point
+            PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
+            pathCreator.bezierPath = new BezierPath(spawnPoint);
             
             // Set the road pointers
             road.RoadObject = roadObj;

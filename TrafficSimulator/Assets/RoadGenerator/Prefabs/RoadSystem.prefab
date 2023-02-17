@@ -49,7 +49,7 @@ MonoBehaviour:
   _roadContainer: {fileID: 2382052090468904982}
   _intersectionContainer: {fileID: 2768285544214366368}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
-  _intersectionPrefab: {fileID: 4250033334480819983, guid: 17ec948fcb0838a48adafe5412208c2f, type: 3}
+  _intersectionPrefab: {fileID: 5761927508822258430, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
   DrivingSide: -1
   _roads: []
 --- !u!1 &2382052090468904982
