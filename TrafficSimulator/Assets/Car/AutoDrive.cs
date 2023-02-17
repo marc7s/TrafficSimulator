@@ -207,7 +207,7 @@ namespace Car {
             {
                 // Set the target to the next point in the lane
                 int nextTargetIndex = (_targetIndex + 1 + _lane.Count) % _lane.Count;
-                if (_targetIndex >= _lane.Count -1)
+                if (_targetIndex + 1 >= _lane.Count)
                 {
                     _targetIndex = _roadEndBehaviour == RoadEndBehvaiour.Stop ? _targetIndex : nextTargetIndex;
                 }
