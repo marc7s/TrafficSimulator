@@ -44,7 +44,6 @@ namespace Car {
         [SerializeField] [Range(0, 100f)] private float _speed = 20f;
 
         // Shared variables
-        private Rigidbody _rigidbody;
 
         // Quality variables
         private int _targetIndex = 0;
@@ -66,7 +65,6 @@ namespace Car {
 
         void Start()
         {
-            _rigidbody = GetComponent<Rigidbody>();
             _vehicleController = GetComponent<VehicleController>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
             // Get the lane positions
