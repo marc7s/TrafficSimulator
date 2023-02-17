@@ -1,7 +1,7 @@
-using UnityEngine;
-
-namespace RoadGenerator {
-    public static class Names {
-        public static string RoadMeshHolder = "Road Mesh Holder";
-    }   
+namespace RoadGenerator 
+{
+    public static class Names 
+    {
+        public const string ROAD_MESH_HOLDER = "Road Mesh Holder";
+    }
 }
