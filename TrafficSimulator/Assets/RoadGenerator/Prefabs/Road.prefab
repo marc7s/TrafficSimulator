@@ -48,13 +48,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7492f488fd0840543b1c569a4b1bc2ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  road: {fileID: 3821395399200801449}
-  roadSystem: {fileID: 0}
+  RoadObject: {fileID: 0}
+  RoadSystem: {fileID: 0}
   LaneAmount: 1
   LaneWidth: 4
   Thickness: 0.15
   LaneVertexSpacing: 1
   DrawLanes: 0
+  _laneContainer: {fileID: 0}
+  _endOfPathInstruction: 2
+  _intersections: []
 --- !u!114 &2234105199191049172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,10 +72,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathCreator: {fileID: 4211003387211000974}
   autoUpdate: 1
-  FlattenSurface: 0
-  LaneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
-  BottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
-  TextureTilingScale: 100
+  _flattenSurface: 0
+  _laneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
+  _bottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
+  _textureTilingScale: 100
   _meshHolder: {fileID: 3821395399200801449}
 --- !u!114 &4211003387211000974
 MonoBehaviour:
@@ -106,7 +109,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 0
+    vertexPathUpToDate: 1
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 0

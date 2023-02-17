@@ -8,28 +8,28 @@ namespace RoadGenerator
     public class LaneFollower : MonoBehaviour
     {
         [Header("Lane selection")]
-        public Road Road;
-        public int LaneIndex;
+        [SerializeField] private Road _road;
+        [SerializeField] private int _laneIndex;
         
         [Header("Follower settings")]
-        public EndOfPathInstruction endOfPathInstruction;
-        public float speed = 15;
-        float distanceTravelled;
+        [SerializeField] private EndOfPathInstruction _endOfPathInstruction;
+        [SerializeField] private float _speed = 15;
+        private float _distanceTravelled;
 
         private Lane _lane;
         private float _height = 0;
 
         void Start() {
-            if (Road != null)
+            if (_road != null)
             {
                 // If the road has not updated yet there will be no lanes, so update them first
-                if(Road.Lanes.Count == 0)
+                if(_road.Lanes.Count == 0)
                 {
-                    Road.OnChange();
+                    _road.OnChange();
                 }
                 
                 // Check that the provided lane index is valid
-                if(LaneIndex < 0 || LaneIndex >= Road.Lanes.Count)
+                if(_laneIndex < 0 || _laneIndex >= _road.Lanes.Count)
                 {
                     Debug.LogError("Lane index out of range");
                     return;
@@ -39,7 +39,7 @@ namespace RoadGenerator
                 _height = GetComponent<Renderer>().bounds.size.y;
                 
                 // Get the lane from the road
-                _lane = Road.Lanes[LaneIndex];
+                _lane = _road.Lanes[_laneIndex];
             }
         }
 
@@ -47,9 +47,9 @@ namespace RoadGenerator
         {
             if (_lane != null)
             {
-                distanceTravelled += speed * Time.deltaTime;
-                transform.position = _lane.GetPositionAtDistance(distanceTravelled, endOfPathInstruction) + _height / 2 * Vector3.up;
-                transform.rotation = _lane.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+                _distanceTravelled += _speed * Time.deltaTime;
+                transform.position = _lane.GetPositionAtDistance(_distanceTravelled, _endOfPathInstruction) + _height / 2 * Vector3.up;
+                transform.rotation = _lane.GetRotationAtDistance(_distanceTravelled, _endOfPathInstruction);
             }
         }
     }

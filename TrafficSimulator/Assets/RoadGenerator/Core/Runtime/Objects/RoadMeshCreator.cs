@@ -6,16 +6,16 @@ namespace RoadGenerator
     [RequireComponent(typeof(Road))]
     public class RoadMeshCreator : PathSceneTool
     {
-        public bool FlattenSurface;
+        [SerializeField] private bool _flattenSurface;
 
         [Header ("Material settings")]
-        public Material LaneMaterial;
-        public Material BottomMaterial;
-        public float TextureTilingScale = 100;
+        [SerializeField] private Material _laneMaterial;
+        [SerializeField] private Material _bottomMaterial;
+        [SerializeField] private float _textureTilingScale = 100;
         
         private int _laneCount;
         private float _thickness;
-        private Material _laneMaterial;
+        private Material _laneMaterialCopy;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
         private Mesh _mesh;
@@ -31,7 +31,8 @@ namespace RoadGenerator
         public void UpdateMesh()
         {
             // Get the road
-            _road = GetComponent<Road>();
+            if(_road == null)
+                _road = GetComponent<Road>();
             
             // Set the lane count to avoid having to cast the enum to an int everytime
             _laneCount = (int)_road.LaneAmount;
@@ -41,9 +42,9 @@ namespace RoadGenerator
 
             // Create a copy of the lane material if it is not set, or the material is updated
             // This makes the material independent from other roads
-            if((_laneMaterial == null && LaneMaterial != null) || (_laneMaterial != null && LaneMaterial != null && _laneMaterial.name != LaneMaterial.name))
+            if((_laneMaterialCopy == null && _laneMaterial != null) || (_laneMaterialCopy != null && _laneMaterial != null && _laneMaterialCopy.name != _laneMaterial.name))
             {
-                _laneMaterial = new Material(LaneMaterial);
+                _laneMaterialCopy = new Material(_laneMaterial);
             }
                 
             
@@ -180,7 +181,7 @@ namespace RoadGenerator
                 1, 23, 16
             });
 
-            bool usePathNormals = !(path.space == PathSpace.xyz && FlattenSurface);
+            bool usePathNormals = !(path.space == PathSpace.xyz && _flattenSurface);
 
             for (int i = 0; i < path.NumPoints; i++) 
             {
@@ -401,10 +402,10 @@ namespace RoadGenerator
         }
 
         private void AssignMaterials() {
-            if (_laneMaterial != null && BottomMaterial != null) 
+            if (_laneMaterialCopy != null && _bottomMaterial != null) 
             {
                 // Calculate the texture tiling based on the length of the road and the texture height
-                float textureTiling = (path.length / LaneMaterial.mainTexture.height) * TextureTilingScale;
+                float textureTiling = (path.length / _laneMaterial.mainTexture.height) * _textureTilingScale;
                 
                 // Create an array of materials for the mesh renderer
                 // It will hold a bottom material, a side material and a material for each lane
@@ -413,14 +414,14 @@ namespace RoadGenerator
                 // Set the lane materials
                 for(int i = 0; i < 2 * _laneCount; i++)
                 {
-                    materials[i] = _laneMaterial;
+                    materials[i] = _laneMaterialCopy;
                 }
                 
                 // Set the bottom material
-                materials[2 * _laneCount] = BottomMaterial;
+                materials[2 * _laneCount] = _bottomMaterial;
                 
                 // Set the side material
-                materials[2 * _laneCount + 1] = BottomMaterial;
+                materials[2 * _laneCount + 1] = _bottomMaterial;
                 
                 // Assign the materials to the mesh renderer
                 _meshRenderer.sharedMaterials = materials;

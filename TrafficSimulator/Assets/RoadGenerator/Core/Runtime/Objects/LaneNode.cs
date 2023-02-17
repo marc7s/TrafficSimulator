@@ -1,6 +1,5 @@
 using UnityEngine;
 using DataModel;
-using System.Collections.Generic;
 
 namespace RoadGenerator 
 {
