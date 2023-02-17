@@ -18,6 +18,12 @@ namespace Car {
         Loop,
         Stop
     }
+    public enum ShowTargetLines {
+        None = 0,
+        Target = 1,
+        BrakeTarget = 2,
+        Both = 3
+    }
     public class AutoDrive : MonoBehaviour
     {
         [Header("Connections")]
@@ -32,11 +38,16 @@ namespace Car {
 
         [Header("Quality mode settings")]
         [SerializeField]
-        private bool _showTargetLines = false;
+        private ShowTargetLines _showTargetLines = ShowTargetLines.None;
+        [SerializeField]
+        [Tooltip("How far from the stopping point the vehicle will come to a full stop at")]
+        private float _brakeOffset = 5f;
+        [SerializeField]
         private float _maxRepositioningSpeed = 5f;
         [Range(0, 20f)]
         [SerializeField]
-        private float _targetLookaheadDistance = 10f;
+        [Tooltip("The distance the vehicle will look ahead to find the next target. This value will be multiplied by the current speed to increase the lookahead distance when the vehicle is going faster")]
+        private float _baseTLD = 10f;
 
         [Header("Performance mode settings")]
         [Range(0, 100f)]
@@ -48,6 +59,7 @@ namespace Car {
 
         // Quality variables
         private int _targetIndex = 0;
+        private float _targetLookaheadDistance = 0;
         private int _brakeTargetIndex = 0;
         private float _brakeDistance = 0;
         private Vector3 _target;
@@ -98,7 +110,6 @@ namespace Car {
     
         void Update()
         {
-            print("Throttle" + _vehicleController.throttleInput);
             if (_mode == Mode.Quality)
             {
                 // Update brake distance and target
@@ -107,7 +118,7 @@ namespace Car {
                 // Steer towards the target and update to next target
                 Q_SteerTowardsTarget();
                 Q_UpdateTarget();
-                if (_showTargetLines)
+                if (_showTargetLines != ShowTargetLines.None)
                 {
                     Q_DrawTargetLines();
                 }
@@ -122,6 +133,8 @@ namespace Car {
         {
             // Move it to the first position of the lane, offset in the opposite direction of the lane
             transform.position = _lane[0] - (2 * (_lane[1] - _lane[0]));
+            // Rotate it to face the first position of the lane
+            transform.rotation = Quaternion.LookRotation(_lane[1] - _lane[0]);
         }
         void Q_SteerTowardsTarget()
         {
@@ -142,6 +155,9 @@ namespace Car {
 
             // Calculate the dot product between our forward vector and the direction. If the target is in front of us, the dot product will be positive. If it's behind us, it will be negative
             float dot = Vector3.Dot(transform.forward, direction.normalized);
+
+            // Set new taget look ahead distance based on the current speed
+            _targetLookaheadDistance = _baseTLD * Math.Max(_vehicleController.speed / 20, 1);
 
             // If the vehicle is driving and the target is behind us and too far away
             if (_status == Status.Driving && dot < 0 && direction.magnitude > _targetLookaheadDistance + 1f)
@@ -203,7 +219,6 @@ namespace Car {
             }
 
             // If the vehicle is closer to the target than the brake distance, brake
-            print(Vector3.Distance(transform.position, Q_GetBrakeTarget()));
             if (Vector3.Distance(transform.position, Q_GetBrakeTarget()) <= _brakeDistance)
             {
                 _vehicleController.brakeInput = 1f;
@@ -245,9 +260,8 @@ namespace Car {
             if (_vehicleController.speed > 0)
             {
                 // Calculate the distance it will take to stop
-                _brakeDistance = 5 + (_vehicleController.speed / 2) + _vehicleController.speed * _vehicleController.speed / (_vehicleController.tireFriction * 9.81f);
+                _brakeDistance = _brakeOffset + (_vehicleController.speed / 2) + _vehicleController.speed * _vehicleController.speed / (_vehicleController.tireFriction * 9.81f);
             }
-            print("Brake distance: " + _brakeDistance);
         }
 
         Vector3 Q_GetTarget()
@@ -263,8 +277,20 @@ namespace Car {
         // Draw snoks for target and brake target
         void Q_DrawTargetLines()
         {
-            _targetLineRenderer.positionCount = 3;
-            _targetLineRenderer.SetPositions(new Vector3[] {Q_GetTarget(), transform.position, Q_GetBrakeTarget()});
+            _targetLineRenderer.positionCount = (_showTargetLines == ShowTargetLines.Target) || (_showTargetLines == ShowTargetLines.BrakeTarget) ? 2 : 3;
+            if (_showTargetLines == ShowTargetLines.Target)
+            {
+                _targetLineRenderer.SetPositions(new Vector3[] {Q_GetTarget(), transform.position});
+            }
+            else if (_showTargetLines == ShowTargetLines.BrakeTarget)
+            {
+                _targetLineRenderer.SetPositions(new Vector3[] {Q_GetBrakeTarget(), transform.position});
+            }
+            else
+            {
+                _targetLineRenderer.SetPositions(new Vector3[] {Q_GetBrakeTarget(), transform.position, Q_GetTarget()});
+            }
+           
         }
 
         // Performance methods
