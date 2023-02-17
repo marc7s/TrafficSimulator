@@ -224,11 +224,11 @@ namespace Car {
             // Also, do not brake at the end node if we are looping
             if (Vector3.Distance(transform.position, _brakeTarget.Position) <= _brakeDistance && !(_roadEndBehaviour == RoadEndBehaviour.Loop && _brakeTarget == _endNode))
             {
-                _vehicleController.brakeInput = 1f;
+                _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
                 _vehicleController.throttleInput = 0f;
             }
             // If the vehicle is further away from the target than the brake distance, accelerate
-            else if (Vector3.Distance(transform.position, _brakeTarget.Position) > _brakeDistance)
+            else if (Vector3.Distance(transform.position, _brakeTarget) > _brakeDistance + 1)
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
