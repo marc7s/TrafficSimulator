@@ -27,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250033333327060663}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.1, z: 0}
+  m_LocalPosition: {x: 0, y: 0.01, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 69561553b86bde34da494d1ffed3ba45, type: 2}
+  - {fileID: 2100000, guid: 5c270a73328a99e439fec44a0cf3a17d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -125,7 +125,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250033334063313269}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.1, z: 0}
+  m_LocalPosition: {x: 0, y: 0.01, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -160,7 +160,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 69561553b86bde34da494d1ffed3ba45, type: 2}
+  - {fileID: 2100000, guid: 5c270a73328a99e439fec44a0cf3a17d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -221,7 +221,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4250033334480819983}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.7299995, y: -0.099990845, z: 13.315}
+  m_LocalPosition: {x: -6.7299995, y: 0, z: 13.315}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -243,8 +243,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   IntersectionObject: {fileID: 0}
-  _startConnectionPointObject: {fileID: 0}
-  _endConnectionPointObject: {fileID: 0}
   RoadSystem: {fileID: 0}
   IntersectionPosition: {x: 0, y: 0, z: 0}
   Road1: {fileID: 0}
@@ -255,4 +253,3 @@ MonoBehaviour:
   Road1AnchorPoint2: {x: 0, y: 0, z: 0}
   Road2AnchorPoint1: {x: 0, y: 0, z: 0}
   Road2AnchorPoint2: {x: 0, y: 0, z: 0}
-  IntersectionLength: 20
