@@ -195,7 +195,7 @@ namespace Car {
             {
                 // Set the target to the next point in the lane
                 int nextTargetIndex = getNextIndex(_targetIndex);
-                if (_targetIndex >= _lane.Count -1)
+                if (_targetIndex + 1 >= _lane.Count)
                 {
                     _targetIndex = _roadEndBehaviour == RoadEndBehvaiour.Stop ? _targetIndex : nextTargetIndex;
                 }
@@ -254,7 +254,7 @@ namespace Car {
             return (index + 1 + _lane.Count) % _lane.Count;
         }
         
-        // Draw snoks for target and brake target
+        // Draw lines towards steering and braking target
         void Q_DrawTargetLines()
         {
             switch (_showTargetLines)
