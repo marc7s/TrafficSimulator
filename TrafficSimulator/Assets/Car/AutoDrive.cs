@@ -274,7 +274,7 @@ namespace Car {
             return _status == Status.Driving ? _brakeTarget : _lane[_brakeTargetIndex];
         }
         
-        // Draw snoks for target and brake target
+        // Draw lines towards steering and braking target
         void Q_DrawTargetLines()
         {
             _targetLineRenderer.positionCount = (_showTargetLines == ShowTargetLines.Target) || (_showTargetLines == ShowTargetLines.BrakeTarget) ? 2 : 3;
