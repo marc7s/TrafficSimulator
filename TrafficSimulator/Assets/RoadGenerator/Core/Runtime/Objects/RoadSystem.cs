@@ -77,7 +77,8 @@ namespace RoadGenerator
             }
         }
 
-        public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2){
+        public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
+        {
             Vector3 intersectionPosition = new Vector3(intersectionPointData.Position.x, 0, intersectionPointData.Position.y);
             GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPosition, intersectionPointData.Rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
