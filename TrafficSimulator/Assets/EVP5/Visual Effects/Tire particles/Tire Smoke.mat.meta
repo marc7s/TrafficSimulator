@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: ddf38ea5fe32a0b4086ec71f2f7b91d8
+labels:
+- car
+- vehicle
+- wheel
+- tire
+- physics
+- bus
+- truck
+- suspension
+- skidmark
+- pickup
+- carpaint
+- driving
+timeCreated: 1436702864
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
