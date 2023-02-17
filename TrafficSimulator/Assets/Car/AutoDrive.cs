@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Linq;
 using System;
 using EVP;
-
 namespace Car {
     enum Status {
         Driving,
@@ -24,35 +23,25 @@ namespace Car {
         BrakeTarget = 2,
         Both = 3
     }
+
     public class AutoDrive : MonoBehaviour
     {
         [Header("Connections")]
-        [SerializeField]
-        private GameObject _laneObject;
+        [SerializeField] private GameObject _laneObject;
 
         [Header("Settings")]
-        [SerializeField]
-        private Mode _mode = Mode.Quality;
-        [SerializeField]
-        private RoadEndBehvaiour _roadEndBehaviour = RoadEndBehvaiour.Loop;
+        [SerializeField] private Mode _mode = Mode.Quality;
+        [SerializeField] private RoadEndBehvaiour _roadEndBehaviour = RoadEndBehvaiour.Loop;
 
         [Header("Quality mode settings")]
-        [SerializeField]
-        private ShowTargetLines _showTargetLines = ShowTargetLines.None;
-        [SerializeField]
-        [Tooltip("How far from the stopping point the vehicle will come to a full stop at")]
-        private float _brakeOffset = 5f;
-        [SerializeField]
-        private float _maxRepositioningSpeed = 5f;
-        [Range(0, 20f)]
-        [SerializeField]
-        [Tooltip("The distance the vehicle will look ahead to find the next target. This value will be multiplied by the current speed to increase the lookahead distance when the vehicle is going faster")]
-        private float _baseTLD = 10f;
+        [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
+        [SerializeField] [Tooltip("How far from the stopping point the vehicle will come to a full stop at")] private float _brakeOffset = 5f;
+        [SerializeField] private float _maxRepositioningSpeed = 5f;
+        [SerializeField] [Range(0, 20f)] [Tooltip("The distance the vehicle will look ahead to find the next target. This value will be multiplied by the current speed to increase the lookahead distance when the vehicle is going faster")] private float _baseTLD = 10f;
+        [SerializeField] [Tooltip("This constant is used to divide the speed multiplier when calculating the new TLD. Higher value = shorter TLD. Lower value = longer TLD")] private int _TLDSpeedDivider = 20;
 
         [Header("Performance mode settings")]
-        [Range(0, 100f)]
-        [SerializeField]
-        private float _speed = 20f;
+        [SerializeField] [Range(0, 100f)] private float _speed = 20f;
 
         // Shared variables
         private Rigidbody _rigidbody;
@@ -106,8 +95,7 @@ namespace Car {
                 P_MoveToFirstPosition();
             }
         }
-    
-    
+
         void Update()
         {
             if (_mode == Mode.Quality)
@@ -156,8 +144,8 @@ namespace Car {
             // Calculate the dot product between our forward vector and the direction. If the target is in front of us, the dot product will be positive. If it's behind us, it will be negative
             float dot = Vector3.Dot(transform.forward, direction.normalized);
 
-            // Set new taget look ahead distance based on the current speed
-            _targetLookaheadDistance = _baseTLD * Math.Max(_vehicleController.speed / 20, 1);
+            // Set new taget look ahead distance based on the current speed, if the speed is very low, use the base look ahead distance (multiplied by 1)
+            _targetLookaheadDistance = Math.Max(_baseTLD * _vehicleController.speed / _TLDSpeedDivider, _baseTLD);
 
             // If the vehicle is driving and the target is behind us and too far away
             if (_status == Status.Driving && dot < 0 && direction.magnitude > _targetLookaheadDistance + 1f)
@@ -166,7 +154,7 @@ namespace Car {
                 _status = Status.RepositioningInitiated;
 
                 // Reposition to the point prior to the one we missed
-                _repositioningTargetIndex = (_targetIndex - _repositioningOffset + _lane.Count) % _lane.Count;
+                _repositioningTargetIndex = getNextIndex(_targetIndex - 1 - _repositioningOffset);
 
                 // Slow down and limit the max speed to the repositioning speed or 30% of the max speed, whichever is lower
                 _vehicleController.brakeInput = 1f;
@@ -193,7 +181,7 @@ namespace Car {
                     _status = Status.Driving;
                     
                     // Set the target to the one after the target we missed
-                    _targetIndex = (_repositioningTargetIndex + _repositioningOffset + 1 + _lane.Count) % _lane.Count;
+                    _targetIndex = getNextIndex(_repositioningTargetIndex + _repositioningOffset);
                     _target = _lane[_targetIndex];
                     
                     // Reset the max speed to the original, and set the acceleration to the max again
@@ -206,7 +194,7 @@ namespace Car {
             else if (_status == Status.Driving && dot > 0 && direction.magnitude <= _targetLookaheadDistance)
             {
                 // Set the target to the next point in the lane
-                int nextTargetIndex = (_targetIndex + 1 + _lane.Count) % _lane.Count;
+                int nextTargetIndex = getNextIndex(_targetIndex);
                 if (_targetIndex >= _lane.Count -1)
                 {
                     _targetIndex = _roadEndBehaviour == RoadEndBehvaiour.Stop ? _targetIndex : nextTargetIndex;
@@ -219,13 +207,13 @@ namespace Car {
             }
 
             // If the vehicle is closer to the target than the brake distance, brake
-            if (Vector3.Distance(transform.position, Q_GetBrakeTarget()) <= _brakeDistance)
+            if (Vector3.Distance(transform.position, _brakeTarget) <= _brakeDistance)
             {
                 _vehicleController.brakeInput = 1f;
                 _vehicleController.throttleInput = 0f;
             }
             // If the vehicle is further away from the target than the brake distance, accelerate
-            else if (Vector3.Distance(transform.position, Q_GetBrakeTarget()) > _brakeDistance)
+            else if (Vector3.Distance(transform.position, _brakeTarget) > _brakeDistance)
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
@@ -234,24 +222,16 @@ namespace Car {
 
         void Q_UpdateBrakeTarget()
         {
-            // If the brake target is a stop target, do nothing
-            /*
-            if (_brakeTarget.type = TargetType.Stop)
-            {
-                return;
-            }
-            */
             // Set the brake target point to the point closest to the target that is at least _brakeDistance points away
-            while (Vector3.Distance(transform.position, Q_GetBrakeTarget()) < _brakeDistance)
+            while (Vector3.Distance(transform.position, _brakeTarget) < _brakeDistance)
             {
                 if (_brakeTargetIndex + 1 >= _lane.Count)
                 {
                     return;
                 }
-                _brakeTargetIndex = (_brakeTargetIndex + 1 + _lane.Count) % _lane.Count;
+                _brakeTargetIndex = getNextIndex(_brakeTargetIndex);
                 _brakeTarget = _lane[_brakeTargetIndex];
             }
-            
         }
 
         void Q_UpdateBrakeDistance()
@@ -269,28 +249,29 @@ namespace Car {
             return _status == Status.Driving ? _target : _lane[_repositioningTargetIndex];
         }
 
-        Vector3 Q_GetBrakeTarget()
+        Vector3 getNextIndex(int index)
         {
-            return _status == Status.Driving ? _brakeTarget : _lane[_brakeTargetIndex];
+            return (index + 1 + _lane.Count) % _lane.Count;
         }
         
         // Draw snoks for target and brake target
         void Q_DrawTargetLines()
         {
-            _targetLineRenderer.positionCount = (_showTargetLines == ShowTargetLines.Target) || (_showTargetLines == ShowTargetLines.BrakeTarget) ? 2 : 3;
-            if (_showTargetLines == ShowTargetLines.Target)
+            switch (_showTargetLines)
             {
-                _targetLineRenderer.SetPositions(new Vector3[] {Q_GetTarget(), transform.position});
+                case ShowTargetLines.Target:
+                    _targetLineRenderer.positionCount = 2;
+                    _targetLineRenderer.SetPositions(new Vector3[] {Q_GetTarget(), transform.position});
+                    break;
+                case ShowTargetLines.BrakeTarget:
+                    _targetLineRenderer.positionCount = 2;
+                    _targetLineRenderer.SetPositions(new Vector3[] {_brakeTarget, transform.position});
+                    break;
+                case ShowTargetLines.Both:
+                    _targetLineRenderer.positionCount = 3;
+                     _targetLineRenderer.SetPositions(new Vector3[] {_brakeTarget, transform.position, Q_GetTarget()});
+                    break;
             }
-            else if (_showTargetLines == ShowTargetLines.BrakeTarget)
-            {
-                _targetLineRenderer.SetPositions(new Vector3[] {Q_GetBrakeTarget(), transform.position});
-            }
-            else
-            {
-                _targetLineRenderer.SetPositions(new Vector3[] {Q_GetBrakeTarget(), transform.position, Q_GetTarget()});
-            }
-           
         }
 
         // Performance methods
