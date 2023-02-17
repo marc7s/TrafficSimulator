@@ -249,7 +249,7 @@ namespace Car {
             return _status == Status.Driving ? _target : _lane[_repositioningTargetIndex];
         }
 
-        Vector3 getNextIndex(int index)
+        int getNextIndex(int index)
         {
             return (index + 1 + _lane.Count) % _lane.Count;
         }
