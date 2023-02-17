@@ -13,7 +13,7 @@ namespace RoadGenerator
         [MenuItem("GameObject/RoadGenerator/Create road system", priority = MenuPriority)]
         private static void CreateRoadSystem()
         {
-            SafeInstantiate(prefabManager => prefabManager.RoadSystem, instance => addRoadSystem(instance));
+            SafeInstantiate(prefabManager => prefabManager.RoadSystem, instance => AddRoadSystem(instance));
         }
 
         private static void SafeInstantiate(Func<PrefabManager, GameObject> itemSelector, Func<UnityEngine.Object, bool> onInstantiate)
@@ -33,7 +33,7 @@ namespace RoadGenerator
             Undo.RegisterCreatedObjectUndo(instance, $"Create {instance.name}");
         }
 
-        private static bool addRoadSystem(UnityEngine.Object instance)
+        private static bool AddRoadSystem(UnityEngine.Object instance)
         {
             GameObject roadSystemObject = instance as GameObject;
 
@@ -54,7 +54,7 @@ namespace RoadGenerator
                     roadToSelect = road.gameObject;
                 }
 
-                road.GetComponent<PathSceneTool>().TriggerUpdate();
+                road.GetComponent<Road>().OnChange();
             }
 
             return true;

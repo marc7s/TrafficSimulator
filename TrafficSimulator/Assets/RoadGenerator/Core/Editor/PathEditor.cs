@@ -34,7 +34,7 @@ namespace RoadGeneratorEditor
 
 		// References:
 		PathCreator creator;
-		Road thisRoad;
+		Road road;
 		Editor globalDisplaySettingsEditor;
 		ScreenSpacePolyLine screenSpaceLine;
 		ScreenSpacePolyLine.MouseInfo pathMouseInfo;
@@ -401,10 +401,15 @@ namespace RoadGeneratorEditor
 		}
 		void ProcessBezierPathInput(Event e)
 		{
-			// when the handles are being moves, update the intersections
-			if (draggingHandleIndex != -1 && e.type == EventType.MouseUp)
+			// Check if a handle is being dragged
+			if (draggingHandleIndex != -1)
 			{
-				IntersectionCreator.UpdateIntersections(thisRoad);
+				// If the handle was just released, call the OnChange event
+				// Otherwise the handle is still being dragged, so call the OnMove event
+				if(e.type == EventType.MouseUp)
+					road.OnChange();
+				else
+					road.OnDrag();
 			}
 			
 			// Find which handle mouse is over. Start by looking at previous handle index first, as most likely to still be closest to mouse
@@ -467,7 +472,9 @@ namespace RoadGeneratorEditor
 							bezierPath.AddSegmentToEnd(newPointLocal);
 						}
 					}
-					IntersectionCreator.UpdateIntersections(thisRoad);
+					
+					// A node was added, so we update the road
+					road.OnChange();
 				}
 			}
 
@@ -483,6 +490,10 @@ namespace RoadGeneratorEditor
 						handleIndexToDisplayAsTransform = -1;
 					}
 					mouseOverHandleIndex = -1;
+					
+					// A node was removed, so we update the road
+					road.OnChange();
+					
 					Repaint();
 				}
 			}
@@ -516,21 +527,30 @@ namespace RoadGeneratorEditor
 
 		}
 
-		Road GetRoad(PathCreator pathCreator)
+		Road TryGetRoad(PathCreator pathCreator)
 		{
 			RoadSystem roadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
-			Road thisRoad = null;
-			foreach (Road road in roadSystem.Roads) {
-				if (road.RoadObject.GetComponent<PathCreator>() == pathCreator) {
-					thisRoad = road;
+			
+			// If Unity has been restarted and the road system reset, we need to set it up again
+			if(roadSystem.RoadCount < 1)
+			{
+				roadSystem.Setup();
+			}
+
+			Road foundRoad = null;
+			foreach (Road road in roadSystem.Roads)
+			{
+				if (road.RoadObject.GetComponent<PathCreator>() == pathCreator)
+				{
+					foundRoad = road;
 					break;
 				}
 			}
-			if (thisRoad == null) {
-				Debug.Log("ERROR, Road not found");
+			if (foundRoad == null) {
+				Debug.LogError("ERROR, Road not found");
 				return null;
 			}
-			return thisRoad;
+			return foundRoad;
 		}
 		
 		
@@ -738,7 +758,6 @@ namespace RoadGeneratorEditor
 			{
 				Undo.RecordObject(creator, "Move point");
 				bezierPath.MovePoint(i, localHandlePosition);
-
 			}
 
 		}
@@ -755,7 +774,7 @@ namespace RoadGeneratorEditor
 		void OnEnable()
 		{
 			creator = (PathCreator)target;
-			thisRoad = GetRoad(creator);
+			road = TryGetRoad(creator);
 			bool in2DEditorMode = EditorSettings.defaultBehaviorMode == EditorBehaviorMode.Mode2D;
 			creator.InitializeEditorData(in2DEditorMode);
 

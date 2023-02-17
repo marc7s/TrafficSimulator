@@ -25,7 +25,7 @@ namespace RoadGenerator
                 // If the road has not updated yet there will be no lanes, so update them first
                 if(Road.Lanes.Count == 0)
                 {
-                    Road.Update();
+                    Road.OnChange();
                 }
                 
                 // Check that the provided lane index is valid

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RoadGenerator 
 {
     [RequireComponent(typeof(Road))]
-    public class RoadMeshCreator : PathSceneTool 
+    public class RoadMeshCreator : PathSceneTool
     {
         public bool FlattenSurface;
 
@@ -12,19 +12,23 @@ namespace RoadGenerator
         public Material LaneMaterial;
         public Material BottomMaterial;
         public float TextureTilingScale = 100;
+        
         private int _laneCount;
         private float _thickness;
         private Material _laneMaterial;
-
-        [SerializeField, HideInInspector]
-        private GameObject _meshHolder;
-
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
         private Mesh _mesh;
         private Road _road;
+        [SerializeField, HideInInspector] private GameObject _meshHolder;
 
-        protected override void PathUpdated() 
+        protected override void PathUpdated()
+        {
+            // Do nothing when the path is updated
+            // The road mesh will only be updated when the road requests it
+        }
+
+        public void UpdateMesh()
         {
             // Get the road
             _road = GetComponent<Road>();
@@ -45,16 +49,13 @@ namespace RoadGenerator
             
             if (pathCreator != null) 
             {
-                // Update the road
-                _road.DoNotUse_TriggerUpdate();
-                
                 AssignMeshComponents();
                 AssignMaterials();
                 CreateRoadMesh();
             }
         }
 
-        void CreateRoadMesh() 
+        private void CreateRoadMesh()
         {
             // The number of vertices required per component of the road
             int edgeVertsPerPoint = 2;
@@ -366,7 +367,7 @@ namespace RoadGenerator
         }
 
         // Add MeshRenderer and MeshFilter components to this GameObject if not already attached
-        void AssignMeshComponents() 
+        private void AssignMeshComponents() 
         {
             // Let the road itself hold the mesh
             if (_meshHolder == null) 
@@ -399,7 +400,7 @@ namespace RoadGenerator
             _meshFilter.sharedMesh = _mesh;
         }
 
-        void AssignMaterials() {
+        private void AssignMaterials() {
             if (_laneMaterial != null && BottomMaterial != null) 
             {
                 // Calculate the texture tiling based on the length of the road and the texture height

@@ -1,9 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 namespace RoadGenerator
 {
 [ExecuteInEditMode()]
+[Serializable]
 public class Intersection : MonoBehaviour
 {
     [HideInInspector] public GameObject IntersectionObject;
@@ -31,10 +33,10 @@ public class Intersection : MonoBehaviour
         Road2PathCreator.bezierPath.RemoveAnchors(new List<Vector3>{ Road2AnchorPoint1, Road2AnchorPoint2 });
         
         // Remove reference to intersection in the roads
-        if (Road1?.Intersections.Contains(this) == true)
-            Road1.Intersections.Remove(this);
-        if (Road2?.Intersections.Contains(this) == true)
-            Road2.Intersections.Remove(this);
+        if (Road1?.HasIntersection(this) == true)
+            Road1.RemoveIntersection(this);
+        if (Road2?.HasIntersection(this) == true)
+            Road2.RemoveIntersection(this);
     }
 }
 }

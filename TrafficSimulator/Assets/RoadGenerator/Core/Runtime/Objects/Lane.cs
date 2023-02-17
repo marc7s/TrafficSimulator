@@ -65,7 +65,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Get the first lane node of the lane</summary>
-        public LaneNode Start
+        public LaneNode StartNode
         {
             get => _start;
         }

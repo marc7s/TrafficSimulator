@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace RoadGenerator
 {
@@ -12,9 +13,11 @@ namespace RoadGenerator
         Four = 4
     }
 
+    
     [ExecuteInEditMode()]
     [RequireComponent(typeof(PathCreator))]
-    [RequireComponent(typeof(PathSceneTool))]
+    [RequireComponent(typeof(RoadMeshCreator))]
+    [Serializable]
 	public class Road : MonoBehaviour
 	{
         [Header ("Connections")]
@@ -29,17 +32,15 @@ namespace RoadGenerator
         [Header ("Lane settings")]
         [Range(0.1f, 10f)] public float LaneVertexSpacing = 1f;
         public bool DrawLanes = false;
-        private bool started = true;
         
-        private RoadNode _start = new RoadNode(Vector3.zero, RoadNodeType.End);
-        private List<Lane> _lanes = new List<Lane>();
-        private GameObject _laneContainer;
-        private VertexPath _path;
+        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, RoadNodeType.End);
+        [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
+        [SerializeField][HideInInspector] private GameObject _laneContainer;
+        [SerializeField][HideInInspector] private VertexPath _path;
 
-        private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
-        [HideInInspector]
-        
-        public List<Intersection> Intersections = new List<Intersection>();
+        [SerializeField][HideInInspector] private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
+
+        [HideInInspector] public List<Intersection> _intersections = new List<Intersection>();
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
@@ -57,25 +58,50 @@ namespace RoadGenerator
             }
         }
 
-        /// <summary>Used to trigger an update of the road through the PathSceneTool</summary>
-        public void Update()
+        public Intersection[] GetIntersections()
         {
-            PathSceneTool pathSceneTool = RoadObject.GetComponent<PathSceneTool>();
-            pathSceneTool.TriggerUpdate();
+            return _intersections.ToArray();
         }
-        
-        /// <summary>DO NOT USE. Used by the mesh generation to trigger an update of the road</summary>
-        public void DoNotUse_TriggerUpdate()
-        {
-            // Run the OnStart method once
-            if(started)
-            {
-                OnStart();
-                started = false;
-            }
 
-            UpdateRoadNodes();
-            UpdateLanes();
+        public bool HasIntersection(Intersection intersection)
+        {
+            return _intersections.Contains(intersection);
+        }
+
+        public void AddIntersection(Intersection intersection)
+        {
+            _intersections.Add(intersection);
+        }
+        public bool RemoveIntersection(Intersection intersection)
+        {
+            _intersections.Remove(intersection);
+            UpdateRoad();
+            return true;
+        }
+
+        /// <summary>This function is called during the time a node is being dragged</summary>
+        public void OnDrag()
+        {
+            // Do nothing when nodes are moved
+        }
+
+        /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
+        public void OnChange()
+        {
+            // Update the intersections and road when a node is changed
+            IntersectionCreator.UpdateIntersections(this);
+            UpdateRoad();
+        }
+
+        private void UpdateRoad()
+        {
+            RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
+            if(roadMeshCreator != null)
+            {
+                UpdateRoadNodes();
+                UpdateLanes();
+                roadMeshCreator.UpdateMesh();
+            }
         }
         
         /// <summary>Updates the road nodes</summary>
@@ -117,7 +143,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Updates the lanes</summary>
-        public void UpdateLanes()
+        private void UpdateLanes()
         {
             // Get the lane count
             int laneCount = (int)LaneAmount;
@@ -220,14 +246,14 @@ namespace RoadGenerator
             lr.endWidth = width;
             
             // Set the positions
-            lr.positionCount = lane.Start.Count;
-            lr.SetPositions(lane.Start.GetPositions());
+            lr.positionCount = lane.StartNode.Count;
+            lr.SetPositions(lane.StartNode.GetPositions());
         }
 
         /// <summary>Draws a lane</summary>
         private static void DrawLane(Road road, Lane lane, Color color, GameObject parent)
         {
-            if(lane.Start.Count < 1) return;
+            if(lane.StartNode.Count < 1) return;
             
             // Create the lane object
             GameObject laneObject = new GameObject();
@@ -250,7 +276,7 @@ namespace RoadGenerator
         {
             get => _lanes;
         }
-        public RoadNode Start
+        public RoadNode StartNode
         {
             get => _start;
         }
@@ -262,11 +288,11 @@ namespace RoadGenerator
         void OnDestroy()
         {
             RoadSystem.RemoveRoad(this);
-            int count = Intersections.Count;
+            int count = _intersections.Count;
             for (var i = 0; i < count; i++)
             {
-                Intersection intersection = Intersections[0];
-                Intersections.RemoveAt(0);
+                Intersection intersection = _intersections[0];
+                _intersections.RemoveAt(0);
                 DestroyImmediate(intersection.gameObject);
             }
         }

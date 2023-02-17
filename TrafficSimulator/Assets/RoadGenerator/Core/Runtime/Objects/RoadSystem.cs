@@ -15,13 +15,14 @@ namespace RoadGenerator
 	{
         [Header("Connections")]       
         [SerializeField] private GameObject _roadContainer;
+        [SerializeField] private GameObject _intersectionContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _intersectionPrefab;
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
 
-        private List<Road> _roads = new List<Road>();
+        [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
         public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
 
@@ -49,16 +50,39 @@ namespace RoadGenerator
             road.RoadSystem = this;
             
             // Update the road to display it
-            road.Update();
+            road.OnChange();
 
             AddRoad(road);
+        }
+
+        // Since serialization did not work, this sets up the road system by locating all its roads and intersections
+        public void Setup()
+        {
+            // Find roads
+            foreach(Transform roadT in _roadContainer.transform)
+            {
+                Road road = roadT.GetComponent<Road>();
+                road.RoadSystem = this;
+                
+                AddRoad(road);
+            }
+
+            // Find intersections
+            foreach(Transform intersectionT in _intersectionContainer.transform)
+            {
+                Intersection intersection = intersectionT.GetComponent<Intersection>();
+                intersection.RoadSystem = this;
+                
+                AddIntersection(intersection);
+            }
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2){
             Vector3 intersectionPosition = new Vector3(intersectionPointData.Position.x, 0, intersectionPointData.Position.y);
             GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPosition, intersectionPointData.Rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
-            intersectionObject.transform.parent = this.transform;
+            intersectionObject.transform.parent = _intersectionContainer.transform;
+            
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
@@ -71,8 +95,9 @@ namespace RoadGenerator
             intersection.Road1AnchorPoint2 = intersectionPointData.Road1AnchorPoint2;
             intersection.Road2AnchorPoint1 = intersectionPointData.Road2AnchorPoint1;
             intersection.Road2AnchorPoint2 = intersectionPointData.Road2AnchorPoint2;
-            road1.Intersections.Add(intersection);
-            road2.Intersections.Add(intersection);
+            
+            road1.AddIntersection(intersection);
+            road2.AddIntersection(intersection);
             AddIntersection(intersection);
             
             return intersection;
