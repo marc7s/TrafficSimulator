@@ -40,7 +40,7 @@ namespace Car {
         [SerializeField]
         private ShowTargetLines _showTargetLines = ShowTargetLines.None;
         [SerializeField]
-        [Tooltip("How far from the stopping point the vehicle will come to a full stop at")]
+        [Tooltip("How far from the stopping point the vehicle will come to a full stop")]
         private float _brakeOffset = 5f;
         [SerializeField]
         private float _maxRepositioningSpeed = 5f;
