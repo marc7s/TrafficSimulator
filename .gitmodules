@@ -1,6 +1,3 @@
 [submodule "Documentation"]
 	path = Documentation
 	url = https://github.com/marc7s/Traffic-Simulator-Documentation
-[submodule "TrafficSimulator/Assets/RoadArchitect"]
-	path = TrafficSimulator/Assets/RoadArchitect
-	url = https://github.com/marc7s/RoadArchitect
