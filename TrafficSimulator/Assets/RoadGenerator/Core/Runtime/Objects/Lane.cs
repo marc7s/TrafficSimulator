@@ -37,7 +37,7 @@ namespace RoadGenerator
             this._path = path;
 
             // Create the start node for the lane
-            _start = new LaneNode(path.GetPoint(0), path.GetRotation(0, _road.EndOfPathInstruction), roadNode);
+            _start = new LaneNode(path.GetPoint(0), GetNodeRotation(0, _road.EndOfPathInstruction), roadNode);
             
             // Create a previous and current node that will be used when creating the linked list
             LaneNode prev = null;
@@ -51,7 +51,7 @@ namespace RoadGenerator
             {
                 // Update the prev and create a new current node
                 prev = curr;
-                curr = new LaneNode(path.GetPoint(i), path.GetRotationAtDistance(path.cumulativeLengthAtEachVertex[i], _road.EndOfPathInstruction), currRoadNode, prev, null);
+                curr = new LaneNode(path.GetPoint(i), GetNodeRotation(path.cumulativeLengthAtEachVertex[i], _road.EndOfPathInstruction), currRoadNode, prev, null);
 
                 // Set the next pointer for the previous node
                 prev.Next = curr;
@@ -62,6 +62,13 @@ namespace RoadGenerator
                     currRoadNode = currRoadNode.Next;
                 }
             }
+        }
+
+        /// <summary>Get the rotation of a node at a distance from the start of the path</summary>
+        private Quaternion GetNodeRotation(float distance, EndOfPathInstruction endOfPathInstruction)
+        {
+            // Since the node rotation is the same as the normal, we need to rotate it 90 degrees to get the node rotation pointing upwards
+            return _path.GetRotationAtDistance(distance, endOfPathInstruction) * Quaternion.Euler(Vector3.forward * 90);
         }
 
         /// <summary>Get the first lane node of the lane</summary>
