@@ -54,6 +54,21 @@ namespace RoadGenerator
             }
         }
 
+        /// <summary>Returns the last node in the linked list</summary>
+        public T Last
+        {
+            get
+            {
+                T curr = (T)this;
+                
+                while(curr.Next != null)
+                {
+                    curr = curr.Next;
+                }
+                return curr;
+            }
+        }
+
         /// <summary>Returns all linked node positions as an array</summary>
         public Vector3[] GetPositions()
         {
