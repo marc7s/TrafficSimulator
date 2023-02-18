@@ -91,6 +91,7 @@ namespace RoadGenerator
             // Update the intersections and road when a node is changed
             IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
+            RoadSystem.UpdateRoadSystemGraph();
         }
 
         private void UpdateRoad()
@@ -110,6 +111,7 @@ namespace RoadGenerator
             // Create the vertex path for the road
             BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
             _path = new VertexPath(path, transform, LaneVertexSpacing);
+
 
             // Set the end of path instruction depending on if the path is closed or not
             this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;

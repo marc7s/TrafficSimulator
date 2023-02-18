@@ -20,6 +20,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _intersectionContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _intersectionPrefab;
+        public GameObject Graph;
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
@@ -28,6 +29,8 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
         public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
+
+        public Dictionary<string, GraphNode> RoadGraph;
 
         public void AddIntersection(Intersection intersection) => Intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => Intersections.Remove(intersection);
@@ -138,6 +141,37 @@ namespace RoadGenerator
                 }
             }
             return false;
+        }
+        public void UpdateRoadSystemGraph()
+        {
+            // Clear the graph
+            ClearRoadGraph();
+            
+            // Create a new empty graph
+            CreateEmptyRoadGraph();
+            
+            // Generate a new graph
+            RoadGraph = RoadSystemGraph.GenerateRoadGraph(this);
+
+            // Display the graph if the setting is active
+           // if (ShowGraph) {
+                RoadSystemGraph.DrawGraph(this, RoadGraph);
+            //}
+                
+        }
+
+        private void ClearRoadGraph() {
+            RoadGraph = null;
+            if(Graph != null) {
+                DestroyImmediate(Graph);
+            }
+            
+            Graph = null;
+        }
+
+        private void CreateEmptyRoadGraph() {
+            Graph = new GameObject("Graph");
+            Graph.transform.parent = transform;
         }
         public int IntersectionCount 
         {
