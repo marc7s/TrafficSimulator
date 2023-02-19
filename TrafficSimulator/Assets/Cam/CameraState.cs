@@ -1,4 +1,3 @@
-using System;
 using Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -16,7 +15,7 @@ namespace Cam
     public abstract class CameraState : MonoBehaviour
     {
         [SerializeField] protected Transform FollowTransform;
-        protected CameraSwitcher CameraSwitcher;
+        protected CameraManager CameraManager;
         protected CinemachineVirtualCamera VirtualCamera;
         public bool IsDefault = false;
         
@@ -26,19 +25,31 @@ namespace Cam
             VirtualCamera.Priority = IsDefault ? 1 : 0;
         }
 
-        public virtual void SetActive(CameraSwitcher cameraSwitcher)
+        /// <summary>
+        /// Sets this camera to be the active camera.
+        /// </summary>
+        /// <param name="cameraManager">the <see cref="CameraManager"/> responsible for this camera</param>
+        public virtual void SetActive(CameraManager cameraManager)
         {
             VirtualCamera.Priority = 1;
-            CameraSwitcher = cameraSwitcher;
-            FollowTransform = cameraSwitcher.CameraTarget;
+            CameraManager = cameraManager;
+            FollowTransform = cameraManager.CameraTarget;
         }
         
-        public virtual void SetInactive(CameraSwitcher cameraSwitcher)
+        /// <summary>
+        /// Sets this camera to inactive. Will remain the active camera if no other camera is set to active.
+        /// </summary>
+        /// <param name="cameraManager">the <see cref="CameraManager"/> responsible for this camera</param>
+        public virtual void SetInactive(CameraManager cameraManager)
         {
             VirtualCamera.Priority = 0;
-            CameraSwitcher = null;
+            CameraManager = null;
         }
         
+        /// <summary>
+        /// The transform that the active camera follows. Should be passed between cameras upon a camera switch. 
+        /// </summary>
+        /// <param name="followTransform">transform that the active camera should follow</param>
         public void SetFollowTransform(Transform followTransform)
         {
             FollowTransform = followTransform;
