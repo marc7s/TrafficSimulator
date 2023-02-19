@@ -79,13 +79,14 @@ namespace Cam
             var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
             if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.gameObject.Equals(_toggledGameObject))
             {
-                CameraSwitcher.CameraTarget = FollowTransform;
-                CameraSwitcher.ToggleThirdPersonCamera();
+                CameraManager.CameraTarget = FollowTransform;
+                CameraManager.ToggleThirdPersonCamera();
             }
         }
 
         public override void Move(Vector3 direction)
         {
+            // Ignore the input argument if the mouse is near the screen border
             if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
 
             if (direction.sqrMagnitude != 0) SetToggledGameObjectToNull();

@@ -32,8 +32,8 @@ namespace Cam
 
         public override void HandleEscapeInput(InputAction.CallbackContext ctx)
         {
-            CameraSwitcher.CameraTarget = FollowTransform;
-            CameraSwitcher.TogglePreviousCamera();
+            CameraManager.CameraTarget = FollowTransform;
+            CameraManager.TogglePreviousCamera();
         }
     }
 }
