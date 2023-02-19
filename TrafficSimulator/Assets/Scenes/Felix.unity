@@ -813,7 +813,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FollowTransform: {fileID: 0}
   IsDefault: 1
-  _enableEdgeScrolling: 0
+  _enableEdgeScrolling: 1
   _movementSpeed: 50
   _rotationSpeed: 50
   _minZoom: 40
