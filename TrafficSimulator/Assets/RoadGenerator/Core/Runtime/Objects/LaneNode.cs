@@ -9,7 +9,7 @@ namespace RoadGenerator
         private RoadNode _roadNode;
         private Vehicle _vehicle;
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
-        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode) : this(position, rotation, roadNode, null, null){}
+        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, float distanceToNextNode) : this(position, rotation, roadNode, null, null, distanceToNextNode){}
         
         /// <summary>Creates a new lane node</summary>
         /// <param name="position">The position of the node</param>
@@ -17,13 +17,14 @@ namespace RoadGenerator
         /// <param name="roadNode">The road node this lane node relates to</param>
         /// <param name="prev">The previous lane node. Pass `null` if there is no previous</param>
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
-        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, LaneNode prev, LaneNode next)
+        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToNextNode)
         {
             _position = position;
             _rotation = rotation;
             _roadNode = roadNode;
             _prev = prev;
             _next = next;
+            _distanceToNextNode = distanceToNextNode;
         }
         public bool IsIntersection() => _roadNode.IsIntersection();
 

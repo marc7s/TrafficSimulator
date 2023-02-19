@@ -254,6 +254,11 @@ namespace RoadGenerator {
             return Mathf.Lerp (cumulativeLengthAtEachVertex[data.previousIndex], cumulativeLengthAtEachVertex[data.nextIndex], data.percentBetweenIndices);
         }
 
+        public float DistanceBetweenPoints (int index1, int index2)
+        {
+            return cumulativeLengthAtEachVertex[Mathf.Clamp(index2, 0, NumPoints - 1)] - cumulativeLengthAtEachVertex[Mathf.Clamp(index1, 0, NumPoints - 1)];
+        }
+
         /// Finds the closest point index on the path from any point in the world
         public int GetClosestIndexOnPath (Vector3 worldPoint, bool getPreviousPoint = true) {
             Vector3 localPoint = MathUtility.InverseTransformPoint(worldPoint, transform, space);

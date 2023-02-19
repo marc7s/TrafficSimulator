@@ -10,6 +10,7 @@ namespace RoadGenerator
         protected T _prev;
         protected Vector3 _position;
         protected Quaternion _rotation;
+        protected float _distanceToNextNode;
 
         /// <summary>Gets the next node</summary>
         public T Next
@@ -67,6 +68,12 @@ namespace RoadGenerator
                 }
                 return curr;
             }
+        }
+
+        /// <summary>Returns the distance to the next node</summary>
+        public float DistanceToNextNode
+        {
+            get => _distanceToNextNode;
         }
 
         /// <summary>Returns all linked node positions as an array</summary>
