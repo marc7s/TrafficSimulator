@@ -70,7 +70,7 @@ namespace Cam
             }
             else
             {
-                SetToggledGameObjectToNull();
+                if(_hasToggledGameObject) SetToggledGameObjectToNull();
             }
         }
 
@@ -89,7 +89,7 @@ namespace Cam
             // Ignore the input argument if the mouse is near the screen border
             if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
 
-            if (direction.sqrMagnitude != 0) SetToggledGameObjectToNull();
+            if (direction.sqrMagnitude != 0 && _hasToggledGameObject) SetToggledGameObjectToNull();
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
             FollowTransform.position += translatedDirection * (_movementSpeed * Time.deltaTime);
         }
@@ -109,12 +109,15 @@ namespace Cam
         
         private void SetToggledGameObjectToNull()
         {
+            _toggledGameObject.GetComponent<Outline>().enabled = false;
             _toggledGameObject = null;
             _hasToggledGameObject = false;
         }
 
         private void SetToggledGameObject(GameObject toggledGameObject)
         {
+            Outline outline = toggledGameObject.GetComponent<Outline>();
+            outline.enabled = true;
             _toggledGameObject = toggledGameObject;
             _hasToggledGameObject = true;
         }
