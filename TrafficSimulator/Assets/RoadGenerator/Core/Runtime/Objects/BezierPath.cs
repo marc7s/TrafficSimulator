@@ -5,6 +5,17 @@ using UnityEngine;
 
 namespace RoadGenerator
 {
+	struct SegmentIntersection
+	{
+		public int index;
+		public int otherIndex;
+		public SegmentIntersection(int index, int otherIndex) => (this.index, this.otherIndex) = (index, otherIndex);
+	}
+	struct Bezier
+	{
+		public Vector3 p0, p1, p2, p3;
+		public Bezier(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) => (this.p0, this.p1, this.p2, this.p3) = (p0, p1, p2, p3);
+	}
 	/// A bezier path is a path made by stitching together any number of (cubic) bezier curves.
 	/// A single cubic bezier curve is defined by 4 points: anchor1, control1, control2, anchor2
 	/// The curve moves between the 2 anchors, and the shape of the curve is affected by the positions of the 2 control points
@@ -521,6 +532,149 @@ namespace RoadGenerator
 					NotifyPathModified();
 				}
 			}
+		}
+
+		/// <summary>Returns all unique intersection points with the specified BezierPath</summary>
+		public List<Vector3> IntersectionPoints(Transform transform, Transform otherTransform, BezierPath other)
+		{
+			// The minimum distance between two intersecting points to be considered unique
+			// Non-unique points are discarded
+			const float minUniqueDistance = 1f;
+
+			List<Vector3> intersections = new List<Vector3>();
+			List<SegmentIntersection> segmentIntersections = SegmentIntersections(transform, otherTransform, other, Enumerable.Range(0, NumSegments).ToList(), Enumerable.Range(0, other.NumSegments).ToList(), new List<SegmentIntersection>());
+			
+			foreach(SegmentIntersection segmentIntersection in segmentIntersections)
+			{	
+				Vector3[] points = GetPointsInSegment(segmentIntersection.index);
+				Vector3[] otherPoints = other.GetPointsInSegment(segmentIntersection.otherIndex);
+				
+				Bezier b1 = new Bezier(points[0], points[1], points[2], points[3]);
+				Bezier b2 = new Bezier(otherPoints[0], otherPoints[1], otherPoints[2], otherPoints[3]);
+				
+				List<Vector3> intersectionPoints = BezierIntersections(b1, b2, new List<Vector3>());
+				List<Vector3> uniqueIntersectionPoints = new List<Vector3>();
+				
+				for(int i = 0; i < intersectionPoints.Count; i++)
+				{
+					Vector3 newPoint = intersectionPoints[i];
+					bool unique = true;
+					foreach(Vector3 uniqueIntersectionPoint in uniqueIntersectionPoints)
+					{
+						if(Vector3.Distance(uniqueIntersectionPoint, intersectionPoints[i]) < minUniqueDistance)
+						{
+							unique = false;
+							break;
+						}
+					}
+					if(unique)
+						uniqueIntersectionPoints.Add(newPoint);
+				}
+
+				intersections.AddRange(uniqueIntersectionPoints);
+			}
+			return intersections;
+		}
+
+		/// <summary>Recursive helper function that returns all intersecting points between two Beziers</summary>
+		/// Uses De Casteljau's algorithm to recursively split the Bezier curves into smaller curves
+		private List<Vector3> BezierIntersections(Bezier b1, Bezier b2, List<Vector3> intersections)
+		{
+			// A small value that determines how close to the true intersection point the algorithm will get
+			const float resolution = 0.5f;
+			Bounds b1Bounds = GetBezierBounds(b1);
+			Bounds b2Bounds = GetBezierBounds(b2);
+			
+			// If the bounds of the two bezier curves do not intersect, the curves do not intersect
+			if(!b1Bounds.Intersects(b2Bounds))
+				return intersections;
+
+			// If we the bounding boxes are small enough we have achieved high enough resolution so we return
+			if(b1Bounds.extents.magnitude + b2Bounds.extents.magnitude < resolution)
+			{
+				Vector3 b1mid = MidPoint(b1.p0, b1.p3);
+				Vector3 b2mid = MidPoint(b2.p0, b2.p3);
+				
+				intersections.Add(MidPoint(b1mid, b2mid));
+				return intersections;
+			}
+
+			(Bezier b1a, Bezier b1b) = SplitAtHalf(b1);
+			(Bezier b2a, Bezier b2b) = SplitAtHalf(b2);
+
+			List<Vector3> i1 = BezierIntersections(b1a, b2a, intersections);
+			List<Vector3> i2 = BezierIntersections(b1a, b2b, intersections);
+			List<Vector3> i3 = BezierIntersections(b1b, b2a, intersections);
+			List<Vector3> i4 = BezierIntersections(b1b, b2b, intersections);
+
+			return i1.Concat(i2).Concat(i3).Concat(i4).ToList();
+		}
+		
+		/// <summary>Splits a Bezier in the middle and returns the two sub-beziers</summary>
+		// See the image in the documentation to see how De Casteljau's algorithm can be used to split a bezier curve
+		private (Bezier, Bezier) SplitAtHalf(Bezier b)
+		{
+			// Note: a <=> b.p0, d <=> b.p3
+			Vector3 e = MidPoint(b.p0, b.p1);
+			Vector3 f = MidPoint(b.p1, b.p2);
+			Vector3 g = MidPoint(b.p2, b.p3);
+			Vector3 h = MidPoint(e, f);
+			Vector3 j = MidPoint(f, g);
+			Vector3 k = MidPoint(h, j);
+			
+			return (new Bezier(b.p0, e, h, k), new Bezier(k, j, g, b.p3));
+		}
+
+		/// <summary>Returns the midpoint between two Vector3s</summary>
+		private Vector3 MidPoint(Vector3 a, Vector3 b)
+		{
+			return Vector3.Lerp(a, b, 0.5f);
+		}
+		
+		///<summary>Calculates the bounds of a Bezier</summary>
+		private Bounds GetBezierBounds(Bezier b)
+		{
+			return CubicBezierUtility.CalculateSegmentBounds(b.p0, b.p1, b.p2, b.p3);
+		}
+
+		/// <summary>Recursive helper function that returns all the segments that intersect between select segments of two BezierPaths</summary>
+		private List<SegmentIntersection> SegmentIntersections(Transform transform, Transform otherTransform, BezierPath other, List<int> possibleSegments, List<int> otherPossibleSegments, List<SegmentIntersection> intersectingSegments)
+		{
+			// There cannot be any intersection if any of the sections are empty
+			if(possibleSegments.Count == 0 || otherPossibleSegments.Count == 0)
+				return intersectingSegments;
+
+			Bounds bounds = CubicBezierUtility.CalculateBounds(transform, this, possibleSegments);
+			Bounds otherBounds = CubicBezierUtility.CalculateBounds(otherTransform, other, otherPossibleSegments);
+			
+			// If these sections do not intersect we return
+			if(!bounds.Intersects(otherBounds))
+				return intersectingSegments;
+
+			// If there is only one segment left in each BezierPath, we know that they intersect
+			if(possibleSegments.Count == 1 && otherPossibleSegments.Count == 1)
+				return intersectingSegments.Append(new SegmentIntersection(possibleSegments[0], otherPossibleSegments[0])).ToList();
+			
+			// Else, we use the divide and conquer method and split the sections in half and check which sections intersect
+			int half = possibleSegments.Count / 2;
+			int otherHalf = otherPossibleSegments.Count / 2;
+			
+			// If there is an odd number of segments we need to offset the index of the higher half by one so we do not lose the last segment
+			int oddOffset = possibleSegments.Count % 2 == 0 ? 0 : 1;
+			int otherOddOffset = otherPossibleSegments.Count % 2 == 0 ? 0 : 1;
+			
+			List<int> lower = possibleSegments.GetRange(0, half);
+			List<int> higher = possibleSegments.GetRange(half, half + oddOffset);
+
+			List<int> otherLower = otherPossibleSegments.GetRange(0, otherHalf);
+			List<int> otherHigher = otherPossibleSegments.GetRange(otherHalf, otherHalf + otherOddOffset);
+			
+			List<SegmentIntersection> i1 = SegmentIntersections(transform, otherTransform, other, lower, otherLower, intersectingSegments);
+			List<SegmentIntersection> i2 = SegmentIntersections(transform, otherTransform, other, lower, otherHigher, intersectingSegments);
+			List<SegmentIntersection> i3 = SegmentIntersections(transform, otherTransform, other, higher, otherLower, intersectingSegments);
+			List<SegmentIntersection> i4 = SegmentIntersections(transform, otherTransform, other, higher, otherHigher, intersectingSegments);
+			
+			return i1.Concat(i2).Concat(i3).Concat(i4).ToList();
 		}
 
 		/// Update the bounding box of the path
