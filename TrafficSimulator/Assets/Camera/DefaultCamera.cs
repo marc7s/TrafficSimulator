@@ -21,13 +21,15 @@ namespace Cam
         [SerializeField] private float _zoomSpeed = 5f;
     
         // Should be set by a function of the current screen size
-        private const int _edgeScrollSize = 20;
+        [Range(0,0.3f)]
+        private float _edgeScrollSensitivty = 0.1f;
         private float _targetZoom = 50f;
 
         private GameObject _toggledGameObject;
         private bool _hasToggledGameObject;
         
-        private Vector3 _moveDirection;
+        private Vector3 _mousePointDirection;
+        private bool _isNearScreenBorder;
 
         protected override void Awake()
         {
@@ -39,25 +41,23 @@ namespace Cam
         {
             if (_hasToggledGameObject) FollowTransform.position = _toggledGameObject.transform.position;
         }
-    
-        /*
-        public override void HandlePointInput(Vector2 userPoint)
+
+        public override void HandlePointInput(Vector2 pointPosition)
         {
-            if (!_enableEdgeScrolling) return;
-        
-            float forward = 0;
-            float sideways = 0;
-            if (userPoint.y < _edgeScrollSize)
-                forward = -1f;
-            else if (userPoint.y > Screen.height - _edgeScrollSize) forward = 1f;
+            Vector2 viewportPosition = Camera.main.ScreenToViewportPoint(pointPosition);
+            float horizontal = 0f;
+            float vertical = 0f;
+            
+            print(viewportPosition);
+            if (viewportPosition.x < _edgeScrollSensitivty) horizontal = -1f;
+            else if (viewportPosition.x > 1 - _edgeScrollSensitivty) horizontal = 1f;
 
-            if (userPoint.x < _edgeScrollSize)
-                sideways = -1f;
-            else if (userPoint.x > Screen.width - _edgeScrollSize) sideways = 1f;
-
-            _moveDirection = TranslateDirectionToForward(forward, sideways);
+            if (viewportPosition.y < _edgeScrollSensitivty) vertical = -1f;
+            else if (viewportPosition.y > 1 - _edgeScrollSensitivty) vertical = 1f;
+            
+            _isNearScreenBorder = (horizontal != 0f) || (vertical != 0f);
+            _mousePointDirection = new Vector3(horizontal, vertical);
         }
-        */
 
         public override void HandleClickInput(InputAction.CallbackContext ctx)
         {
@@ -84,6 +84,8 @@ namespace Cam
 
         public override void Move(Vector3 direction)
         {
+            if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
+
             if (direction.sqrMagnitude != 0) SetToggledGameObjectToNull();
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
             FollowTransform.position += translatedDirection * (_movementSpeed * Time.deltaTime);

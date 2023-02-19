@@ -89,7 +89,7 @@ namespace Cam
         {
             CurrentActiveCamera.HandleDoubleClickInput(ctx);
         }
-        
+
         private void OnEscapeInput(InputAction.CallbackContext ctx)
         {
             CurrentActiveCamera.HandleEscapeInput(ctx);
