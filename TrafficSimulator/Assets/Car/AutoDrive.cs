@@ -228,7 +228,7 @@ namespace Car {
                 _vehicleController.throttleInput = 0f;
             }
             // If the vehicle is further away from the target than the brake distance, accelerate
-            else if (Vector3.Distance(transform.position, _brakeTarget) > _brakeDistance + 1)
+            else if (Vector3.Distance(transform.position, _brakeTarget.Position) > _brakeDistance + 1)
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
