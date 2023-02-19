@@ -89,18 +89,45 @@ namespace RoadGenerator
         public void OnChange()
         {
             // Update the intersections and road when a node is changed
-            IntersectionCreator.UpdateIntersections(this);
+            //IntersectionCreator.UpdateIntersections(this);
+            NewIntersectionPointAlgorithm(true);
             UpdateRoad();
         }
 
         private void UpdateRoad()
         {
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
+            
             if(roadMeshCreator != null)
             {
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
+            }
+        }
+
+        private void NewIntersectionPointAlgorithm(bool putSpheresAtIntersections = false)
+        {
+            BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
+            foreach(Road road in RoadSystem.Roads)
+            {
+                if(road != this)
+                {
+                    BezierPath otherPath = road.RoadObject.GetComponent<PathCreator>().bezierPath;
+                    List<Vector3> intersections = path.IntersectionPoints(RoadObject.transform, road.RoadObject.transform, otherPath);
+                    
+                    Debug.Log("Intersections: " + intersections.Count);
+                    if(putSpheresAtIntersections)
+                    {
+                        for(int i = 0; i < intersections.Count; i++)
+                        {
+                            Debug.Log("Point: " + intersections[i]);
+                            GameObject ip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                            ip.name = "Intersection point";
+                            ip.transform.position = intersections[i];
+                        }
+                    }
+                }
             }
         }
         
