@@ -44,6 +44,8 @@ namespace Cam
 
         public override void HandlePointInput(Vector2 pointPosition)
         {
+            if (!_enableEdgeScrolling) return;
+            
             Vector2 viewportPosition = Camera.main.ScreenToViewportPoint(pointPosition);
             float horizontal = 0f;
             float vertical = 0f;
