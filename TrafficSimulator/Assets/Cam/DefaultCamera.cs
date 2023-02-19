@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -30,6 +31,9 @@ namespace Cam
         
         private Vector3 _mousePointDirection;
         private bool _isNearScreenBorder;
+        
+        private bool _isMovingTowardsToggledObject = false;
+        [SerializeField] private float _togglePanSpeed = 0.3f;
 
         protected override void Awake()
         {
@@ -39,7 +43,7 @@ namespace Cam
     
         private void Update()
         {
-            if (_hasToggledGameObject) FollowTransform.position = _toggledGameObject.transform.position;
+            if (_hasToggledGameObject && !_isMovingTowardsToggledObject) FollowTransform.position = _toggledGameObject.transform.position;
         }
 
         public override void HandlePointInput(Vector2 pointPosition)
@@ -120,11 +124,28 @@ namespace Cam
             outline.enabled = true;
             _toggledGameObject = toggledGameObject;
             _hasToggledGameObject = true;
+            StartCoroutine(PanToTarget(toggledGameObject.transform.position));
         }
         
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
         {
             return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;
+        }
+
+        IEnumerator PanToTarget(Vector3 target)
+        {
+            _isMovingTowardsToggledObject = true;
+            float startTime = Time.time;
+            float journeyLength = Vector3.Distance(FollowTransform.position, _toggledGameObject.transform.position);
+
+            while (Vector3.Distance(FollowTransform.transform.position, target) > 0.01f && _hasToggledGameObject)
+            {
+                float distCovered = (Time.time - startTime) * _togglePanSpeed;
+                float fractionOfJourney = distCovered / journeyLength;
+                FollowTransform.transform.position = Vector3.Lerp(FollowTransform.transform.position, target, fractionOfJourney);
+                yield return null;
+            }
+            _isMovingTowardsToggledObject = false;
         }
     }
 }
