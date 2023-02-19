@@ -10,7 +10,7 @@ namespace Cam
     /// and toggling between different cameras based on user input. Additionally, the script contains methods for setting up input actions and subscribing
     /// to user input events.
     /// </summary>
-    public class CameraSwitcher : MonoBehaviour
+    public class CameraManager : MonoBehaviour
     {
         [SerializeField] private CameraState[] _cameras;
         [SerializeField] private int _currentActiveCameraIndex = 0;
