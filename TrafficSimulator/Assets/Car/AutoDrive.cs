@@ -13,7 +13,7 @@ namespace Car {
         RepositioningInitiated,
         Repositioning
     }
-    public enum Mode 
+    public enum DrivingMode 
     {
         Performance,
         Quality
@@ -38,7 +38,7 @@ namespace Car {
         [SerializeField] private int _laneIndex = 0;
 
         [Header("Settings")]
-        [SerializeField] private Mode _mode = Mode.Quality;
+        [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
 
         [Header("Quality mode settings")]
@@ -92,7 +92,7 @@ namespace Car {
 
             _target = lane.StartNode;
             
-            if (_mode == Mode.Quality)
+            if (_mode == DrivingMode.Quality)
             {
                 // Setup target line renderer
                 float targetLineWidth = 0.3f;
@@ -110,7 +110,7 @@ namespace Car {
                 
                 _vehicleController.throttleInput = 1f;
             }
-            else if (_mode == Mode.Performance)
+            else if (_mode == DrivingMode.Performance)
             {
                 P_MoveToFirstPosition();
             }
@@ -118,7 +118,7 @@ namespace Car {
 
         void Update()
         {
-            if (_mode == Mode.Quality)
+            if (_mode == DrivingMode.Quality)
             {
                 // Update brake distance and target
                 Q_UpdateBrakeDistance();
@@ -133,7 +133,7 @@ namespace Car {
                     Q_DrawTargetLines();
                 }
             }
-            else if (_mode == Mode.Performance)
+            else if (_mode == DrivingMode.Performance)
             {
                 P_MoveToNextPosition();
             }
