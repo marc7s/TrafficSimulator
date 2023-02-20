@@ -11,10 +11,10 @@ public class PriorityQueue<T> where T : System.IComparable<T>
         _list = new List<T>();
     }
 
-    public PriorityQueue(bool isdesc)
+    public PriorityQueue(bool isDesc)
         : this()
     {
-        IsDescending = isdesc;
+        IsDescending = isDesc;
     }
 
     public PriorityQueue(int capacity)
@@ -25,16 +25,16 @@ public class PriorityQueue<T> where T : System.IComparable<T>
         : this(collection, false)
     { }
 
-    public PriorityQueue(int capacity, bool isdesc)
+    public PriorityQueue(int capacity, bool isDesc)
     {
         _list = new List<T>(capacity);
-        IsDescending = isdesc;
+        IsDescending = isDesc;
     }
 
-    public PriorityQueue(IEnumerable<T> collection, bool isdesc)
+    public PriorityQueue(IEnumerable<T> collection, bool isDesc)
         : this()
     {
-        IsDescending = isdesc;
+        IsDescending = isDesc;
         foreach (var item in collection)
             Enqueue(item);
     }

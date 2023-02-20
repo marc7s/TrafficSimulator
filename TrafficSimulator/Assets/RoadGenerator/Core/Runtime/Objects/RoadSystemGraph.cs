@@ -80,8 +80,6 @@ namespace RoadGenerator
 
     public static class RoadSystemNavigationGraph
     {
-        private const string GRAPH_NODE_SPHERE_NAME = "Graph Node";
-        private const float GRAPH_NODE_SPHERE_SIZE = 15f;
         private const float EDGE_LINE_WIDTH = 4f;
         private const float GRAPH_LIFT = 20f;
 
@@ -100,12 +98,12 @@ namespace RoadGenerator
             return roadSystemGraph;
         }
 
-        /// <summary> Updates a graph for the given road   </summary>
+        /// <summary> Updates a graph for the given road  </summary>
         private static void UpdateGraphForRoad(Road road,  Dictionary<string, GraphNode> roadSystemGraph)
         {
             GraphNode[] roadNavigationGraph = new GraphNode[road.NavigationGraph.Graph.Values.Count];
             road.NavigationGraph.Graph.Values.CopyTo(roadNavigationGraph, 0);
-            for (var i = 0; i < roadNavigationGraph.Length; i++)
+            for (int i = 0; i < roadNavigationGraph.Length; i++)
             {
                 if (roadSystemGraph.ContainsKey(roadNavigationGraph[i].RoadNode.Position.ToString()))
                 {
@@ -120,25 +118,16 @@ namespace RoadGenerator
         }
         
          /// <summary> Draws the graph </summary>
-        public static void DrawGraph(RoadSystem roadSystem, Dictionary<string, GraphNode> roadGraph)
+        public static void DrawGraph(RoadSystem roadSystem, Dictionary<string, GraphNode> roadGraph, GameObject graphNodePrefab)
         {
             foreach (GraphNode node in roadGraph.Values)
             {
-                // Create a new graph node sphere
-                GameObject nodeObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                // Spawn a new graph node sphere
+                GameObject nodeObject = GameObject.Instantiate(graphNodePrefab);
                 
-                // Name it and place it on the correct location
-                nodeObject.name = GRAPH_NODE_SPHERE_NAME;
-                nodeObject.transform.parent = roadSystem.Graph.transform;
+                // Place it in the correct location
+                nodeObject.transform.parent = roadSystem.GraphContainer.transform;
                 nodeObject.transform.position = lift(node.RoadNode.Position);
-
-                // Give it a material and color
-                Material mat = new Material(Shader.Find("Standard"));
-                mat.SetColor("_Color", Color.red);
-                nodeObject.GetComponent<Renderer>().material = mat;
-
-                // Set the scale of the sphere
-                nodeObject.transform.localScale = new Vector3(GRAPH_NODE_SPHERE_SIZE, GRAPH_NODE_SPHERE_SIZE, GRAPH_NODE_SPHERE_SIZE);
                 
                 // Create a list to contain all the graph node positions
                 List<Vector3> graphNodePositions = new List<Vector3>(){ lift(node.RoadNode.Position) };
@@ -161,8 +150,7 @@ namespace RoadGenerator
         {
             return vector + Vector3.up * GRAPH_LIFT;
         }
-                /// <summary>Helper function that performs the drawing of a lane's path</summary>
-                      /// <summary>Helper function that performs the drawing of a lane's path</summary>
+        /// <summary>Helper function that performs the drawing of a lane's path</summary>
         private static void DrawLanePath(GameObject line, List<Vector3> lane, Color color, float width = 0.5f)
         {
             // Get the line renderer
