@@ -33,7 +33,7 @@ namespace RoadGenerator
         [Range(0.1f, 10f)] public float LaneVertexSpacing = 1f;
         public bool DrawLanes = false;
         
-        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, RoadNodeType.End);
+        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, RoadNodeType.End, 0);
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private VertexPath _path;
@@ -115,7 +115,7 @@ namespace RoadGenerator
             this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
             // Create the start node for the road. The start node must be an end node
-            this._start = new RoadNode(_path.GetPoint(0), RoadNodeType.End);
+            this._start = new RoadNode(_path.GetPoint(0), RoadNodeType.End, 0);
             
             // Create a previous and current node that will be used when creating the linked list
             RoadNode prev = null;
@@ -154,7 +154,7 @@ namespace RoadGenerator
 
                 // Update the previous node and create a new current node
                 prev = curr;
-                curr = new RoadNode(_path.GetPoint(i), currentType, prev, null);
+                curr = new RoadNode(_path.GetPoint(i), currentType, prev, null, _path.DistanceBetweenPoints(i - 1, i));
 
                 // Set the next pointer for the previous node
                 prev.Next = curr;
