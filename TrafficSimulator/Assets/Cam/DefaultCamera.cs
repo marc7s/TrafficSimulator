@@ -6,7 +6,7 @@ namespace Cam
 {
     /// <summary>
     /// Represents the initial camera state. It provides functionality for moving, rotating,
-    /// and zooming the camera, as well as handling input and toggling between objects.
+    /// and zooming the camera, as well as handling input and toggling between transforms to follow.
     /// It also has a number of serialized fields for configuring movement and zoom speed,
     /// minimum and maximum zoom, and edge scrolling
     /// behavior (which is not yet implemented).
@@ -23,16 +23,16 @@ namespace Cam
     
         // Should be set by a function of the current screen size
         [Range(0,0.3f)]
-        private float _edgeScrollSensitivty = 0.1f;
+        private float _edgeScrollSensitivity = 0.1f;
         private float _targetZoom = 50f;
 
-        private GameObject _toggledGameObject;
-        private bool _hasToggledGameObject;
+        private Transform _toggledTransform;
+        private bool _hasToggledTransform;
         
         private Vector3 _mousePointDirection;
         private bool _isNearScreenBorder;
         
-        private bool _isMovingTowardsToggledObject = false;
+        private bool _isMovingTowardsTarget = false;
         [SerializeField] private float _togglePanSpeed = 0.3f;
 
         protected override void Awake()
@@ -43,7 +43,7 @@ namespace Cam
     
         private void Update()
         {
-            if (_hasToggledGameObject && !_isMovingTowardsToggledObject) FollowTransform.position = _toggledGameObject.transform.position;
+            if (_hasToggledTransform && !_isMovingTowardsTarget) FollowTransform.position = _toggledTransform.transform.position;
         }
 
         public override void HandlePointInput(Vector2 pointPosition)
@@ -54,12 +54,11 @@ namespace Cam
             float horizontal = 0f;
             float vertical = 0f;
             
-            print(viewportPosition);
-            if (viewportPosition.x < _edgeScrollSensitivty) horizontal = -1f;
-            else if (viewportPosition.x > 1 - _edgeScrollSensitivty) horizontal = 1f;
+            if (viewportPosition.x < _edgeScrollSensitivity) horizontal = -1f;
+            else if (viewportPosition.x > 1 - _edgeScrollSensitivity) horizontal = 1f;
 
-            if (viewportPosition.y < _edgeScrollSensitivty) vertical = -1f;
-            else if (viewportPosition.y > 1 - _edgeScrollSensitivty) vertical = 1f;
+            if (viewportPosition.y < _edgeScrollSensitivity) vertical = -1f;
+            else if (viewportPosition.y > 1 - _edgeScrollSensitivity) vertical = 1f;
             
             _isNearScreenBorder = (horizontal != 0f) || (vertical != 0f);
             _mousePointDirection = new Vector3(horizontal, vertical);
@@ -67,21 +66,22 @@ namespace Cam
 
         public override void HandleClickInput(InputAction.CallbackContext ctx)
         {
-            var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            // Important that the toggled GameOjbect is tagged with "Vehicle"
+            if (Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
             {
-                SetToggledGameObject(hitInfo.collider.gameObject);
+                SetToggledTransform(hitInfo.collider.transform);
             }
             else
             {
-                if(_hasToggledGameObject) SetToggledGameObjectToNull();
+                if(_hasToggledTransform) SetToggledTransformToNull();
             }
         }
 
         public override void HandleDoubleClickInput(InputAction.CallbackContext ctx)
         {
-            var ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (Physics.Raycast(ray, out var hitInfo) && hitInfo.transform.gameObject.Equals(_toggledGameObject))
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+            if (Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.Equals(_toggledTransform))
             {
                 CameraManager.CameraTarget = FollowTransform;
                 CameraManager.ToggleThirdPersonCamera();
@@ -93,9 +93,9 @@ namespace Cam
             // Ignore the input argument if the mouse is near the screen border
             if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
 
-            if (direction.sqrMagnitude != 0 && _hasToggledGameObject) SetToggledGameObjectToNull();
+            if (direction.sqrMagnitude != 0 && _hasToggledTransform) SetToggledTransformToNull();
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
-            FollowTransform.position += translatedDirection * (_movementSpeed * Time.deltaTime);
+            FollowTransform.position += translatedDirection * _movementSpeed * Time.deltaTime;
         }
 
         public override void RotateHorizontal(float horizontalRotation)
@@ -111,20 +111,20 @@ namespace Cam
                 _targetZoom, Time.deltaTime * _zoomSpeed);
         }
         
-        private void SetToggledGameObjectToNull()
+        private void SetToggledTransformToNull()
         {
-            _toggledGameObject.GetComponent<Outline>().enabled = false;
-            _toggledGameObject = null;
-            _hasToggledGameObject = false;
+            _toggledTransform.GetComponent<Outline>().enabled = false;
+            _toggledTransform = null;
+            _hasToggledTransform = false;
         }
 
-        private void SetToggledGameObject(GameObject toggledGameObject)
+        private void SetToggledTransform(Transform toggledTransform)
         {
-            Outline outline = toggledGameObject.GetComponent<Outline>();
+            Outline outline = toggledTransform.GetComponent<Outline>();
             outline.enabled = true;
-            _toggledGameObject = toggledGameObject;
-            _hasToggledGameObject = true;
-            StartCoroutine(PanToTarget(toggledGameObject.transform.position));
+            _toggledTransform = toggledTransform;
+            _hasToggledTransform = true;
+            StartCoroutine(PanToTarget(toggledTransform.position));
         }
         
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
@@ -132,20 +132,20 @@ namespace Cam
             return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;
         }
 
-        IEnumerator PanToTarget(Vector3 target)
+        private IEnumerator PanToTarget(Vector3 target)
         {
-            _isMovingTowardsToggledObject = true;
+            _isMovingTowardsTarget = true;
             float startTime = Time.time;
-            float journeyLength = Vector3.Distance(FollowTransform.position, _toggledGameObject.transform.position);
+            float journeyLength = Vector3.Distance(FollowTransform.position, target);
 
-            while (Vector3.Distance(FollowTransform.transform.position, target) > 0.01f && _hasToggledGameObject)
+            while (Vector3.Distance(FollowTransform.position, target) > 0.01f && _hasToggledTransform)
             {
                 float distCovered = (Time.time - startTime) * _togglePanSpeed;
                 float fractionOfJourney = distCovered / journeyLength;
-                FollowTransform.transform.position = Vector3.Lerp(FollowTransform.transform.position, target, fractionOfJourney);
+                FollowTransform.position = Vector3.Lerp(FollowTransform.position, target, fractionOfJourney);
                 yield return null;
             }
-            _isMovingTowardsToggledObject = false;
+            _isMovingTowardsTarget = false;
         }
     }
 }
