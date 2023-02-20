@@ -44,18 +44,6 @@ namespace RoadGenerator
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
 
-        /// <summary>Function that runs once when the road is updated the first time</summary>
-        void OnStart()
-        {
-            // Look for an existing lane container
-            foreach(Transform t in RoadObject.transform)
-            {
-                if(t.name == LANE_CONTAINER_NAME)
-                {
-                    _laneContainer = t.gameObject;
-                }
-            }
-        }
 
         public Intersection[] GetIntersections()
         {
@@ -101,6 +89,7 @@ namespace RoadGenerator
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
                 RoadSystem.UpdateRoadSystemGraph();
+                ShowLanes();
             }
         }
         
@@ -201,20 +190,34 @@ namespace RoadGenerator
                 _lanes.Add(primaryLane);
                 _lanes.Add(secondaryLane);
             }
+        }
+
+        public void ShowLanes()
+        {
+            if(_laneContainer == null)
+            {
+                // Try to find the lane container if it has already been created
+                foreach(Transform child in transform)
+                {
+                    if(child.name == LANE_CONTAINER_NAME)
+                    {
+                        _laneContainer = child.gameObject;
+                        break;
+                    }
+                }
+            }
 
             // Destroy the lane container, and with it all the previous lanes
             if(_laneContainer != null)
-            {
                 DestroyImmediate(_laneContainer);
-            }
+
+            // Create a new empty lane container
+            _laneContainer = new GameObject(LANE_CONTAINER_NAME);
+            _laneContainer.transform.parent = transform;
 
             // Draw the lines if the setting is enabled
             if(DrawLanes)
             {
-                // Create a new lane container
-                _laneContainer = new GameObject(LANE_CONTAINER_NAME);
-                _laneContainer.transform.parent = transform;
-                
                 // Draw each lane
                 for(int i = 0; i < _lanes.Count; i++)
                 {

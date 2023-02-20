@@ -65,10 +65,10 @@ namespace RoadEditor
                 road.DrawLanes = drawLanes.boolValue;
             }
 
+            serializedObject.ApplyModifiedProperties();
+
             if(changed)
                 road.OnChange();
-
-            serializedObject.ApplyModifiedProperties();
         }
     }
 }
