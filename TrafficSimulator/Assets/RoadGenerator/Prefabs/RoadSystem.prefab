@@ -50,8 +50,13 @@ MonoBehaviour:
   _intersectionContainer: {fileID: 2768285544214366368}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _intersectionPrefab: {fileID: 5761927508822258430, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
+  _roadSystemGraphNodePrefab: {fileID: 6519265059532225654, guid: 454238e3f781fa44fa41bcc016a4e5fd, type: 3}
   DrivingSide: -1
+  ShowGraph: 0
+  _spawnRoadsAtOrigin: 0
   _roads: []
+  _intersections: []
+  GraphContainer: {fileID: 0}
 --- !u!1 &2382052090468904982
 GameObject:
   m_ObjectHideFlags: 0

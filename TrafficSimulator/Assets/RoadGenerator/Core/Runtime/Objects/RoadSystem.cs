@@ -21,16 +21,23 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _intersectionPrefab;
 
+        [SerializeField] private GameObject _roadSystemGraphNodePrefab;
+
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
+
+        [HideInInspector] public bool ShowGraph = false;
         [SerializeField] private bool _spawnRoadsAtOrigin = false;
 
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
-        public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
+        [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
-        public void AddIntersection(Intersection intersection) => Intersections.Add(intersection);
-        public void RemoveIntersection(Intersection intersection) => Intersections.Remove(intersection);
+        [SerializeField][HideInInspector] private Dictionary<string, GraphNode> _roadSystemGraph;
+        [HideInInspector] public GameObject GraphContainer;
+
+        public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
+        public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
         public void AddRoad(Road road) => _roads.Add(road);
 
         public void RemoveRoad(Road road) => _roads.Remove(road);
@@ -99,6 +106,9 @@ namespace RoadGenerator
                 
                 AddIntersection(intersection);
             }
+
+            // Find the graph container
+            GraphContainer = GameObject.Find("Graph");
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
@@ -130,7 +140,7 @@ namespace RoadGenerator
         /// <summary> Checks if an intersection already exists at the given position </summary>
         public bool DoesIntersectionExist(Vector3 position)
         {
-            foreach (Intersection intersection in Intersections)
+            foreach (Intersection intersection in _intersections)
             {
                 if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
                 {
@@ -139,9 +149,45 @@ namespace RoadGenerator
             }
             return false;
         }
+        public void UpdateRoadSystemGraph()
+        {
+            // Clear the graph
+            ClearRoadGraph();
+            
+            foreach (Road road in _roads)
+            {
+                // This needs to be called because after script update the scene reloads and the roads don't save their graph correctly
+                // This can be removed if roads serialize the graph correctly
+                road.UpdateRoadNodes();
+            }
+
+            // Generate a new graph
+            _roadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
+
+            // Display the graph if the setting is active
+            if (ShowGraph) {
+                // Create a new empty graph
+                CreateEmptyRoadGraph();
+                RoadSystemNavigationGraph.DrawGraph(this, _roadSystemGraph, _roadSystemGraphNodePrefab);
+            }
+                
+        }
+
+        private void ClearRoadGraph() {
+            _roadSystemGraph = null;
+            if(GraphContainer != null) {
+                DestroyImmediate(GraphContainer);
+            }
+            GraphContainer = null;
+        }
+
+        private void CreateEmptyRoadGraph() {
+            GraphContainer = new GameObject("Graph");
+            GraphContainer.transform.parent = transform;
+        }
         public int IntersectionCount 
         {
-            get => Intersections.Count;
+            get => _intersections.Count;
         }
         /// <summary>Returns the number of roads in the road system</summary>
         public int RoadCount 
@@ -151,6 +197,12 @@ namespace RoadGenerator
         public List<Road> Roads 
         {
             get => _roads;
+        }
+        void OnDestroy()
+        {
+            // Need to disable showing the graph as the road system is being destroyed
+            // Otherwise the a graph will be created in the same frame as the road system is destroyed and will cause an error
+            ShowGraph = false;
         }
     }
 }
