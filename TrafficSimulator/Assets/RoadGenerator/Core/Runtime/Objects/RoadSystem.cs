@@ -20,7 +20,8 @@ namespace RoadGenerator
         [SerializeField] private GameObject _intersectionContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _intersectionPrefab;
-        public GameObject Graph;
+
+        [SerializeField] private GameObject _roadSystemGraphNodePrefab;
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
@@ -33,6 +34,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
         [SerializeField][HideInInspector] private Dictionary<string, GraphNode> _roadSystemGraph;
+        [HideInInspector] public GameObject GraphContainer;
 
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
@@ -106,7 +108,7 @@ namespace RoadGenerator
             }
 
             // Find the graph container
-            Graph = GameObject.Find("Graph");
+            GraphContainer = GameObject.Find("Graph");
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
@@ -166,22 +168,22 @@ namespace RoadGenerator
             if (ShowGraph) {
                 // Create a new empty graph
                 CreateEmptyRoadGraph();
-                RoadSystemNavigationGraph.DrawGraph(this, _roadSystemGraph);
+                RoadSystemNavigationGraph.DrawGraph(this, _roadSystemGraph, _roadSystemGraphNodePrefab);
             }
                 
         }
 
         private void ClearRoadGraph() {
             _roadSystemGraph = null;
-            if(Graph != null) {
-                DestroyImmediate(Graph);
+            if(GraphContainer != null) {
+                DestroyImmediate(GraphContainer);
             }
-            Graph = null;
+            GraphContainer = null;
         }
 
         private void CreateEmptyRoadGraph() {
-            Graph = new GameObject("Graph");
-            Graph.transform.parent = transform;
+            GraphContainer = new GameObject("Graph");
+            GraphContainer.transform.parent = transform;
         }
         public int IntersectionCount 
         {
