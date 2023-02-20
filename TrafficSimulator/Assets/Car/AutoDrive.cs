@@ -277,7 +277,7 @@ namespace Car {
             // This would cause our current position to skip ahead so repositioning is handled separately
             while(_status == Status.Driving && Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position))
             {
-                _totalDistance += _currentNode.DistanceToNextNode;
+                _totalDistance += _currentNode.DistanceToPrevNode;
                 _currentNode = nextNode;
                 nextNode = GetNextLaneNode(_currentNode, 0, true);
             }
@@ -349,7 +349,7 @@ namespace Car {
             if(transform.position == targetPosition && !(_roadEndBehaviour == RoadEndBehaviour.Stop && _target == _endNode)) 
             {
                 _currentNode = _target;
-                _totalDistance += _currentNode.DistanceToNextNode;
+                _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
 
                 if(_target == _startNode && _roadEndBehaviour == RoadEndBehaviour.Loop) 
