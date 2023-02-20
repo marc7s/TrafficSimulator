@@ -127,7 +127,8 @@ namespace RoadGenerator
             // Create a previous and current node that will be used when creating the linked list
             RoadNode prev = null;
             RoadNode curr = _start;
-
+            
+            // Calculating the path distance for each intersection on the road
             List<float> distanceAtIntersection = new List<float>();
             foreach(Intersection intersection in _intersections)
             {
@@ -137,24 +138,19 @@ namespace RoadGenerator
             // Go through each point in the path of the road
             for(int i = 1; i < _path.NumPoints; i++)
             {
+                // Add an intersection node if there is an intersection between the previous node and the current node
                 for (var j = 0; j < distanceAtIntersection.Count; j++)
                 {
+                    // If the path distance at the intersection is between the previous node distance and the current node distance
                     if (distanceAtIntersection[j] > _path.cumulativeLengthAtEachVertex[i-1] && distanceAtIntersection[j] < _path.cumulativeLengthAtEachVertex[i])
                     {
+                        // Add the intersection node
                         curr.Next = new RoadNode(_intersections[j].IntersectionPosition, RoadNodeType.FourWayIntersection, curr, null);
-                        curr = curr.Next;
-                        _navigationGraph.AddNode(curr, Vector3.Distance(prev.Position, curr.Position));
-                    }
-                    // Check if the end of the road is an intersection
-                    else if (distanceAtIntersection[j] == _path.cumulativeLengthAtEachVertex[i])
-                    {
-                        curr.Next = new RoadNode(_path.GetPoint(i), RoadNodeType.FourWayIntersection, curr, null);
                         curr = curr.Next;
                         _navigationGraph.AddNode(curr, Vector3.Distance(prev.Position, curr.Position));
                     }
                 }
                 
-
                 // The current node type is assumed to be default
                 RoadNodeType currentType = RoadNodeType.Default;
                 

@@ -32,7 +32,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
     public static class Navigation
     {
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
-        public static Stack<string> GetPathToNode(GraphNode startNode, GraphNode endNode)
+        public static Stack<RoadNode> GetPathToNode(GraphNode startNode, GraphNode endNode)
         {
             AStarNode start = new(startNode, null, 0, 0);
             AStarNode target = new(endNode, null, 0, 0);
@@ -75,12 +75,12 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             return Vector3.Distance(node.RoadNode.Position, targetNode.RoadNode.Position);
         }
         /// <summary> Returns the path from the start node to the target node  </summary>
-        private static Stack<string> GetPathToNode(AStarNode node)
+        private static Stack<RoadNode> GetPathToNode(AStarNode node)
         {
-            Stack<string> path = new();
+            Stack<RoadNode> path = new();
             while (node.PreviousNode != null)
             {
-                path.Push(node.GraphNode.RoadNode.Position.ToString());
+                path.Push(node.GraphNode.RoadNode);
                 node = node.PreviousNode;
             }
             return path;

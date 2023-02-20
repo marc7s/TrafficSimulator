@@ -152,41 +152,20 @@ namespace RoadGenerator
             // Clear the graph
             ClearRoadGraph();
             
-            // Create a new empty graph
-            CreateEmptyRoadGraph();
             foreach (Road road in _roads)
             {
-                // This needs to be called because on scene reload the roads don't save their graph correctly
-                // This can be removed if roads serialize correctly
+                // This needs to be called because after script update the scene reloads and the roads don't save their graph correctly
+                // This can be removed if roads serialize the graph correctly
                 road.UpdateRoadNodes();
             }
 
             // Generate a new graph
             RoadGraph = RoadSystemGraph.GenerateRoadGraph(this);
 
-            /*
-            int i = 0;
-            GraphNode startNode = null;
-            GraphNode endNode = null;
-            foreach (GraphNode node in RoadGraph.Values)
-            {
-                if (i == 0)
-                    startNode = node;
-                if (i == 5)
-                    endNode = node;
-                i++;
-            }
-            Debug.Log("Start node: " + startNode.RoadNode.Position);
-            Debug.Log("End node: " + endNode.RoadNode.Position);
-
-            Stack<String> pathToNode = Navigation.GetPathToNode(startNode, endNode);
-            while (pathToNode.Count > 0)
-            {
-                Debug.Log(pathToNode.Pop());
-            }
-*/
             // Display the graph if the setting is active
             if (ShowGraph) {
+                // Create a new empty graph
+                CreateEmptyRoadGraph();
                 RoadSystemGraph.DrawGraph(this, RoadGraph);
             }
                 
@@ -216,6 +195,12 @@ namespace RoadGenerator
         public List<Road> Roads 
         {
             get => _roads;
+        }
+        void OnDestroy()
+        {
+            // Need to disable showing the graph as the road system is being destroyed
+            // Otherwise the a graph will be created in the same frame as the road system is destroyed and will cause an error
+            ShowGraph = false;
         }
     }
 }
