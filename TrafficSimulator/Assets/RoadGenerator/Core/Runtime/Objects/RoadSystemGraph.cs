@@ -40,13 +40,28 @@ namespace RoadGenerator
         };
 
         private float _currentCost = 0f;
-        public RoadNavigationGraph(RoadNode roadNode)
+        public RoadNavigationGraph(RoadNode roadNode, bool isClosed)
         {
             RoadNode curr = roadNode;
             GraphNode PreviouslyAddedNode = null;
+            // If it is an closed road we don't want to add the start node to the graph, so we skip it
+            if (isClosed)
+                curr = curr.Next;
             while (curr != null)
             {
-                // The start node is added to the graph
+                // Increase the current cost if the current node is not the starting node
+                if (curr.Prev != null)
+                    _currentCost += CalculateCost(Vector3.Distance(curr.Position, curr.Prev.Position));
+                // If the current node is not a node that should be added to the graph, we skip it
+                if (!_roadNodeTypesToAdd.Contains(curr.Type))
+                {
+                    curr = curr.Next;
+                    continue;
+                }
+                // In a closed loop we never want to add the end node, so we skip it
+                if (curr.Type == RoadNodeType.End && isClosed)
+                    return;
+                // If the current node is the first node to be added
                 if (PreviouslyAddedNode == null)
                 {
                     PreviouslyAddedNode = new GraphNode(curr);
@@ -54,18 +69,12 @@ namespace RoadGenerator
                     curr = curr.Next;
                     continue;
                 }
-                _currentCost += CalculateCost(Vector3.Distance(curr.Position, curr.Prev.Position)); 
-                if (!_roadNodeTypesToAdd.Contains(curr.Type))
-                {
-                    curr = curr.Next;
-                    continue;
-                }
-                // Add the node to the graph 
+
                 GraphNode graphNode = new GraphNode(curr);
+                Graph.Add(curr.Position.ToString(), graphNode);
                 // Edges with the current cost are added in both directions
                 PreviouslyAddedNode.Edges.Add(new GraphEdge(graphNode, _currentCost));
                 graphNode.Edges.Add(new GraphEdge(PreviouslyAddedNode, _currentCost));
-                Graph.Add(curr.Position.ToString(), graphNode);
                 PreviouslyAddedNode = graphNode;
                 _currentCost = 0f;
                 curr = curr.Next;

@@ -169,7 +169,7 @@ namespace RoadGenerator
                 prev.Next = curr;
             }
             // Create a new navigation graph
-            _navigationGraph = new RoadNavigationGraph(_start);
+            _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
         }
 
         /// <summary>Updates the lanes</summary>
@@ -329,6 +329,7 @@ namespace RoadGenerator
                 _intersections.RemoveAt(0);
                 DestroyImmediate(intersection.gameObject);
             }
+            RoadSystem.UpdateRoadSystemGraph();
         }
     }
 }
