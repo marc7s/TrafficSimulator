@@ -37,7 +37,7 @@ namespace RoadGenerator
             this._path = path;
 
             // Create the start node for the lane
-            _start = new LaneNode(path.GetPoint(0), GetNodeRotation(0, _road.EndOfPathInstruction), roadNode);
+            _start = new LaneNode(path.GetPoint(0), GetNodeRotation(0, _road.EndOfPathInstruction), roadNode, 0);
             
             // Create a previous and current node that will be used when creating the linked list
             LaneNode prev = null;
@@ -51,7 +51,7 @@ namespace RoadGenerator
             {
                 // Update the prev and create a new current node
                 prev = curr;
-                curr = new LaneNode(path.GetPoint(i), GetNodeRotation(path.cumulativeLengthAtEachVertex[i], _road.EndOfPathInstruction), currRoadNode, prev, null);
+                curr = new LaneNode(path.GetPoint(i), GetNodeRotation(path.cumulativeLengthAtEachVertex[i], _road.EndOfPathInstruction), currRoadNode, prev, null, path.DistanceBetweenPoints(i - 1, i));
 
                 // Set the next pointer for the previous node
                 prev.Next = curr;
