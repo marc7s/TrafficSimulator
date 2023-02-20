@@ -38,9 +38,11 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private VertexPath _path;
 
+
         [SerializeField][HideInInspector] private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
 
         [HideInInspector] public List<Intersection> _intersections = new List<Intersection>();
+        public RoadNavigationGraph _navigationGraph;
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
@@ -102,16 +104,19 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
+                RoadSystem.UpdateRoadSystemGraph();
             }
         }
         
         /// <summary>Updates the road nodes</summary>
-        private void UpdateRoadNodes()
+        public void UpdateRoadNodes()
         {
             // Create the vertex path for the road
             BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
             _path = new VertexPath(path, transform, LaneVertexSpacing);
 
+            // Create a new navigation graph
+            _navigationGraph = new RoadNavigationGraph();
 
             // Set the end of path instruction depending on if the path is closed or not
             this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
@@ -123,9 +128,33 @@ namespace RoadGenerator
             RoadNode prev = null;
             RoadNode curr = _start;
 
+            List<float> distanceAtIntersection = new List<float>();
+            foreach(Intersection intersection in _intersections)
+            {
+                distanceAtIntersection.Add(_path.GetClosestDistanceAlongPath(intersection.IntersectionPosition));
+            }
+
             // Go through each point in the path of the road
             for(int i = 1; i < _path.NumPoints; i++)
             {
+                for (var j = 0; j < distanceAtIntersection.Count; j++)
+                {
+                    if (distanceAtIntersection[j] > _path.cumulativeLengthAtEachVertex[i-1] && distanceAtIntersection[j] < _path.cumulativeLengthAtEachVertex[i])
+                    {
+                        curr.Next = new RoadNode(_intersections[j].IntersectionPosition, RoadNodeType.FourWayIntersection, curr, null);
+                        curr = curr.Next;
+                        _navigationGraph.AddNode(curr, Vector3.Distance(prev.Position, curr.Position));
+                    }
+                    // Check if the end of the road is an intersection
+                    else if (distanceAtIntersection[j] == _path.cumulativeLengthAtEachVertex[i])
+                    {
+                        curr.Next = new RoadNode(_path.GetPoint(i), RoadNodeType.FourWayIntersection, curr, null);
+                        curr = curr.Next;
+                        _navigationGraph.AddNode(curr, Vector3.Distance(prev.Position, curr.Position));
+                    }
+                }
+                
+
                 // The current node type is assumed to be default
                 RoadNodeType currentType = RoadNodeType.Default;
                 
@@ -138,6 +167,9 @@ namespace RoadGenerator
                 // Update the previous node and create a new current node
                 prev = curr;
                 curr = new RoadNode(_path.GetPoint(i), currentType, prev, null);
+
+                // Add the current node to the navigation graph
+                _navigationGraph.AddNode(curr, Vector3.Distance(prev.Position, curr.Position));
 
                 // Set the next pointer for the previous node
                 prev.Next = curr;
@@ -285,6 +317,10 @@ namespace RoadGenerator
         public EndOfPathInstruction EndOfPathInstruction
         {
             get => _endOfPathInstruction;
+        }
+        public RoadNavigationGraph NavigationGraph
+        {
+            get => _navigationGraph;
         }
         
         void OnDestroy()
