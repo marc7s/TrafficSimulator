@@ -90,7 +90,6 @@ namespace RoadGenerator
             // Update the intersections and road when a node is changed
             IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
-            RoadSystem.UpdateRoadSystemGraph();
         }
 
         private void UpdateRoad()

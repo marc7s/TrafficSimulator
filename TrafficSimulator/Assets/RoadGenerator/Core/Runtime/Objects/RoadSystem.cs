@@ -30,12 +30,12 @@ namespace RoadGenerator
 
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
-        [HideInInspector] public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
+        [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
-        [HideInInspector] public Dictionary<string, GraphNode> RoadGraph;
+        [SerializeField][HideInInspector] private Dictionary<string, GraphNode> _roadSystemGraph;
 
-        public void AddIntersection(Intersection intersection) => Intersections.Add(intersection);
-        public void RemoveIntersection(Intersection intersection) => Intersections.Remove(intersection);
+        public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
+        public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
         public void AddRoad(Road road) => _roads.Add(road);
 
         public void RemoveRoad(Road road) => _roads.Remove(road);
@@ -138,7 +138,7 @@ namespace RoadGenerator
         /// <summary> Checks if an intersection already exists at the given position </summary>
         public bool DoesIntersectionExist(Vector3 position)
         {
-            foreach (Intersection intersection in Intersections)
+            foreach (Intersection intersection in _intersections)
             {
                 if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
                 {
@@ -160,19 +160,19 @@ namespace RoadGenerator
             }
 
             // Generate a new graph
-            RoadGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
+            _roadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
 
             // Display the graph if the setting is active
             if (ShowGraph) {
                 // Create a new empty graph
                 CreateEmptyRoadGraph();
-                RoadSystemNavigationGraph.DrawGraph(this, RoadGraph);
+                RoadSystemNavigationGraph.DrawGraph(this, _roadSystemGraph);
             }
                 
         }
 
         private void ClearRoadGraph() {
-            RoadGraph = null;
+            _roadSystemGraph = null;
             if(Graph != null) {
                 DestroyImmediate(Graph);
             }
@@ -185,7 +185,7 @@ namespace RoadGenerator
         }
         public int IntersectionCount 
         {
-            get => Intersections.Count;
+            get => _intersections.Count;
         }
         /// <summary>Returns the number of roads in the road system</summary>
         public int RoadCount 
