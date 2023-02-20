@@ -17,7 +17,6 @@ namespace RoadGenerator
             Cost = cost;
         }
     }
-    [Serializable]
     public class GraphNode
     {
         public RoadNode RoadNode;
@@ -27,15 +26,12 @@ namespace RoadGenerator
             this.RoadNode = roadNode;
         }
     }
-    [Serializable]
+    /// <summary> A graph representation of a road </summary>
     public class RoadNavigationGraph
     {
         public Dictionary<string, GraphNode> Graph = new Dictionary<string, GraphNode>();
 
-        public List<GraphNode> GraphNodes = new List<GraphNode> {new GraphNode(new RoadNode(Vector3.zero, RoadNodeType.FourWayIntersection))};
-
-        public GraphNode PreviouslyAddedNode;
-
+        // The nodes that should become part of the navigation graph
         private readonly RoadNodeType[] _roadNodeTypesToAdd = 
         {
             RoadNodeType.ThreeWayIntersection,
@@ -44,26 +40,36 @@ namespace RoadGenerator
         };
 
         private float _currentCost = 0f;
-
-        public void AddNode(RoadNode roadNode, float distanceToPrevioousNode)
+        public RoadNavigationGraph(RoadNode roadNode)
         {
-            _currentCost += CalculateCost(distanceToPrevioousNode);
-            if (PreviouslyAddedNode == null)
+            RoadNode curr = roadNode;
+            GraphNode PreviouslyAddedNode = null;
+            while (curr != null)
             {
-                PreviouslyAddedNode = new GraphNode(roadNode);
-                Graph.Add(roadNode.Position.ToString(), PreviouslyAddedNode);
-                return;
+                // The start node is added to the graph
+                if (PreviouslyAddedNode == null)
+                {
+                    PreviouslyAddedNode = new GraphNode(curr);
+                    Graph.Add(curr.Position.ToString(), PreviouslyAddedNode);
+                    curr = curr.Next;
+                    continue;
+                }
+                _currentCost += CalculateCost(Vector3.Distance(curr.Position, curr.Prev.Position)); 
+                if (!_roadNodeTypesToAdd.Contains(curr.Type))
+                {
+                    curr = curr.Next;
+                    continue;
+                }
+                // Add the node to the graph 
+                GraphNode graphNode = new GraphNode(curr);
+                // Edges with the current cost are added in both directions
+                PreviouslyAddedNode.Edges.Add(new GraphEdge(graphNode, _currentCost));
+                graphNode.Edges.Add(new GraphEdge(PreviouslyAddedNode, _currentCost));
+                Graph.Add(curr.Position.ToString(), graphNode);
+                PreviouslyAddedNode = graphNode;
+                _currentCost = 0f;
+                curr = curr.Next;
             }
-            if (!_roadNodeTypesToAdd.Contains(roadNode.Type))
-                return;
-
-            GraphNode graphNode = new GraphNode(roadNode);
-            PreviouslyAddedNode.Edges.Add(new GraphEdge(graphNode, _currentCost));
-            graphNode.Edges.Add(new GraphEdge(PreviouslyAddedNode, _currentCost));
-            Graph.Add(roadNode.Position.ToString(), graphNode);
-            PreviouslyAddedNode = graphNode;
-            _currentCost = 0f;
-            GraphNodes.Add(graphNode);
 
         }
         private float CalculateCost(float distance, float speedLimit = 1f)
@@ -72,7 +78,7 @@ namespace RoadGenerator
         }
     }
 
-    public static class RoadSystemGraph
+    public static class RoadSystemNavigationGraph
     {
         private const string GRAPH_NODE_SPHERE_NAME = "Graph Node";
         private const float GRAPH_NODE_SPHERE_SIZE = 15f;
@@ -80,7 +86,7 @@ namespace RoadGenerator
         private const float GRAPH_LIFT = 20f;
 
         /// <summary> Generates a graph representation for a road system </summary>
-        public static Dictionary<string, GraphNode> GenerateRoadGraph(RoadSystem roadSystem)
+        public static Dictionary<string, GraphNode> GenerateRoadSystemNavigationGraph(RoadSystem roadSystem)
         {
             // The road system graph, key is the positions string representation
             Dictionary<string, GraphNode> roadSystemGraph = new Dictionary<string, GraphNode>();

@@ -160,13 +160,13 @@ namespace RoadGenerator
             }
 
             // Generate a new graph
-            RoadGraph = RoadSystemGraph.GenerateRoadGraph(this);
+            RoadGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
 
             // Display the graph if the setting is active
             if (ShowGraph) {
                 // Create a new empty graph
                 CreateEmptyRoadGraph();
-                RoadSystemGraph.DrawGraph(this, RoadGraph);
+                RoadSystemNavigationGraph.DrawGraph(this, RoadGraph);
             }
                 
         }
