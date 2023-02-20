@@ -4,7 +4,7 @@ using RoadGenerator;
 
 namespace RoadGenerator
 {
-/// <summary> Wrapper class for the GraphNode class.  </summary>
+/// <summary> A* wrapper class for the GraphNode class.  </summary>
 public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarNode>
  {
     public GraphNode GraphNode;

@@ -37,12 +37,9 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private VertexPath _path;
-
-
         [SerializeField][HideInInspector] private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
-
         [HideInInspector] public List<Intersection> _intersections = new List<Intersection>();
-        public RoadNavigationGraph _navigationGraph;
+        [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
@@ -115,9 +112,6 @@ namespace RoadGenerator
             BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
             _path = new VertexPath(path, transform, LaneVertexSpacing);
 
-            // Create a new navigation graph
-            _navigationGraph = new RoadNavigationGraph();
-
             // Set the end of path instruction depending on if the path is closed or not
             this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
@@ -127,7 +121,7 @@ namespace RoadGenerator
             // Create a previous and current node that will be used when creating the linked list
             RoadNode prev = null;
             RoadNode curr = _start;
-            
+
             // Calculating the path distance for each intersection on the road
             List<float> distanceAtIntersection = new List<float>();
             foreach(Intersection intersection in _intersections)
@@ -147,7 +141,6 @@ namespace RoadGenerator
                         // Add the intersection node
                         curr.Next = new RoadNode(_intersections[j].IntersectionPosition, RoadNodeType.FourWayIntersection, curr, null);
                         curr = curr.Next;
-                        _navigationGraph.AddNode(curr, Vector3.Distance(prev.Position, curr.Position));
                     }
                 }
                 
@@ -164,12 +157,11 @@ namespace RoadGenerator
                 prev = curr;
                 curr = new RoadNode(_path.GetPoint(i), currentType, prev, null);
 
-                // Add the current node to the navigation graph
-                _navigationGraph.AddNode(curr, Vector3.Distance(prev.Position, curr.Position));
-
                 // Set the next pointer for the previous node
                 prev.Next = curr;
             }
+            // Create a new navigation graph
+            _navigationGraph = new RoadNavigationGraph(_start);
         }
 
         /// <summary>Updates the lanes</summary>
