@@ -12,14 +12,14 @@ namespace RoadGenerator
         protected Quaternion _rotation;
 
         /// <summary>Gets the next node</summary>
-        public T Next
+        public virtual T Next
         {
             get => _next;
             set => _next = value;
         }
         
         /// <summary>Returns the previous node</summary>
-        public T Prev
+        public virtual T Prev
         {
             get => _prev;
             set => _prev = value;
