@@ -24,13 +24,15 @@ namespace RoadGenerator
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
+
+        [HideInInspector] public bool ShowGraph = false;
         [SerializeField] private bool _spawnRoadsAtOrigin = false;
 
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
-        public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
+        [HideInInspector] public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
 
-        public Dictionary<string, GraphNode> RoadGraph;
+        [HideInInspector] public Dictionary<string, GraphNode> RoadGraph;
 
         public void AddIntersection(Intersection intersection) => Intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => Intersections.Remove(intersection);
@@ -102,6 +104,9 @@ namespace RoadGenerator
                 
                 AddIntersection(intersection);
             }
+
+            // Find the graph container
+            Graph = GameObject.Find("Graph");
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
@@ -149,14 +154,41 @@ namespace RoadGenerator
             
             // Create a new empty graph
             CreateEmptyRoadGraph();
-            
+            foreach (Road road in _roads)
+            {
+                // This needs to be called because on scene reload the roads don't save their graph correctly
+                // This can be removed if roads serialize correctly
+                road.UpdateRoadNodes();
+            }
+
             // Generate a new graph
             RoadGraph = RoadSystemGraph.GenerateRoadGraph(this);
 
+            /*
+            int i = 0;
+            GraphNode startNode = null;
+            GraphNode endNode = null;
+            foreach (GraphNode node in RoadGraph.Values)
+            {
+                if (i == 0)
+                    startNode = node;
+                if (i == 5)
+                    endNode = node;
+                i++;
+            }
+            Debug.Log("Start node: " + startNode.RoadNode.Position);
+            Debug.Log("End node: " + endNode.RoadNode.Position);
+
+            Stack<String> pathToNode = Navigation.GetPathToNode(startNode, endNode);
+            while (pathToNode.Count > 0)
+            {
+                Debug.Log(pathToNode.Pop());
+            }
+*/
             // Display the graph if the setting is active
-           // if (ShowGraph) {
+            if (ShowGraph) {
                 RoadSystemGraph.DrawGraph(this, RoadGraph);
-            //}
+            }
                 
         }
 
@@ -165,7 +197,6 @@ namespace RoadGenerator
             if(Graph != null) {
                 DestroyImmediate(Graph);
             }
-            
             Graph = null;
         }
 
