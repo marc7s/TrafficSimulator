@@ -13,7 +13,7 @@ namespace Car {
         RepositioningInitiated,
         Repositioning
     }
-    public enum Mode 
+    public enum DrivingMode 
     {
         Performance,
         Quality
@@ -25,10 +25,10 @@ namespace Car {
     }
     public enum ShowTargetLines 
     {
-        None = 0,
-        Target = 1,
-        BrakeTarget = 2,
-        Both = 3
+        None,
+        Target,
+        BrakeTarget,
+        Both
     }
 
     public class AutoDrive : MonoBehaviour
@@ -38,7 +38,7 @@ namespace Car {
         [SerializeField] private int _laneIndex = 0;
 
         [Header("Settings")]
-        [SerializeField] private Mode _mode = Mode.Quality;
+        [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
 
         [Header("Quality mode settings")]
@@ -95,7 +95,7 @@ namespace Car {
 
             _target = lane.StartNode;
             
-            if (_mode == Mode.Quality)
+            if (_mode == DrivingMode.Quality)
             {
                 // Setup target line renderer
                 float targetLineWidth = 0.3f;
@@ -113,7 +113,7 @@ namespace Car {
                 
                 _vehicleController.throttleInput = 1f;
             }
-            else if (_mode == Mode.Performance)
+            else if (_mode == DrivingMode.Performance)
             {
                 // In performance mode the vehicle should not be affected by physics or gravity
                 Rigidbody rigidbody = GetComponent<Rigidbody>();
@@ -125,7 +125,7 @@ namespace Car {
 
         void Update()
         {
-            if (_mode == Mode.Quality)
+            if (_mode == DrivingMode.Quality)
             {
                 // Update brake distance and target
                 Q_UpdateBrakeDistance();
@@ -141,7 +141,7 @@ namespace Car {
                     Q_DrawTargetLines();
                 }
             }
-            else if (_mode == Mode.Performance)
+            else if (_mode == DrivingMode.Performance)
             {
                 P_MoveToNextPosition();
             }
@@ -236,13 +236,13 @@ namespace Car {
 
             // If the vehicle is closer to the target than the brake distance, brake
             // Also, do not brake at the end node if we are looping
-            if (Vector3.Distance(transform.position, _brakeTarget.Position) <= _brakeDistance && !(_roadEndBehaviour == RoadEndBehaviour.Loop && _brakeTarget == _endNode))
+            if (Vector3.Distance(transform.position, _brakeTarget.Position) <= _brakeDistance)
             {
-                _vehicleController.brakeInput = 1f;
+                _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
                 _vehicleController.throttleInput = 0f;
             }
             // If the vehicle is further away from the target than the brake distance, accelerate
-            else if (Vector3.Distance(transform.position, _brakeTarget.Position) > _brakeDistance)
+            else if (Vector3.Distance(transform.position, _brakeTarget.Position) > _brakeDistance + 1)
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
@@ -252,20 +252,17 @@ namespace Car {
         private void Q_UpdateBrakeTarget()
         {
             // Set the brake target point to the point closest to the target that is at least _brakeDistance points away
-            while (Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance && _brakeTarget != _endNode)
+            // If the road end behaviour is set to stop and the brake target is the end node, do not update the brake target
+            while (Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance && (_brakeTarget != _endNode || _roadEndBehaviour == RoadEndBehaviour.Loop))
             {
-                _brakeTarget = GetNextLaneNode(_brakeTarget, 0, _roadEndBehaviour == RoadEndBehaviour.Stop);
+                _brakeTarget = GetNextLaneNode(_brakeTarget, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
             }
         }
 
         private void Q_UpdateBrakeDistance()
         {
-            // If we should loop when the road has ended and our braking target is at the end, we do not want any brake offset.
-            // That would cause the vehicle to stop at the end of the road, instead of looping around
-            float brakeOffset = _roadEndBehaviour == RoadEndBehaviour.Loop && _brakeTarget == _endNode ? 0 : _brakeOffset;
-            
             // Calculate the distance it will take to stop
-            _brakeDistance = brakeOffset + (_vehicleController.speed / 2) + _vehicleController.speed * _vehicleController.speed / (_vehicleController.tireFriction * 9.81f);
+            _brakeDistance = _brakeOffset + (_vehicleController.speed / 2) + _vehicleController.speed * _vehicleController.speed / (_vehicleController.tireFriction * 9.81f);
         }
 
         private void Q_UpdateCurrent()
