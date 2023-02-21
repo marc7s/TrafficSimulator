@@ -20,13 +20,14 @@ namespace RoadGenerator
         // A list of all intersection types
         private static RoadNodeType[] _intersectionTypes = new RoadNodeType[]{ RoadNodeType.ThreeWayIntersection, RoadNodeType.FourWayIntersection, RoadNodeType.Roundabout };
         
-        public RoadNode(Vector3 position, RoadNodeType type) : this(position, type, null, null){}
-        public RoadNode(Vector3 position, RoadNodeType type, RoadNode prev, RoadNode next)
+        public RoadNode(Vector3 position, RoadNodeType type, float distanceToPrevNode) : this(position, type, null, null, distanceToPrevNode){}
+        public RoadNode(Vector3 position, RoadNodeType type, RoadNode prev, RoadNode next, float distanceToPrevNode)
         {
             _position = position;
             _type = type;
             _prev = prev;
             _next = next;
+            _distanceToPrevNode = distanceToPrevNode;
         }
 
         /// <summary>Returns `true` if this node is an intersection</summary>

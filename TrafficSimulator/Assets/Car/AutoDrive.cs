@@ -52,7 +52,8 @@ namespace Car {
         [SerializeField] [Range(0, 100f)] private float _speed = 20f;
         [SerializeField] [Range(2f, 20f)] private float _rotationSpeed = 5f;
 
-        // Shared variables
+        [Header("Statistics")]
+        [SerializeField] private float _totalDistance = 0;
 
         // Quality variables
         private float _targetLookaheadDistance = 0;
@@ -67,6 +68,7 @@ namespace Car {
         private VehicleController _vehicleController;
         private LaneNode _startNode;
         private LaneNode _endNode;
+        private LaneNode _currentNode;
 
         void Start()
         {
@@ -89,6 +91,7 @@ namespace Car {
             Lane lane = _road.Lanes[_laneIndex];
             _startNode = lane.StartNode;
             _endNode = lane.StartNode.Last;
+            _currentNode = lane.StartNode;
 
             _target = lane.StartNode;
             
@@ -112,6 +115,10 @@ namespace Car {
             }
             else if (_mode == Mode.Performance)
             {
+                // In performance mode the vehicle should not be affected by physics or gravity
+                Rigidbody rigidbody = GetComponent<Rigidbody>();
+                rigidbody.isKinematic = false;
+                rigidbody.useGravity = false;
                 P_MoveToFirstPosition();
             }
         }
@@ -127,6 +134,7 @@ namespace Car {
                 // Steer towards the target and update to next target
                 Q_SteerTowardsTarget();
                 Q_UpdateTarget();
+                Q_UpdateCurrent();
                 
                 if (_showTargetLines != ShowTargetLines.None)
                 {
@@ -203,6 +211,12 @@ namespace Car {
                 {
                     Debug.Log("Repositioned, speeding back up...");
                     _status = Status.Driving;
+
+                    // Assume that the car travelled straight to the repositioning target
+                    _totalDistance += Vector3.Distance(_currentNode.Position, _target.Position);
+                    
+                    // Update the current node
+                    _currentNode = _target;
                     
                     // Set the target to the one after the target we missed
                     _target = GetNextLaneNode(_repositioningTarget, _repositioningOffset, false);
@@ -252,6 +266,21 @@ namespace Car {
             
             // Calculate the distance it will take to stop
             _brakeDistance = brakeOffset + (_vehicleController.speed / 2) + _vehicleController.speed * _vehicleController.speed / (_vehicleController.tireFriction * 9.81f);
+        }
+
+        private void Q_UpdateCurrent()
+        {
+            LaneNode nextNode = GetNextLaneNode(_currentNode, 0, true);
+
+            // Move the current node forward while we are closer to the next node than the current
+            // Note: only updates while driving. During repositioning the vehicle will be closer to the next node (the repositioning target) halfway through the repositioning
+            // This would cause our current position to skip ahead so repositioning is handled separately
+            while(_status == Status.Driving && Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position))
+            {
+                _totalDistance += _currentNode.DistanceToPrevNode;
+                _currentNode = nextNode;
+                nextNode = GetNextLaneNode(_currentNode, 0, true);
+            }
         }
 
         private LaneNode Q_GetTarget()
@@ -317,9 +346,12 @@ namespace Car {
             Vector3 targetPosition = P_GetLerpPosition(_target.Position);
             Quaternion targetRotation = P_GetLerpQuaternion(_target.Rotation);
             
-            if(transform.position == targetPosition) 
+            if(transform.position == targetPosition && !(_roadEndBehaviour == RoadEndBehaviour.Stop && _target == _endNode)) 
             {
+                _currentNode = _target;
+                _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
+
                 if(_target == _startNode && _roadEndBehaviour == RoadEndBehaviour.Loop) 
                 {
                     P_MoveToFirstPosition();
