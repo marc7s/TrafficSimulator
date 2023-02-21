@@ -132,14 +132,23 @@ namespace RoadGenerator
             for(int i = 1; i < _path.NumPoints; i++)
             {
                 // Add an intersection node if there is an intersection between the previous node and the current node
-                for (var j = 0; j < distanceAtIntersection.Count; j++)
+                for (int j = 0; j < distanceAtIntersection.Count; j++)
                 {
                     // If the path distance at the intersection is between the previous node distance and the current node distance
                     if (distanceAtIntersection[j] > _path.cumulativeLengthAtEachVertex[i-1] && distanceAtIntersection[j] < _path.cumulativeLengthAtEachVertex[i])
                     {
+                        Vector3 intersectionPosition = _intersections[j].IntersectionPosition;
+                        
+                        // TODO: Look into if these distances need to follow the path
+                        float distanceToIntersection = Vector3.Distance(curr.Position, intersectionPosition);
+
                         // Add the intersection node
-                        curr.Next = new RoadNode(_intersections[j].IntersectionPosition, RoadNodeType.FourWayIntersection, curr, null);
+                        curr.Next = new RoadNode(intersectionPosition, RoadNodeType.FourWayIntersection, curr, null, distanceToIntersection);
                         curr = curr.Next;
+
+                        // If the road does not end at the intersection, update the distance on the following node as well
+                        if(curr != null)
+                            curr.DistanceToPrevNode = Vector3.Distance(intersectionPosition, curr.Position);
                     }
                 }
                 
