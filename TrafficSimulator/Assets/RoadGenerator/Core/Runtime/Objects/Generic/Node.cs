@@ -74,6 +74,7 @@ namespace RoadGenerator
         public float DistanceToPrevNode
         {
             get => _distanceToPrevNode;
+            set => _distanceToPrevNode = value;
         }
 
         /// <summary>Returns all linked node positions as an array</summary>
