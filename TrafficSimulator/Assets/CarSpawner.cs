@@ -10,13 +10,13 @@ namespace RoadGenerator
     {
         
         [SerializeField] private GameObject carPrefab;
-        //[SerializeField] private GameObject roadSystem;
-        [SerializeField] private Road road;
+        [SerializeField] private GameObject roadSystem;
 
         public int maxCars = 5;
         public float distance = 10f;
 
         private RoadSystem _roadSystem;
+        private List<Road> _roads;
 
         private LaneNode _laneNodeStart;
         private LaneNode _laneNodeCurrent;
@@ -27,13 +27,12 @@ namespace RoadGenerator
         public Vehicle _vehicle;
 
         
-
         private void Start()
         {
-            road.OnChange();
-            Lane lane = road.Lanes[0];
-            _laneNodeStart = lane.StartNode;
-            _laneNodeCurrent = _laneNodeStart;
+            _roadSystem = roadSystem.GetComponent<RoadSystem>();
+            _roadSystem.Setup();
+
+            _roads = _roadSystem.Roads;
             _vehicle = new Vehicle("Car", carPrefab);
 
             SpawnCars(maxCars);
@@ -41,11 +40,20 @@ namespace RoadGenerator
 
         private void SpawnCars(int maxCars)
         {
-            for (int i = 0; i < maxCars; i++)
+            Debug.Log(_roadSystem.RoadCount);
+            for (int i = 0; i < _roadSystem.RoadCount; i++)
             {
-                Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-                setNodeUnderVehicle();
-                calculateOffset(distance);
+                _roads[i].OnChange();
+                Lane lane = _roads[i].Lanes[0];
+                _laneNodeStart = lane.StartNode;
+                _laneNodeCurrent = _laneNodeStart;
+
+                for (int j = 0; j < maxCars; j++)
+                {
+                    Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+                    setNodeUnderVehicle();
+                    calculateOffset(distance);
+                }
             }
         }
 
