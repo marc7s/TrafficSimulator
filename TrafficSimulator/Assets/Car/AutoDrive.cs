@@ -121,7 +121,7 @@ namespace Car {
                 Rigidbody rigidbody = GetComponent<Rigidbody>();
                 rigidbody.isKinematic = false;
                 rigidbody.useGravity = false;
-                P_MoveToFirstPosition();
+                //P_MoveToFirstPosition();
             }
         }
 

@@ -23,6 +23,7 @@ namespace RoadGenerator
 
         public Vehicle _vehicle;
         private GameObject _currentCar;
+        private int counter = 0;
 
         
         private void Start()
@@ -44,11 +45,11 @@ namespace RoadGenerator
                 _roads[i].OnChange();
                 
                 // Loop through all lanes
-                Debug.Log("Lane count: " + _roads[i].LaneCount);
                 for (int j = 0; j < _roads[i].LaneCount; j++)
                 {
                     // Get the start node of the lane
                     Lane lane = _roads[i].Lanes[j];
+                    Debug.Log("Lane count: " + lane.StartNode.Count);
                     _laneNodeCurrent = lane.StartNode;
 
                     // Spawn cars
@@ -56,7 +57,10 @@ namespace RoadGenerator
                     {
                         // Spawn individual car at current node
                         _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-                        Debug.Log("Car spawned at: " + _laneNodeCurrent.Position);
+
+                        counter = counter + 1;
+                        Debug.Log("Car " + counter + " spawned");
+
                         _currentCar.GetComponent<AutoDrive>()._road = _roads[i];
                         _currentCar.GetComponent<AutoDrive>()._laneIndex = j;
                         _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next.Next.Next.Next.Next;
@@ -64,7 +68,7 @@ namespace RoadGenerator
                         
 
                         // Tell the nodes under car that they are occupied
-                        SetNodeUnderVehicle();
+                        //SetNodeUnderVehicle();
 
                         // Calculate next spawning node
                         CalculateOffset(Distance);
