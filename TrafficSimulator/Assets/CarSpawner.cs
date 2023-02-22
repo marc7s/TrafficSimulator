@@ -44,15 +44,19 @@ namespace RoadGenerator
             for (int i = 0; i < _roadSystem.RoadCount; i++)
             {
                 _roads[i].OnChange();
-                Lane lane = _roads[i].Lanes[0];
-                _laneNodeStart = lane.StartNode;
-                _laneNodeCurrent = _laneNodeStart;
 
-                for (int j = 0; j < maxCars; j++)
+                for (int j = 0; j < _roads[i].LaneCount; j++)
                 {
-                    Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-                    setNodeUnderVehicle();
-                    calculateOffset(distance);
+                    Lane lane = _roads[i].Lanes[j];
+                    _laneNodeStart = lane.StartNode;
+                    _laneNodeCurrent = _laneNodeStart;
+
+                    for (int k = 0; k < maxCars; k++)
+                    {
+                        Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+                        setNodeUnderVehicle();
+                        calculateOffset(distance);
+                    }
                 }
             }
         }
