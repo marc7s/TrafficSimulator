@@ -2,28 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Vehicle = DataModel.Vehicle;
-
+using AutoDrive = Car.AutoDrive;
 
 namespace RoadGenerator
 {
     public class CarSpawner : MonoBehaviour
     {
-        
         [SerializeField] private GameObject carPrefab;
         [SerializeField] private GameObject roadSystem;
 
-        public int maxCars = 5; // Number of cars to spawn per lane
-        public float distance = 10f; // Distance between cars
+        public int MaxCars = 5; // Number of cars to spawn per lane
+        public float Distance = 10f; // Distance between cars
 
         private RoadSystem _roadSystem;
         private List<Road> _roads;
 
         private LaneNode _laneNodeCurrent;
         private LaneNode _laneNodeNext;
-
         private LaneNode _laneNodeTemp;
 
         public Vehicle _vehicle;
+        private GameObject _currentCar;
 
         
         private void Start()
@@ -34,10 +33,10 @@ namespace RoadGenerator
             _roads = _roadSystem.Roads;
             _vehicle = new Vehicle("Car", carPrefab);
 
-            SpawnCars(maxCars);
+            SpawnCars(MaxCars);
         }
 
-        private void SpawnCars(int maxCars)
+        private void SpawnCars(int MaxCars)
         {
             // Loop through all roads
             for (int i = 0; i < _roadSystem.RoadCount; i++)
@@ -45,6 +44,7 @@ namespace RoadGenerator
                 _roads[i].OnChange();
                 
                 // Loop through all lanes
+                Debug.Log("Lane count: " + _roads[i].LaneCount);
                 for (int j = 0; j < _roads[i].LaneCount; j++)
                 {
                     // Get the start node of the lane
@@ -52,22 +52,28 @@ namespace RoadGenerator
                     _laneNodeCurrent = lane.StartNode;
 
                     // Spawn cars
-                    for (int k = 0; k < maxCars; k++)
+                    for (int k = 0; k < MaxCars; k++)
                     {
                         // Spawn individual car at current node
-                        Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+                        _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+                        Debug.Log("Car spawned at: " + _laneNodeCurrent.Position);
+                        _currentCar.GetComponent<AutoDrive>()._road = _roads[i];
+                        _currentCar.GetComponent<AutoDrive>()._laneIndex = j;
+                        _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next.Next.Next.Next.Next;
+                        _currentCar.GetComponent<AutoDrive>().Start();
+                        
 
                         // Tell the nodes under car that they are occupied
-                        setNodeUnderVehicle();
+                        SetNodeUnderVehicle();
 
                         // Calculate next spawning node
-                        calculateOffset(distance);
+                        CalculateOffset(Distance);
                     }
                 }
             }
         }
 
-        private void setNodeUnderVehicle()
+        private void SetNodeUnderVehicle()
         {
             // Get the length of the car
             float carLength = carPrefab.GetComponentInChildren<MeshCollider>().bounds.size.z;
@@ -84,7 +90,7 @@ namespace RoadGenerator
             }
         }
 
-        private void calculateOffset(float distance)
+        private void CalculateOffset(float Distance)
         {
             _laneNodeTemp = _laneNodeCurrent;
 
@@ -96,7 +102,7 @@ namespace RoadGenerator
             _laneNodeNext = _laneNodeTemp;
 
             // Get the next node that is far enough away from the first unoccupied node
-            while (distance > Vector3.Distance(_laneNodeTemp.Position, _laneNodeNext.Position))
+            while (Distance > Vector3.Distance(_laneNodeTemp.Position, _laneNodeNext.Position))
             {
                 _laneNodeNext = _laneNodeNext.Next;
             }
