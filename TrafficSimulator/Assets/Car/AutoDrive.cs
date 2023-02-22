@@ -34,8 +34,8 @@ namespace Car {
     public class AutoDrive : MonoBehaviour
     {
         [Header("Connections")]
-        [SerializeField] private Road _road;
-        [SerializeField] private int _laneIndex = 0;
+        [SerializeField] public Road _road;
+        [SerializeField] public int _laneIndex = 0;
 
         [Header("Settings")]
         [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
@@ -68,9 +68,11 @@ namespace Car {
         private VehicleController _vehicleController;
         private LaneNode _startNode;
         private LaneNode _endNode;
-        private LaneNode _currentNode;
+        public LaneNode _currentNode;
 
-        void Start()
+        public LaneNode CustomStartNode = null;
+
+        public void Start()
         {
             _vehicleController = GetComponent<VehicleController>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
@@ -91,9 +93,9 @@ namespace Car {
             Lane lane = _road.Lanes[_laneIndex];
             _startNode = lane.StartNode;
             _endNode = lane.StartNode.Last;
-            _currentNode = lane.StartNode;
+            _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
 
-            _target = lane.StartNode;
+            _target = _currentNode;
             
             if (_mode == DrivingMode.Quality)
             {
@@ -106,7 +108,7 @@ namespace Car {
                 _targetLineRenderer.endWidth = targetLineWidth;
 
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                Q_TeleportToLane();
+                //Q_TeleportToLane();
                 
                 _brakeTarget = lane.StartNode;
                 _repositioningTarget = lane.StartNode;
@@ -150,10 +152,10 @@ namespace Car {
         private void Q_TeleportToLane()
         {
             // Move it to the first position of the lane, offset in the opposite direction of the lane
-            transform.position = _startNode.Position - (2 * (_startNode.Next.Position - _startNode.Position));
+            transform.position = _currentNode.Position - (2 * (_currentNode.Next.Position - _currentNode.Position));
             
             // Rotate it to face the first position of the lane
-            transform.rotation = Quaternion.LookRotation(_startNode.Next.Position - _startNode.Position);
+            transform.rotation = Quaternion.LookRotation(_currentNode.Next.Position - _currentNode.Position);
         }
         private void Q_SteerTowardsTarget()
         {
