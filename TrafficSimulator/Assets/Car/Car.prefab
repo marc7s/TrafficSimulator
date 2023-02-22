@@ -83,7 +83,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1577973480564070798}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!1 &1577973480899219501
 GameObject:
   m_ObjectHideFlags: 0
@@ -1921,7 +1921,7 @@ MonoBehaviour:
   centerOfMassPosition: 0.7
   centerOfMassHeightOffset: 0
   centerOfMassTransform: {fileID: 0}
-  maxSpeedForward: 80
+  maxSpeedForward: 20
   maxSpeedReverse: 16
   tireFriction: 3
   rollingResistance: 0.05
