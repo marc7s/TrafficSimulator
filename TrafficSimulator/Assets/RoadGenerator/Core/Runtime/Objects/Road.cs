@@ -306,6 +306,10 @@ namespace RoadGenerator
         {
             get => _lanes;
         }
+        public int LaneCount 
+        {
+            get => _lanes.Count;
+        }
         public RoadNode StartNode
         {
             get => _start;
