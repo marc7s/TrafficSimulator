@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace RoadGenerator
 {
     /// <summary>A generic implementation of a node</summary>
-    public class Node<T> where T : Node<T>
+    public abstract class Node<T> where T : Node<T>
     {
         protected T _next;
         protected T _prev;
@@ -94,13 +94,13 @@ namespace RoadGenerator
         /// <summary>Reverses the linked nodes. Returns the head of the reversed nodes</summary>
         public T Reverse()
         {
-            T curr = (T)this;
+            T curr = Copy();
             T prev = null;
             T next = null;
             
             while(curr != null)
             {
-                next = curr.Next;
+                next = curr.Next?.Copy();
                 curr.Next = prev;
                 curr.Prev = next;
                 prev = curr;
@@ -108,5 +108,7 @@ namespace RoadGenerator
             }
             return prev;
         }
+
+        public abstract T Copy();
     }
 }
