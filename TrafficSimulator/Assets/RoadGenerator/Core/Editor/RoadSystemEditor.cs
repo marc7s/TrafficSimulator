@@ -22,15 +22,14 @@ namespace RoadSystemGenerator
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            // Uncomment this if you want to change the connections to containers and prefabs
             
+            // Uncomment this if you want to change the connections to containers and prefabs
             //DrawDefaultInspector();
             
             RoadSystem roadSystem = (RoadSystem)target;
             
             bool changed = false;
 
-            //_showGraph.boolValue = EditorGUILayout.Toggle("Show Road System Graph", roadSystem.ShowGraph);
             EditorGUILayout.PropertyField(_drivingSide);
             EditorGUILayout.PropertyField(_spawnRoadsAtOrigin);
             EditorGUILayout.PropertyField(_showGraph);
