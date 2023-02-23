@@ -23,7 +23,13 @@ namespace RoadGenerator
 
         public Vehicle _vehicle;
         private GameObject _currentCar;
-        private int counter = 0;
+
+        private int offsetCounter = 0;
+        private int offset;
+        private int carCounter = 0;
+
+        public float spawnDelay = 3f;
+        private bool spawned = false;
 
         
         private void Start()
@@ -33,8 +39,17 @@ namespace RoadGenerator
 
             _roads = _roadSystem.Roads;
             _vehicle = new Vehicle("Car", carPrefab);
+        }
 
-            SpawnCars(MaxCars);
+        void Update()
+        {
+            if (!spawned) {
+                if (Time.time > spawnDelay) {
+                    spawned = true;
+                    SpawnCars(MaxCars);
+                    Debug.Log("Cars spawned: " + carCounter);
+                }
+            }
         }
 
         private void SpawnCars(int MaxCars)
@@ -49,17 +64,19 @@ namespace RoadGenerator
                 {
                     // Get the start node of the lane
                     Lane lane = _roads[i].Lanes[j];
-                    Debug.Log("Lane count: " + lane.StartNode.Count);
+                    Debug.Log("LaneNode count: " + lane.StartNode.Count);
                     _laneNodeCurrent = lane.StartNode;
+                    offset = lane.StartNode.Count / MaxCars;
+                    Debug.Log("Offset: " + offset);
 
                     // Spawn cars
                     for (int k = 0; k < MaxCars; k++)
                     {
+
                         // Spawn individual car at current node
                         _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
 
-                        counter = counter + 1;
-                        Debug.Log("Car " + counter + " spawned");
+                        carCounter = carCounter + 1;
 
                         _currentCar.GetComponent<AutoDrive>()._road = _roads[i];
                         _currentCar.GetComponent<AutoDrive>()._laneIndex = j;
@@ -71,7 +88,14 @@ namespace RoadGenerator
                         //SetNodeUnderVehicle();
 
                         // Calculate next spawning node
-                        CalculateOffset(Distance);
+                        //CalculateOffset(Distance);
+
+                        // Offset node for next car
+                        for (int l = 0; l < offset; l++)
+                        {
+                            _laneNodeCurrent = _laneNodeCurrent.Next;
+                            offsetCounter = offsetCounter + 1;
+                        }
                     }
                 }
             }
