@@ -20,6 +20,11 @@ namespace RoadGenerator
         private List<Road> _roads;
         private int _maxCars;
 
+        private List<Lane> _lanes = new List<Lane>();
+        private List<float> _lengths = new List<float>();
+        private List<float> _ratios = new List<float>();
+        private List<int> _indexes = new List<int>();
+
         private LaneNode _laneNodeCurrent;
         private LaneNode _laneNodeNext;
         private LaneNode _laneNodeTemp;
@@ -43,7 +48,24 @@ namespace RoadGenerator
             _roads = _roadSystem.Roads;
             _vehicle = new Vehicle("Car", carPrefab);
 
-            Debug.Log(CalculateMaxCarsForLanes());
+            AddLanesToList();
+            Debug.Log("Lanes: " + _lanes.Count);
+
+            CalculateLaneLengths();
+            foreach(float length in _lengths)
+            {
+                Debug.Log("Length: " + length);
+            }
+
+            CalculateLaneRatios();
+            foreach(float ratio in _ratios)
+            {
+                Debug.Log("Ratio: " + ratio);
+            }
+
+            CalculateLaneIndexes();
+
+            Debug.Log(CalculateMaxCarsForAllLanes());
         }
 
         void Update()
@@ -51,7 +73,7 @@ namespace RoadGenerator
             if (!spawned) {
                 if (Time.time > spawnDelay) {
                     spawned = true;
-                    SpawnCars(MaxCars);
+                    SpawnCarsWithRatio(MaxCars);
                     Debug.Log("Cars spawned: " + carCounter);
                 }
             }
@@ -69,10 +91,8 @@ namespace RoadGenerator
                 {
                     // Get the start node of the lane
                     Lane lane = _roads[i].Lanes[j];
-                    Debug.Log("LaneNode count: " + lane.StartNode.Count);
                     _laneNodeCurrent = lane.StartNode;
                     offset = lane.StartNode.Count / MaxCars;
-                    Debug.Log("Offset: " + offset);
 
                     // Spawn cars
                     for (int k = 0; k < MaxCars; k++)
@@ -143,7 +163,80 @@ namespace RoadGenerator
             _laneNodeCurrent = _laneNodeNext;
         }
 
-        private int CalculateMaxCarsForLanes()
+        private void AddLanesToList()
+        {
+            // Loop through all roads
+            for (int i = 0; i < _roadSystem.RoadCount; i++)
+            {
+                _roads[i].OnChange();
+
+                // Loop through all lanes
+                for (int j = 0; j < _roads[i].LaneCount; j++)
+                {
+                    _lanes.Add(_roads[i].Lanes[j]);
+                }
+            }
+        }
+
+        private void CalculateLaneLengths()
+        {
+            LaneNode _laneNodeTemp;
+            float laneLength;
+
+            // Loop through all lanes
+            for (int j = 0; j < _lanes.Count; j++)
+            {
+                laneLength = 0;
+                _laneNodeTemp = _lanes[j].StartNode;
+
+                // Loop through all lane nodes
+                for (int k = 0; k < _lanes[j].StartNode.Count - 1; k++)
+                {
+                    // Calculate the length of the lane
+                    laneLength = laneLength + Vector3.Distance(_laneNodeTemp.Position, _laneNodeTemp.Next.Position);
+                    _laneNodeTemp = _laneNodeTemp.Next;
+                }
+                _lengths.Add(laneLength);
+            }
+        }
+
+        private void CalculateLaneRatios()
+        {
+            float totalLength = 0;
+
+            // Loop through all lane lengths
+            for (int i = 0; i < _lengths.Count; i++)
+            {
+                totalLength = totalLength + _lengths[i];
+            }
+
+            // Loop through all lane lengths
+            for (int i = 0; i < _lengths.Count; i++)
+            {
+                _ratios.Add(_lengths[i] / totalLength);
+            }
+        }
+
+        private void CalculateLaneIndexes()
+        {
+            int laneIndex;
+
+            // Loop through all roads
+            for (int i = 0; i < _roadSystem.RoadCount; i++)
+            {
+                _roads[i].OnChange();
+                laneIndex = 0;
+
+                // Loop through all lanes
+                for (int j = 0; j < _roads[i].LaneCount; j++)
+                {
+                    _indexes.Add(laneIndex);
+                    laneIndex = laneIndex + 1;
+                }
+            }
+        }
+
+        private int CalculateMaxCarsForAllLanes()
         {
             // Get the length of the car
             int _maxCarsTemp = 0;
@@ -177,6 +270,40 @@ namespace RoadGenerator
                 }
             }
             return _maxCars;
+        }
+
+        private void SpawnCarsWithRatio(int maxCars)
+        {
+            // Loop through all lanes
+            for (int i = 0; i < _lanes.Count; i++)
+            {
+                // Calculate the number of cars to spawn for this lane
+                int carsToSpawn = (int)Mathf.Ceil(_ratios[i] * maxCars);
+                Debug.Log("Cars to spawn: " + carsToSpawn + " on lane " + i);
+
+                offset = _lanes[i].StartNode.Count / carsToSpawn;
+                _laneNodeCurrent = _lanes[i].StartNode;
+
+                // Spawn cars
+                for (int j = 0; j < carsToSpawn; j++)
+                {
+                    // Spawn individual car at current node
+                    _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+
+                    carCounter = carCounter + 1;
+
+                    _currentCar.GetComponent<AutoDrive>()._road = _lanes[i]._road;
+                    _currentCar.GetComponent<AutoDrive>()._laneIndex = _indexes[i];
+                    _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
+                    _currentCar.GetComponent<AutoDrive>().Start();
+
+                    for (int k = 0; k < offset; k++)
+                    {
+                        _laneNodeCurrent = _laneNodeCurrent.Next;
+                        offsetCounter = offsetCounter + 1;
+                    }
+                }
+            }
         }
     }
 }
