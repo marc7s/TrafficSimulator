@@ -22,7 +22,7 @@ namespace RoadGenerator
 	{
         private VertexPath _path;
         private LaneNode _start;
-        private Road _road;
+        public Road _road;
         private LaneType _type;
 
         /// <summary>Creates a lane along the supplied path</summary>
