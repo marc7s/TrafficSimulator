@@ -13,6 +13,23 @@ namespace RoadGenerator
         Four = 4
     }
 
+    struct IntersectionVertexPoints : IComparable<IntersectionVertexPoints>
+    {
+        public int StartIndex;
+        public Vector3 IntersectionPoint;
+        public int EndIndex;
+        public IntersectionVertexPoints(int startIndex, Vector3 intersectionPoint, int endIndex)
+        {
+            StartIndex = startIndex < endIndex ? startIndex : endIndex;
+            IntersectionPoint = intersectionPoint;
+            EndIndex = endIndex > startIndex ? endIndex : startIndex;
+        }
+        public int CompareTo(IntersectionVertexPoints other)
+        {
+            return StartIndex.CompareTo(other.StartIndex);
+        }
+    }
+
     
     [ExecuteInEditMode()]
     [RequireComponent(typeof(PathCreator))]
@@ -33,13 +50,14 @@ namespace RoadGenerator
         [Range(0.1f, 10f)] public float LaneVertexSpacing = 1f;
         public bool DrawLanes = false;
         
-        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, RoadNodeType.End, 0);
+        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, Vector3.zero, Vector3.zero, RoadNodeType.End, 0, 0);
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private VertexPath _path;
         [SerializeField][HideInInspector] private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
         [HideInInspector] public List<Intersection> _intersections = new List<Intersection>();
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
+        [SerializeField][HideInInspector] private float _length;
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
@@ -92,6 +110,14 @@ namespace RoadGenerator
             UpdateRoad();
         }
 
+        public void UpdateMesh()
+        {
+            UpdateRoadNodes();
+            RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
+            if(roadMeshCreator != null)
+                roadMeshCreator.UpdateMesh();
+        }
+
         private void UpdateRoad()
         {
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
@@ -100,8 +126,28 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
+                foreach(Intersection intersection in _intersections)
+                    intersection.UpdateMesh();
                 RoadSystem.UpdateRoadSystemGraph();
             }
+        }
+
+        private void AddIntersectionNode(ref RoadNode curr, Vector3 position, RoadNodeType type)
+        {
+            // TODO: Look into if these distances need to follow the path
+            float distanceToIntersection = Vector3.Distance(curr.Position, position);
+
+            RoadNode next = curr.Next == null ? null : curr.Next.Next;
+
+            float time = next == null ? curr.Time : (next.Time + curr.Time) / 2;
+
+            // Add the intersection node
+            curr.Next = new RoadNode(position, curr.Tangent, curr.Normal, type, curr, next, distanceToIntersection, time);
+            curr = curr.Next;
+
+            // If the road does not end at the intersection, update the distance on the following node as well
+            if(curr != null)
+                curr.DistanceToPrevNode = Vector3.Distance(position, curr.Position);
         }
         
         /// <summary>Updates the road nodes</summary>
@@ -110,45 +156,58 @@ namespace RoadGenerator
             // Create the vertex path for the road
             BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
             _path = new VertexPath(path, transform, LaneVertexSpacing);
+            
+            this._length = _path.length;
 
             // Set the end of path instruction depending on if the path is closed or not
             this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
             // Create the start node for the road. The start node must be an end node
-            this._start = new RoadNode(_path.GetPoint(0), RoadNodeType.End, 0);
+            this._start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, _path.times[0]);
             
             // Create a previous and current node that will be used when creating the linked list
             RoadNode prev = null;
             RoadNode curr = _start;
 
             // Calculating the path distance for each intersection on the road
-            List<float> distanceAtIntersection = new List<float>();
+            PriorityQueue<IntersectionVertexPoints> intersectionVertices = new PriorityQueue<IntersectionVertexPoints>();
+            
             foreach(Intersection intersection in _intersections)
             {
-                distanceAtIntersection.Add(_path.GetClosestDistanceAlongPath(intersection.IntersectionPosition));
+                Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
+                Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
+
+                int startIndex = _path.GetClosestIndexOnPath(anchor1);
+                Vector3 intersectionPoint = intersection.IntersectionPosition;
+                int endIndex = _path.GetClosestIndexOnPath(anchor2);
+                intersectionVertices.Enqueue(new IntersectionVertexPoints(startIndex, intersectionPoint, endIndex));
             }
 
             // Go through each point in the path of the road
             for(int i = 1; i < _path.NumPoints; i++)
             {
                 // Add an intersection node if there is an intersection between the previous node and the current node
-                for (int j = 0; j < distanceAtIntersection.Count; j++)
+                IntersectionVertexPoints? possibleNextIntersection = intersectionVertices.Count > 0 ? intersectionVertices.Peek() : null;
+                if(possibleNextIntersection != null)
                 {
-                    // If the path distance at the intersection is between the previous node distance and the current node distance
-                    if (distanceAtIntersection[j] > _path.cumulativeLengthAtEachVertex[i-1] && distanceAtIntersection[j] < _path.cumulativeLengthAtEachVertex[i])
+                    IntersectionVertexPoints nextIntersection = (IntersectionVertexPoints)possibleNextIntersection;
+                    if(i == nextIntersection.StartIndex || i == nextIntersection.EndIndex)
                     {
-                        Vector3 intersectionPosition = _intersections[j].IntersectionPosition;
+                        prev = curr;
+                        curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.JunctionEdge, prev, prev.Next, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
+                        prev.Next = curr;
                         
-                        // TODO: Look into if these distances need to follow the path
-                        float distanceToIntersection = Vector3.Distance(curr.Position, intersectionPosition);
-
-                        // Add the intersection node
-                        curr.Next = new RoadNode(intersectionPosition, RoadNodeType.FourWayIntersection, curr, null, distanceToIntersection);
-                        curr = curr.Next;
-
-                        // If the road does not end at the intersection, update the distance on the following node as well
-                        if(curr != null)
-                            curr.DistanceToPrevNode = Vector3.Distance(intersectionPosition, curr.Position);
+                        if(i == nextIntersection.StartIndex)
+                            AddIntersectionNode(ref curr, nextIntersection.IntersectionPoint, RoadNodeType.FourWayIntersection);
+                        else
+                            intersectionVertices.Dequeue();
+                        
+                        continue;
+                    }
+                    else if(i > nextIntersection.StartIndex && i < nextIntersection.EndIndex)
+                    {
+                        // Do not add any nodes other nodes between the start and end of the intersection
+                        continue;
                     }
                 }
                 
@@ -163,7 +222,7 @@ namespace RoadGenerator
 
                 // Update the previous node and create a new current node
                 prev = curr;
-                curr = new RoadNode(_path.GetPoint(i), currentType, prev, null, _path.DistanceBetweenPoints(i - 1, i));
+                curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), currentType, prev, null, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
 
                 // Set the next pointer for the previous node
                 prev.Next = curr;
@@ -317,6 +376,10 @@ namespace RoadGenerator
         public RoadNavigationGraph NavigationGraph
         {
             get => _navigationGraph;
+        }
+        public float Length
+        {
+            get => _path.length;
         }
         
         void OnDestroy()
