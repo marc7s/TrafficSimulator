@@ -13,9 +13,12 @@ namespace RoadGenerator
 
         public int MaxCars = 5; // Number of cars to spawn per lane
         public float Distance = 10f; // Distance between cars
+        public float carLength = 4f; // Not exact value. Should get imported from car prefab somehow.
+
 
         private RoadSystem _roadSystem;
         private List<Road> _roads;
+        private int _maxCars;
 
         private LaneNode _laneNodeCurrent;
         private LaneNode _laneNodeNext;
@@ -39,6 +42,8 @@ namespace RoadGenerator
 
             _roads = _roadSystem.Roads;
             _vehicle = new Vehicle("Car", carPrefab);
+
+            Debug.Log(CalculateMaxCarsForLanes());
         }
 
         void Update()
@@ -72,7 +77,6 @@ namespace RoadGenerator
                     // Spawn cars
                     for (int k = 0; k < MaxCars; k++)
                     {
-
                         // Spawn individual car at current node
                         _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
 
@@ -80,7 +84,7 @@ namespace RoadGenerator
 
                         _currentCar.GetComponent<AutoDrive>()._road = _roads[i];
                         _currentCar.GetComponent<AutoDrive>()._laneIndex = j;
-                        _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next.Next.Next.Next.Next;
+                        _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
                         _currentCar.GetComponent<AutoDrive>().Start();
                         
 
@@ -137,6 +141,42 @@ namespace RoadGenerator
 
             // Set the current node to that node
             _laneNodeCurrent = _laneNodeNext;
+        }
+
+        private int CalculateMaxCarsForLanes()
+        {
+            // Get the length of the car
+            int _maxCarsTemp = 0;
+            _maxCars = 100000;
+
+            // Loop through all roads
+            for (int i = 0; i < _roadSystem.RoadCount; i++)
+            {
+                _roads[i].OnChange();
+                float laneLength;
+                LaneNode _laneNodeTemp1;
+                LaneNode _laneNodeTemp2;
+                
+                // Loop through all lanes
+                for (int j = 0; j < _roads[i].LaneCount; j++)
+                {
+                    _laneNodeTemp1 = _roads[i].Lanes[j].StartNode;
+                    _laneNodeTemp2 = _roads[i].Lanes[j].StartNode.Next;
+                    laneLength = 0;
+
+                    // Loop through all lane nodes
+                    for (int k = 0; k < _roads[i].Lanes[j].StartNode.Count - 1; k++)
+                    {
+                        // Calculate the length of the lane
+                        laneLength = laneLength + Vector3.Distance(_laneNodeTemp1.Position, _laneNodeTemp2.Position);
+                        _laneNodeTemp1 = _laneNodeTemp1.Next;
+                        _laneNodeTemp2 = _laneNodeTemp2.Next;
+                    }
+                    _maxCarsTemp = ((int)laneLength / (int)carLength);
+                    _maxCars = Mathf.Min(_maxCarsTemp, _maxCars);
+                }
+            }
+            return _maxCars;
         }
     }
 }
