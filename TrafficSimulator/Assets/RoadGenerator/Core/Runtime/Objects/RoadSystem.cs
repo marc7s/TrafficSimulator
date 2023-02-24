@@ -26,8 +26,8 @@ namespace RoadGenerator
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
 
-        [HideInInspector] public bool ShowGraph = false;
-        [SerializeField] private bool _spawnRoadsAtOrigin = false;
+        public bool ShowGraph = false;
+        public bool SpawnRoadsAtOrigin = false;
 
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
@@ -44,7 +44,7 @@ namespace RoadGenerator
         public void AddNewRoad()
         {
             Vector3 spawnPoint = Vector3.zero;
-            if(!_spawnRoadsAtOrigin)
+            if(!SpawnRoadsAtOrigin)
             {
                 RaycastHit hit;
                 SceneView sceneView = SceneView.lastActiveSceneView;
