@@ -113,15 +113,15 @@ namespace RoadGenerator
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
         {
-            Vector3 intersectionPosition = new Vector3(intersectionPointData.Position.x, 0, intersectionPointData.Position.y);
-            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPosition, intersectionPointData.Rotation);
+            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, intersectionPointData.Rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = _intersectionContainer.transform;
             
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
+            intersection.Type = intersectionPointData.Type;
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
-            intersection.IntersectionPosition = intersectionPosition;
+            intersection.IntersectionPosition = intersectionPointData.Position;
             intersection.Road1PathCreator = intersectionPointData.Road1PathCreator;
             intersection.Road2PathCreator = intersectionPointData.Road2PathCreator;
             intersection.Road1 = road1;
@@ -135,6 +135,7 @@ namespace RoadGenerator
             road2.AddIntersection(intersection);
             
             AddIntersection(intersection);
+            road1.UpdateMesh();
             road2.UpdateMesh();
             
             return intersection;
