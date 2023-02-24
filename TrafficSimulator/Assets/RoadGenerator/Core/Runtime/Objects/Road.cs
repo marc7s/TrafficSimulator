@@ -18,15 +18,24 @@ namespace RoadGenerator
         public int StartIndex;
         public Vector3 IntersectionPoint;
         public int EndIndex;
-        public IntersectionVertexPoints(int startIndex, Vector3 intersectionPoint, int endIndex)
+        public IntersectionType Type;
+        public bool IsThreeWayRoad1;
+        public IntersectionVertexPoints(int startIndex, Vector3 intersectionPoint, int endIndex, IntersectionType type, bool isThreeWayRoad1)
         {
             StartIndex = startIndex < endIndex ? startIndex : endIndex;
             IntersectionPoint = intersectionPoint;
             EndIndex = endIndex > startIndex ? endIndex : startIndex;
+            Type = type;
+            IsThreeWayRoad1 = isThreeWayRoad1;
         }
         public int CompareTo(IntersectionVertexPoints other)
         {
             return StartIndex.CompareTo(other.StartIndex);
+        }
+
+        public RoadNodeType GetRoadNodeType()
+        {
+            return Type == IntersectionType.FourWayIntersection ? RoadNodeType.FourWayIntersection : RoadNodeType.ThreeWayIntersection;
         }
     }
 
@@ -174,17 +183,52 @@ namespace RoadGenerator
             
             foreach(Intersection intersection in _intersections)
             {
-                Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
-                Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
+                int startIndex = -1;
+                int endIndex = -1;
 
-                int startIndex = _path.GetClosestIndexOnPath(anchor1);
+                if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
+                { 
+                    if(intersection.Road1 == this)
+                    {
+                        // This is Road1, so the intersection is somewhere in the middle of this road
+                        Vector3 anchor1 = intersection.Road1AnchorPoint1;
+                        Vector3 anchor2 = intersection.Road1AnchorPoint2;
+                        startIndex = _path.GetClosestIndexOnPath(anchor1);
+                        endIndex = _path.GetClosestIndexOnPath(anchor2);
+                    }
+                    else
+                    {
+                        // This is Road2, so the intersection is at the start or end of this road
+                        // The first anchor is AnchorPoint1 of Road2, however the second anchor is the intersection position since it starts or ends there
+                        Vector3 anchor1 = intersection.Road2AnchorPoint1;
+                        Vector3 anchor2 = intersection.IntersectionPosition;
+
+                        bool isStart = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
+
+                        // Force the end index to be either the last index or the first index since the road either starts or ends at the intersection
+                        int edgeIndex = isStart ? 0 : _path.NumPoints - 1;
+                        int junctionIndex = _path.GetClosestIndexOnPath(anchor1);
+                        
+                        // Set the start and end indices accordingly
+                        startIndex = isStart ? edgeIndex : junctionIndex;
+                        endIndex = isStart ? junctionIndex : edgeIndex;
+                    }
+                    
+                }
+                else if(intersection.Type == IntersectionType.FourWayIntersection)
+                {
+                    Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
+                    Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
+                    startIndex = _path.GetClosestIndexOnPath(anchor1);
+                    endIndex = _path.GetClosestIndexOnPath(anchor2);
+                }
+
                 Vector3 intersectionPoint = intersection.IntersectionPosition;
-                int endIndex = _path.GetClosestIndexOnPath(anchor2);
-                intersectionVertices.Enqueue(new IntersectionVertexPoints(startIndex, intersectionPoint, endIndex));
+                intersectionVertices.Enqueue(new IntersectionVertexPoints(startIndex, intersectionPoint, endIndex, intersection.Type, intersection.Road1 == this));
             }
 
             // Go through each point in the path of the road
-            for(int i = 1; i < _path.NumPoints; i++)
+            for(int i = 0; i < _path.NumPoints; i++)
             {
                 // Add an intersection node if there is an intersection between the previous node and the current node
                 IntersectionVertexPoints? possibleNextIntersection = intersectionVertices.Count > 0 ? intersectionVertices.Peek() : null;
@@ -193,13 +237,43 @@ namespace RoadGenerator
                     IntersectionVertexPoints nextIntersection = (IntersectionVertexPoints)possibleNextIntersection;
                     if(i == nextIntersection.StartIndex || i == nextIntersection.EndIndex)
                     {
-                        prev = curr;
-                        curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.JunctionEdge, prev, prev.Next, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
-                        prev.Next = curr;
+                        // If the intersection is a 3-way intersection, we want to add a junction node:
+                        // To both indices if this is Road1
+                        // To the end index if if the intersection is at the start
+                        // To the start index if the intersection is at the end
+                        bool threeWayShouldAddJunctionEdge = 
+                            nextIntersection.IsThreeWayRoad1
+                            || (nextIntersection.Type == IntersectionType.ThreeWayIntersectionAtStart && i == nextIntersection.EndIndex)
+                            || (nextIntersection.Type == IntersectionType.ThreeWayIntersectionAtEnd && i == nextIntersection.StartIndex);
+    
+                        // Add a junction edge node                    
+                        if(nextIntersection.GetRoadNodeType() == RoadNodeType.FourWayIntersection || threeWayShouldAddJunctionEdge)
+                        {
+                            prev = curr;
+                            curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.JunctionEdge, prev, null, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
+                            prev.Next = curr;
+                        }
                         
+                        
+                        // Add the intersection node after the first junction edge node
                         if(i == nextIntersection.StartIndex)
-                            AddIntersectionNode(ref curr, nextIntersection.IntersectionPoint, RoadNodeType.FourWayIntersection);
-                        else
+                        {
+                            AddIntersectionNode(ref curr, nextIntersection.IntersectionPoint, nextIntersection.GetRoadNodeType());
+                        }
+                        
+                        // If this is Road2 on a 3-way intersection at the end, add a final end node
+                        if(!nextIntersection.IsThreeWayRoad1 && nextIntersection.Type == IntersectionType.ThreeWayIntersectionAtEnd && i == nextIntersection.EndIndex)
+                        {
+                            // Update the previous node and create a new current node
+                            prev = curr;
+                            curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.End, prev, null, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
+
+                            // Set the next pointer for the previous node
+                            prev.Next = curr;
+                        }
+                        
+                        
+                        if(i == nextIntersection.EndIndex)
                             intersectionVertices.Dequeue();
                         
                         continue;
@@ -210,6 +284,10 @@ namespace RoadGenerator
                         continue;
                     }
                 }
+                
+                // The first iteration is only for 3-way intersections at the start, so skip the rest of the first iteration
+                if(i == 0)
+                    continue;
                 
                 // The current node type is assumed to be default
                 RoadNodeType currentType = RoadNodeType.Default;

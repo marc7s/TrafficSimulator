@@ -194,11 +194,18 @@ namespace RoadGenerator
             {
                 vertIndex = verts.Count == 0 ? 0 : verts.Count;
 
-                if(curr.IsIntersection() || curr.Type == RoadNodeType.JunctionEdge)
+                // Skip the start node if the next node is a three way intersection
+                bool skipFirst = curr.Type == RoadNodeType.End && curr.Next != null && curr.Next.Type == RoadNodeType.ThreeWayIntersection;
+
+                // Skip the end node if the previous node is a three way intersection
+                bool skipLast = curr.Type == RoadNodeType.End && curr.Prev != null && curr.Prev.Type == RoadNodeType.ThreeWayIntersection;
+                
+                if(curr.IsIntersection() || curr.Type == RoadNodeType.JunctionEdge || skipFirst || skipLast)
                 {
                     curr = curr.Next;
                     continue;
                 }
+
                 // Store the Y scale to be used for the UVs. It is the path time (0 at the start of the path and 1 at the end)
                 float uvYScale = curr.Time;
 
