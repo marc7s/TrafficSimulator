@@ -65,31 +65,25 @@ namespace RoadGenerator
             int sideVertsPerPoint = 4;
 
             // Create the arrays for the vertices, uvs and normals
-            int numPoints = _road.StartNode.CountNonIntersections;
-            int vertsLength = numPoints * (edgeVertsPerPoint + laneVertsPerPoint + bottomVertsPerPoint + sideVertsPerPoint);
-            List<Vector3> verts = new List<Vector3>();
-            List<Vector2> uvs = new List<Vector2>();
-            List<Vector3> normals = new List<Vector3>();
+            Vector3[] verts = new Vector3[path.NumPoints * (edgeVertsPerPoint + laneVertsPerPoint + bottomVertsPerPoint + sideVertsPerPoint)];
+            Vector2[] uvs = new Vector2[verts.Length];
+            Vector3[] normals = new Vector3[verts.Length];
 
             // Calculate the number of triangles required for each component of the road
-            int laneNumTris = 2 * _laneCount * (2 * (numPoints - 1) + (path.isClosedLoop ? 2 : 0));
-            int bottomNumTris = 2 * (numPoints - 1) + (path.isClosedLoop ? 2 : 0);
-            int sideNumTris = 4 * (numPoints - 1) + 4;
-            
-            // A 2D list where each list will hold the triangles for a lane
-            List<List<int>> laneTriangles = new List<List<int>>();
+            int laneNumTris = 2 * _laneCount * (2 * (path.NumPoints - 1) + (path.isClosedLoop ? 2 : 0));
+            int bottomNumTris = 2 * (path.NumPoints - 1) + (path.isClosedLoop ? 2 : 0);
+            int sideNumTris = 4 * (path.NumPoints - 1) + 4;
 
-            // Since it will be indexed it needs to be initialised with the correct size
-            for(int i = 0; i < 2 * _laneCount; i++)
-                laneTriangles.Add(new List<int>(new int[laneNumTris * 3]));
-            
-            // The triangles for the bottom and side of the road
-            List<int> bottomTriangles = new List<int>();
-            List<int> sideOfRoadTriangles = new List<int>();
+            // Create the arrays for the triangles
+            int[,] laneTriangles = new int[2 * _laneCount, laneNumTris * 3];
+            int[] bottomTriangles = new int[bottomNumTris * 3];
+            int[] sideOfRoadTriangles = new int[sideNumTris * 3];
 
             // Initialise the array indices used for the components
             int vertIndex = 0;
             int laneTriIndex = 0;
+            int bottomTriIndex = 0;
+            int sideTriIndex = 0;
 
             // The triangle map for the bottom of the road
             int[] bottomTriangleMap = 
@@ -188,50 +182,36 @@ namespace RoadGenerator
             });
 
             bool usePathNormals = !(path.space == PathSpace.xyz && _flattenSurface);
-            RoadNode curr = _road.StartNode;
-            
-            while(curr != null)
+
+            for (int i = 0; i < path.NumPoints; i++) 
             {
-                vertIndex = verts.Count == 0 ? 0 : verts.Count;
-
-                // Skip the start node if the next node is a three way intersection
-                bool skipFirst = curr.Type == RoadNodeType.End && curr.Next != null && curr.Next.Type == RoadNodeType.ThreeWayIntersection;
-
-                // Skip the end node if the previous node is a three way intersection
-                bool skipLast = curr.Type == RoadNodeType.End && curr.Prev != null && curr.Prev.Type == RoadNodeType.ThreeWayIntersection;
-                
-                if(curr.IsIntersection() || curr.Type == RoadNodeType.JunctionEdge || skipFirst || skipLast)
-                {
-                    curr = curr.Next;
-                    continue;
-                }
-
                 // Store the Y scale to be used for the UVs. It is the path time (0 at the start of the path and 1 at the end)
-                float uvYScale = curr.Time;
+                float uvYScale = path.times[i];
 
                 // Calculate the local directional vectors
-                Vector3 localUp = usePathNormals ? Vector3.Cross(curr.Tangent, curr.Normal) : path.up;
-                Vector3 localRight = usePathNormals ? curr.Normal : Vector3.Cross(localUp, curr.Tangent);
+                Vector3 localUp = usePathNormals ? Vector3.Cross(path.GetTangent(i), path.GetNormal(i)) : path.up;
+                Vector3 localRight = usePathNormals ? path.GetNormal(i) : Vector3.Cross(localUp, path.GetTangent(i));
 
                 // Find position to left and right of current path vertex
-                Vector3 vertCenter = curr.Position;
+                Vector3 vertCenter = path.GetPoint(i);
                 Vector3 vertSideA = vertCenter - localRight * Mathf.Abs(_road.LaneWidth) * _laneCount;
                 Vector3 vertSideB = vertCenter + localRight * Mathf.Abs(_road.LaneWidth) * _laneCount;
 
+
                 /*** Add top of road vertices ***/
-                verts.Add(vertSideA);
-                verts.Add(vertSideB);
-                verts.Add(vertCenter);
+                verts[vertIndex + 0] = vertSideA;
+                verts[vertIndex + 1] = vertSideB;
+                verts[vertIndex + 2] = vertCenter;
 
                 // The top of the road has normals pointing up
-                normals.Add(localUp);
-                normals.Add(localUp);
-                normals.Add(localUp);
+                normals[vertIndex + 0] = localUp;
+                normals[vertIndex + 1] = localUp;
+                normals[vertIndex + 2] = localUp;
                 
                 // The UV x axis is set so that 0 is on the local left and 1 is on the local right. The center will therefore be 0.5
-                uvs.Add(new Vector2 (0, uvYScale));
-                uvs.Add(new Vector2 (1, uvYScale));
-                uvs.Add(new Vector2 (0.5f, uvYScale));
+                uvs[vertIndex + 0] = new Vector2 (0, uvYScale);
+                uvs[vertIndex + 1] = new Vector2 (1, uvYScale);
+                uvs[vertIndex + 2] = new Vector2 (0.5f, uvYScale);
 
 
                 /*** Add lane vertices ***/
@@ -245,16 +225,16 @@ namespace RoadGenerator
                     float uvOffset = 0.5f * (float)(l + 1) / (float)_laneCount;
 
                     // The lane vertices are created by offsetting the center vertices with the lane width
-                    verts.Add(vertCenter - localRight * Mathf.Abs(_road.LaneWidth) * (l + 1));
-                    verts.Add(vertCenter + localRight * Mathf.Abs(_road.LaneWidth) * (l + 1));
+                    verts[vertIndex + 3 + index] = vertCenter - localRight * Mathf.Abs(_road.LaneWidth) * (l + 1);
+                    verts[vertIndex + 4 + index] = vertCenter + localRight * Mathf.Abs(_road.LaneWidth) * (l + 1);
                     
                     // The lanes have normals pointing up
-                    normals.Add(localUp);
-                    normals.Add(localUp);
+                    normals[vertIndex + 3 + index] = localUp;
+                    normals[vertIndex + 4 + index] = localUp;
                     
                     // Set the UVs using the calculated UV offset
-                    uvs.Add(new Vector2 (0.5f - uvOffset, uvYScale));
-                    uvs.Add(new Vector2 (0.5f + uvOffset, uvYScale));
+                    uvs[vertIndex + 3 + index] = new Vector2 (0.5f - uvOffset, uvYScale);
+                    uvs[vertIndex + 4 + index] = new Vector2 (0.5f + uvOffset, uvYScale);
                 }
                 
                 // An offset used for simplicity since the amount of lanes that were added determine the current index
@@ -262,51 +242,50 @@ namespace RoadGenerator
                 
                 
                 /*** Add bottom of road vertices ***/
-                verts.Add(vertSideA - localUp * _thickness);
-                verts.Add(vertSideB - localUp * _thickness);
+                verts[laneOffset + vertIndex + 3] = vertSideA - localUp * _thickness;
+                verts[laneOffset + vertIndex + 4] = vertSideB - localUp * _thickness;
                 
                 // The bottom of the road has normals pointing down
-                normals.Add(-localUp);
-                normals.Add(-localUp);
+                normals[laneOffset + vertIndex + 3] = -localUp;
+                normals[laneOffset + vertIndex + 4] = -localUp;
                 
                 // The UVs are calculated the same as for the top of the road
-                uvs.Add(new Vector2 (0, uvYScale));
-                uvs.Add(new Vector2 (1, uvYScale));
+                uvs[laneOffset + vertIndex + 3] = new Vector2 (0, uvYScale);
+                uvs[laneOffset + vertIndex + 4] = new Vector2 (1, uvYScale);
 
                 
                 /*** Add side of road vertices ***/
                 // Duplicate vertices to get flat shading for sides of road
                 // The vertices are duplicates of the road edge vertices and bottom vertices
-                verts.Add(verts[vertIndex + 0]);
-                verts.Add(verts[vertIndex + 1]);
-                verts.Add(verts[laneOffset + vertIndex + 3]);
-                verts.Add(verts[laneOffset + vertIndex + 4]);
+                verts[laneOffset + vertIndex + 5] = verts[vertIndex + 0];
+                verts[laneOffset + vertIndex + 6] = verts[vertIndex + 1];
+                verts[laneOffset + vertIndex + 7] = verts[laneOffset + vertIndex + 3];
+                verts[laneOffset + vertIndex + 8] = verts[laneOffset + vertIndex + 4];
                 
                 // The sides of the road have normals pointing outwards from the road, opposite each other
-                normals.Add(localRight);
-                normals.Add(localRight);
-                normals.Add(-localRight);
-                normals.Add(-localRight);
+                normals[laneOffset + vertIndex + 5] = localRight;
+                normals[laneOffset + vertIndex + 6] = localRight;
+                normals[laneOffset + vertIndex + 7] = -localRight;
+                normals[laneOffset + vertIndex + 8] = -localRight;
 
-                // The UVs are calculated the same as for the top of the road
-                uvs.Add(new Vector2 (0, uvYScale));
-                uvs.Add(new Vector2 (0, uvYScale));
-                uvs.Add(new Vector2 (1, uvYScale));
-                uvs.Add(new Vector2 (1, uvYScale));
+                uvs[laneOffset + vertIndex + 5] = new Vector2 (0, uvYScale);
+                uvs[laneOffset + vertIndex + 6] = new Vector2 (0, uvYScale);
+                uvs[laneOffset + vertIndex + 7] = new Vector2 (1, uvYScale);
+                uvs[laneOffset + vertIndex + 8] = new Vector2 (1, uvYScale);
                 
 
                 /*** Set triangle indices ***/
                 // Get the current lane triangle map
                 List<int> laneTriangleMap = laneTriangleMaps[_laneCount - 1];
                 
-                if((curr.Next != null && curr.Next.Type != RoadNodeType.JunctionEdge) || path.isClosedLoop)
+                if (i < path.NumPoints - 1 || path.isClosedLoop)
                 {
                     // Set the lane triangle indices
                     for (int j = 0; j < laneTriangleMap.Count; j++) 
                     {
                         for(int l = 0; l < 2 * _laneCount; l++)
                         {
-                            laneTriangles[l][laneTriIndex + j] = (vertIndex + laneTriangleMap[j]) % vertsLength;
+                            laneTriangles[l, laneTriIndex + j] = (vertIndex + laneTriangleMap[j]) % verts.Length;
                         }
                     }
                     
@@ -315,61 +294,72 @@ namespace RoadGenerator
                     for(int j  = 0; j < bottomTriangleMap.Length; j++)
                     {
                         // Reverse triangle map for the bottom so that triangles wind the other way and are visible from underneath
-                        bottomTriangles.Add((vertIndex + bottomTriangleMap[bottomTriangleMap.Length - 1 - j] + bottomTriangleOffset) % vertsLength);
+                        bottomTriangles[bottomTriIndex + j] = (vertIndex + bottomTriangleMap[bottomTriangleMap.Length - 1 - j] + bottomTriangleOffset) % verts.Length;
                     }
                     
                     // Set the side triangle indices
                     int sideTriangleOffset = 2 * _laneCount + 1 + 2;
                     for (int j = 0; j < sidesTriangleMap.Length; j++) 
                     {
-                        sideOfRoadTriangles.Add((vertIndex + sidesTriangleMap[j] + sideTriangleOffset) % vertsLength);
+                        sideOfRoadTriangles[sideTriIndex + j] = (vertIndex + sidesTriangleMap[j] + sideTriangleOffset) % verts.Length;
                     }
                 }
 
+                vertIndex += 4 + 2 + 2 + 2 * _laneCount - 1;
                 laneTriIndex += laneTriangleMap.Count;
-
-                curr = curr.Next;
+                bottomTriIndex += bottomTriangleMap.Length;
+                sideTriIndex += sidesTriangleMap.Length;
             }
 
             _mesh.Clear();
-            _mesh.vertices = verts.ToArray();
-            _mesh.uv = uvs.ToArray();
-            _mesh.normals = normals.ToArray();
+            _mesh.vertices = verts;
+            _mesh.uv = uvs;
+            _mesh.normals = normals;
             
             // Two submeshes are created for each lane, so with two directions that makes 2 * laneCount submeshes. 
             // Finally, two more are used for the bottom and sides
             _mesh.subMeshCount = 2 + 2 * _laneCount;
             
             // Set lane triangles
-            for(int i = 0; i < laneTriangles.Count; i++)
+            for(int l = 0; l < 2 * _laneCount; l++)
             {
-                _mesh.SetTriangles(laneTriangles[i].ToArray(), i);
+                // Create a new array for the lane triangles
+                int[] laneTrianglesArray = new int[laneTriangles.GetLength(1)];
+                
+                // Populate the array
+                for(int i = 0; i < laneTriangles.GetLength(1); i++)
+                {
+                    laneTrianglesArray[i] = laneTriangles[l, i];
+                }
+
+                // Set the lane triangles for the submesh
+                _mesh.SetTriangles(laneTrianglesArray, l);
             }
 
             // Add triangles for side of start and end of road if the road is not a closed loop
             if(!path.isClosedLoop)
             {
-                int indexOffset = sideOfRoadTriangles.Count - 12;
+                int indexOffset = sideOfRoadTriangles.Length - 12;
                 int startOffset = 2 * _laneCount + 1 + 2;
-                int endOffset = verts.Count - 1;
+                int endOffset = verts.Length - 1;
                 
                 // Start of road
-                sideOfRoadTriangles.Add(startOffset + 1);
-                sideOfRoadTriangles.Add(startOffset + 3);
-                sideOfRoadTriangles.Add(startOffset + 0);
+                sideOfRoadTriangles[indexOffset] = startOffset + 1;
+                sideOfRoadTriangles[indexOffset + 1] = startOffset + 3;
+                sideOfRoadTriangles[indexOffset + 2] = startOffset + 0;
                 
-                sideOfRoadTriangles.Add(startOffset + 0);
-                sideOfRoadTriangles.Add(startOffset + 3);
-                sideOfRoadTriangles.Add(startOffset + 2);
+                sideOfRoadTriangles[indexOffset + 3] = startOffset + 0;
+                sideOfRoadTriangles[indexOffset + 4] = startOffset + 3;
+                sideOfRoadTriangles[indexOffset + 5] = startOffset + 2;
 
                 // End of road
-                sideOfRoadTriangles.Add(endOffset - 3);
-                sideOfRoadTriangles.Add(endOffset - 0);
-                sideOfRoadTriangles.Add(endOffset - 2);
+                sideOfRoadTriangles[indexOffset + 6] = endOffset - 3;
+                sideOfRoadTriangles[indexOffset + 7] = endOffset - 0;
+                sideOfRoadTriangles[indexOffset + 8] = endOffset - 2;
                 
-                sideOfRoadTriangles.Add(endOffset - 1);
-                sideOfRoadTriangles.Add(endOffset - 0);
-                sideOfRoadTriangles.Add(endOffset - 3);
+                sideOfRoadTriangles[indexOffset + 9] = endOffset - 1;
+                sideOfRoadTriangles[indexOffset + 10] = endOffset - 0;
+                sideOfRoadTriangles[indexOffset + 11] = endOffset - 3;
             }
 
             _mesh.SetTriangles(bottomTriangles, 2 * _laneCount);
@@ -415,7 +405,7 @@ namespace RoadGenerator
             if (_laneMaterialCopy != null && _bottomMaterial != null) 
             {
                 // Calculate the texture tiling based on the length of the road and the texture height
-                float textureTiling = (_road.Length / _laneMaterial.mainTexture.height) * _textureTilingScale;
+                float textureTiling = (path.length / _laneMaterial.mainTexture.height) * _textureTilingScale;
                 
                 // Create an array of materials for the mesh renderer
                 // It will hold a bottom material, a side material and a material for each lane

@@ -25,10 +25,8 @@ namespace RoadGenerator
 
 
         [Header("Anchor Colours")]
-        public Color anchor = new Color(0.2f, 0.4f, 0.6f, 0.85f);
-        public Color startAnchor = new Color(0.1f, 0.95f, 0.1f, 0.85f);
-        public Color endAnchor = new Color(0.95f, 0.1f, 0.1f, 0.85f);
-        public Color anchorHighlighted = new Color(0, 0.2f, 0.7f);
+        public Color anchor = new Color(0.95f, 0.25f, 0.25f, 0.85f);
+        public Color anchorHighlighted = new Color(1, 0.57f, 0.4f);
         public Color anchorSelected = Color.white;
 
         [Header("Control Colours")]

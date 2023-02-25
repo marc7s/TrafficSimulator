@@ -19,10 +19,8 @@ MonoBehaviour:
   hideAutoControls: 1
   anchorShape: 0
   controlShape: 0
-  anchor: {r: 0.1947905, g: 0.43789747, b: 0.6320754, a: 0.9254902}
-  startAnchor: {r: 0.1, g: 0.95, b: 0.1, a: 0.85}
-  endAnchor: {r: 0.95, g: 0.1, b: 0.1, a: 0.85}
-  anchorHighlighted: {r: 0, g: 0.18396224, b: 0.6132076, a: 1}
+  anchor: {r: 1, g: 0.3726415, b: 0.3726415, a: 1}
+  anchorHighlighted: {r: 0.735849, g: 0.03818085, b: 0.03818085, a: 1}
   anchorSelected: {r: 1, g: 1, b: 1, a: 1}
   control: {r: 0.35, g: 0.6, b: 1, a: 1}
   controlHighlighted: {r: 0.19579923, g: 0.19579923, b: 0.754717, a: 1}

@@ -639,7 +639,7 @@ namespace RoadGeneratorEditor
 			{
 				for (int i = 0; i < bezierPath.NumPoints; i += 3)
 				{
-					DrawHandle(i, i == 0, i == bezierPath.NumPoints - 1);
+					DrawHandle(i);
 				}
 			}
 			if (displayControlPoints)
@@ -652,7 +652,7 @@ namespace RoadGeneratorEditor
 			}
 		}
 
-		void DrawHandle(int i, bool isStart = false, bool isEnd = false)
+		void DrawHandle(int i)
 		{
 			Vector3 handlePosition = MathUtility.TransformPoint(bezierPath[i], creator.transform, bezierPath.Space);
 
@@ -671,7 +671,7 @@ namespace RoadGeneratorEditor
 			}
 			var cap = capFunctions[(isAnchorPoint) ? globalDisplaySettings.anchorShape : globalDisplaySettings.controlShape];
 			PathHandle.HandleInputType handleInputType;
-			handlePosition = PathHandle.DrawHandle(handlePosition, bezierPath.Space, isInteractive, handleSize, cap, handleColours, out handleInputType, i, isStart, isEnd);
+			handlePosition = PathHandle.DrawHandle(handlePosition, bezierPath.Space, isInteractive, handleSize, cap, handleColours, out handleInputType, i);
 
 			if (doTransformHandle)
 			{
@@ -832,8 +832,8 @@ namespace RoadGeneratorEditor
 		void UpdateGlobalDisplaySettings()
 		{
 			var gds = globalDisplaySettings;
-			splineAnchorColours = new PathHandle.HandleColours(gds.anchor, gds.startAnchor, gds.endAnchor, gds.anchorHighlighted, gds.anchorSelected, gds.handleDisabled);
-			splineControlColours = new PathHandle.HandleColours(gds.control, gds.startAnchor, gds.endAnchor, gds.controlHighlighted, gds.controlSelected, gds.handleDisabled);
+			splineAnchorColours = new PathHandle.HandleColours(gds.anchor, gds.anchorHighlighted, gds.anchorSelected, gds.handleDisabled);
+			splineControlColours = new PathHandle.HandleColours(gds.control, gds.controlHighlighted, gds.controlSelected, gds.handleDisabled);
 
 			anchorAngleHandle.fillColor = new Color(1, 1, 1, .05f);
 			anchorAngleHandle.wireframeColor = Color.grey;

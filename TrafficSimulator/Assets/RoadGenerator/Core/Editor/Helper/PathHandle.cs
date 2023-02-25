@@ -39,10 +39,8 @@ namespace RoadGeneratorEditor
 			dstMouseToDragPointStart = float.MaxValue;
 		}
 
-		public static Vector3 DrawHandle(Vector3 position, PathSpace space, bool isInteractive, float handleDiameter, Handles.CapFunction capFunc, HandleColours colours, out HandleInputType inputType, int handleIndex, bool isStart, bool isEnd)
+		public static Vector3 DrawHandle(Vector3 position, PathSpace space, bool isInteractive, float handleDiameter, Handles.CapFunction capFunc, HandleColours colours, out HandleInputType inputType, int handleIndex)
 		{
-			colours.defaultColour = isStart ? colours.startColour : isEnd ? colours.endColour : colours.defaultColour;
-
 			int id = GetID(handleIndex);
 			Vector3 screenPosition = Handles.matrix.MultiplyPoint(position);
 			Matrix4x4 cachedMatrix = Handles.matrix;
@@ -188,17 +186,13 @@ namespace RoadGeneratorEditor
 		public struct HandleColours
 		{
 			public Color defaultColour;
-			public Color startColour;
-			public Color endColour;
 			public Color highlightedColour;
 			public Color selectedColour;
 			public Color disabledColour;
 
-			public HandleColours(Color defaultColour, Color firstColour, Color lastColour, Color highlightedColour, Color selectedColour, Color disabledColour)
+			public HandleColours(Color defaultColour, Color highlightedColour, Color selectedColour, Color disabledColour)
 			{
 				this.defaultColour = defaultColour;
-				this.startColour = firstColour;
-				this.endColour = lastColour;
 				this.highlightedColour = highlightedColour;
 				this.selectedColour = selectedColour;
 				this.disabledColour = disabledColour;

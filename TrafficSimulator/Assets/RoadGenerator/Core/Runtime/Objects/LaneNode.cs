@@ -40,11 +40,6 @@ namespace RoadGenerator
         {
             get => _vehicle;
         }
-
-        public override LaneNode Copy()
-        {
-            return new LaneNode(_position, _rotation, _roadNode, _prev, _next, _distanceToPrevNode);
-        }
         
         /// <summary>Tries to assign a vehicle to this node. Returns `true` if it succeded, `false` if there is already a vehicle assigned</summary>
         public bool SetVehicle(Vehicle vehicle)

@@ -71,9 +71,7 @@ namespace RoadGenerator
                 }
 
                 GraphNode graphNode = new GraphNode(curr);
-                string key = curr.Position.ToString();
-                if(!Graph.ContainsKey(key))
-                    Graph.Add(key, graphNode);
+                Graph.Add(curr.Position.ToString(), graphNode);
                 // Edges with the current cost are added in both directions
                 PreviouslyAddedNode.Edges.Add(new GraphEdge(graphNode, _currentCost));
                 graphNode.Edges.Add(new GraphEdge(PreviouslyAddedNode, _currentCost));
