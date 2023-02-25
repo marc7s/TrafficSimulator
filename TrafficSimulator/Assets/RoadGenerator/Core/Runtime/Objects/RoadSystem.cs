@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
 using System;
 
@@ -44,10 +43,11 @@ namespace RoadGenerator
         public void AddNewRoad()
         {
             Vector3 spawnPoint = Vector3.zero;
+            #if UNITY_EDITOR
             if(!SpawnRoadsAtOrigin)
             {
                 RaycastHit hit;
-                SceneView sceneView = SceneView.lastActiveSceneView;
+                UnityEditor.SceneView sceneView = UnityEditor.SceneView.lastActiveSceneView;
                 Camera camera = sceneView.camera;
                 
                 // Get the nearest point on the surface the camera is looking at
@@ -58,6 +58,7 @@ namespace RoadGenerator
                 }
                 spawnPoint = hit.point;
             }
+            #endif
             
 
             // Instantiate a new road prefab
