@@ -187,11 +187,8 @@ namespace RoadGenerator
                 road2SegmentIndex = tempIndex;
 
                 if(Vector3.Distance(road2AnchorPoint1, intersectionPoint) > Vector3.Distance(road2AnchorPoint2, intersectionPoint))
-                {
-                    Vector3 swap = road2AnchorPoint1;
                     road2AnchorPoint1 = road2AnchorPoint2;
-                    road2AnchorPoint2 = swap;
-                }
+                
 
                 // For three way intersections Road2 will only have one anchor point, so we zero out the other one to avoid hard to find bugs if the wrong one is used
                 road2AnchorPoint2 = Vector3.zero;                
