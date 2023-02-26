@@ -66,8 +66,8 @@ namespace RoadGenerator
             if (!spawned) {
                 if (Time.time > spawnDelay) {
                     spawned = true;
-                    //SpawnCarsWithRatio(MaxCars);
-                    SpawnCarsWithPercentage(MaxCarsPercentage);
+                    SpawnCarsWithRatio(MaxCars);
+                    //SpawnCarsWithPercentage(MaxCarsPercentage);
                     Debug.Log("Cars spawned: " + carCounter);
                 }
             }
@@ -311,6 +311,7 @@ namespace RoadGenerator
 
         private void SpawnCarsWithRatio(int maxCars)
         {
+            int carsSpawned = 0;
             // Loop through all lanes
             for (int i = 0; i < _lanes.Count; i++)
             {
@@ -324,9 +325,14 @@ namespace RoadGenerator
                 // Spawn cars
                 for (int j = 0; j < carsToSpawn; j++)
                 {
+                    if (carsSpawned == maxCars) {
+                        return;
+                    }
+
                     // Spawn individual car at current node
                     _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
 
+                    carsSpawned = carsSpawned + 1;
                     carCounter = carCounter + 1;
 
                     _currentCar.GetComponent<AutoDrive>()._road = _lanes[i]._road;
