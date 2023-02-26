@@ -186,7 +186,8 @@ namespace RoadGenerator
                 road1SegmentIndex = road2SegmentIndex;
                 road2SegmentIndex = tempIndex;
 
-                if(Vector3.Distance(road2AnchorPoint1, intersectionPoint) > Vector3.Distance(road2AnchorPoint2, intersectionPoint))
+                // Since we capped the distance at the end of the road, the correct anchor point will be the one furthest away
+                if(Vector3.Distance(road2AnchorPoint2, intersectionPoint) > Vector3.Distance(road2AnchorPoint1, intersectionPoint))
                     road2AnchorPoint1 = road2AnchorPoint2;
                 
 
@@ -197,6 +198,10 @@ namespace RoadGenerator
             else if(road2PathCreator.path.length < road2DistanceAtIntersection + intersectionExtension || road2DistanceAtIntersection - intersectionExtension < 0)
             {
                 type = GetThreeWayIntersectionType(road2PathCreator, road2DistanceAtIntersection);
+
+                // Since we capped the distance at the end of the road, the correct anchor point will be the one furthest away
+                if(Vector3.Distance(road2AnchorPoint2, intersectionPoint) > Vector3.Distance(road2AnchorPoint1, intersectionPoint))
+                    road2AnchorPoint1 = road2AnchorPoint2;
                 
                 // For three way intersections Road2 will only have one anchor point, so we zero out the other one to avoid hard to find bugs if the wrong one is used
                 road2AnchorPoint2 = Vector3.zero;
@@ -213,8 +218,9 @@ namespace RoadGenerator
         /// <summary>Calculate the positions of the two anchor points to be created on either side of the intersection</summary>
         static (Vector3, Vector3) GetIntersectionAnchorPoints(VertexPath vertexPath, float distanceAtIntersection)
         {
-            Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + Intersection.IntersectionLength/2);
-            Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - Intersection.IntersectionLength/2);
+            // Use EndOfPathInstruction.Stop to cap the anchor points at the end of the road
+            Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + Intersection.IntersectionLength/2, EndOfPathInstruction.Stop);
+            Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - Intersection.IntersectionLength/2, EndOfPathInstruction.Stop);
             
             return (firstAnchorPoint, secondAnchorPoint);
         }
@@ -225,9 +231,11 @@ namespace RoadGenerator
             // Get the path creators for the roads
             PathCreator road1PathCreator = intersectionPointData.Road1PathCreator;
             PathCreator road2PathCreator = intersectionPointData.Road2PathCreator;
+
+            Road otherRoad = GetRoad(roadSystem, road2PathCreator);
             
             // Create a new intersection at the intersection point
-            Intersection intersection = road.RoadSystem.AddNewIntersection(intersectionPointData, road, GetRoad(roadSystem, road2PathCreator));
+            Intersection intersection = road.RoadSystem.AddNewIntersection(intersectionPointData, road, otherRoad);
             
             // Split Road1 on the intersection, creating an anchor point on each side of the intersection
             SplitPathOnIntersection(road1PathCreator, intersection.Road1AnchorPoint1, intersection.Road1AnchorPoint2, intersectionPointData.Road1SegmentIndex);
@@ -251,6 +259,10 @@ namespace RoadGenerator
             }
             
             DeleteAnchorsInsideIntersectionBounds(intersection);
+
+            road.UpdateMesh();
+            otherRoad.UpdateMesh();
+            intersection.UpdateMesh();
         }
 
         /// <summary>Splits a path on an intersection, creating an anchor point on each side of the intersection</summary>

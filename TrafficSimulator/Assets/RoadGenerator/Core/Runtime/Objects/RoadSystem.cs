@@ -135,8 +135,6 @@ namespace RoadGenerator
             road2.AddIntersection(intersection);
             
             AddIntersection(intersection);
-            road1.UpdateMesh();
-            road2.UpdateMesh();
             
             return intersection;
         }

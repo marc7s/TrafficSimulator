@@ -13,29 +13,22 @@ namespace RoadGenerator
         Four = 4
     }
 
-    struct IntersectionVertexPoints : IComparable<IntersectionVertexPoints>
+    struct QueuedNode : IComparable<QueuedNode>
     {
-        public int StartIndex;
-        public Vector3 IntersectionPoint;
-        public int EndIndex;
-        public IntersectionType Type;
-        public bool IsThreeWayRoad1;
-        public IntersectionVertexPoints(int startIndex, Vector3 intersectionPoint, int endIndex, IntersectionType type, bool isThreeWayRoad1)
+        public RoadNodeType NodeType;
+        public float Distance;
+        public Vector3 Position;
+        public bool EndsIntersection;
+        public QueuedNode(RoadNodeType nodeType, float distance, Vector3 position, bool endsIntersection)
         {
-            StartIndex = startIndex < endIndex ? startIndex : endIndex;
-            IntersectionPoint = intersectionPoint;
-            EndIndex = endIndex > startIndex ? endIndex : startIndex;
-            Type = type;
-            IsThreeWayRoad1 = isThreeWayRoad1;
+            NodeType = nodeType;
+            Distance = distance;
+            Position = position;
+            EndsIntersection = endsIntersection;
         }
-        public int CompareTo(IntersectionVertexPoints other)
+        public int CompareTo(QueuedNode other)
         {
-            return StartIndex.CompareTo(other.StartIndex);
-        }
-
-        public RoadNodeType GetRoadNodeType()
-        {
-            return Type == IntersectionType.FourWayIntersection ? RoadNodeType.FourWayIntersection : RoadNodeType.ThreeWayIntersection;
+            return Distance.CompareTo(other.Distance);
         }
     }
 
@@ -147,6 +140,21 @@ namespace RoadGenerator
             if(curr != null)
                 curr.DistanceToPrevNode = Vector3.Distance(position, curr.Position);
         }
+
+        private (Vector3, Vector3, float, float) GetPositionsAndDistancesInOrder(Vector3 position1, Vector3 position2, VertexPath path)
+        {
+            float distance1 = path.GetClosestDistanceAlongPath(position1);
+            float distance2 = path.GetClosestDistanceAlongPath(position2);
+
+            bool swap = distance1 > distance2;
+
+            Vector3 firstPos = swap ? position2 : position1;
+            Vector3 secondPos = swap ? position1 : position2;
+            float firstDistance = swap ? distance2 : distance1;
+            float secondDistance = swap ? distance1 : distance2;
+            
+            return (firstPos, secondPos, firstDistance, secondDistance);
+        }
         
         /// <summary>Updates the road nodes</summary>
         public void UpdateRoadNodes()
@@ -168,13 +176,10 @@ namespace RoadGenerator
             RoadNode curr = _start;
 
             // Calculating the path distance for each intersection on the road
-            PriorityQueue<IntersectionVertexPoints> intersectionVertices = new PriorityQueue<IntersectionVertexPoints>();
+            PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
             
             foreach(Intersection intersection in _intersections)
             {
-                int startIndex = -1;
-                int endIndex = -1;
-
                 if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
                 { 
                     if(intersection.Road1 == this)
@@ -182,8 +187,15 @@ namespace RoadGenerator
                         // This is Road1, so the intersection is somewhere in the middle of this road
                         Vector3 anchor1 = intersection.Road1AnchorPoint1;
                         Vector3 anchor2 = intersection.Road1AnchorPoint2;
-                        startIndex = _path.GetClosestIndexOnPath(anchor1);
-                        endIndex = _path.GetClosestIndexOnPath(anchor2);
+                        float firstDistance = _path.GetClosestDistanceAlongPath(anchor1);
+                        float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
+                        float secondDistance = _path.GetClosestDistanceAlongPath(anchor2);
+
+                        (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
+
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true));
                     }
                     else
                     {
@@ -194,84 +206,82 @@ namespace RoadGenerator
 
                         bool isStart = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
 
-                        // Force the end index to be either the last index or the first index since the road either starts or ends at the intersection
-                        int edgeIndex = isStart ? 0 : _path.NumPoints - 1;
-                        int junctionIndex = _path.GetClosestIndexOnPath(anchor1);
+                        // Force the intersection distance to be either the the minimum or maximum since the road either starts or ends at the intersection
+                        float intersectionDistance = isStart ? 0 : _path.length;
                         
-                        // Set the start and end indices accordingly
-                        startIndex = isStart ? edgeIndex : junctionIndex;
-                        endIndex = isStart ? junctionIndex : edgeIndex;
+                        float junctionDistance = _path.GetClosestDistanceAlongPath(anchor1);
+
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart));
                     }
-                    
                 }
                 else if(intersection.Type == IntersectionType.FourWayIntersection)
                 {
                     Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
                     Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
-                    startIndex = _path.GetClosestIndexOnPath(anchor1);
-                    endIndex = _path.GetClosestIndexOnPath(anchor2);
-                }
+                    float firstDistance = _path.GetClosestDistanceAlongPath(anchor1);
+                    float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
+                    float secondDistance = _path.GetClosestDistanceAlongPath(anchor2);
 
-                Vector3 intersectionPoint = intersection.IntersectionPosition;
-                intersectionVertices.Enqueue(new IntersectionVertexPoints(startIndex, intersectionPoint, endIndex, intersection.Type, intersection.Road1 == this));
+                    bool swap = firstDistance > secondDistance;
+
+                    (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
+
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true));
+                }
             }
 
             // Go through each point in the path of the road
+            bool intersectionStarted = false;
+            bool intersectionEnded = false;
+            
             for(int i = 0; i < _path.NumPoints; i++)
             {
                 // Add an intersection node if there is an intersection between the previous node and the current node
-                IntersectionVertexPoints? possibleNextIntersection = intersectionVertices.Count > 0 ? intersectionVertices.Peek() : null;
-                if(possibleNextIntersection != null)
+                QueuedNode? possibleNextIntersectionNode = queuedNodes.Count > 0 ? queuedNodes.Peek() : null;
+                
+                // If there are more intersection nodes left to add
+                if(possibleNextIntersectionNode != null)
                 {
-                    IntersectionVertexPoints nextIntersection = (IntersectionVertexPoints)possibleNextIntersection;
-                    if(i == nextIntersection.StartIndex || i == nextIntersection.EndIndex)
-                    {
-                        // If the intersection is a 3-way intersection, we want to add a junction node:
-                        // To both indices if this is Road1
-                        // To the end index if if the intersection is at the start
-                        // To the start index if the intersection is at the end
-                        bool threeWayShouldAddJunctionEdge = 
-                            nextIntersection.IsThreeWayRoad1
-                            || (nextIntersection.Type == IntersectionType.ThreeWayIntersectionAtStart && i == nextIntersection.EndIndex)
-                            || (nextIntersection.Type == IntersectionType.ThreeWayIntersectionAtEnd && i == nextIntersection.StartIndex);
-    
-                        // Add a junction edge node                    
-                        if(nextIntersection.GetRoadNodeType() == RoadNodeType.FourWayIntersection || threeWayShouldAddJunctionEdge)
-                        {
-                            prev = curr;
-                            curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.JunctionEdge, prev, null, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
-                            prev.Next = curr;
-                        }
-                        
-                        
-                        // Add the intersection node after the first junction edge node
-                        if(i == nextIntersection.StartIndex)
-                        {
-                            AddIntersectionNode(ref curr, nextIntersection.IntersectionPoint, nextIntersection.GetRoadNodeType());
-                        }
-                        
-                        // If this is Road2 on a 3-way intersection at the end, add a final end node
-                        if(!nextIntersection.IsThreeWayRoad1 && nextIntersection.Type == IntersectionType.ThreeWayIntersectionAtEnd && i == nextIntersection.EndIndex)
-                        {
-                            // Update the previous node and create a new current node
-                            prev = curr;
-                            curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.End, prev, null, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
+                    // Get the next intersection node to be added
+                    QueuedNode nextIntersectionNode = (QueuedNode)possibleNextIntersectionNode;
 
-                            // Set the next pointer for the previous node
-                            prev.Next = curr;
-                        }
-                        
-                        
-                        if(i == nextIntersection.EndIndex)
-                            intersectionVertices.Dequeue();
-                        
-                        continue;
-                    }
-                    else if(i > nextIntersection.StartIndex && i < nextIntersection.EndIndex)
+                    // Check that the next intersection node is between the current and next vertex point (or that we are at the last vertex point)
+                    if(nextIntersectionNode.Distance >= _path.cumulativeLengthAtEachVertex[i] && (i == _path.NumPoints - 1 || nextIntersectionNode.Distance <= _path.cumulativeLengthAtEachVertex[i + 1]))
                     {
-                        // Do not add any nodes other nodes between the start and end of the intersection
+                        // There might be multiple queued nodes to be added between these vertex points, so we continue adding until there are no more nodes left to add, or the next one should be added later
+                        while(queuedNodes.Count > 0 && (i == _path.NumPoints - 1 || queuedNodes.Peek().Distance <= _path.cumulativeLengthAtEachVertex[i + 1]))
+                        {
+                            QueuedNode nextNode = (QueuedNode)queuedNodes.Peek();
+                            
+                            // Create a new node for the queued intersection node
+                            prev = curr;
+                            curr = new RoadNode(nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType, prev, null, Vector3.Distance(prev.Position, nextNode.Position), _path.times[i]);
+                            prev.Next = curr;
+
+                            // Update the flags used to determine if we are inside an intersection
+                            // Inside for 4 way intersections meaning between the junction edge, for 3 way meaning between the junction edge and intersection
+                            if(nextNode.EndsIntersection)
+                                intersectionEnded = true;
+                            else
+                                intersectionStarted = true;
+
+                            queuedNodes.Dequeue();
+                        }
+                    }
+                    // If a started intersection has ended, reset the flags and do not add this vertex point
+                    if(intersectionStarted && intersectionEnded)
+                    {
+                        intersectionStarted = false;
+                        intersectionEnded = false;
                         continue;
                     }
+                    
+                    // If we are inside an intersection, do not add this vertex point RoadNode
+                    if(intersectionStarted && !intersectionEnded)
+                        continue;
                 }
                 
                 // The first iteration is only for 3-way intersections at the start, so skip the rest of the first iteration
