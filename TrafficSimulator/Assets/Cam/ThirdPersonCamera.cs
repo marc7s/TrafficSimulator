@@ -36,5 +36,11 @@ namespace Cam
             CameraManager.CameraTarget = FollowTransform;
             CameraManager.TogglePreviousCamera();
         }
+
+        public override void HandleSpaceInput()
+        {
+            CameraManager.CameraTarget = FollowTransform;
+            CameraManager.ToggleFirstPersonDriverCamera();
+        }
     }
 }

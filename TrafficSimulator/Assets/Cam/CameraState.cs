@@ -91,5 +91,10 @@ namespace Cam
             return;
         }
         #endregion
+
+        public virtual void HandleSpaceInput()
+        {
+            return;
+        }
     }
 }

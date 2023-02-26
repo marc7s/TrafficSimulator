@@ -26,11 +26,13 @@ namespace Cam
         private InputAction _doubleClickInput;
         private InputAction _pointInput;
         private InputAction _escapeInput;
+        private InputAction _spaceInput;
     
         // Cached input values
         private Vector2 _movementFromUser;
         private float _rotationFromUser;
         private float _zoomFromUser;
+   
 
 
         private void SetupInputActions()
@@ -42,6 +44,7 @@ namespace Cam
             _doubleClickInput = UserInputManager.PlayerInputActions.Default.DoubleClick;
             _pointInput = UserInputManager.PlayerInputActions.Default.Point;
             _escapeInput = UserInputManager.PlayerInputActions.Default.Escape;
+            _spaceInput = UserInputManager.PlayerInputActions.Default.Space;
         }
         
         private void SubscribeToInput()
@@ -57,9 +60,15 @@ namespace Cam
             _clickInput.performed += OnClickInput;
             _doubleClickInput.performed += OnDoubleClickInput;
             _escapeInput.performed += OnEscapeInput;
+            _spaceInput.performed += OnSpaceInput;
 
         }
-        
+
+        private void OnSpaceInput(InputAction.CallbackContext ctx)
+        {
+            _currentActiveCamera.HandleSpaceInput();
+        }
+
         private void OnMovementInput(InputAction.CallbackContext ctx)
         {
             _movementFromUser = ctx.ReadValue<Vector2>();
@@ -99,7 +108,6 @@ namespace Cam
     
         private void Update()
         {
-            print(_currentActiveCamera.name);
             _currentActiveCamera.Move(_movementFromUser);
             _currentActiveCamera.RotateHorizontal(_rotationFromUser);
             _currentActiveCamera.Zoom(_zoomFromUser);
@@ -110,6 +118,7 @@ namespace Cam
             print(FindDefaultCameraIndex());
             _currentActiveCamera = _cameras[FindDefaultCameraIndex()];
             _currentActiveCamera.SetActive(this);
+            print(_currentActiveCamera.name);
         }
 
         private void Start()
@@ -148,6 +157,12 @@ namespace Cam
             // Set the first camera to default
             Debug.LogWarning("No default camera has been assigned!");
             return 0;
+        }
+
+        public void ToggleFirstPersonDriverCamera()
+        {
+            // Should move the responsibility of tracking state switches to each state. 
+            SwitchActiveCamera(2);
         }
     }
 }

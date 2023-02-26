@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -114,14 +115,18 @@ namespace Cam
         
         private void SetToggledTransformToNull()
         {
-            _toggledTransform.GetComponent<Outline>().enabled = false;
+            Transform root = _toggledTransform.root;
+            root.GetComponentInChildren<Outline>().enabled = false;
             _toggledTransform = null;
             _hasToggledTransform = false;
         }
 
         private void SetToggledTransform(Transform toggledTransform)
         {
-            Outline outline = toggledTransform.GetComponent<Outline>();
+            Transform root = toggledTransform.root;
+            Outline outline = root.GetComponentInChildren<Outline>();
+            print(root.name);
+            print(outline == null);
             outline.enabled = true;
             _toggledTransform = toggledTransform;
             _hasToggledTransform = true;

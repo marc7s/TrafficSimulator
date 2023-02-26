@@ -98,6 +98,15 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Space"",
+                    ""type"": ""Button"",
+                    ""id"": ""91730d6b-436f-4b6a-a591-3cb9f7e91d86"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -254,6 +263,17 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""Escape"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""87bdcd25-9e0c-41ea-999d-15b4dee6c396"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Space"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -382,6 +402,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         m_Default_DebugButtonPressed = m_Default.FindAction("DebugButtonPressed", throwIfNotFound: true);
         m_Default_DoubleClick = m_Default.FindAction("DoubleClick", throwIfNotFound: true);
         m_Default_Escape = m_Default.FindAction("Escape", throwIfNotFound: true);
+        m_Default_Space = m_Default.FindAction("Space", throwIfNotFound: true);
         // Car
         m_Car = asset.FindActionMap("Car", throwIfNotFound: true);
         m_Car_Acceleration = m_Car.FindAction("Acceleration", throwIfNotFound: true);
@@ -454,6 +475,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
     private readonly InputAction m_Default_DebugButtonPressed;
     private readonly InputAction m_Default_DoubleClick;
     private readonly InputAction m_Default_Escape;
+    private readonly InputAction m_Default_Space;
     public struct DefaultActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -466,6 +488,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         public InputAction @DebugButtonPressed => m_Wrapper.m_Default_DebugButtonPressed;
         public InputAction @DoubleClick => m_Wrapper.m_Default_DoubleClick;
         public InputAction @Escape => m_Wrapper.m_Default_Escape;
+        public InputAction @Space => m_Wrapper.m_Default_Space;
         public InputActionMap Get() { return m_Wrapper.m_Default; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -499,6 +522,9 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                 @Escape.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnEscape;
                 @Escape.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnEscape;
                 @Escape.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnEscape;
+                @Space.started -= m_Wrapper.m_DefaultActionsCallbackInterface.OnSpace;
+                @Space.performed -= m_Wrapper.m_DefaultActionsCallbackInterface.OnSpace;
+                @Space.canceled -= m_Wrapper.m_DefaultActionsCallbackInterface.OnSpace;
             }
             m_Wrapper.m_DefaultActionsCallbackInterface = instance;
             if (instance != null)
@@ -527,6 +553,9 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                 @Escape.started += instance.OnEscape;
                 @Escape.performed += instance.OnEscape;
                 @Escape.canceled += instance.OnEscape;
+                @Space.started += instance.OnSpace;
+                @Space.performed += instance.OnSpace;
+                @Space.canceled += instance.OnSpace;
             }
         }
     }
@@ -590,6 +619,7 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         void OnDebugButtonPressed(InputAction.CallbackContext context);
         void OnDoubleClick(InputAction.CallbackContext context);
         void OnEscape(InputAction.CallbackContext context);
+        void OnSpace(InputAction.CallbackContext context);
     }
     public interface ICarActions
     {
