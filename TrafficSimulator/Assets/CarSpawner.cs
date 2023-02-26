@@ -37,7 +37,6 @@ namespace RoadGenerator
         public Vehicle _vehicle;
         private GameObject _currentCar;
 
-        private int offsetCounter = 0;
         private int offset;
         private int carCounter = 0;
 
@@ -69,52 +68,6 @@ namespace RoadGenerator
                     SpawnCarsWithRatio(MaxCars);
                     //SpawnCarsWithPercentage(MaxCarsPercentage);
                     Debug.Log("Cars spawned: " + carCounter);
-                }
-            }
-        }
-
-        private void SpawnCars(int MaxCars)
-        {
-            // Loop through all roads
-            for (int i = 0; i < _roadSystem.RoadCount; i++)
-            {
-                _roads[i].OnChange();
-                
-                // Loop through all lanes
-                for (int j = 0; j < _roads[i].LaneCount; j++)
-                {
-                    // Get the start node of the lane
-                    Lane lane = _roads[i].Lanes[j];
-                    _laneNodeCurrent = lane.StartNode;
-                    offset = lane.StartNode.Count / MaxCars;
-
-                    // Spawn cars
-                    for (int k = 0; k < MaxCars; k++)
-                    {
-                        // Spawn individual car at current node
-                        _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-
-                        carCounter = carCounter + 1;
-
-                        _currentCar.GetComponent<AutoDrive>()._road = _roads[i];
-                        _currentCar.GetComponent<AutoDrive>()._laneIndex = j;
-                        _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
-                        _currentCar.GetComponent<AutoDrive>().Start();
-                        
-
-                        // Tell the nodes under car that they are occupied
-                        //SetNodeUnderVehicle();
-
-                        // Calculate next spawning node
-                        //CalculateOffset(Distance);
-
-                        // Offset node for next car
-                        for (int l = 0; l < offset; l++)
-                        {
-                            _laneNodeCurrent = _laneNodeCurrent.Next;
-                            offsetCounter = offsetCounter + 1;
-                        }
-                    }
                 }
             }
         }
@@ -278,12 +231,13 @@ namespace RoadGenerator
 
         private void SpawnCarsWithPercentage(float MaxCarsPercentage) 
         {
-            // Loop through all lanes
             for (int i = 0; i < _lanes.Count; i++)
             {
+                // Calculate the number of cars to spawn
                 int carsToSpawn = (int)Mathf.Ceil(_maxCarsPerLane[i] * MaxCarsPercentage);
                 Debug.Log("Cars to spawn: " + carsToSpawn + " on lane " + i + " with " + _maxCarsPerLane[i] + " max cars");
 
+                // Calculate the offset
                 offset = _lanes[i].StartNode.Count / carsToSpawn;
                 _laneNodeCurrent = _lanes[i].StartNode;
 
@@ -291,20 +245,11 @@ namespace RoadGenerator
                 for (int j = 0; j < carsToSpawn; j++)
                 {
                     // Spawn individual car at current node
-                    _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+                    SpawnCar(i);
 
                     carCounter = carCounter + 1;
 
-                    _currentCar.GetComponent<AutoDrive>()._road = _lanes[i]._road;
-                    _currentCar.GetComponent<AutoDrive>()._laneIndex = _indexes[i];
-                    _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
-                    _currentCar.GetComponent<AutoDrive>().Start();
-
-                    for (int k = 0; k < offset; k++)
-                    {
-                        _laneNodeCurrent = _laneNodeCurrent.Next;
-                        offsetCounter = offsetCounter + 1;
-                    }
+                    SetOffset(offset);
                 }
             }
         }
@@ -312,41 +257,52 @@ namespace RoadGenerator
         private void SpawnCarsWithRatio(int maxCars)
         {
             int carsSpawned = 0;
-            // Loop through all lanes
             for (int i = 0; i < _lanes.Count; i++)
             {
                 // Calculate the number of cars to spawn for this lane
                 int carsToSpawn = (int)Mathf.Ceil(_ratios[i] * maxCars);
                 Debug.Log("Cars to spawn: " + carsToSpawn + " on lane " + i);
 
+                // Calculate the offset
                 offset = _lanes[i].StartNode.Count / carsToSpawn;
+
                 _laneNodeCurrent = _lanes[i].StartNode;
 
                 // Spawn cars
                 for (int j = 0; j < carsToSpawn; j++)
                 {
+                    // Check if max cars have been spawned
                     if (carsSpawned == maxCars) {
                         return;
                     }
 
                     // Spawn individual car at current node
-                    _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+                    SpawnCar(i);
 
                     carsSpawned = carsSpawned + 1;
                     carCounter = carCounter + 1;
 
-                    _currentCar.GetComponent<AutoDrive>()._road = _lanes[i]._road;
-                    _currentCar.GetComponent<AutoDrive>()._laneIndex = _indexes[i];
-                    _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
-                    _currentCar.GetComponent<AutoDrive>().Start();
-
-                    for (int k = 0; k < offset; k++)
-                    {
-                        _laneNodeCurrent = _laneNodeCurrent.Next;
-                        offsetCounter = offsetCounter + 1;
-                    }
+                    SetOffset(offset);
                 }
             }
+        }
+
+        private void SetOffset(int offset) 
+        {
+            for (int i = 0; i < offset; i++)
+                {
+                    _laneNodeCurrent = _laneNodeCurrent.Next;
+                }
+        }
+
+        private void SpawnCar(int index)
+        {
+            _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+
+            _currentCar.GetComponent<AutoDrive>()._road = _lanes[index]._road;
+            _currentCar.GetComponent<AutoDrive>()._laneIndex = _indexes[index];
+            _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
+            _currentCar.GetComponent<AutoDrive>().Start();
         }
     }
 }
