@@ -1,3 +1,5 @@
+//#define DEBUG_INTERSECTION
+
 using UnityEngine;
 using System.Collections.Generic;
 using System;
@@ -44,6 +46,30 @@ namespace RoadGenerator
         public const float IntersectionLength = 20f;
         public const float IntersectionBoundsLengthMultiplier = 1.2f;
 
+#if DEBUG_INTERSECTION
+            public void PrintRoadNodes(RoadNode start)
+            {
+                RoadNode curr = start;
+                int numberOfDefault = 0;
+                while(curr != null)
+                {
+                    if(curr.Type == RoadNodeType.Default)
+                        numberOfDefault++;
+                    else 
+                    {
+                        if(numberOfDefault > 0)
+                        {
+                            Debug.Log("[" + numberOfDefault + "x] Default");
+                            numberOfDefault = 0;
+                        }
+                        Debug.Log(curr.Type + " at " + curr.Position);
+                    }
+                    
+                    curr = curr.Next;
+                }
+            }
+#endif
+
         public void UpdateMesh()
         {
             // Set the thickness of the intersection
@@ -74,7 +100,16 @@ namespace RoadGenerator
         {
             Road1.UpdateRoadNodes();
             Road2.UpdateRoadNodes();
-            
+
+#if DEBUG_INTERSECTION            
+            Debug.Log("----------- Road 1 nodes -----------");
+            PrintRoadNodes(Road1.StartNode);
+            Debug.Log("------------------------------------");
+
+            Debug.Log("----------- Road 2 nodes -----------");
+            PrintRoadNodes(Road2.StartNode);
+            Debug.Log("------------------------------------");
+#endif            
             List<Vector3> verts = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();
@@ -266,7 +301,6 @@ namespace RoadGenerator
                 Vector3 i11 = road2TopRight;
                 Vector3 i12 = road1BottomRight;
                 
-
                 // Mid
                 verts.AddRange(GetRectVerts(i1, i2, i3, i4));
 
@@ -280,11 +314,10 @@ namespace RoadGenerator
                 verts.AddRange(GetRectVerts(i2, i8, i9, i3));
 
                 // Right
-                verts.AddRange(GetRectVerts(i4, i3, i10, i11));
+                verts.AddRange(GetRectVerts(i4, i3, i10, i11)); 
             }
 
             
-
             // The vertices are already mapped in the correct order, so we simply create an incrementing list
             for (int i = 0; i < verts.Count; i++)
             {
