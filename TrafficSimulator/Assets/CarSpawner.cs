@@ -24,11 +24,11 @@ namespace RoadGenerator
         private List<Road> _roads;
         private int _maxCars;
 
-        private List<Lane> _lanes = new List<Lane>();
-        private List<float> _lengths = new List<float>();
-        private List<float> _ratios = new List<float>();
-        private List<int> _indexes = new List<int>();
-        private List<int> _maxCarsPerLane = new List<int>();
+        private List<Lane> _lanes = new List<Lane>(); // List of all lanes
+        private List<float> _lengths = new List<float>(); // List of all lane lengths
+        private List<float> _ratios = new List<float>(); // List of all lane ratios
+        private List<int> _indexes = new List<int>(); // List of all lane indexes
+        private List<int> _maxCarsPerLane = new List<int>(); // List of all max cars per lane
 
         private LaneNode _laneNodeCurrent;
         private LaneNode _laneNodeNext;
@@ -37,7 +37,7 @@ namespace RoadGenerator
         public Vehicle _vehicle;
         private GameObject _currentCar;
 
-        private int offset;
+        private int offset; // Offset for the lane index
         private int carCounter = 0;
 
         private bool spawned = false;
@@ -90,27 +90,6 @@ namespace RoadGenerator
                 _laneNodeNext = _laneNodeNext.Next;
                 _laneNodeNext.SetVehicle(_vehicle);
             }
-        }
-
-        private void CalculateOffset(float Distance)
-        {
-            _laneNodeTemp = _laneNodeCurrent;
-
-            // Get the next node that is not occupied
-            while (_laneNodeTemp.Vehicle != null)
-            {
-                _laneNodeTemp = _laneNodeTemp.Next;
-            }
-            _laneNodeNext = _laneNodeTemp;
-
-            // Get the next node that is far enough away from the first unoccupied node
-            while (Distance > Vector3.Distance(_laneNodeTemp.Position, _laneNodeNext.Position))
-            {
-                _laneNodeNext = _laneNodeNext.Next;
-            }
-
-            // Set the current node to that node
-            _laneNodeCurrent = _laneNodeNext;
         }
 
         private void AddLanesToList()
