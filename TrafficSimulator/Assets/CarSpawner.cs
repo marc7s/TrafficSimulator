@@ -22,7 +22,6 @@ namespace RoadGenerator
 
         private RoadSystem _roadSystem;
         private List<Road> _roads;
-        private int _maxCars;
 
         private List<Lane> _lanes = new List<Lane>(); // List of all lanes
         private List<float> _lengths = new List<float>(); // List of all lane lengths
@@ -32,7 +31,6 @@ namespace RoadGenerator
 
         private LaneNode _laneNodeCurrent;
         private LaneNode _laneNodeNext;
-        private LaneNode _laneNodeTemp;
 
         public Vehicle Vehicle;
         private GameObject _currentCar;
@@ -181,7 +179,10 @@ namespace RoadGenerator
             {
                 // Calculate the number of cars to spawn
                 int carsToSpawn = (int)Mathf.Ceil(_maxCarsPerLane[i] * MaxCarsPercentage);
-                Debug.Log("Cars to spawn: " + carsToSpawn + " on lane " + i + " with " + _maxCarsPerLane[i] + " max cars");
+                if (carsToSpawn == 0)
+                {
+                    return;
+                }
 
                 // Calculate the _offset
                 _offset = _lanes[i].StartNode.Count / carsToSpawn;
@@ -195,7 +196,7 @@ namespace RoadGenerator
 
                     _carCounter = _carCounter + 1;
 
-                    Set_Offset(_offset);
+                    SetOffset(_offset);
                 }
             }
         }
@@ -207,9 +208,12 @@ namespace RoadGenerator
             {
                 // Calculate the number of cars to spawn for this lane
                 int carsToSpawn = (int)Mathf.Ceil(_ratios[i] * maxCars);
-                Debug.Log("Cars to spawn: " + carsToSpawn + " on lane " + i);
 
                 // Calculate the _offset
+                if (carsToSpawn == 0)
+                {
+                    return;
+                }
                 _offset = _lanes[i].StartNode.Count / carsToSpawn;
 
                 _laneNodeCurrent = _lanes[i].StartNode;
@@ -228,14 +232,14 @@ namespace RoadGenerator
                     cars_Spawned = cars_Spawned + 1;
                     _carCounter = _carCounter + 1;
 
-                    Set_Offset(_offset);
+                    SetOffset(_offset);
                 }
             }
         }
 
-        private void Set_Offset(int _offset) 
+        private void SetOffset(int offset) 
         {
-            for (int i = 0; i < _offset; i++)
+            for (int i = 0; i < offset; i++)
                 {
                     _laneNodeCurrent = _laneNodeCurrent.Next;
                 }
