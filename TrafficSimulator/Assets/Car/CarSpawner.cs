@@ -233,10 +233,9 @@ namespace RoadGenerator
         {
             _currentCar = Instantiate(carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
 
-            _currentCar.GetComponent<AutoDrive>()._road = _lanes[index]._road;
-            _currentCar.GetComponent<AutoDrive>()._laneIndex = _indexes[index];
+            _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
+            _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
             _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
-            _currentCar.GetComponent<AutoDrive>().Start();
         }
     }
 }
