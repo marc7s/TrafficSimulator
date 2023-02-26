@@ -1,16 +1,16 @@
-using UnityEditor;
 using UnityEngine;
 using System;
 
 namespace RoadGenerator
 {
+#if UNITY_EDITOR
     public static class RoadGeneratorMenu
     {
         private const int MenuPriority = -50;
         private const string PrefabManagerPath = "Assets/RoadGenerator/Core/UI/PrefabManager.asset";
-        private static PrefabManager LocatePrefabManager() => AssetDatabase.LoadAssetAtPath<PrefabManager>(PrefabManagerPath);
+        private static PrefabManager LocatePrefabManager() => UnityEditor.AssetDatabase.LoadAssetAtPath<PrefabManager>(PrefabManagerPath);
 
-        [MenuItem("GameObject/RoadGenerator/Create road system", priority = MenuPriority)]
+        [UnityEditor.MenuItem("GameObject/RoadGenerator/Create road system", priority = MenuPriority)]
         private static void CreateRoadSystem()
         {
             SafeInstantiate(prefabManager => prefabManager.RoadSystem, instance => AddRoadSystem(instance));
@@ -27,10 +27,10 @@ namespace RoadGenerator
             }
 
             var item = itemSelector(prefabManager);
-            var instance = PrefabUtility.InstantiatePrefab(item, Selection.activeTransform);
+            var instance = UnityEditor.PrefabUtility.InstantiatePrefab(item, UnityEditor.Selection.activeTransform);
             onInstantiate(instance);
 
-            Undo.RegisterCreatedObjectUndo(instance, $"Create {instance.name}");
+            UnityEditor.Undo.RegisterCreatedObjectUndo(instance, $"Create {instance.name}");
         }
 
         private static bool AddRoadSystem(UnityEngine.Object instance)
@@ -60,4 +60,5 @@ namespace RoadGenerator
             return true;
         }
     }
+#endif
 }
