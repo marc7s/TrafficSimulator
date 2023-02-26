@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
 using System;
 
@@ -26,8 +25,8 @@ namespace RoadGenerator
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
 
-        [HideInInspector] public bool ShowGraph = false;
-        [SerializeField] private bool _spawnRoadsAtOrigin = false;
+        public bool ShowGraph = false;
+        public bool SpawnRoadsAtOrigin = false;
 
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
@@ -44,10 +43,11 @@ namespace RoadGenerator
         public void AddNewRoad()
         {
             Vector3 spawnPoint = Vector3.zero;
-            if(!_spawnRoadsAtOrigin)
+            #if UNITY_EDITOR
+            if(!SpawnRoadsAtOrigin)
             {
                 RaycastHit hit;
-                SceneView sceneView = SceneView.lastActiveSceneView;
+                UnityEditor.SceneView sceneView = UnityEditor.SceneView.lastActiveSceneView;
                 Camera camera = sceneView.camera;
                 
                 // Get the nearest point on the surface the camera is looking at
@@ -58,6 +58,7 @@ namespace RoadGenerator
                 }
                 spawnPoint = hit.point;
             }
+            #endif
             
 
             // Instantiate a new road prefab
@@ -113,15 +114,15 @@ namespace RoadGenerator
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
         {
-            Vector3 intersectionPosition = new Vector3(intersectionPointData.Position.x, 0, intersectionPointData.Position.y);
-            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPosition, intersectionPointData.Rotation);
+            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, intersectionPointData.Rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = _intersectionContainer.transform;
             
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
+            intersection.Type = intersectionPointData.Type;
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
-            intersection.IntersectionPosition = intersectionPosition;
+            intersection.IntersectionPosition = intersectionPointData.Position;
             intersection.Road1PathCreator = intersectionPointData.Road1PathCreator;
             intersection.Road2PathCreator = intersectionPointData.Road2PathCreator;
             intersection.Road1 = road1;
@@ -133,7 +134,10 @@ namespace RoadGenerator
             
             road1.AddIntersection(intersection);
             road2.AddIntersection(intersection);
+            
             AddIntersection(intersection);
+            road1.UpdateMesh();
+            road2.UpdateMesh();
             
             return intersection;
         }
