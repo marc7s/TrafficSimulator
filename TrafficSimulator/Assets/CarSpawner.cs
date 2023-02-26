@@ -11,14 +11,14 @@ namespace RoadGenerator
         [SerializeField] private GameObject carPrefab;
         [SerializeField] private GameObject roadSystem;
 
-        public int MaxCars = 5; // Number of cars to spawn per lane
+        [SerializeField] protected bool Mode = false; // True = Spawn cars with ratio, False = Spawn cars with percentage
+
+        public int MaxCarsRatio = 5; // Number of cars to spawn per lane
         [Range(0, 1)]
         public float MaxCarsPercentage = 0.5f; // Percentage of cars to spawn per lane
         public float Distance = 10f; // Distance between cars
         public float carLength = 4f; // Not exact value. Should get imported from car prefab somehow.
-        public float spawnDelay = 3f;
-
-
+        public float spawnDelay = 3f; // Delay before spawning cars
 
         private RoadSystem _roadSystem;
         private List<Road> _roads;
@@ -56,8 +56,6 @@ namespace RoadGenerator
             CalculateLaneRatios();
             CalculateLaneIndexes();
             CalculateMaxCarsForLanes();
-
-            Debug.Log("Max cars: " + CalculateMaxCarsForAllLanes());
         }
 
         void Update()
@@ -65,8 +63,13 @@ namespace RoadGenerator
             if (!spawned) {
                 if (Time.time > spawnDelay) {
                     spawned = true;
-                    SpawnCarsWithRatio(MaxCars);
-                    //SpawnCarsWithPercentage(MaxCarsPercentage);
+                    if (Mode) {
+                        Debug.Log("Spawning cars with ratio");
+                        SpawnCarsWithRatio(MaxCarsRatio);
+                    } else {
+                        Debug.Log("Spawning cars with percentage");
+                        SpawnCarsWithPercentage(MaxCarsPercentage);
+                    }
                     Debug.Log("Cars spawned: " + carCounter);
                 }
             }
@@ -191,42 +194,6 @@ namespace RoadGenerator
                 // Calculate the max cars for the lane
                 _maxCarsPerLane.Add((int)(_lengths[j] / carLength));
             }
-        }
-
-        private int CalculateMaxCarsForAllLanes()
-        {
-            // Get the length of the car
-            int _maxCarsTemp = 0;
-            _maxCars = 100000;
-
-            // Loop through all roads
-            for (int i = 0; i < _roadSystem.RoadCount; i++)
-            {
-                _roads[i].OnChange();
-                float laneLength;
-                LaneNode _laneNodeTemp1;
-                LaneNode _laneNodeTemp2;
-                
-                // Loop through all lanes
-                for (int j = 0; j < _roads[i].LaneCount; j++)
-                {
-                    _laneNodeTemp1 = _roads[i].Lanes[j].StartNode;
-                    _laneNodeTemp2 = _roads[i].Lanes[j].StartNode.Next;
-                    laneLength = 0;
-
-                    // Loop through all lane nodes
-                    for (int k = 0; k < _roads[i].Lanes[j].StartNode.Count - 1; k++)
-                    {
-                        // Calculate the length of the lane
-                        laneLength = laneLength + Vector3.Distance(_laneNodeTemp1.Position, _laneNodeTemp2.Position);
-                        _laneNodeTemp1 = _laneNodeTemp1.Next;
-                        _laneNodeTemp2 = _laneNodeTemp2.Next;
-                    }
-                    _maxCarsTemp = ((int)laneLength / (int)carLength);
-                    _maxCars = Mathf.Min(_maxCarsTemp, _maxCars);
-                }
-            }
-            return _maxCars;
         }
 
         private void SpawnCarsWithPercentage(float MaxCarsPercentage) 
