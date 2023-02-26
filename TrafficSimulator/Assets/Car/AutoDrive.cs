@@ -108,7 +108,7 @@ namespace Car {
                 _targetLineRenderer.endWidth = targetLineWidth;
 
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                //Q_TeleportToLane();
+                Q_TeleportToLane();
                 
                 _brakeTarget = lane.StartNode;
                 _repositioningTarget = lane.StartNode;
@@ -121,7 +121,7 @@ namespace Car {
                 Rigidbody rigidbody = GetComponent<Rigidbody>();
                 rigidbody.isKinematic = false;
                 rigidbody.useGravity = false;
-                //P_MoveToFirstPosition();
+                P_MoveToFirstPosition();
             }
         }
 
