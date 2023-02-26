@@ -7,21 +7,47 @@ namespace RoadSystemGenerator
     [CustomEditor(typeof(RoadSystem))]
     public class RoadSystemEditor : Editor 
     {
-        private SerializedProperty showRoadSystemGraphButton;
+        #region SerializedProperties
+            private SerializedProperty _drivingSide;
+            private SerializedProperty _spawnRoadsAtOrigin;
+            private SerializedProperty _showGraph;
+        #endregion
         public void OnEnable()
         {
-            showRoadSystemGraphButton = serializedObject.FindProperty("ShowGraph");
+            _showGraph = serializedObject.FindProperty("ShowGraph");
+            _spawnRoadsAtOrigin = serializedObject.FindProperty("SpawnRoadsAtOrigin");
+            _drivingSide = serializedObject.FindProperty("DrivingSide");
+
         }
         public override void OnInspectorGUI()
         {
-            DrawDefaultInspector();
+            serializedObject.Update();
+            
+            // Uncomment this if you want to change the connections to containers and prefabs
+            //DrawDefaultInspector();
+            
             RoadSystem roadSystem = (RoadSystem)target;
-            showRoadSystemGraphButton.boolValue = EditorGUILayout.Toggle("Show Road System Graph", roadSystem.ShowGraph);
-            // Set the ShowGraph property and update the road system graph if the button does not correspond to the ShowGraph property
-            if (showRoadSystemGraphButton.boolValue != roadSystem.ShowGraph)
+            
+            bool changed = false;
+
+            EditorGUILayout.PropertyField(_drivingSide);
+            EditorGUILayout.PropertyField(_spawnRoadsAtOrigin);
+            EditorGUILayout.PropertyField(_showGraph);
+            
+            if(_drivingSide.intValue != (int)roadSystem.DrivingSide)
             {
-                roadSystem.ShowGraph = showRoadSystemGraphButton.boolValue;
-                roadSystem.UpdateRoadSystemGraph();
+                roadSystem.DrivingSide = (DrivingSide)_drivingSide.intValue;
+            }
+
+            if(_spawnRoadsAtOrigin.boolValue != roadSystem.SpawnRoadsAtOrigin)
+            {
+                roadSystem.SpawnRoadsAtOrigin = _spawnRoadsAtOrigin.boolValue;
+            }
+
+            if(_showGraph.boolValue != roadSystem.ShowGraph)
+            {
+                changed = true;
+                roadSystem.ShowGraph = _showGraph.boolValue;
             }
 
             if(GUILayout.Button("Add new road"))
@@ -29,7 +55,12 @@ namespace RoadSystemGenerator
                 roadSystem.AddNewRoad();
             }
 
+            serializedObject.ApplyModifiedProperties();
 
+            if(changed)
+            {
+                roadSystem.UpdateRoadSystemGraph();
+            }
         }
     }
 }
