@@ -7,7 +7,7 @@ namespace RoadGenerator
     public class LaneNode : Node<LaneNode>
     {
         private RoadNode _roadNode;
-        public Vehicle _vehicle;
+        private Vehicle _vehicle;
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
         public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, float distanceToPrevNode) : this(position, rotation, roadNode, null, null, distanceToPrevNode){}
         

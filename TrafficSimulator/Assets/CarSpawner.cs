@@ -1,21 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Vehicle = DataModel.Vehicle;
 using AutoDrive = Car.AutoDrive;
 
 namespace RoadGenerator
 {
+    public enum SpawnMode
+    {
+        RATIO,
+        PERCENTAGE
+    }
+
     public class CarSpawner : MonoBehaviour
     {
         [SerializeField] private GameObject carPrefab;
         [SerializeField] private GameObject roadSystem;
-
-        [SerializeField] protected bool Mode = false; // True = Spawn cars with ratio, False = Spawn cars with percentage
+        [SerializeField] private SpawnMode Mode = SpawnMode.RATIO;
 
         public int MaxCarsRatio = 5; // Number of cars to spawn per lane
-        [Range(0, 1)]
-        public float MaxCarsPercentage = 0.5f; // Percentage of cars to spawn per lane
+        [Range(0, 1)] public float MaxCarsPercentage = 0.5f; // Percentage of cars to spawn per lane
         public float Distance = 10f; // Distance between cars
         public float CarLength = 4f; // Not exact value. Should get imported from car prefab somehow.
         public float SpawnDelay = 3f; // Delay before spawning cars
@@ -32,7 +35,6 @@ namespace RoadGenerator
         private LaneNode _laneNodeCurrent;
         private LaneNode _laneNodeNext;
 
-        public Vehicle Vehicle;
         private GameObject _currentCar;
 
         private int _offset; // Offset for the lane index
@@ -47,7 +49,6 @@ namespace RoadGenerator
             _roadSystem.Setup();
 
             _roads = _roadSystem.Roads;
-            Vehicle = new Vehicle("Car", carPrefab);
 
             AddLanesToList();
             CalculateLaneLengths();
@@ -61,7 +62,7 @@ namespace RoadGenerator
             if (!_spawned) {
                 if (Time.time > SpawnDelay) {
                     _spawned = true;
-                    if (Mode) {
+                    if (Mode == SpawnMode.RATIO) {
                         Debug.Log("Spawning cars with ratio");
                         SpawnCarsWithRatio(MaxCarsRatio);
                     } else {
@@ -70,23 +71,6 @@ namespace RoadGenerator
                     }
                     Debug.Log("Total cars spawned: " + _carCounter);
                 }
-            }
-        }
-
-        private void SetNodeUnderVehicle()
-        {
-            // Get the length of the car
-            float CarLength = carPrefab.GetComponentInChildren<MeshCollider>().bounds.size.z;
-            _laneNodeNext = _laneNodeCurrent;
-
-            // Set the first node under the car as occupied
-            _laneNodeCurrent.SetVehicle(Vehicle);
-
-            // Set the rest of the nodes under the car as occupied
-            while (CarLength > Vector3.Distance(_laneNodeCurrent.Position, _laneNodeNext.Position))
-            {
-                _laneNodeNext = _laneNodeNext.Next;
-                _laneNodeNext.SetVehicle(Vehicle);
             }
         }
 
@@ -178,7 +162,7 @@ namespace RoadGenerator
             for (int i = 0; i < _lanes.Count; i++)
             {
                 // Calculate the number of cars to spawn
-                int carsToSpawn = (int)Mathf.Ceil(_maxCarsPerLane[i] * MaxCarsPercentage);
+                int carsToSpawn = Mathf.CeilToInt(_maxCarsPerLane[i] * MaxCarsPercentage);
                 if (carsToSpawn == 0)
                 {
                     return;
@@ -207,7 +191,7 @@ namespace RoadGenerator
             for (int i = 0; i < _lanes.Count; i++)
             {
                 // Calculate the number of cars to spawn for this lane
-                int carsToSpawn = (int)Mathf.Ceil(_ratios[i] * maxCars);
+                int carsToSpawn = Mathf.CeilToInt(_ratios[i] * maxCars);
 
                 // Calculate the _offset
                 if (carsToSpawn == 0)
@@ -221,7 +205,7 @@ namespace RoadGenerator
                 // Spawn cars
                 for (int j = 0; j < carsToSpawn; j++)
                 {
-                    // Check if max cars have been _spawned
+                    // Check if max cars have been spawned
                     if (cars_Spawned == maxCars) {
                         return;
                     }
