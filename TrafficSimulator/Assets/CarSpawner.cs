@@ -49,20 +49,8 @@ namespace RoadGenerator
             _vehicle = new Vehicle("Car", carPrefab);
 
             AddLanesToList();
-            Debug.Log("Lanes: " + _lanes.Count);
-
             CalculateLaneLengths();
-            foreach(float length in _lengths)
-            {
-                Debug.Log("Length: " + length);
-            }
-
             CalculateLaneRatios();
-            foreach(float ratio in _ratios)
-            {
-                Debug.Log("Ratio: " + ratio);
-            }
-
             CalculateLaneIndexes();
 
             Debug.Log(CalculateMaxCarsForAllLanes());
