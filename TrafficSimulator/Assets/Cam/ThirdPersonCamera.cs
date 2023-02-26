@@ -24,6 +24,7 @@ namespace Cam
 
         public override void Zoom(float zoomValue)
         {
+            print("ThirdPersonMove");
             _targetZoom -= zoomValue;
             _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
             VirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(VirtualCamera.m_Lens.FieldOfView,

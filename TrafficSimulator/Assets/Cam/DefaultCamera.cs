@@ -37,7 +37,7 @@ namespace Cam
 
         protected override void Awake()
         {
-            IsDefault = true;
+            //IsDefault = true;
             base.Awake();
         }
     
@@ -90,6 +90,7 @@ namespace Cam
 
         public override void Move(Vector3 direction)
         {
+            print("Default Move");
             // Ignore the input argument if the mouse is near the screen border
             if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
 

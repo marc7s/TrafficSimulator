@@ -16,7 +16,7 @@ namespace Cam
         [SerializeField] private int _currentActiveCameraIndex = 0;
         [SerializeField] private int _previousActiveCameraIndex;
         [SerializeField] public Transform CameraTarget;
-        private CameraState CurrentActiveCamera => _cameras[_currentActiveCameraIndex];
+        private CameraState _currentActiveCamera;
         
         #region User Input
         private InputAction _movementInput;
@@ -77,36 +77,39 @@ namespace Cam
     
         private void OnPointInput(InputAction.CallbackContext ctx)
         {
-            CurrentActiveCamera.HandlePointInput(ctx.ReadValue<Vector2>());
+            _currentActiveCamera.HandlePointInput(ctx.ReadValue<Vector2>());
         }
     
         private void OnClickInput(InputAction.CallbackContext ctx)
         {
-            CurrentActiveCamera.HandleClickInput(ctx);
+            _currentActiveCamera.HandleClickInput(ctx);
         }
 
         private void OnDoubleClickInput(InputAction.CallbackContext ctx)
         {
-            CurrentActiveCamera.HandleDoubleClickInput(ctx);
+            _currentActiveCamera.HandleDoubleClickInput(ctx);
         }
 
         private void OnEscapeInput(InputAction.CallbackContext ctx)
         {
-            CurrentActiveCamera.HandleEscapeInput(ctx);
+            _currentActiveCamera.HandleEscapeInput(ctx);
         }
 
         #endregion
     
         private void Update()
         {
-            CurrentActiveCamera.Move(_movementFromUser);
-            CurrentActiveCamera.RotateHorizontal(_rotationFromUser);
-            CurrentActiveCamera.Zoom(_zoomFromUser);
+            print(_currentActiveCamera.name);
+            _currentActiveCamera.Move(_movementFromUser);
+            _currentActiveCamera.RotateHorizontal(_rotationFromUser);
+            _currentActiveCamera.Zoom(_zoomFromUser);
         }
     
         private void Awake()
         {
-            _cameras[_currentActiveCameraIndex].GetComponent<CameraState>().SetActive(this);
+            print(FindDefaultCameraIndex());
+            _currentActiveCamera = _cameras[FindDefaultCameraIndex()];
+            _currentActiveCamera.SetActive(this);
         }
 
         private void Start()
@@ -133,6 +136,18 @@ namespace Cam
             _cameras[_previousActiveCameraIndex].SetInactive(this);
             _cameras[_currentActiveCameraIndex].SetFollowTransform(CameraTarget);
             _cameras[_currentActiveCameraIndex].SetActive(this);
+        }
+
+        private int FindDefaultCameraIndex()
+        {
+            for (int i = 0; i < _cameras.Length; i++)
+            {
+                if (_cameras[i].IsDefault) return i;
+            }
+
+            // Set the first camera to default
+            Debug.LogWarning("No default camera has been assigned!");
+            return 0;
         }
     }
 }
