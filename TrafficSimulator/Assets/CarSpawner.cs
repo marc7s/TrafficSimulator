@@ -17,8 +17,8 @@ namespace RoadGenerator
         [Range(0, 1)]
         public float MaxCarsPercentage = 0.5f; // Percentage of cars to spawn per lane
         public float Distance = 10f; // Distance between cars
-        public float carLength = 4f; // Not exact value. Should get imported from car prefab somehow.
-        public float spawnDelay = 3f; // Delay before spawning cars
+        public float CarLength = 4f; // Not exact value. Should get imported from car prefab somehow.
+        public float SpawnDelay = 3f; // Delay before spawning cars
 
         private RoadSystem _roadSystem;
         private List<Road> _roads;
@@ -34,13 +34,13 @@ namespace RoadGenerator
         private LaneNode _laneNodeNext;
         private LaneNode _laneNodeTemp;
 
-        public Vehicle _vehicle;
+        public Vehicle Vehicle;
         private GameObject _currentCar;
 
-        private int offset; // Offset for the lane index
-        private int carCounter = 0;
+        private int _offset; // Offset for the lane index
+        private int _carCounter = 0;
 
-        private bool spawned = false;
+        private bool _spawned = false;
 
         
         private void Start()
@@ -49,7 +49,7 @@ namespace RoadGenerator
             _roadSystem.Setup();
 
             _roads = _roadSystem.Roads;
-            _vehicle = new Vehicle("Car", carPrefab);
+            Vehicle = new Vehicle("Car", carPrefab);
 
             AddLanesToList();
             CalculateLaneLengths();
@@ -60,9 +60,9 @@ namespace RoadGenerator
 
         void Update()
         {
-            if (!spawned) {
-                if (Time.time > spawnDelay) {
-                    spawned = true;
+            if (!_spawned) {
+                if (Time.time > SpawnDelay) {
+                    _spawned = true;
                     if (Mode) {
                         Debug.Log("Spawning cars with ratio");
                         SpawnCarsWithRatio(MaxCarsRatio);
@@ -70,7 +70,7 @@ namespace RoadGenerator
                         Debug.Log("Spawning cars with percentage");
                         SpawnCarsWithPercentage(MaxCarsPercentage);
                     }
-                    Debug.Log("Cars spawned: " + carCounter);
+                    Debug.Log("Total cars spawned: " + _carCounter);
                 }
             }
         }
@@ -78,17 +78,17 @@ namespace RoadGenerator
         private void SetNodeUnderVehicle()
         {
             // Get the length of the car
-            float carLength = carPrefab.GetComponentInChildren<MeshCollider>().bounds.size.z;
+            float CarLength = carPrefab.GetComponentInChildren<MeshCollider>().bounds.size.z;
             _laneNodeNext = _laneNodeCurrent;
 
             // Set the first node under the car as occupied
-            _laneNodeCurrent.SetVehicle(_vehicle);
+            _laneNodeCurrent.SetVehicle(Vehicle);
 
             // Set the rest of the nodes under the car as occupied
-            while (carLength > Vector3.Distance(_laneNodeCurrent.Position, _laneNodeNext.Position))
+            while (CarLength > Vector3.Distance(_laneNodeCurrent.Position, _laneNodeNext.Position))
             {
                 _laneNodeNext = _laneNodeNext.Next;
-                _laneNodeNext.SetVehicle(_vehicle);
+                _laneNodeNext.SetVehicle(Vehicle);
             }
         }
 
@@ -171,7 +171,7 @@ namespace RoadGenerator
             for (int j = 0; j < _lanes.Count; j++)
             {
                 // Calculate the max cars for the lane
-                _maxCarsPerLane.Add((int)(_lengths[j] / carLength));
+                _maxCarsPerLane.Add((int)(_lengths[j] / CarLength));
             }
         }
 
@@ -183,8 +183,8 @@ namespace RoadGenerator
                 int carsToSpawn = (int)Mathf.Ceil(_maxCarsPerLane[i] * MaxCarsPercentage);
                 Debug.Log("Cars to spawn: " + carsToSpawn + " on lane " + i + " with " + _maxCarsPerLane[i] + " max cars");
 
-                // Calculate the offset
-                offset = _lanes[i].StartNode.Count / carsToSpawn;
+                // Calculate the _offset
+                _offset = _lanes[i].StartNode.Count / carsToSpawn;
                 _laneNodeCurrent = _lanes[i].StartNode;
 
                 // Spawn cars
@@ -193,49 +193,49 @@ namespace RoadGenerator
                     // Spawn individual car at current node
                     SpawnCar(i);
 
-                    carCounter = carCounter + 1;
+                    _carCounter = _carCounter + 1;
 
-                    SetOffset(offset);
+                    Set_Offset(_offset);
                 }
             }
         }
 
         private void SpawnCarsWithRatio(int maxCars)
         {
-            int carsSpawned = 0;
+            int cars_Spawned = 0;
             for (int i = 0; i < _lanes.Count; i++)
             {
                 // Calculate the number of cars to spawn for this lane
                 int carsToSpawn = (int)Mathf.Ceil(_ratios[i] * maxCars);
                 Debug.Log("Cars to spawn: " + carsToSpawn + " on lane " + i);
 
-                // Calculate the offset
-                offset = _lanes[i].StartNode.Count / carsToSpawn;
+                // Calculate the _offset
+                _offset = _lanes[i].StartNode.Count / carsToSpawn;
 
                 _laneNodeCurrent = _lanes[i].StartNode;
 
                 // Spawn cars
                 for (int j = 0; j < carsToSpawn; j++)
                 {
-                    // Check if max cars have been spawned
-                    if (carsSpawned == maxCars) {
+                    // Check if max cars have been _spawned
+                    if (cars_Spawned == maxCars) {
                         return;
                     }
 
                     // Spawn individual car at current node
                     SpawnCar(i);
 
-                    carsSpawned = carsSpawned + 1;
-                    carCounter = carCounter + 1;
+                    cars_Spawned = cars_Spawned + 1;
+                    _carCounter = _carCounter + 1;
 
-                    SetOffset(offset);
+                    Set_Offset(_offset);
                 }
             }
         }
 
-        private void SetOffset(int offset) 
+        private void Set_Offset(int _offset) 
         {
-            for (int i = 0; i < offset; i++)
+            for (int i = 0; i < _offset; i++)
                 {
                     _laneNodeCurrent = _laneNodeCurrent.Next;
                 }
