@@ -34,8 +34,8 @@ namespace Car {
     public class AutoDrive : MonoBehaviour
     {
         [Header("Connections")]
-        [SerializeField] public Road _road;
-        [SerializeField] public int _laneIndex = 0;
+        public Road Road;
+        public int LaneIndex = 0;
 
         [Header("Settings")]
         [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
@@ -72,25 +72,25 @@ namespace Car {
 
         public LaneNode CustomStartNode = null;
 
-        public void Start()
+        void Start()
         {
             _vehicleController = GetComponent<VehicleController>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
             
             // If the road has not updated yet there will be no lanes, so update them first
-            if(_road.Lanes.Count == 0)
+            if(Road.Lanes.Count == 0)
             {
-                _road.OnChange();
+                Road.OnChange();
             }
             
             // Check that the provided lane index is valid
-            if(_laneIndex < 0 || _laneIndex >= _road.Lanes.Count)
+            if(LaneIndex < 0 || LaneIndex >= Road.Lanes.Count)
             {
                 Debug.LogError("Lane index out of range");
                 return;
             }
             
-            Lane lane = _road.Lanes[_laneIndex];
+            Lane lane = Road.Lanes[LaneIndex];
             _startNode = lane.StartNode;
             _endNode = lane.StartNode.Last;
             CurrentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;

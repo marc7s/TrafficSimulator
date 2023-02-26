@@ -22,7 +22,7 @@ namespace RoadGenerator
 	{
         private VertexPath _path;
         private LaneNode _start;
-        public Road _road;
+        private Road _road;
         private LaneType _type;
 
         /// <summary>Creates a lane along the supplied path</summary>
@@ -75,6 +75,12 @@ namespace RoadGenerator
         public LaneNode StartNode
         {
             get => _start;
+        }
+
+        /// <summary>Get the road that the lane is on</summary>
+        public Road Road
+        {
+            get => _road;
         }
         
         /// <summary>Get the type of the lane</summary>
