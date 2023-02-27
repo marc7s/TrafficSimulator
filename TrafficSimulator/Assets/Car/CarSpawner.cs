@@ -141,7 +141,7 @@ namespace RoadGenerator
             for (int j = 0; j < _lanes.Count; j++)
             {
                 // Calculate the max cars for the lane
-                _maxCarsPerLane.Add((int)(_lengths[j] / CarLength));
+                _maxCarsPerLane.Add(Mathf.FloorToInt(_lengths[j] / CarLength));
             }
         }
 
@@ -215,9 +215,9 @@ namespace RoadGenerator
         private void SetOffset(int offset) 
         {
             for (int i = 0; i < offset; i++)
-                {
-                    _laneNodeCurrent = _laneNodeCurrent.Next;
-                }
+            {
+                _laneNodeCurrent = _laneNodeCurrent.Next;
+            }
         }
 
         private void SpawnCar(int index)
@@ -226,7 +226,13 @@ namespace RoadGenerator
 
             _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
             _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
-            _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next.Next;
+            if (_laneNodeCurrent.Next != null)
+            {
+                _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next;
+            } else
+            {
+                _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent;
+            }
         }
     }
 }
