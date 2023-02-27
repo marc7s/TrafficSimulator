@@ -68,7 +68,7 @@ namespace Car {
         private VehicleController _vehicleController;
         private LaneNode _startNode;
         private LaneNode _endNode;
-        public LaneNode CurrentNode;
+        private LaneNode _currentNode;
 
         public LaneNode CustomStartNode = null;
 
@@ -93,9 +93,9 @@ namespace Car {
             Lane lane = Road.Lanes[LaneIndex];
             _startNode = lane.StartNode;
             _endNode = lane.StartNode.Last;
-            CurrentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
+            _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
 
-            _target = CurrentNode;
+            _target = _currentNode;
             
             if (_mode == DrivingMode.Quality)
             {
@@ -151,11 +151,11 @@ namespace Car {
 
         private void Q_TeleportToLane()
         {
-            // Move it to the first position of the lane, offset in the opposite direction of the lane
-            transform.position = CurrentNode.Position - (2 * (CurrentNode.Next.Position - CurrentNode.Position));
+            // Move it to the current position, offset in the opposite direction of the lane
+            transform.position = _currentNode.Position - (2 * (_currentNode.Next.Position - _currentNode.Position));
             
-            // Rotate it to face the first position of the lane
-            transform.rotation = Quaternion.LookRotation(CurrentNode.Next.Position - CurrentNode.Position);
+            // Rotate it to face the current position
+            transform.rotation = Quaternion.LookRotation(_currentNode.Next.Position - _currentNode.Position);
         }
         private void Q_SteerTowardsTarget()
         {
@@ -215,10 +215,10 @@ namespace Car {
                     _status = Status.Driving;
 
                     // Assume that the car travelled straight to the repositioning target
-                    _totalDistance += Vector3.Distance(CurrentNode.Position, _target.Position);
+                    _totalDistance += Vector3.Distance(_currentNode.Position, _target.Position);
                     
                     // Update the current node
-                    CurrentNode = _target;
+                    _currentNode = _target;
                     
                     // Set the target to the one after the target we missed
                     _target = GetNextLaneNode(_repositioningTarget, _repositioningOffset, false);
@@ -269,16 +269,16 @@ namespace Car {
 
         private void Q_UpdateCurrent()
         {
-            LaneNode nextNode = GetNextLaneNode(CurrentNode, 0, true);
+            LaneNode nextNode = GetNextLaneNode(_currentNode, 0, true);
 
             // Move the current node forward while we are closer to the next node than the current
             // Note: only updates while driving. During repositioning the vehicle will be closer to the next node (the repositioning target) halfway through the repositioning
             // This would cause our current position to skip ahead so repositioning is handled separately
-            while(_status == Status.Driving && Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, CurrentNode.Position))
+            while(_status == Status.Driving && Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position))
             {
-                _totalDistance += CurrentNode.DistanceToPrevNode;
-                CurrentNode = nextNode;
-                nextNode = GetNextLaneNode(CurrentNode, 0, true);
+                _totalDistance += _currentNode.DistanceToPrevNode;
+                _currentNode = nextNode;
+                nextNode = GetNextLaneNode(_currentNode, 0, true);
             }
         }
 
@@ -287,9 +287,9 @@ namespace Car {
             return _status == Status.Driving ? _target : _repositioningTarget;
         }
 
-        private LaneNode GetNextLaneNode(LaneNode currentNode, int offset = 0, bool wrapAround = true)
+        private LaneNode GetNextLaneNode(LaneNode _currentNode, int offset = 0, bool wrapAround = true)
         {
-            LaneNode node = currentNode;
+            LaneNode node = _currentNode;
             
             for(int i = 0; i < Math.Abs(offset) + 1; i++)
             {
@@ -347,8 +347,8 @@ namespace Car {
             
             if(transform.position == targetPosition && !(_roadEndBehaviour == RoadEndBehaviour.Stop && _target == _endNode)) 
             {
-                CurrentNode = _target;
-                _totalDistance += CurrentNode.DistanceToPrevNode;
+                _currentNode = _target;
+                _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
 
                 if(_target == _startNode && _roadEndBehaviour == RoadEndBehaviour.Loop) 
@@ -369,6 +369,12 @@ namespace Car {
         {
             return Quaternion.RotateTowards(transform.rotation, target, _rotationSpeed * _speed * Time.deltaTime);
         }
+        
+        public LaneNode CurrentNode
+        {
+            get => _currentNode;
+        }
+        
     }
 }
 
