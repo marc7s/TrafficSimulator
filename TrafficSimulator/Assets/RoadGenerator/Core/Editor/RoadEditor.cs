@@ -13,6 +13,9 @@ namespace RoadEditor
             private SerializedProperty _thickness;
             private SerializedProperty _laneVertexSpacing;
             private SerializedProperty _drawLanes;
+            private SerializedProperty _drawRoadNodes;
+            private SerializedProperty _drawLaneNodes;
+            private SerializedProperty _drawLaneNodePointers;
         #endregion
 
         private void OnEnable()
@@ -22,9 +25,16 @@ namespace RoadEditor
             _thickness = serializedObject.FindProperty("Thickness");
             _laneVertexSpacing = serializedObject.FindProperty("LaneVertexSpacing");
             _drawLanes = serializedObject.FindProperty("DrawLanes");
+            _drawRoadNodes = serializedObject.FindProperty("DrawRoadNodes");
+            _drawLaneNodes = serializedObject.FindProperty("DrawLaneNodes");
+            _drawLaneNodePointers = serializedObject.FindProperty("DrawLaneNodePointers");
         }
         public override void OnInspectorGUI()
         {
+            // Uncomment this to change connections
+            //DrawDefaultInspector();
+            
+            
             serializedObject.Update();
             Road road = (Road)target;
             bool changed = false;
@@ -34,7 +44,14 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_thickness);
             EditorGUILayout.PropertyField(_laneVertexSpacing);
             EditorGUILayout.PropertyField(_drawLanes);
+            EditorGUILayout.PropertyField(_drawRoadNodes);
+            EditorGUILayout.PropertyField(_drawLaneNodes);
+            
+            // Only show the Draw Lane Pointers option if we are drawing lane nodes
+            if(_drawLaneNodes.boolValue)
+                EditorGUILayout.PropertyField(_drawLaneNodePointers);
 
+            
             if(_laneAmount.intValue != (int)road.LaneAmount)
             {
                 changed = true;
@@ -64,6 +81,29 @@ namespace RoadEditor
                 changed = true;
                 road.DrawLanes = _drawLanes.boolValue;
             }
+
+            if(_drawRoadNodes.boolValue != road.DrawRoadNodes)
+            {
+                changed = true;
+                road.DrawRoadNodes = _drawRoadNodes.boolValue;
+            }
+
+            if(_drawLaneNodes.boolValue != road.DrawLaneNodes)
+            {
+                changed = true;
+                road.DrawLaneNodes = _drawLaneNodes.boolValue;
+                
+                // If we have disabled drawing lane nodes, we also disable drawing the pointers
+                if(!road.DrawLaneNodes)
+                    _drawLaneNodePointers.boolValue = false;
+            }
+
+            if(_drawLaneNodePointers.boolValue != road.DrawLaneNodePointers)
+            {
+                changed = true;
+                road.DrawLaneNodePointers = _drawLaneNodePointers.boolValue;
+            }
+            
 
             serializedObject.ApplyModifiedProperties();
 
