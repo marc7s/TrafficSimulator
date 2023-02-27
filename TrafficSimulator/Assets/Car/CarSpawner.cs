@@ -7,15 +7,15 @@ namespace RoadGenerator
 {
     public enum SpawnMode
     {
-        RATIO,
-        PERCENTAGE
+        Ratio,
+        Percentage
     }
 
     public class CarSpawner : MonoBehaviour
     {
         [SerializeField] private GameObject _carPrefab;
         [SerializeField] private GameObject _roadSystemObject;
-        [SerializeField] private SpawnMode _mode = SpawnMode.RATIO;
+        [SerializeField] private SpawnMode _mode = SpawnMode.Ratio;
 
         public int MaxCarsRatio = 5; // Number of cars to spawn per lane
         [Range(0, 1)] public float MaxCarsPercentage = 0.5f; // Percentage of cars to spawn per lane
@@ -61,7 +61,7 @@ namespace RoadGenerator
             if (!_spawned) {
                 if (Time.time > SpawnDelay) {
                     _spawned = true;
-                    if (_mode == SpawnMode.RATIO) 
+                    if (_mode == SpawnMode.Ratio) 
                     {
                         Debug.Log("Spawning cars with ratio");
                         SpawnCarsWithRatio(MaxCarsRatio);
