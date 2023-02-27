@@ -118,9 +118,9 @@ namespace RoadGenerator
             float totalLength = 0;
 
             // Loop through all lane lengths
-            for (int i = 0; i < _lengths.Count; i++)
+            foreach (float length in _lengths)
             {
-                totalLength = totalLength + _lengths[i];
+                totalLength = totalLength + length;
             }
 
             // Loop through all lane lengths
@@ -135,13 +135,13 @@ namespace RoadGenerator
             int laneIndex;
 
             // Loop through all roads
-            for (int i = 0; i < _roadSystem.RoadCount; i++)
+            foreach (Road road in _roadSystem.Roads)
             {
-                _roads[i].OnChange();
+                road.OnChange();
                 laneIndex = 0;
 
                 // Loop through all lanes
-                for (int j = 0; j < _roads[i].LaneCount; j++)
+                for (int j = 0; j < road.LaneCount; j++)
                 {
                     _indexes.Add(laneIndex);
                     laneIndex++;
@@ -165,6 +165,8 @@ namespace RoadGenerator
             {
                 // Calculate the number of cars to spawn
                 int carsToSpawn = Mathf.CeilToInt(_maxCarsPerLane[i] * MaxCarsPercentage);
+
+                // To avoid division by zero
                 if (carsToSpawn == 0)
                 {
                     return;
