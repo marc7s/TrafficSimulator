@@ -14,12 +14,11 @@ namespace RoadGenerator
     public class CarSpawner : MonoBehaviour
     {
         [SerializeField] private GameObject _carPrefab;
-        [SerializeField] private GameObject _roadNetwork;
+        [SerializeField] private GameObject _roadSystemObject;
         [SerializeField] private SpawnMode _mode = SpawnMode.RATIO;
 
         public int MaxCarsRatio = 5; // Number of cars to spawn per lane
         [Range(0, 1)] public float MaxCarsPercentage = 0.5f; // Percentage of cars to spawn per lane
-        public float Distance = 10f; // Distance between cars
         public float CarLength = 4f; // Not exact value. Should get imported from car prefab somehow.
         public float SpawnDelay = 3f; // Delay before spawning cars
 
@@ -45,7 +44,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _roadSystem = _roadNetwork.GetComponent<RoadSystem>();
+            _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
 
             _roads = _roadSystem.Roads;
@@ -93,23 +92,10 @@ namespace RoadGenerator
 
         private void CalculateLaneLengths()
         {
-            LaneNode _laneNodeTemp;
-            float laneLength;
-
             // Loop through all lanes
-            for (int j = 0; j < _lanes.Count; j++)
+            foreach (Lane lane in _lanes)
             {
-                laneLength = 0;
-                _laneNodeTemp = _lanes[j].StartNode;
-
-                // Loop through all lane nodes
-                for (int k = 0; k < _lanes[j].StartNode.Count - 1; k++)
-                {
-                    // Calculate the length of the lane
-                    laneLength = laneLength + Vector3.Distance(_laneNodeTemp.Position, _laneNodeTemp.Next.Position);
-                    _laneNodeTemp = _laneNodeTemp.Next;
-                }
-                _lengths.Add(laneLength);
+                _lengths.Add(lane.Length);
             }
         }
 
@@ -172,7 +158,7 @@ namespace RoadGenerator
                     return;
                 }
 
-                // Calculate the _offset
+                // Calculate the offset
                 _offset = _lanes[i].StartNode.Count / carsToSpawn;
                 _laneNodeCurrent = _lanes[i].StartNode;
 
@@ -197,13 +183,14 @@ namespace RoadGenerator
                 // Calculate the number of cars to spawn for this lane
                 int carsToSpawn = Mathf.CeilToInt(_ratios[i] * maxCars);
 
-                // Calculate the _offset
+                // To avoid division by zero
                 if (carsToSpawn == 0)
                 {
                     return;
                 }
+                
+                // Calculate the offset
                 _offset = _lanes[i].StartNode.Count / carsToSpawn;
-
                 _laneNodeCurrent = _lanes[i].StartNode;
 
                 // Spawn cars
