@@ -42,19 +42,31 @@ namespace RoadGenerator
         [Header ("Connections")]
         public GameObject RoadObject;
         public RoadSystem RoadSystem;
+        public GameObject RoadNodePrefab;
+        public GameObject LaneNodePrefab;
         
+
         [Header ("Road settings")]
         public LaneAmount LaneAmount = LaneAmount.One;
         public float LaneWidth = 4f;
         [Range (0, .5f)] public float Thickness = .15f;
         
+
         [Header ("Lane settings")]
         [Range(0.1f, 10f)] public float LaneVertexSpacing = 1f;
+        
+
+        [Header ("Debug settings")]
         public bool DrawLanes = false;
+        public bool DrawRoadNodes = false;
+        public bool DrawLaneNodes = false;
+        public bool DrawLaneNodePointers = false;
         
         [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, Vector3.zero, Vector3.zero, RoadNodeType.End, 0, 0);
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
+        [SerializeField][HideInInspector] private GameObject _roadNodeContainer;
+        [SerializeField][HideInInspector] private GameObject _laneNodeContainer;
         [SerializeField][HideInInspector] private VertexPath _path;
         [SerializeField][HideInInspector] private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
         [HideInInspector] public List<Intersection> _intersections = new List<Intersection>();
@@ -63,6 +75,11 @@ namespace RoadGenerator
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
+        private const string ROAD_NODE_NAME = "RoadNode";
+        private const string ROAD_NODE_CONTAINER_NAME = "Road nodes";
+        private const string LANE_NODE_NAME = "LaneNode";
+        private const string LANE_NODE_CONTAINER_NAME = "Lane nodes";
+        private const string LANE_NODE_POINTER_NAME = "Lane node pointer";
 
 
         public Intersection[] GetIntersections()
@@ -120,6 +137,8 @@ namespace RoadGenerator
                     intersection.UpdateMesh();
                 RoadSystem.UpdateRoadSystemGraph();
                 ShowLanes();
+                ShowRoadNodes();
+                ShowLaneNodes();
             }
         }
 
@@ -377,7 +396,93 @@ namespace RoadGenerator
                 // Draw each lane
                 for(int i = 0; i < _lanes.Count; i++)
                 {
-                    DrawLane(this, _lanes[i], GetColor(i), _laneContainer);
+                    DrawLane(_lanes[i], GetColor(i), _laneContainer);
+                }
+            }
+        }
+
+        public void ShowLaneNodes()
+        {
+            if(_laneNodeContainer == null)
+            {
+                // Try to find the lane container if it has already been created
+                foreach(Transform child in transform)
+                {
+                    if(child.name == LANE_NODE_CONTAINER_NAME)
+                    {
+                        _laneNodeContainer = child.gameObject;
+                        break;
+                    }
+                }
+            }
+
+            // Destroy the lane container, and with it all the previous lanes
+            if(_laneNodeContainer != null)
+                DestroyImmediate(_laneNodeContainer);
+
+            // Create a new empty lane container
+            _laneNodeContainer = new GameObject(LANE_NODE_CONTAINER_NAME);
+            _laneNodeContainer.transform.parent = transform;
+
+            // Draw the lane nodes if the setting is enabled
+            if(DrawLaneNodes)
+            {
+                foreach(Lane lane in _lanes)
+                {
+                    LaneNode curr = lane.StartNode;
+                    int i = 0;
+                    while(curr != null)
+                    {
+                        GameObject laneNodeObject = Instantiate(LaneNodePrefab, curr.Position, curr.Rotation, _laneNodeContainer.transform);
+                        laneNodeObject.name = LANE_NODE_NAME + i;
+
+                        curr = curr.Next;
+                        i++;
+                    }
+
+                    if(DrawLaneNodePointers)
+                    {
+                        DrawAllLaneNodePointers(lane.StartNode, Color.cyan, _laneNodeContainer);
+                    }
+                }
+            }
+        }
+
+        public void ShowRoadNodes()
+        {
+            if(_roadNodeContainer == null)
+            {
+                // Try to find the lane container if it has already been created
+                foreach(Transform child in transform)
+                {
+                    if(child.name == ROAD_NODE_CONTAINER_NAME)
+                    {
+                        _roadNodeContainer = child.gameObject;
+                        break;
+                    }
+                }
+            }
+
+            // Destroy the lane container, and with it all the previous lanes
+            if(_roadNodeContainer != null)
+                DestroyImmediate(_roadNodeContainer);
+
+            // Create a new empty lane container
+            _roadNodeContainer = new GameObject(ROAD_NODE_CONTAINER_NAME);
+            _roadNodeContainer.transform.parent = transform;
+
+            // Draw the lines if the setting is enabled
+            if(DrawRoadNodes)
+            {
+                RoadNode curr = _start;
+                int i = 0;
+                while(curr != null)
+                {
+                    GameObject roadNodeObject = Instantiate(RoadNodePrefab, curr.Position, curr.Rotation, _roadNodeContainer.transform);
+                    roadNodeObject.name = ROAD_NODE_NAME + i;
+
+                    curr = curr.Next;
+                    i++;
                 }
             }
         }
@@ -410,7 +515,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Helper function that performs the drawing of a lane's path</summary>
-        private static void DrawLanePath(GameObject line, Lane lane, Color color, float width = 0.5f)
+        private static void DrawPath(GameObject line, Vector3[] path, Color color, float width = 0.5f)
         {
             // Get the line renderer
             LineRenderer lr = line.GetComponent<LineRenderer>();
@@ -426,12 +531,12 @@ namespace RoadGenerator
             lr.endWidth = width;
             
             // Set the positions
-            lr.positionCount = lane.StartNode.Count;
-            lr.SetPositions(lane.StartNode.GetPositions());
+            lr.positionCount = path.Length;
+            lr.SetPositions(path);
         }
 
         /// <summary>Draws a lane</summary>
-        private static void DrawLane(Road road, Lane lane, Color color, GameObject parent)
+        private static void DrawLane(Lane lane, Color color, GameObject parent)
         {
             if(lane.StartNode.Count < 1) return;
             
@@ -449,7 +554,34 @@ namespace RoadGenerator
             laneObject.AddComponent<LineRenderer>();
             
             // Draw the lane path
-            DrawLanePath(laneObject, lane, color: color);
+            DrawPath(laneObject, lane.StartNode.GetPositions(), color: color);
+        }
+
+        /// <summary>Draws a pointer from a lane node to its corresponding road node</summary>
+        private static void DrawAllLaneNodePointers(LaneNode laneNode, Color color, GameObject parent)
+        {
+            int i = 0;
+            LaneNode curr = laneNode;
+            while(curr != null)
+            {
+                // Create the lane object
+                GameObject laneNodePointerObject = new GameObject();
+                
+                // Set the lane name
+                laneNodePointerObject.name = LANE_NODE_POINTER_NAME + i;
+                
+                // Set the lane as a child of the Lanes container object
+                laneNodePointerObject.transform.parent = parent.transform;
+
+                // Add a line renderer to the lane
+                laneNodePointerObject.AddComponent<LineRenderer>();
+                
+                // Draw the lane path
+                DrawPath(laneNodePointerObject, new Vector3[]{ curr.Position, curr.RoadNode.Position }, color: color);
+                
+                curr = curr.Next;
+                i++;
+            }
         }
 
         public List<Lane> Lanes
