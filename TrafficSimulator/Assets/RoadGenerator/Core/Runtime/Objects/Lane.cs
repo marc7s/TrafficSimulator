@@ -113,17 +113,16 @@ namespace RoadGenerator
             return _path.GetRotationAtDistance(distance, eopi);
         }
 
-        public float GetLaneLength()
+        private float GetLaneLength()
         {
             float length = 0;
             LaneNode curr = _start;
-            while(curr.Next != null)
+            while(curr != null)
             {
-                length += Vector3.Distance(curr.Position, curr.Next.Position);
+                length += curr.DistanceToPrevNode;
                 curr = curr.Next;
             }
             return length;
         }
-        
     }
 }
