@@ -48,16 +48,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7492f488fd0840543b1c569a4b1bc2ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RoadObject: {fileID: 0}
+  RoadObject: {fileID: 3821395399200801449}
   RoadSystem: {fileID: 0}
+  RoadNodePrefab: {fileID: 6519265059532225654, guid: 475d564915891b049a02741f23b64141, type: 3}
+  LaneNodePrefab: {fileID: 6519265059532225654, guid: 0113fddae2267ef4db5a0e673398c274, type: 3}
   LaneAmount: 1
   LaneWidth: 4
   Thickness: 0.15
   LaneVertexSpacing: 1
   DrawLanes: 0
+  DrawRoadNodes: 0
+  DrawLaneNodes: 0
+  DrawLaneNodePointers: 0
   _laneContainer: {fileID: 0}
+  _roadNodeContainer: {fileID: 0}
+  _laneNodeContainer: {fileID: 0}
   _endOfPathInstruction: 2
   _intersections: []
+  _length: 0
 --- !u!114 &2234105199191049172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,7 +117,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 1
+    vertexPathUpToDate: 0
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 0
