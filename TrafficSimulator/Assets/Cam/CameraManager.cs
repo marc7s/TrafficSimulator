@@ -16,8 +16,7 @@ namespace Cam
         [SerializeField] private int _currentActiveCameraIndex = 0;
         [SerializeField] private int _previousActiveCameraIndex;
         [SerializeField] public Transform CameraTarget;
-        private CameraState _currentActiveCamera;
-        
+
         #region User Input
         private InputAction _movementInput;
         private InputAction _rotationInput;
@@ -66,7 +65,7 @@ namespace Cam
 
         private void OnSpaceInput(InputAction.CallbackContext ctx)
         {
-            _currentActiveCamera.HandleSpaceInput();
+            _cameras[_currentActiveCameraIndex].HandleSpaceInput();
         }
 
         private void OnMovementInput(InputAction.CallbackContext ctx)
@@ -86,37 +85,36 @@ namespace Cam
     
         private void OnPointInput(InputAction.CallbackContext ctx)
         {
-            _currentActiveCamera.HandlePointInput(ctx.ReadValue<Vector2>());
+            _cameras[_currentActiveCameraIndex].HandlePointInput(ctx.ReadValue<Vector2>());
         }
     
         private void OnClickInput(InputAction.CallbackContext ctx)
         {
-            _currentActiveCamera.HandleClickInput(ctx);
+            _cameras[_currentActiveCameraIndex].HandleClickInput(ctx);
         }
 
         private void OnDoubleClickInput(InputAction.CallbackContext ctx)
         {
-            _currentActiveCamera.HandleDoubleClickInput(ctx);
+            _cameras[_currentActiveCameraIndex].HandleDoubleClickInput(ctx);
         }
 
         private void OnEscapeInput(InputAction.CallbackContext ctx)
         {
-            _currentActiveCamera.HandleEscapeInput(ctx);
+            _cameras[_currentActiveCameraIndex].HandleEscapeInput(ctx);
         }
 
         #endregion
     
         private void Update()
         {
-            _currentActiveCamera.Move(_movementFromUser);
-            _currentActiveCamera.RotateHorizontal(_rotationFromUser);
-            _currentActiveCamera.Zoom(_zoomFromUser);
+            _cameras[_currentActiveCameraIndex].Move(_movementFromUser);
+            _cameras[_currentActiveCameraIndex].RotateHorizontal(_rotationFromUser);
+            _cameras[_currentActiveCameraIndex].Zoom(_zoomFromUser);
         }
     
         private void Awake()
         {
-            _currentActiveCamera = _cameras[FindDefaultCameraIndex()];
-            _currentActiveCamera.SetActive(this);
+            _cameras[FindDefaultCameraIndex()].SetActive(this);
         }
 
         private void Start()
@@ -139,7 +137,7 @@ namespace Cam
         {
             _previousActiveCameraIndex = _currentActiveCameraIndex;
             _currentActiveCameraIndex = newIndex;
-        
+
             _cameras[_previousActiveCameraIndex].SetInactive(this);
             _cameras[_currentActiveCameraIndex].SetFollowTransform(CameraTarget);
             _cameras[_currentActiveCameraIndex].SetActive(this);

@@ -26,5 +26,7 @@ namespace Cam
         {
             if (this != null) _playerInputActions.Default.Enable();
         }
+        
+        
     }
 }

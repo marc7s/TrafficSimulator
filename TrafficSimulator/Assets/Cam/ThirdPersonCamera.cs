@@ -39,6 +39,8 @@ namespace Cam
 
         public override void HandleSpaceInput()
         {
+            print(FollowTransform.gameObject.name);
+            
             CameraManager.CameraTarget = FollowTransform;
             CameraManager.ToggleFirstPersonDriverCamera();
         }

@@ -82,11 +82,6 @@ namespace Cam
         public override void HandleDoubleClickInput(InputAction.CallbackContext ctx)
         {
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (Physics.Raycast(ray, out RaycastHit h))
-            {
-                print("");
-                print(_toggledGameObject);
-            }
             if (Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.root.gameObject.Equals(_toggledGameObject))
             {
                 CameraManager.CameraTarget = FollowTransform;
