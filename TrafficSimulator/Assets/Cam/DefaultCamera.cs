@@ -130,7 +130,7 @@ namespace Cam
             outline.enabled = true;
             _toggledTransform = toggledTransform;
             _hasToggledTransform = true;
-            StartCoroutine(PanToTarget(toggledTransform.position));
+            StartCoroutine(PanToTarget(toggledTransform));
         }
         
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
@@ -138,20 +138,21 @@ namespace Cam
             return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;
         }
 
-        private IEnumerator PanToTarget(Vector3 target)
+        private IEnumerator PanToTarget(Transform target)
         {
             _isMovingTowardsTarget = true;
             float startTime = Time.time;
-            float journeyLength = Vector3.Distance(FollowTransform.position, target);
+            float journeyLength = Vector3.Distance(FollowTransform.position, target.position);
 
-            while (Vector3.Distance(FollowTransform.position, target) > 0.01f && _hasToggledTransform)
+            while (Vector3.Distance(FollowTransform.position, target.position) > 0.01f && _hasToggledTransform)
             {
                 float distCovered = (Time.time - startTime) * _togglePanSpeed;
                 float fractionOfJourney = distCovered / journeyLength;
-                FollowTransform.position = Vector3.Lerp(FollowTransform.position, target, fractionOfJourney);
+                FollowTransform.position = Vector3.Lerp(FollowTransform.position, target.position, fractionOfJourney);
                 yield return null;
             }
             _isMovingTowardsTarget = false;
         }
+
     }
 }

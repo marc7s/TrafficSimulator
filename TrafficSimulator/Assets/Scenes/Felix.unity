@@ -467,7 +467,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 1
+    vertexPathUpToDate: 0
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 0
@@ -1371,7 +1371,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 798415014314360586, guid: 81687df71b013f14fb1e3209bca12fa5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 798415014314360586, guid: 81687df71b013f14fb1e3209bca12fa5, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1379,7 +1379,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 798415014314360586, guid: 81687df71b013f14fb1e3209bca12fa5, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -51.5
       objectReference: {fileID: 0}
     - target: {fileID: 798415014314360586, guid: 81687df71b013f14fb1e3209bca12fa5, type: 3}
       propertyPath: m_LocalRotation.w
