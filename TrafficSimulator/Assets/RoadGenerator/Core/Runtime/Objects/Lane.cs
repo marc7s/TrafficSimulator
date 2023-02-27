@@ -45,7 +45,7 @@ namespace RoadGenerator
             LaneNode curr = _start;
             
             // The road node for this lane node
-            RoadNode currRoadNode = roadNode;
+            RoadNode currRoadNode = roadNode.Next == null ? roadNode : roadNode.Next;
 
             // Go through each point in the path of the lane
             for(int i = 1; i < path.NumPoints; i++)
