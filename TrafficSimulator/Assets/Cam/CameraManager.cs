@@ -115,10 +115,8 @@ namespace Cam
     
         private void Awake()
         {
-            print(FindDefaultCameraIndex());
             _currentActiveCamera = _cameras[FindDefaultCameraIndex()];
             _currentActiveCamera.SetActive(this);
-            print(_currentActiveCamera.name);
         }
 
         private void Start()
