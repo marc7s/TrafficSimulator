@@ -24,6 +24,7 @@ namespace RoadGenerator
         private LaneNode _start;
         private Road _road;
         private LaneType _type;
+        private float _length;
 
         /// <summary>Creates a lane along the supplied path</summary>
         /// <param name="road">The road that the lane is on</param>
@@ -62,6 +63,9 @@ namespace RoadGenerator
                     currRoadNode = currRoadNode.Next;
                 }
             }
+
+            // Set lane length
+            _length = GetLaneLength();
         }
 
         /// <summary>Get the rotation of a node at a distance from the start of the path</summary>
@@ -76,11 +80,23 @@ namespace RoadGenerator
         {
             get => _start;
         }
+
+        /// <summary>Get the road that the lane is on</summary>
+        public Road Road
+        {
+            get => _road;
+        }
         
         /// <summary>Get the type of the lane</summary>
         public LaneType Type
         {
             get => _type;
+        }
+
+        /// <summary>Get the length of the lane</summary>
+        public float Length
+        {
+            get => _length;
         }
         
         /// <summary>Get the position at a distance from the start of the path</summary>
@@ -95,6 +111,18 @@ namespace RoadGenerator
         {
             EndOfPathInstruction eopi = endOfPathInstruction == null ? _road.EndOfPathInstruction : (EndOfPathInstruction)endOfPathInstruction;
             return _path.GetRotationAtDistance(distance, eopi);
+        }
+
+        private float GetLaneLength()
+        {
+            float length = 0;
+            LaneNode curr = _start;
+            while(curr != null)
+            {
+                length += curr.DistanceToPrevNode;
+                curr = curr.Next;
+            }
+            return length;
         }
     }
 }

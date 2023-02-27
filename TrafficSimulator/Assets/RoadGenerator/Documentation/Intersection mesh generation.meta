@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:TrafficSimulator/Assets/Car/Materials.meta
+guid: 3cbf70e84af6dc245820c915b2ab3653
+========
 guid: 797ad8e9fb69b124db4fb843f9e85e1c
+>>>>>>>> main:TrafficSimulator/Assets/RoadGenerator/Documentation/Intersection mesh generation.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

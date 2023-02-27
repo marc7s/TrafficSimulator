@@ -34,8 +34,8 @@ namespace Car {
     public class AutoDrive : MonoBehaviour
     {
         [Header("Connections")]
-        [SerializeField] private Road _road;
-        [SerializeField] private int _laneIndex = 0;
+        public Road Road;
+        public int LaneIndex = 0;
 
         [Header("Settings")]
         [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
@@ -70,30 +70,32 @@ namespace Car {
         private LaneNode _endNode;
         private LaneNode _currentNode;
 
+        public LaneNode CustomStartNode = null;
+
         void Start()
         {
             _vehicleController = GetComponent<VehicleController>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
             
             // If the road has not updated yet there will be no lanes, so update them first
-            if(_road.Lanes.Count == 0)
+            if(Road.Lanes.Count == 0)
             {
-                _road.OnChange();
+                Road.OnChange();
             }
             
             // Check that the provided lane index is valid
-            if(_laneIndex < 0 || _laneIndex >= _road.Lanes.Count)
+            if(LaneIndex < 0 || LaneIndex >= Road.Lanes.Count)
             {
                 Debug.LogError("Lane index out of range");
                 return;
             }
             
-            Lane lane = _road.Lanes[_laneIndex];
+            Lane lane = Road.Lanes[LaneIndex];
             _startNode = lane.StartNode;
             _endNode = lane.StartNode.Last;
-            _currentNode = lane.StartNode;
+            _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
 
-            _target = lane.StartNode;
+            _target = _currentNode;
             
             if (_mode == DrivingMode.Quality)
             {
@@ -149,11 +151,11 @@ namespace Car {
 
         private void Q_TeleportToLane()
         {
-            // Move it to the first position of the lane, offset in the opposite direction of the lane
-            transform.position = _startNode.Position - (2 * (_startNode.Next.Position - _startNode.Position));
+            // Move it to the current position, offset in the opposite direction of the lane
+            transform.position = _currentNode.Position - (2 * (_currentNode.Next.Position - _currentNode.Position));
             
-            // Rotate it to face the first position of the lane
-            transform.rotation = Quaternion.LookRotation(_startNode.Next.Position - _startNode.Position);
+            // Rotate it to face the current position
+            transform.rotation = Quaternion.LookRotation(_currentNode.Next.Position - _currentNode.Position);
         }
         private void Q_SteerTowardsTarget()
         {
@@ -285,9 +287,9 @@ namespace Car {
             return _status == Status.Driving ? _target : _repositioningTarget;
         }
 
-        private LaneNode GetNextLaneNode(LaneNode currentNode, int offset = 0, bool wrapAround = true)
+        private LaneNode GetNextLaneNode(LaneNode _currentNode, int offset = 0, bool wrapAround = true)
         {
-            LaneNode node = currentNode;
+            LaneNode node = _currentNode;
             
             for(int i = 0; i < Math.Abs(offset) + 1; i++)
             {
@@ -367,6 +369,12 @@ namespace Car {
         {
             return Quaternion.RotateTowards(transform.rotation, target, _rotationSpeed * _speed * Time.deltaTime);
         }
+        
+        public LaneNode CurrentNode
+        {
+            get => _currentNode;
+        }
+        
     }
 }
 
