@@ -175,6 +175,14 @@ namespace RoadGenerator
                 
         }
 
+        public void UpdateRoads()
+        {
+            foreach(Road road in _roads)
+            {
+                road.OnChange();
+            }
+        }
+
         private void ClearRoadGraph() {
             _roadSystemGraph = null;
             if(GraphContainer != null) {
