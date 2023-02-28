@@ -353,6 +353,7 @@ namespace RoadGenerator
                 // Update the navigation graph with the intersections
                 _start.UpdateIntersectionJunctionEdgeNavigation(this);
             }
+            
     
 
              

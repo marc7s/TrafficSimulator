@@ -24,6 +24,8 @@ namespace RoadGenerator
         private RoadNodeType _type;
         public bool IsNavigationNode = false;
         private float _time;
+        
+        public string ID;
 
         // A list of all intersection types
         private static RoadNodeType[] _intersectionTypes = new RoadNodeType[]{ RoadNodeType.ThreeWayIntersection, RoadNodeType.FourWayIntersection, RoadNodeType.Roundabout };
@@ -40,6 +42,7 @@ namespace RoadGenerator
             _distanceToPrevNode = distanceToPrevNode;
             _time = time;
             this.Intersection = intersection;
+            ID = System.Guid.NewGuid().ToString();
         }
 
         public override RoadNode Copy()

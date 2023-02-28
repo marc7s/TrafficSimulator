@@ -59,6 +59,7 @@ namespace Car {
         private float _targetLookaheadDistance = 0;
         private float _brakeDistance = 0;
         private LaneNode _target;
+        private LaneNode _previousTarget;
         private LaneNode _brakeTarget;
         private LaneNode _repositioningTarget;
         private LineRenderer _targetLineRenderer;
@@ -75,10 +76,14 @@ namespace Car {
 
         public LaneNode CustomStartNode = null;
 
+        private GameObject _gpsContainer;
         void Start()
         {
             // TEMPORARY FOR DEBUGGING
             Road.RoadSystem.Setup();
+
+            _gpsContainer = new GameObject("GPS");
+            _gpsContainer.transform.parent = transform;
 
             _vehicleController = GetComponent<VehicleController>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
@@ -101,7 +106,7 @@ namespace Car {
             _endNode = lane.StartNode.Last;
             _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
 
-            _target = _currentNode;
+            _target = _currentNode.Next;
             
             if (_mode == DrivingMode.Quality)
             {
@@ -130,7 +135,8 @@ namespace Car {
                 P_MoveToFirstPosition();
             }
             
-            Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
+            Path = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out nodeToFind);
+            //Navigation.DrawNavigationPath(Path, _gpsContainer);
         }
 
         void Update()
@@ -370,37 +376,51 @@ namespace Car {
             }
             transform.position = targetPosition;
             transform.rotation = targetRotation;
+
+            if (_target.Position == nodeToFind.RoadNode.Position)
+            {
+                Debug.Log("Destination Reached");
+                //Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
+                //Navigation.DrawNavigationPath(Path, _gpsContainer);
+            }
+
           //  Debug.Log(_target.RoadNode.IsNavigationNode);
             if (!_target.IsIntersection() && _target.RoadNode.IsNavigationNode)
             {
-                Debug.Log("NavigationNode" + _target.RoadNode.Position);
-                if (Path.Count != 0)
+                if (Path.Count != 0 && _target.RoadNode.ID != _previousTarget.RoadNode.ID)
                 {
+                   Debug.Log("Popping Path");
                    Path.Pop();
                    _prevIntersection = Vector3.zero; 
                 }
-                   
+                if (Path.Count == 0)
+                {
+                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out nodeToFind);
+                   // Navigation.DrawNavigationPath(Path, _gpsContainer);
+                }
             }
             if (_target.Type == RoadNodeType.JunctionEdge)
             {
-                if (Path.Count == 0)
-                {
-                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
-                }
-                if (Path.Count != 0 && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersection)
+
+                if (Path.Count != 0 && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersection && _target.RoadNode.ID != _previousTarget.RoadNode.ID)
                 { 
+                    Debug.Log("Popping Path JUNCITON EDGE");
                     NavigationNodeEdge temp = Path.Pop();
                     nodeToFind = temp.EndNavigationNode;
+                     _prevIntersection = _target.RoadNode.Intersection.IntersectionPosition;
                     _target = _target.RoadNode.Intersection.GetNewLaneNode(temp);
                     _startNode = _target.Lane.StartNode;
-                    _prevIntersection = _target.RoadNode.Intersection.IntersectionPosition;
+                    Debug.Log("Now driving at" + _target.RoadNode.Position);
                 }
                 if (Path.Count == 0)
                 {
-                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
+                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out nodeToFind);
+                    //Navigation.DrawNavigationPath(Path, _gpsContainer);
                 }
 
+
             }
+            _previousTarget = _target;
         }
 
         private Vector3 P_GetLerpPosition(Vector3 target)

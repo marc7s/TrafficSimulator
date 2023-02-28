@@ -448,9 +448,7 @@ namespace RoadGenerator
                     }
                     currentNode = currentNode.Next;
                 }
-            }
-
-            
+            }   
         }
         private bool IsThreeWayIntersection()
         {
@@ -459,6 +457,7 @@ namespace RoadGenerator
         /// <summary> Get the lane node that leads to the navigation node edge </summary>
         public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
         {
+            Debug.Log(navigationNodeEdge.EndNavigationNode.RoadNode.Position);
             return LaneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
         }
 
