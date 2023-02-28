@@ -29,6 +29,12 @@ namespace RoadGenerator
         [HideInInspector] public Vector3 Road1AnchorPoint2;
         [HideInInspector] public Vector3 Road2AnchorPoint1;
         [HideInInspector] public Vector3 Road2AnchorPoint2;
+        [HideInInspector] public NavigationNodeEdge Road1AnchorPoint1NavigationEdge;
+        [HideInInspector] public NavigationNodeEdge Road1AnchorPoint2NavigationEdge;
+        [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
+        [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
+
+    [HideInInspector] public Dictionary<string, LaneNode> LaneNodeFromNavigationNode;
 
         [HideInInspector] public IntersectionType Type;
 
@@ -403,5 +409,58 @@ namespace RoadGenerator
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
         }
+    public void MapIntersectionConnectionRoadNodes()
+    {
+        LaneNodeFromNavigationNode = new Dictionary<string, LaneNode>();
+        List<Lane> lanes = new List<Lane>();
+        
+        lanes.AddRange(Road1.Lanes);
+        lanes.AddRange(Road2.Lanes);
+        foreach (Lane lane in lanes)
+        {
+            LaneNode currLane1 = lane.StartNode;
+            while(currLane1 != null)
+            {
+                bool isIntersection = currLane1.RoadNode.NavigationNodeEdge == null;
+                if (isIntersection)
+                {
+                    currLane1 = currLane1.Next;
+                    continue;
+                }
+
+                bool isEdgeIntersection = currLane1.RoadNode.NavigationNodeEdge.EndNavigationNode.RoadNode.Position == IntersectionPosition;
+                // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
+                if (isEdgeIntersection)
+                {
+                    currLane1 = currLane1.Next;
+                    continue;
+                }
+
+                if (currLane1.RoadNode.Position == Road1AnchorPoint1)
+                {
+                    LaneNodeFromNavigationNode.Add(Road1AnchorPoint1NavigationEdge.ID, currLane1);
+                }
+                if (currLane1.RoadNode.Position == Road1AnchorPoint2)
+                {
+                    LaneNodeFromNavigationNode.Add(Road1AnchorPoint2NavigationEdge.ID, currLane1);
+                }
+                if (currLane1.RoadNode.Position == Road2AnchorPoint1)
+                {
+                    LaneNodeFromNavigationNode.Add(Road2AnchorPoint1NavigationEdge.ID, currLane1);
+                }
+                if (currLane1.RoadNode.Position == Road2AnchorPoint2)
+                {
+                    LaneNodeFromNavigationNode.Add(Road2AnchorPoint2NavigationEdge.ID, currLane1);
+                }
+                currLane1 = currLane1.Next;
+            }
+        }
+        Debug.Log("Mapped " + LaneNodeFromNavigationNode.Count + " nodes");
+    }
+
+    public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
+    {
+        return LaneNodeFromNavigationNode[navigationNodeEdge.ID];
+    }
     }
 }

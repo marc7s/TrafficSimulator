@@ -19,12 +19,14 @@ namespace RoadGenerator
         public float Distance;
         public Vector3 Position;
         public bool EndsIntersection;
-        public QueuedNode(RoadNodeType nodeType, float distance, Vector3 position, bool endsIntersection)
+        public Intersection Intersection;
+        public QueuedNode(RoadNodeType nodeType, float distance, Vector3 position, bool endsIntersection, Intersection intersection = null)
         {
             NodeType = nodeType;
             Distance = distance;
             Position = position;
             EndsIntersection = endsIntersection;
+            this.Intersection = intersection;
         }
         public int CompareTo(QueuedNode other)
         {
@@ -69,7 +71,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] private GameObject _laneNodeContainer;
         [SerializeField][HideInInspector] private VertexPath _path;
         [SerializeField][HideInInspector] private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
-        [HideInInspector] public List<Intersection> _intersections = new List<Intersection>();
+        [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] private float _length;
         
@@ -84,21 +86,21 @@ namespace RoadGenerator
 
         public Intersection[] GetIntersections()
         {
-            return _intersections.ToArray();
+            return Intersections.ToArray();
         }
 
         public bool HasIntersection(Intersection intersection)
         {
-            return _intersections.Contains(intersection);
+            return Intersections.Contains(intersection);
         }
 
         public void AddIntersection(Intersection intersection)
         {
-            _intersections.Add(intersection);
+            Intersections.Add(intersection);
         }
         public bool RemoveIntersection(Intersection intersection)
         {
-            _intersections.Remove(intersection);
+            Intersections.Remove(intersection);
             UpdateRoad();
             return true;
         }
@@ -133,13 +135,24 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
-                foreach(Intersection intersection in _intersections)
+                foreach(Intersection intersection in Intersections)
                     intersection.UpdateMesh();
+                    Debug.Log("UpdateRoad");
                 RoadSystem.UpdateRoadSystemGraph();
                 ShowLanes();
                 ShowRoadNodes();
                 ShowLaneNodes();
             }
+        }
+        public void UpdateRoad2()
+        {
+           RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
+            if(roadMeshCreator != null)
+            {
+                UpdateRoadNodes();
+                UpdateLanes();
+                roadMeshCreator.UpdateMesh();
+            } 
         }
 
         private void AddIntersectionNode(ref RoadNode curr, Vector3 position, RoadNodeType type)
@@ -197,7 +210,7 @@ namespace RoadGenerator
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
             
-            foreach(Intersection intersection in _intersections)
+            foreach(Intersection intersection in Intersections)
             {
                 if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
                 { 
@@ -212,9 +225,9 @@ namespace RoadGenerator
 
                         (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
 
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
                     }
                     else
                     {
@@ -230,8 +243,8 @@ namespace RoadGenerator
                         
                         float junctionDistance = _path.GetClosestDistanceAlongPath(anchor1);
 
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart, intersection));
                     }
                 }
                 else if(intersection.Type == IntersectionType.FourWayIntersection)
@@ -246,9 +259,9 @@ namespace RoadGenerator
 
                     (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
 
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
                 }
             }
 
@@ -277,7 +290,7 @@ namespace RoadGenerator
                             
                             // Create a new node for the queued intersection node
                             prev = curr;
-                            curr = new RoadNode(nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType, prev, null, Vector3.Distance(prev.Position, nextNode.Position), _path.times[i]);
+                            curr = new RoadNode(nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType, prev, null, Vector3.Distance(prev.Position, nextNode.Position), _path.times[i], nextNode.Intersection);
                             prev.Next = curr;
 
                             // Update the flags used to determine if we are inside an intersection
@@ -324,7 +337,7 @@ namespace RoadGenerator
                 prev.Next = curr;
             }
             // Create a new navigation graph
-            _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
+            _navigationGraph = new RoadNavigationGraph(_start, this, path.IsClosed);
         }
 
         /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
@@ -661,13 +674,14 @@ namespace RoadGenerator
         void OnDestroy()
         {
             RoadSystem.RemoveRoad(this);
-            int count = _intersections.Count;
+            int count = Intersections.Count;
             for (var i = 0; i < count; i++)
             {
-                Intersection intersection = _intersections[0];
-                _intersections.RemoveAt(0);
+                Intersection intersection = Intersections[0];
+                Intersections.RemoveAt(0);
                 DestroyImmediate(intersection.gameObject);
             }
+            Debug.Log("Road destroyed");
             RoadSystem.UpdateRoadSystemGraph();
         }
     }

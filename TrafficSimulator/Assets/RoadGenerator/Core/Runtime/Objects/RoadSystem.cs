@@ -32,7 +32,7 @@ namespace RoadGenerator
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
-        [SerializeField][HideInInspector] private Dictionary<string, GraphNode> _roadSystemGraph;
+        [SerializeField][HideInInspector] public Dictionary<string, NavigationNode> RoadSystemGraph;
         [HideInInspector] public GameObject GraphContainer;
 
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
@@ -98,6 +98,7 @@ namespace RoadGenerator
                 
                 AddRoad(road);
             }
+            
 
             // Find intersections
             foreach(Transform intersectionT in _intersectionContainer.transform)
@@ -108,8 +109,15 @@ namespace RoadGenerator
                 AddIntersection(intersection);
             }
 
+            foreach (Road road in _roads)
+            {
+                road.OnChange();
+            }
+
             // Find the graph container
             GraphContainer = GameObject.Find("Graph");
+            // Update the road system graph
+            UpdateRoadSystemGraph();
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
@@ -151,8 +159,13 @@ namespace RoadGenerator
             }
             return false;
         }
+        void Start()
+        {
+            //Setup();
+        }
         public void UpdateRoadSystemGraph()
         {
+            Debug.Log("Updating road system graph");
             // Clear the graph
             ClearRoadGraph();
             
@@ -164,13 +177,35 @@ namespace RoadGenerator
             }
 
             // Generate a new graph
-            _roadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
+            RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
+
+            List<NavigationNode> nodes = new List<NavigationNode>(RoadSystemGraph.Values);
+
+
+
+            foreach (NavigationNode node in RoadSystemGraph.Values)
+            {
+                
+                foreach (NavigationNode node2 in RoadSystemGraph.Values)
+                {
+                    //Debug.Log("Nodes edges:_" + node2.RoadNode.Position);
+                foreach (NavigationNodeEdge edge in node2.Edges)
+                {
+                  //  Debug.Log(edge.EndNavigationNode.RoadNode.Position);
+                    //Debug.Log("start pos" + node.RoadNode.Position + " end pos" + edge.EndNavigationNode.RoadNode.Position);
+                    //Navigation.GetPathToNode(node, edge.EndNavigationNode);
+                    //Navigation.GetRandomPath(this, edge);
+                }
+                }
+            }
+            
+           
 
             // Display the graph if the setting is active
             if (ShowGraph) {
                 // Create a new empty graph
                 CreateEmptyRoadGraph();
-                RoadSystemNavigationGraph.DrawGraph(this, _roadSystemGraph, _roadSystemGraphNodePrefab);
+                RoadSystemNavigationGraph.DrawGraph(this, RoadSystemGraph, _roadSystemGraphNodePrefab);
             }
                 
         }
@@ -184,7 +219,7 @@ namespace RoadGenerator
         }
 
         private void ClearRoadGraph() {
-            _roadSystemGraph = null;
+            RoadSystemGraph = null;
             if(GraphContainer != null) {
                 DestroyImmediate(GraphContainer);
             }
@@ -207,6 +242,10 @@ namespace RoadGenerator
         public List<Road> Roads 
         {
             get => _roads;
+        }
+        public List<Intersection> Intersections 
+        {
+            get => _intersections;
         }
         void OnDestroy()
         {
