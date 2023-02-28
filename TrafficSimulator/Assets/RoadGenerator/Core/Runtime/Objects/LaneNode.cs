@@ -31,6 +31,15 @@ namespace RoadGenerator
         }
         public bool IsIntersection() => _roadNode.IsIntersection();
 
+        public NavigationNodeEdge GetNavigationEdge()
+        {
+            Debug.Assert(Lane != null, "Lane is null");
+            if (Lane.Type.Side == LaneSide.PRIMARY)
+                return _roadNode.PrimaryNavigationNodeEdge;
+            else 
+                return _roadNode.SecondaryNavigationNodeEdge;
+
+        }
         public RoadNode RoadNode
         {
             get => _roadNode;
