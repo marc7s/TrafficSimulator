@@ -34,7 +34,7 @@ namespace RoadGenerator
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
 
-    [HideInInspector] public Dictionary<string, LaneNode> LaneNodeFromNavigationNode;
+        [HideInInspector] public Dictionary<string, LaneNode> LaneNodeFromNavigationNode;
 
         [HideInInspector] public IntersectionType Type;
 
@@ -392,6 +392,65 @@ namespace RoadGenerator
                 _meshRenderer.sharedMaterials = materials;
             }
         }
+        /// <summary> Maps the navigation for the intersection </summary>
+        public void MapIntersectionNavigation()
+        {
+            LaneNodeFromNavigationNode = new Dictionary<string, LaneNode>();
+            List<Lane> lanes = new List<Lane>();
+            
+            lanes.AddRange(Road1.Lanes);
+            lanes.AddRange(Road2.Lanes);
+            foreach (Lane lane in lanes)
+            {
+                LaneNode currentNode = lane.StartNode;
+                while(currentNode != null)
+                {
+                    // If the node doesn't have an edge, it's either an intersection or an end node
+                    bool isIntersectionOrEnd = currentNode.RoadNode.NavigationNodeEdge == null;
+                    if (isIntersectionOrEnd)
+                    {
+                        currentNode = currentNode.Next;
+                        continue;
+                    }
+
+                    bool isEdgePointingToIntersection = currentNode.RoadNode.NavigationNodeEdge.EndNavigationNode.RoadNode.Position == IntersectionPosition;
+                    // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
+                    if (isEdgePointingToIntersection)
+                    {
+                        currentNode = currentNode.Next;
+                        continue;
+                    }
+                    if (currentNode.Type != RoadNodeType.JunctionEdge)
+                    {
+                        currentNode = currentNode.Next;
+                        continue;
+                    }
+                    // If the node is an anchor point, we map the edge going out of the intersection to the node
+                    if (currentNode.RoadNode.Position == Road1AnchorPoint1)
+                    {
+                        LaneNodeFromNavigationNode.Add(Road1AnchorPoint1NavigationEdge.ID, currentNode);
+                    }
+                    if (currentNode.RoadNode.Position == Road1AnchorPoint2)
+                    {
+                        LaneNodeFromNavigationNode.Add(Road1AnchorPoint2NavigationEdge.ID, currentNode);
+                    }
+                    if (currentNode.RoadNode.Position == Road2AnchorPoint1)
+                    {
+                        LaneNodeFromNavigationNode.Add(Road2AnchorPoint1NavigationEdge.ID, currentNode);
+                    }
+                    if (currentNode.RoadNode.Position == Road2AnchorPoint2)
+                    {
+                        LaneNodeFromNavigationNode.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
+                    }
+                    currentNode = currentNode.Next;
+                }
+            }
+        }
+
+        public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
+        {
+            return LaneNodeFromNavigationNode[navigationNodeEdge.ID];
+        }
 
         /// <summary>Cleans up the intersection and removes the references to it from the road system and roads</summary>
         void OnDestroy()
@@ -409,58 +468,5 @@ namespace RoadGenerator
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
         }
-    public void MapIntersectionConnectionRoadNodes()
-    {
-        LaneNodeFromNavigationNode = new Dictionary<string, LaneNode>();
-        List<Lane> lanes = new List<Lane>();
-        
-        lanes.AddRange(Road1.Lanes);
-        lanes.AddRange(Road2.Lanes);
-        foreach (Lane lane in lanes)
-        {
-            LaneNode currLane1 = lane.StartNode;
-            while(currLane1 != null)
-            {
-                bool isIntersection = currLane1.RoadNode.NavigationNodeEdge == null;
-                if (isIntersection)
-                {
-                    currLane1 = currLane1.Next;
-                    continue;
-                }
-
-                bool isEdgeIntersection = currLane1.RoadNode.NavigationNodeEdge.EndNavigationNode.RoadNode.Position == IntersectionPosition;
-                // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
-                if (isEdgeIntersection)
-                {
-                    currLane1 = currLane1.Next;
-                    continue;
-                }
-
-                if (currLane1.RoadNode.Position == Road1AnchorPoint1)
-                {
-                    LaneNodeFromNavigationNode.Add(Road1AnchorPoint1NavigationEdge.ID, currLane1);
-                }
-                if (currLane1.RoadNode.Position == Road1AnchorPoint2)
-                {
-                    LaneNodeFromNavigationNode.Add(Road1AnchorPoint2NavigationEdge.ID, currLane1);
-                }
-                if (currLane1.RoadNode.Position == Road2AnchorPoint1)
-                {
-                    LaneNodeFromNavigationNode.Add(Road2AnchorPoint1NavigationEdge.ID, currLane1);
-                }
-                if (currLane1.RoadNode.Position == Road2AnchorPoint2)
-                {
-                    LaneNodeFromNavigationNode.Add(Road2AnchorPoint2NavigationEdge.ID, currLane1);
-                }
-                currLane1 = currLane1.Next;
-            }
-        }
-        Debug.Log("Mapped " + LaneNodeFromNavigationNode.Count + " nodes");
-    }
-
-    public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
-    {
-        return LaneNodeFromNavigationNode[navigationNodeEdge.ID];
-    }
     }
 }

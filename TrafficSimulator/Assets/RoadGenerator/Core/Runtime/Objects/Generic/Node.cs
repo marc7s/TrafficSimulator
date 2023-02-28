@@ -107,7 +107,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Reverses the linked nodes. Returns the head of the reversed nodes</summary>
-        public T Reverse()
+        public virtual T Reverse()
         {
             T curr = Copy();
             T prev = null;

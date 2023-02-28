@@ -34,7 +34,7 @@ namespace RoadGenerator
     public class RoadNavigationGraph
     {
         private Road _road;
-        private NavigationNode _startNavigationNode;
+        public NavigationNode StartNavigationNode;
         public Dictionary<string, NavigationNode> Graph = new Dictionary<string, NavigationNode>();
 
         // The nodes that should become part of the navigation graph
@@ -73,8 +73,10 @@ namespace RoadGenerator
                 if (PreviouslyAddedNode == null)
                 {
                     PreviouslyAddedNode = new NavigationNode(curr);
-                    _startNavigationNode = PreviouslyAddedNode;
+                    StartNavigationNode = PreviouslyAddedNode;
                     Graph.Add(curr.Position.ToString(), PreviouslyAddedNode);
+                    if (road.Intersections.Count == 1 && isClosed)
+                        StartNavigationNode.Edges.Add(new NavigationNodeEdge(StartNavigationNode, StartNavigationNode, _currentCost));
                     curr = curr.Next;
                     continue;
                 }
@@ -94,121 +96,12 @@ namespace RoadGenerator
                     
                 curr = curr.Next;
             }
-
-            UpdateIntersectionJunctionEdgeNavigation(start);
-            AddNavigationEdgeToRoadNodes(start);
         }
         private float CalculateCost(float distance, float speedLimit = 1f)
         {
             return distance / speedLimit;
         }
-        private void AddNavigationEdgeToRoadNodes(RoadNode startNode)
-        {
 
-            RoadNode curr = startNode;
-            NavigationNode prevNavigationNode = _startNavigationNode;
-            NavigationNodeEdge navigationEdge = _startNavigationNode.Edges[0];
-            while(curr != null) 
-            {
-                if (curr.IsIntersection())
-                {
-                    if (curr.Type == RoadNodeType.JunctionEdge)
-                    {
-                        Debug.Log("fkjldghslkdfjshgjgkfhldsgjohklfiödsjgklfhdskjldgfs");
-                    }
-                    if (navigationEdge.EndNavigationNode.Edges[0].EndNavigationNode.RoadNode.Position == prevNavigationNode.RoadNode.Position)
-                    {
-                        prevNavigationNode = navigationEdge.EndNavigationNode;
-                        navigationEdge = navigationEdge.EndNavigationNode.Edges[1];
-                    }
-                    else
-                    {
-                        prevNavigationNode = navigationEdge.EndNavigationNode;
-                        navigationEdge = navigationEdge.EndNavigationNode.Edges[0];
-                    }
-                    curr = curr.Next;
-                    continue;
-                }
-                
-                curr.NavigationNodeEdge = navigationEdge;
-                curr = curr.Next;
-            }
-            RoadNode current = startNode;
-            while (current != null)
-            {
-                if (current.IsIntersection())
-                {
-                    current = current.Next;
-                    continue;
-                }
-              //  Debug.Log(current.navigationNodeEdge.EndNavigationNode.RoadNode.Position);
-                current = current.Next;
-            }
-            //Debug.Log("Done");
-        }
-
-        private void UpdateIntersectionJunctionEdgeNavigation(RoadNode startNode)
-        {
-            RoadNode curr = startNode;
-            NavigationNode prevNavigationNode = _startNavigationNode;
-            NavigationNode nextNavigationNode = _startNavigationNode.Edges[0].EndNavigationNode;
-            while(curr != null)
-            {
-                if (curr.IsIntersection())
-                {
-                    if (nextNavigationNode.Edges[0].EndNavigationNode.RoadNode.Position == prevNavigationNode.RoadNode.Position)
-                    {
-                        prevNavigationNode = nextNavigationNode;
-                        nextNavigationNode = nextNavigationNode.Edges[1].EndNavigationNode;
-                    }
-                    else
-                    {
-                        prevNavigationNode = nextNavigationNode;
-                        nextNavigationNode = nextNavigationNode.Edges[0].EndNavigationNode;
-                    }
-                }
-
-                if (curr.Type == RoadNodeType.JunctionEdge)
-                {
-                    foreach (Intersection intersection in _road.Intersections)
-                    {
-                        if (curr.Position == intersection.Road1AnchorPoint1)
-                        {
-                            UpdateAnchorPointNodeEdge(nextNavigationNode, prevNavigationNode, intersection, out intersection.Road1AnchorPoint1NavigationEdge);
-                        }
-                        if (curr.Position == intersection.Road1AnchorPoint2)
-                        {
-                            UpdateAnchorPointNodeEdge(nextNavigationNode, prevNavigationNode, intersection, out intersection.Road1AnchorPoint2NavigationEdge);
-                        }
-                        if (curr.Position == intersection.Road2AnchorPoint1)
-                        {
-                            UpdateAnchorPointNodeEdge(nextNavigationNode, prevNavigationNode, intersection, out intersection.Road2AnchorPoint1NavigationEdge);
-                        }
-                        if (curr.Position == intersection.Road2AnchorPoint2)
-                        {
-                            UpdateAnchorPointNodeEdge(nextNavigationNode, prevNavigationNode, intersection, out intersection.Road2AnchorPoint2NavigationEdge);
-                        }
-                    }
-
-                }
-                curr = curr.Next;
-            }
-        }
-        private static void UpdateAnchorPointNodeEdge(NavigationNode nextNavigationNode, NavigationNode prevNavigationNode, Intersection intersection, out NavigationNodeEdge anchorPoint1NavigationEdgeToUpdate)
-        {
-            bool isNextNodeIntersection = nextNavigationNode.RoadNode.Position == intersection.IntersectionPosition;
-            NavigationNode edgeNode = isNextNodeIntersection ? prevNavigationNode : nextNavigationNode;
-            NavigationNode intersectionNode = isNextNodeIntersection ? nextNavigationNode : prevNavigationNode;
-
-            if (intersectionNode.Edges[0].EndNavigationNode == edgeNode)
-            {
-                anchorPoint1NavigationEdgeToUpdate = intersectionNode.Edges[0];
-            }
-            else
-            {
-                anchorPoint1NavigationEdgeToUpdate = intersectionNode.Edges[1];
-            }
-        }
     }
 
     public static class RoadSystemNavigationGraph
@@ -235,10 +128,14 @@ namespace RoadGenerator
 
             }
             List<NavigationNode> nodes = roadSystemGraph.Values.ToList();
+
+
+
+            
             foreach (Intersection intersection in roadSystem.Intersections)
             {
-                // Map the intersection into the graph
-                intersection.MapIntersectionConnectionRoadNodes(); 
+
+                intersection.MapIntersectionNavigation(); 
               /*  
                 Debug.Log(intersection.Road1AnchorPoint1);
                 Debug.Log(intersection.Road1AnchorPoint1NavigationEdge.EndNavigationNode.RoadNode.Position);

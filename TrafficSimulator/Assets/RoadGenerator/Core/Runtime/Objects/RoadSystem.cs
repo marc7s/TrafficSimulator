@@ -165,7 +165,6 @@ namespace RoadGenerator
         }
         public void UpdateRoadSystemGraph()
         {
-            Debug.Log("Updating road system graph");
             // Clear the graph
             ClearRoadGraph();
             
