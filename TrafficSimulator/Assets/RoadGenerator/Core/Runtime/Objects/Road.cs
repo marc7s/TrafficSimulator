@@ -340,9 +340,9 @@ namespace RoadGenerator
 ///            Debug.Log("Road Nodes: ");
             while(current != null)
             {
-                if (current.IsNavigationNode && !current.IsIntersection())
+                if (current.Type == RoadNodeType.JunctionEdge)
                 {
-                    //Debug.Log(curr.Type);
+                  
                     //Debug.Log("Node: " + current.Position + " is a navigation node");
                 }
                 current = current.Next;
@@ -372,7 +372,7 @@ namespace RoadGenerator
             Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
             
             // Create the new node
-            current = new LaneNode(position, roadNode.Rotation, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, roadNode.Rotation, roadNode, previous, null, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
@@ -437,6 +437,18 @@ namespace RoadGenerator
                 // Create the lanes
                 Lane primaryLane = new Lane(this, primaryCurr.First, new LaneType(LaneSide.PRIMARY, i / 2));
                 Lane secondaryLane = new Lane(this, secondaryCurr.First.Reverse(), new LaneType(LaneSide.SECONDARY, i / 2));
+                LaneNode current = primaryLane.StartNode;
+                while(current != null)
+                {
+                    current.Lane = primaryLane;
+                    current = current.Next;
+                }
+                current = secondaryLane.StartNode;
+                while(current != null)
+                {
+                    current.Lane = secondaryLane;
+                    current = current.Next;
+                }
 
                 // Add the lanes
                 _lanes.Add(primaryLane);

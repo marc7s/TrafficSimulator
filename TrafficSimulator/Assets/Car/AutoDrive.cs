@@ -130,7 +130,7 @@ namespace Car {
                 P_MoveToFirstPosition();
             }
             
-            Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.NavigationNodeEdge, out nodeToFind);
+            Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
         }
 
         void Update()
@@ -346,7 +346,7 @@ namespace Car {
             // Move to the first position of the lane
             transform.position = _startNode.Position;
             transform.rotation = _startNode.Rotation;
-            Path = Navigation.GetRandomPath(Road.RoadSystem, _startNode.RoadNode.NavigationNodeEdge, out nodeToFind);
+            Path = Navigation.GetRandomPath(Road.RoadSystem, _startNode.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
             // TEmoprary
             _prevIntersection = Vector3.zero;
         }
@@ -385,7 +385,7 @@ namespace Car {
             {
                 if (Path.Count == 0)
                 {
-                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.NavigationNodeEdge, out nodeToFind);
+                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
                 }
                 if (Path.Count != 0 && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersection)
                 { 
@@ -397,7 +397,7 @@ namespace Car {
                 }
                 if (Path.Count == 0)
                 {
-                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.NavigationNodeEdge, out nodeToFind);
+                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.PrimaryNavigationNodeEdge, out nodeToFind);
                 }
 
             }

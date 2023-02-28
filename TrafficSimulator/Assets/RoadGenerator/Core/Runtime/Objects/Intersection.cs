@@ -406,14 +406,16 @@ namespace RoadGenerator
                 LaneNode currentNode = lane.StartNode;
                 while(currentNode != null)
                 {
+              
+              //      Debug.Log(currentNode.RoadNode.Type);
                     // If the node doesn't have an edge, it's either an intersection or an end node
-                    if (currentNode.RoadNode.NavigationNodeEdge == null)
+                    if (currentNode.GetNavigationEdge() == null)
                     {
                         currentNode = currentNode.Next;
                         continue;
                     }
 
-                    bool isEdgePointingToIntersection = currentNode.RoadNode.NavigationNodeEdge.EndNavigationNode.RoadNode.Position == IntersectionPosition;
+                    bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
                     if (isEdgePointingToIntersection)
                     {
