@@ -33,6 +33,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
 
     public static class Navigation
     {
+        public static GameObject cube2;
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
         public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNode startNode, NavigationNode endNode)
         {
@@ -70,7 +71,6 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
                     }
                 }
             }
-            Debug.Log("No path found");
             // If a path is not found, return null
             return null;
         }
@@ -103,13 +103,16 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
                 int randomIndex = random.Next(0, nodeList.Count-1);
                 targetNode = nodeList[randomIndex];
             //}
-            GameObject cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            if (cube2 != null)
+            {
+                GameObject.Destroy(cube2);
+            }
+            cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube2.transform.position = targetNode.RoadNode.Position;
             cube2.transform.position = new Vector3(cube2.transform.position.x, cube2.transform.position.y + 10f, cube2.transform.position.z);
             cube2.transform.localScale = new Vector3(5f, 5f, 5f);
             var cubeRenderer = cube2.GetComponent<Renderer>();
-//            cubeRenderer.material.SetColor("_Color", Color.red);
-            Debug.Log("Start Node" + currentEdge.EndNavigationNode.RoadNode.Position +   "Target node: " + targetNode.RoadNode.Position);
+            cubeRenderer.material.SetColor("_Color", Color.red);
             return GetPathToNode(currentEdge.EndNavigationNode, targetNode);
         }
     }
