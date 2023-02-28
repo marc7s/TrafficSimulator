@@ -37,6 +37,7 @@ namespace RoadSystemGenerator
             if(_drivingSide.intValue != (int)roadSystem.DrivingSide)
             {
                 roadSystem.DrivingSide = (DrivingSide)_drivingSide.intValue;
+                roadSystem.UpdateRoads();
             }
 
             if(_spawnRoadsAtOrigin.boolValue != roadSystem.SpawnRoadsAtOrigin)
