@@ -26,7 +26,7 @@ namespace RoadGenerator
             Distance = distance;
             Position = position;
             EndsIntersection = endsIntersection;
-            this.Intersection = intersection;
+            Intersection = intersection;
         }
         public int CompareTo(QueuedNode other)
         {

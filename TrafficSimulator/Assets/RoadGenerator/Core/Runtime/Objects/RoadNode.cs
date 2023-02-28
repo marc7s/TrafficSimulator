@@ -68,19 +68,14 @@ namespace RoadGenerator
         public void AddNavigationEdgeToRoadNodes(NavigationNode startNavigationNode, NavigationNode endNavigationNode, bool isClosed)
         {
             RoadNode curr = this;
-            // If the road is a cycle without any intersections
-            if (startNavigationNode == null || startNavigationNode.Edges.Count == 0)
-            {
-                return;
-            }
-           // Debug.Log("End node: " + endNavigationNode.RoadNode.Position);
-
             NavigationNode prevNavigationNode = startNavigationNode;
             NavigationNodeEdge navigationEdge = startNavigationNode.Edges[0];
+            // Using a sliding window with the start being a navigational node and the end begin the edge pointing in the road direction
             while(curr != null) 
             {
                 if (curr.IsIntersection())
                 {
+                    // We do not want to skip the first node of the road
                     if (curr.Position == startNavigationNode.RoadNode.Position)
                     {
                         curr = curr.Next;

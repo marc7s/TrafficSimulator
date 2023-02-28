@@ -82,11 +82,8 @@ namespace RoadGenerator
                     if (isClosed)
                     {
                         curr.IsNavigationNode = true;
-                        Debug.Log(curr.Type);
                     }
                         
-                    //if (road.Intersections.Count == 1 && isClosed)
-                      //  StartNavigationNode.Edges.Add(new NavigationNodeEdge(StartNavigationNode, StartNavigationNode, _currentCost));
                     curr = curr.Next;
                     continue;
                 }
@@ -128,41 +125,16 @@ namespace RoadGenerator
                 // Map the road into the graph
                 road.UpdateRoad2();
             }
-            
             // Loop through all roads in the road system
             foreach(Road road in roadSystem.Roads)
             {   
                 // Map the road into the graph
                 UpdateGraphForRoad(road, roadSystemGraph);
-
             }
-            List<NavigationNode> nodes = roadSystemGraph.Values.ToList();
-
-
-
-            
             foreach (Intersection intersection in roadSystem.Intersections)
             {
-
                 intersection.MapIntersectionNavigation(); 
-              /*  
-                Debug.Log(intersection.Road1AnchorPoint1);
-                Debug.Log(intersection.Road1AnchorPoint1NavigationEdge.EndNavigationNode.RoadNode.Position);
-                Debug.Log(intersection.Road1AnchorPoint2);
-                Debug.Log(intersection.Road1AnchorPoint2NavigationEdge.EndNavigationNode.RoadNode.Position);
-                Debug.Log(intersection.Road2AnchorPoint1);
-                Debug.Log(intersection.Road2AnchorPoint1NavigationEdge.EndNavigationNode.RoadNode.Position);
-                Debug.Log(intersection.Road2AnchorPoint2);
-                Debug.Log(intersection.Road2AnchorPoint2NavigationEdge.EndNavigationNode.RoadNode.Position);
-                
-                Debug.Log("-------------------");
-                Debug.Log(nodes[0].Edges[0].EndNavigationNode.Edges[0].EndNavigationNode.RoadNode.Position);
-                LaneNode test = intersection.GetNewLaneNode(nodes[0].Edges[0].EndNavigationNode.Edges[0]);
-                Debug.Log(test.Position);
-                */
             }
-
-            
             return roadSystemGraph;
         }
 
@@ -185,7 +157,7 @@ namespace RoadGenerator
                 roadSystemGraph.Add(roadNavigationGraph[i].RoadNode.Position.ToString(), roadNavigationGraph[i]);
             }
         }
-        private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, Vector3 oldNodePosition, NavigationNode endNode)
+        private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, Vector3 oldNodePosition, NavigationNode newNode)
         {
             foreach (NavigationNodeEdge edge in navigationNodeToUpdate.Edges)
             {
@@ -193,7 +165,7 @@ namespace RoadGenerator
                 {
                     if (edge2.EndNavigationNode.RoadNode.Position == oldNodePosition)
                     {
-                        edge2.EndNavigationNode = endNode;
+                        edge2.EndNavigationNode = newNode;
                     }
                 }
             }

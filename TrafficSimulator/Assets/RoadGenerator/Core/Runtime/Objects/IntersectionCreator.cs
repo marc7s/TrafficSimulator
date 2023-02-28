@@ -204,7 +204,7 @@ namespace RoadGenerator
                     road2AnchorPoint1 = road2AnchorPoint2;
                 
                 // For three way intersections Road2 will only have one anchor point, so we zero out the other one to avoid hard to find bugs if the wrong one is used
-                road2AnchorPoint2 = new Vector3(-100, -10000, -1000);
+                road2AnchorPoint2 = Vector3.zero;
             }
 
             IntersectionPointData intersectionPointData = new IntersectionPointData(
@@ -290,7 +290,6 @@ namespace RoadGenerator
         /// <summary>Splits a path on a point</summary>
         static void SplitPathOnPoint(PathCreator pathCreator, Vector3 anchorPoint, int segmentIndex)
         {
-            Debug.Log("Splitting path on point: " + segmentIndex);
             pathCreator.bezierPath.SplitSegment(anchorPoint, segmentIndex, pathCreator.path.GetClosestTimeOnPath(anchorPoint));
         }
  
