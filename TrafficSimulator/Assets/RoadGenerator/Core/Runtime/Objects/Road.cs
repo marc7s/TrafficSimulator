@@ -327,6 +327,27 @@ namespace RoadGenerator
             _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
         }
 
+        /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
+        private (LaneNode, LaneNode) AddLaneNode(RoadNode roadNode, LaneNode previous, LaneNode current, bool isPrimary)
+        {
+            // Determine the offset direction
+            int direction = (int)RoadSystem.DrivingSide * (isPrimary ? 1 : -1);
+
+            // Update the previous node since we are adding a new one
+            previous = current;
+
+            // Calculate the position of the new node
+            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
+            
+            // Create the new node
+            current = new LaneNode(position, roadNode.Rotation, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            
+            // Update the next pointer of the previous node to the newly created node
+            previous.Next = current;
+
+            return (previous, current);
+        }
+
         /// <summary>Updates the lanes</summary>
         private void UpdateLanes()
         {
@@ -339,34 +360,59 @@ namespace RoadGenerator
             // Remove all lanes
             _lanes.Clear();
 
-            // The primary lane starts with the first road node, but since the secondary lane goes in the opposite direction it starts with the last road node
-            RoadNode primaryLaneNodeStart = _start;
-            RoadNode secondaryLaneNodeStart = _start.Reverse();
+            List<LaneNode> primaryLaneNodes = new List<LaneNode>();
+            List<LaneNode> secondaryLaneNodes = new List<LaneNode>();
 
-            // Create the lanes
+            RoadNode currRoadNode = _start;
+            // The list that will contain a pair of (PrevNode, CurrNode) used when creating the lane nodes
+            List<(LaneNode, LaneNode)> laneNodes = new List<(LaneNode, LaneNode)>();
+
+            // Add start nodes for every lane
             for(int i = 0; i < laneCount; i++)
             {
-                // Get the center path of the road
-                BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
-                
-                // Create a primary (same direction as driving side) lane path
-                BezierPath primaryLaneBezierPath = path.OffsetInNormalDirection(-drivingSide * LaneWidth * (i + 0.5f), transform, LaneVertexSpacing);
-                VertexPath primaryLaneVertexPath = new VertexPath(primaryLaneBezierPath, transform, LaneVertexSpacing);
+                // Primary lane node
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth / 2, currRoadNode.Rotation, currRoadNode, 0)));
 
-                // Create a secondary (opposite direction as driving side) lane path that is reversed so that it goes in the opposite direction to the primary lane
-                BezierPath secondaryLaneBezierPath = path.OffsetInNormalDirection(drivingSide * LaneWidth * (i + 0.5f), transform, LaneVertexSpacing, true);
-                VertexPath secondaryLaneVertexPath = new VertexPath(secondaryLaneBezierPath, transform, LaneVertexSpacing);
-                
-                // Create the primary and secondary lanes
-                Lane primaryLane = new Lane(this, primaryLaneNodeStart, new LaneType(LaneSide.PRIMARY, i), primaryLaneVertexPath);
-                Lane secondaryLane = new Lane(this, secondaryLaneNodeStart, new LaneType(LaneSide.SECONDARY, i), secondaryLaneVertexPath);
+                // Secondary lane node
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth / 2, currRoadNode.Rotation, currRoadNode, 0)));
+            }
+            
+            // Go through all road nodes and add the corresponding lane nodes
+            while(currRoadNode != null)
+            {
+                // For every road node, add a pair of lane nodes for each lane. If the road has three lanes, each iteration will add two lane nodes and in total after
+                // the execution of this for loop there will have been 6 lane nodes added
+                for(int i = 0; i < laneNodes.Count; i += 2)
+                {
+                    // Get the current nodes from the list
+                    (LaneNode primaryPrev, LaneNode primaryCurr) = laneNodes[i];
+                    (LaneNode secondaryPrev, LaneNode secondaryCurr) = laneNodes[i + 1];
 
-                // Add the lanes to the list
+                    // Add the new nodes and update the list
+                    laneNodes[i] = AddLaneNode(currRoadNode, primaryPrev, primaryCurr, true);
+                    laneNodes[i + 1] = AddLaneNode(currRoadNode, secondaryPrev, secondaryCurr, false);
+                }
+                currRoadNode = currRoadNode.Next;
+            }
+
+            // Create the lanes
+            for(int i = 0; i < laneNodes.Count; i +=2)
+            {
+                // Get the final nodes from the list
+                (LaneNode primaryPrev, LaneNode primaryCurr) = laneNodes[i];
+                (LaneNode secondaryPrev, LaneNode secondaryCurr) = laneNodes[i + 1];
+
+                // Create the lanes
+                Lane primaryLane = new Lane(this, primaryCurr.First, new LaneType(LaneSide.PRIMARY, i / 2));
+                Lane secondaryLane = new Lane(this, secondaryCurr.First.Reverse(), new LaneType(LaneSide.SECONDARY, i / 2));
+
+                // Add the lanes
                 _lanes.Add(primaryLane);
                 _lanes.Add(secondaryLane);
             }
         }
 
+        /// <summary>Draws the lanes as coloured lines</summary>
         public void ShowLanes()
         {
             if(_laneContainer == null)
@@ -401,6 +447,7 @@ namespace RoadGenerator
             }
         }
 
+        /// <summary> Displays all lane nodes as coloured spheres </summary>
         public void ShowLaneNodes()
         {
             if(_laneNodeContainer == null)
@@ -440,6 +487,7 @@ namespace RoadGenerator
                         i++;
                     }
 
+                    // Draw the lane node pointers from each lane node to its corresponding road node if the setting is enabled
                     if(DrawLaneNodePointers)
                     {
                         DrawAllLaneNodePointers(lane.StartNode, Color.cyan, _laneNodeContainer);
@@ -448,6 +496,7 @@ namespace RoadGenerator
             }
         }
 
+        /// <summary> Displays all road nodes as coloured spheres </summary>
         public void ShowRoadNodes()
         {
             if(_roadNodeContainer == null)
