@@ -100,7 +100,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             NavigationNode targetNode = currentEdge.EndNavigationNode;
             //while(targetNode == currentEdge.EndNavigationNode)
             //{
-                int randomIndex = random.Next(0, nodeList.Count-1);
+                int randomIndex = random.Next(0, nodeList.Count);
                 targetNode = nodeList[randomIndex];
             //}
             if (cube2 != null)
@@ -114,7 +114,39 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             var cubeRenderer = cube2.GetComponent<Renderer>();
             cubeRenderer.material.SetColor("_Color", Color.red);
             nodeToFind = targetNode;
-            return GetPathToNode(currentEdge.EndNavigationNode, targetNode);
+            Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
+            if (path.Count < 2)
+            {
+                return GetRandomPath(roadSystem, currentEdge, out nodeToFind);
+            }
+            //DrawNavigationPath(path);
+            return path;
+        }
+
+        public static void DrawNavigationPath(Stack<NavigationNodeEdge> path, GameObject container = null)
+        {
+            foreach (Transform child in container.transform)
+            {
+                GameObject.Destroy(child.gameObject);
+            }
+
+            foreach (NavigationNodeEdge edge in path)
+            {
+                HighLightEdge(edge, container);
+            }
+        }
+
+        public static void HighLightEdge(NavigationNodeEdge edge, GameObject container)
+        {
+            RoadNode current = edge.StartNavigationNode.RoadNode;
+            List<Vector3> positions = new List<Vector3>();
+            while (current != null)
+            {
+                positions.Add(current.Position);
+                current = current.Next;
+            }
+            lineDrawer.DrawDebugLine(positions, Color.green, 10f, container);
+           // Debug.DrawLine(edge.StartNavigationNode.RoadNode.Position, edge.EndNavigationNode.RoadNode.Position, Color.green, 100f);
         }
     }
 }

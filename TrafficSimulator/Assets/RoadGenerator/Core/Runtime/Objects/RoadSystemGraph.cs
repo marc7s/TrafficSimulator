@@ -170,6 +170,7 @@ namespace RoadGenerator
                 }
             }
         }
+        
          /// <summary> Draws the graph </summary>
         public static void DrawGraph(RoadSystem roadSystem, Dictionary<string, NavigationNode> roadGraph, GameObject graphNodePrefab)
         {
@@ -195,7 +196,7 @@ namespace RoadGenerator
                 }
 
                 // Draw the lines between the graph nodes
-                DrawDebugLine(graphNodePositions, color: Color.blue, width: EDGE_LINE_WIDTH, parent: nodeObject.gameObject);
+                lineDrawer.DrawDebugLine(graphNodePositions, color: Color.blue, width: EDGE_LINE_WIDTH, parent: nodeObject.gameObject);
             }
         }
         /// <summary>Return a vertically transposed vector for creating the graph above the road system</summary>
@@ -203,28 +204,13 @@ namespace RoadGenerator
         {
             return vector + Vector3.up * GRAPH_LIFT;
         }
-        /// <summary>Helper function that performs the drawing of a lane's path</summary>
-        private static void DrawLanePath(GameObject line, List<Vector3> lane, Color color, float width = 0.5f)
-        {
-            // Get the line renderer
-            LineRenderer lr = line.GetComponent<LineRenderer>();
 
-            // Give it a material
-            lr.sharedMaterial = new Material(Shader.Find("Standard"));
+       
 
-            // Give it a color
-            lr.sharedMaterial.SetColor("_Color", color);
-            
-            // Give it a width
-            lr.startWidth = width;
-            lr.endWidth = width;
-            
-            // Set the positions
-            lr.positionCount = lane.Count;
-            lr.SetPositions(lane.ToArray());
-        }
-
-        #nullable enable
+    }
+    public static class lineDrawer
+    {
+         #nullable enable
         /// <summary>Draws a line, used for debugging</summary>
         public static void DrawDebugLine(List<Vector3> line, Color? color = null, float width = 0.5f, GameObject? parent = null)
         {
@@ -245,6 +231,28 @@ namespace RoadGenerator
             DrawLanePath(lineObject, line, color: color ?? Color.red, width: width);
         }
         #nullable disable
+                /// <summary>Helper function that performs the drawing of a lane's path</summary>
+        private static void DrawLanePath(GameObject line, List<Vector3> lane, Color color, float width = 0.5f)
+        {
+            // Get the line renderer
+            LineRenderer lr = line.GetComponent<LineRenderer>();
+
+            // Give it a material
+            lr.sharedMaterial = new Material(Shader.Find("Standard"));
+
+            // Give it a color
+            lr.sharedMaterial.SetColor("_Color", color);
+            
+            // Give it a width
+            lr.startWidth = width;
+            lr.endWidth = width;
+            
+            // Set the positions
+            lr.positionCount = lane.Count;
+            lr.SetPositions(lane.ToArray());
+        }
+
     }
+    
     }
     
