@@ -55,6 +55,21 @@ namespace RoadGenerator
             }
         }
 
+        /// <summary>Returns the first node in the linked list</summary>
+        public T First
+        {
+            get
+            {
+                T curr = (T)this;
+                
+                while(curr.Prev != null)
+                {
+                    curr = curr.Prev;
+                }
+                return curr;
+            }
+        }
+
         /// <summary>Returns the last node in the linked list</summary>
         public T Last
         {

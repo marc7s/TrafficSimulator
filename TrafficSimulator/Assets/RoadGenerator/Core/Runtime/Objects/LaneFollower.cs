@@ -14,10 +14,13 @@ namespace RoadGenerator
         [Header("Follower settings")]
         [SerializeField] private EndOfPathInstruction _endOfPathInstruction;
         [SerializeField] private float _speed = 15;
-        private float _distanceTravelled;
+        [SerializeField] private float _rotationSpeed = 15;
 
         private Lane _lane;
         private float _height = 0;
+        private LaneNode _start;
+        private LaneNode _end;
+        private LaneNode _target;
 
         void Start() {
             if (_road != null)
@@ -40,17 +43,37 @@ namespace RoadGenerator
                 
                 // Get the lane from the road
                 _lane = _road.Lanes[_laneIndex];
+
+                _start = _lane.StartNode;
+                _end = _start.Last;
+                _target = _lane.StartNode;
+                TeleportToFirstPosition();
             }
         }
 
         void Update()
         {
-            if (_lane != null)
+            Vector3 targetPosition = Vector3.MoveTowards(transform.position, _target.Position, _speed * Time.deltaTime);
+            Quaternion targetRotation = Quaternion.RotateTowards(transform.rotation, _target.Rotation, _rotationSpeed * _speed * Time.deltaTime);
+            
+            if(transform.position == targetPosition && !(_endOfPathInstruction == EndOfPathInstruction.Stop && _target == _end)) 
             {
-                _distanceTravelled += _speed * Time.deltaTime;
-                transform.position = _lane.GetPositionAtDistance(_distanceTravelled, _endOfPathInstruction) + _height / 2 * Vector3.up;
-                transform.rotation = _lane.GetRotationAtDistance(_distanceTravelled, _endOfPathInstruction);
+                _target = _target.Next != null ? _target.Next : _start;
+
+                if(_target == _start && _endOfPathInstruction == EndOfPathInstruction.Loop) 
+                {
+                    TeleportToFirstPosition();
+                    return;
+                }
             }
+            transform.position = targetPosition;
+            transform.rotation = targetRotation;
+        }
+
+        void TeleportToFirstPosition()
+        {
+            transform.position = _start.Position;
+            transform.rotation = _start.Rotation;
         }
     }
 }
