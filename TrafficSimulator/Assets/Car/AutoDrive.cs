@@ -370,7 +370,7 @@ namespace Car {
             }
             transform.position = targetPosition;
             transform.rotation = targetRotation;
-            Debug.Log(_target.RoadNode.IsNavigationNode);
+          //  Debug.Log(_target.RoadNode.IsNavigationNode);
             if (!_target.IsIntersection() && _target.RoadNode.IsNavigationNode)
             {
                 Debug.Log("NavigationNode" + _target.RoadNode.Position);

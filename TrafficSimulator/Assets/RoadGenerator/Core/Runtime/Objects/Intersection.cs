@@ -34,7 +34,7 @@ namespace RoadGenerator
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
 
-        [HideInInspector] public Dictionary<string, LaneNode> LaneNodeFromNavigationNode;
+        [HideInInspector] public Dictionary<string, LaneNode> LaneNodeFromNavigationNodeEdge;
 
         [HideInInspector] public IntersectionType Type;
 
@@ -395,26 +395,19 @@ namespace RoadGenerator
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
-            
-            LaneNodeFromNavigationNode = new Dictionary<string, LaneNode>();
+            // Map the lane node to take in order to get to the navigation node edge
+            LaneNodeFromNavigationNodeEdge = new Dictionary<string, LaneNode>();
             List<Lane> lanes = new List<Lane>();
             
             lanes.AddRange(Road1.Lanes);
             lanes.AddRange(Road2.Lanes);
-
-          /*  Debug.Log(Road1AnchorPoint1);
-            Debug.Log(Road1AnchorPoint2);
-            Debug.Log(Road2AnchorPoint1);
-            Debug.Log(Road2AnchorPoint2);
-            */
             foreach (Lane lane in lanes)
             {
                 LaneNode currentNode = lane.StartNode;
                 while(currentNode != null)
                 {
                     // If the node doesn't have an edge, it's either an intersection or an end node
-                    bool isIntersectionOrEnd = currentNode.RoadNode.NavigationNodeEdge == null;
-                    if (isIntersectionOrEnd)
+                    if (currentNode.RoadNode.NavigationNodeEdge == null)
                     {
                         currentNode = currentNode.Next;
                         continue;
@@ -436,19 +429,20 @@ namespace RoadGenerator
                     // If the node is an anchor point, we map the edge going out of the intersection to the node
                     if (currentNode.RoadNode.Position == Road1AnchorPoint1)
                     {
-                        LaneNodeFromNavigationNode.Add(Road1AnchorPoint1NavigationEdge.ID, currentNode);
+                        LaneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint1NavigationEdge.ID, currentNode);
                     }
                     if (currentNode.RoadNode.Position == Road1AnchorPoint2)
                     {
-                        LaneNodeFromNavigationNode.Add(Road1AnchorPoint2NavigationEdge.ID, currentNode);
+                        LaneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint2NavigationEdge.ID, currentNode);
                     }
                     if (currentNode.RoadNode.Position == Road2AnchorPoint1)
                     {
-                        LaneNodeFromNavigationNode.Add(Road2AnchorPoint1NavigationEdge.ID, currentNode);
+                        LaneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint1NavigationEdge.ID, currentNode);
                     }
-                    if (currentNode.RoadNode.Position == Road2AnchorPoint2)
+                    // If the intersection is a three way intersection, the second anchor point does not exist
+                    if (!IsThreeWayIntersection() && currentNode.RoadNode.Position == Road2AnchorPoint2)
                     {
-                        LaneNodeFromNavigationNode.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
+                        LaneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
                     }
                     currentNode = currentNode.Next;
                 }
@@ -456,10 +450,14 @@ namespace RoadGenerator
 
             
         }
-
+        private bool IsThreeWayIntersection()
+        {
+            return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
+        }
+        /// <summary> Get the lane node that leads to the navigation node edge </summary>
         public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
         {
-            return LaneNodeFromNavigationNode[navigationNodeEdge.ID];
+            return LaneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
         }
 
         /// <summary>Cleans up the intersection and removes the references to it from the road system and roads</summary>
