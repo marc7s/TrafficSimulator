@@ -72,14 +72,19 @@ namespace RoadGenerator
                     StartNavigationNode.Edges.Add(new NavigationNodeEdge(PreviouslyAddedNode, StartNavigationNode, _currentCost));
                     break;
                 }
-                    
+            
                 // If the current node is the first node to be added
                 if (PreviouslyAddedNode == null)
                 {
                     PreviouslyAddedNode = new NavigationNode(curr);
                     StartNavigationNode = PreviouslyAddedNode;
                     Graph.Add(curr.Position.ToString(), PreviouslyAddedNode);
-                    curr.IsNavigationNode = true;
+                    if (isClosed)
+                    {
+                        curr.IsNavigationNode = true;
+                        Debug.Log(curr.Type);
+                    }
+                        
                     //if (road.Intersections.Count == 1 && isClosed)
                       //  StartNavigationNode.Edges.Add(new NavigationNodeEdge(StartNavigationNode, StartNavigationNode, _currentCost));
                     curr = curr.Next;
@@ -95,7 +100,6 @@ namespace RoadGenerator
                     graphNode.Edges.Add(new NavigationNodeEdge(PreviouslyAddedNode, graphNode, _currentCost));
                     PreviouslyAddedNode = graphNode;
                     _currentCost = 0f;
-                    curr.IsNavigationNode = true;
                 }
                 curr = curr.Next;
             }

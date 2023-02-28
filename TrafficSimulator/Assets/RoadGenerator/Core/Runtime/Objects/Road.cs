@@ -335,20 +335,19 @@ namespace RoadGenerator
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(_start, this, path.IsClosed);
             _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, _navigationGraph.EndNavigationNode, path.IsClosed); 
-            /*
-        RoadNode current = _start;
+        
+            RoadNode current = _start;
+///            Debug.Log("Road Nodes: ");
             while(current != null)
             {
-                if (current.Type == RoadNodeType.JunctionEdge )
+                if (current.IsNavigationNode && !current.IsIntersection())
                 {
-                Debug.Log(current.Type);
-                Debug.Log(current.Position);
-                Debug.Log(current.NavigationNodeEdge);
+                    //Debug.Log(curr.Type);
+                    //Debug.Log("Node: " + current.Position + " is a navigation node");
                 }
-
                 current = current.Next;
             }
-            */
+            
             if(Intersections.Count > 0)
             {
                 // Update the navigation graph with the intersections

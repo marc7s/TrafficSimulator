@@ -370,15 +370,25 @@ namespace Car {
             }
             transform.position = targetPosition;
             transform.rotation = targetRotation;
+            Debug.Log(_target.RoadNode.IsNavigationNode);
             if (!_target.IsIntersection() && _target.RoadNode.IsNavigationNode)
             {
-                //if (Path.Count != 0)
-                //   Path.Pop();
+                Debug.Log("NavigationNode" + _target.RoadNode.Position);
+                if (Path.Count != 0)
+                {
+                   Path.Pop();
+                   _prevIntersection = Vector3.zero; 
+                }
+                   
             }
             if (_target.Type == RoadNodeType.JunctionEdge)
             {
+                if (Path.Count == 0)
+                {
+                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.NavigationNodeEdge, out nodeToFind);
+                }
                 if (Path.Count != 0 && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersection)
-                {   
+                { 
                     NavigationNodeEdge temp = Path.Pop();
                     nodeToFind = temp.EndNavigationNode;
                     _target = _target.RoadNode.Intersection.GetNewLaneNode(temp);
@@ -389,6 +399,7 @@ namespace Car {
                 {
                     Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.NavigationNodeEdge, out nodeToFind);
                 }
+
             }
         }
 
