@@ -395,11 +395,18 @@ namespace RoadGenerator
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
+            
             LaneNodeFromNavigationNode = new Dictionary<string, LaneNode>();
             List<Lane> lanes = new List<Lane>();
             
             lanes.AddRange(Road1.Lanes);
             lanes.AddRange(Road2.Lanes);
+
+          /*  Debug.Log(Road1AnchorPoint1);
+            Debug.Log(Road1AnchorPoint2);
+            Debug.Log(Road2AnchorPoint1);
+            Debug.Log(Road2AnchorPoint2);
+            */
             foreach (Lane lane in lanes)
             {
                 LaneNode currentNode = lane.StartNode;
@@ -425,6 +432,7 @@ namespace RoadGenerator
                         currentNode = currentNode.Next;
                         continue;
                     }
+
                     // If the node is an anchor point, we map the edge going out of the intersection to the node
                     if (currentNode.RoadNode.Position == Road1AnchorPoint1)
                     {
@@ -445,6 +453,8 @@ namespace RoadGenerator
                     currentNode = currentNode.Next;
                 }
             }
+
+            
         }
 
         public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)

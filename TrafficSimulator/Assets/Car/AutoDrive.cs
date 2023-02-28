@@ -70,6 +70,7 @@ namespace Car {
         private LaneNode _endNode;
         private LaneNode _currentNode;
         private Vector3 _prevIntersection;
+        private NavigationNode nodeToFind;
         public Stack<NavigationNodeEdge> Path { get; set; }
 
         public LaneNode CustomStartNode = null;
@@ -77,7 +78,7 @@ namespace Car {
         void Start()
         {
             // TEMPORARY FOR DEBUGGING
-            _road.RoadSystem.Setup();
+            Road.RoadSystem.Setup();
 
             _vehicleController = GetComponent<VehicleController>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
@@ -128,10 +129,8 @@ namespace Car {
                 rigidbody.useGravity = false;
                 P_MoveToFirstPosition();
             }
-            Debug.Log(_target.Next.Type);
-            Debug.Log(_target.Position);
-            Debug.Log(_target.RoadNode.NavigationNodeEdge.EndNavigationNode.RoadNode.Position);
-            Path = Navigation.GetRandomPath(_road.RoadSystem, _target.RoadNode.NavigationNodeEdge);
+            
+            Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.NavigationNodeEdge, out nodeToFind);
         }
 
         void Update()
@@ -347,7 +346,7 @@ namespace Car {
             // Move to the first position of the lane
             transform.position = _startNode.Position;
             transform.rotation = _startNode.Rotation;
-            Path = Navigation.GetRandomPath(_road.RoadSystem, _startNode.RoadNode.NavigationNodeEdge);
+            Path = Navigation.GetRandomPath(Road.RoadSystem, _startNode.RoadNode.NavigationNodeEdge, out nodeToFind);
             // TEmoprary
             _prevIntersection = Vector3.zero;
         }
@@ -365,20 +364,30 @@ namespace Car {
 
                 if(_target == _startNode && _roadEndBehaviour == RoadEndBehaviour.Loop) 
                 {
-                    P_MoveToFirstPosition();
+                    //P_MoveToFirstPosition();
                     return;
                 }
             }
             transform.position = targetPosition;
             transform.rotation = targetRotation;
+            if (!_target.IsIntersection() && _target.RoadNode.IsNavigationNode)
+            {
+                //if (Path.Count != 0)
+                //   Path.Pop();
+            }
             if (_target.Type == RoadNodeType.JunctionEdge)
             {
-               
                 if (Path.Count != 0 && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersection)
                 {   
                     NavigationNodeEdge temp = Path.Pop();
+                    nodeToFind = temp.EndNavigationNode;
                     _target = _target.RoadNode.Intersection.GetNewLaneNode(temp);
+                    _startNode = _target.Lane.StartNode;
                     _prevIntersection = _target.RoadNode.Intersection.IntersectionPosition;
+                }
+                if (Path.Count == 0)
+                {
+                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.RoadNode.NavigationNodeEdge, out nodeToFind);
                 }
             }
         }

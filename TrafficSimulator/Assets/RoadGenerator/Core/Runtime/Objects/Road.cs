@@ -334,13 +334,30 @@ namespace RoadGenerator
             }
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(_start, this, path.IsClosed);
+            _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, _navigationGraph.EndNavigationNode, path.IsClosed); 
+            /*
+        RoadNode current = _start;
+            while(current != null)
+            {
+                if (current.Type == RoadNodeType.JunctionEdge )
+                {
+                Debug.Log(current.Type);
+                Debug.Log(current.Position);
+                Debug.Log(current.NavigationNodeEdge);
+                }
+
+                current = current.Next;
+            }
+            */
             if(Intersections.Count > 0)
             {
                 // Update the navigation graph with the intersections
-                _start.UpdateIntersectionJunctionEdgeNavigation(_navigationGraph.StartNavigationNode, this);
+                _start.UpdateIntersectionJunctionEdgeNavigation(this);
             }
+    
+
+             
             
-            _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode);    
         }
 
         /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
