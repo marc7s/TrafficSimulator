@@ -91,7 +91,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             return path;
         }
 
-        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge)
+        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind)
         {
             //roadSystem.Setup();
             List<NavigationNode> nodeList = new List<NavigationNode>();
@@ -113,6 +113,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             cube2.transform.localScale = new Vector3(5f, 5f, 5f);
             var cubeRenderer = cube2.GetComponent<Renderer>();
             cubeRenderer.material.SetColor("_Color", Color.red);
+            nodeToFind = targetNode;
             return GetPathToNode(currentEdge.EndNavigationNode, targetNode);
         }
     }

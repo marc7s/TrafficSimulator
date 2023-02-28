@@ -15,7 +15,7 @@ namespace RoadGenerator
         public double Cost;
         public NavigationNodeEdge(NavigationNode endNode, NavigationNode startNode, double cost)
         {
-            ID = RoadGenerator.ID.GetRandomID(15);
+            ID = System.Guid.NewGuid().ToString();
             EndNavigationNode = endNode;
             StartNavigationNode = startNode;
             Cost = cost;
@@ -35,6 +35,7 @@ namespace RoadGenerator
     {
         private Road _road;
         public NavigationNode StartNavigationNode;
+        public NavigationNode EndNavigationNode;
         public Dictionary<string, NavigationNode> Graph = new Dictionary<string, NavigationNode>();
 
         // The nodes that should become part of the navigation graph
@@ -52,9 +53,7 @@ namespace RoadGenerator
             RoadNode start = roadNode;
             RoadNode curr = roadNode;
             NavigationNode PreviouslyAddedNode = null;
-            // If it is an closed road we don't want to add the start node to the graph, so we skip it
-            if (isClosed)
-                curr = curr.Next;
+
             while (curr != null)
             {
                 // Increase the current cost if the current node is not the starting node
@@ -67,21 +66,25 @@ namespace RoadGenerator
                     continue;
                 }
                 // In a closed loop we never want to add the end node, so we skip it
-                if (curr.Type == RoadNodeType.End && isClosed)
-                    return;
+                if (curr.Type == RoadNodeType.End && isClosed && PreviouslyAddedNode != null)
+                {
+                    PreviouslyAddedNode.Edges.Add(new NavigationNodeEdge(StartNavigationNode, PreviouslyAddedNode, _currentCost));
+                    StartNavigationNode.Edges.Add(new NavigationNodeEdge(PreviouslyAddedNode, StartNavigationNode, _currentCost));
+                    break;
+                }
+                    
                 // If the current node is the first node to be added
                 if (PreviouslyAddedNode == null)
                 {
                     PreviouslyAddedNode = new NavigationNode(curr);
                     StartNavigationNode = PreviouslyAddedNode;
                     Graph.Add(curr.Position.ToString(), PreviouslyAddedNode);
-                    if (road.Intersections.Count == 1 && isClosed)
-                        StartNavigationNode.Edges.Add(new NavigationNodeEdge(StartNavigationNode, StartNavigationNode, _currentCost));
+                    curr.IsNavigationNode = true;
+                    //if (road.Intersections.Count == 1 && isClosed)
+                      //  StartNavigationNode.Edges.Add(new NavigationNodeEdge(StartNavigationNode, StartNavigationNode, _currentCost));
                     curr = curr.Next;
                     continue;
                 }
-
-
                 string key = curr.Position.ToString();
                 if(!Graph.ContainsKey(key))
                 {
@@ -92,10 +95,12 @@ namespace RoadGenerator
                     graphNode.Edges.Add(new NavigationNodeEdge(PreviouslyAddedNode, graphNode, _currentCost));
                     PreviouslyAddedNode = graphNode;
                     _currentCost = 0f;
+                    curr.IsNavigationNode = true;
                 }
-                    
                 curr = curr.Next;
             }
+            EndNavigationNode = PreviouslyAddedNode;
+            
         }
         private float CalculateCost(float distance, float speedLimit = 1f)
         {
@@ -264,17 +269,6 @@ namespace RoadGenerator
             DrawLanePath(lineObject, line, color: color ?? Color.red, width: width);
         }
         #nullable disable
-    }
-    public static class ID
-    {
-        private static System.Random random = new System.Random();
-
-        public static string GetRandomID(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
     }
     }
     

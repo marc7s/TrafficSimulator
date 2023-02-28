@@ -8,8 +8,10 @@ namespace RoadGenerator
     {
         private RoadNode _roadNode;
         private Vehicle _vehicle;
+
+        public Lane Lane;
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
-        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, float distanceToPrevNode) : this(position, rotation, roadNode, null, null, distanceToPrevNode){}
+        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, float distanceToPrevNode) : this(position, rotation, roadNode, null, null, null, distanceToPrevNode){}
         
         /// <summary>Creates a new lane node</summary>
         /// <param name="position">The position of the node</param>
@@ -17,13 +19,14 @@ namespace RoadGenerator
         /// <param name="roadNode">The road node this lane node relates to</param>
         /// <param name="prev">The previous lane node. Pass `null` if there is no previous</param>
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
-        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode)
+        public LaneNode(Vector3 position, Quaternion rotation, RoadNode roadNode, LaneNode prev, LaneNode next, Lane lane, float distanceToPrevNode)
         {
             _position = position;
             _rotation = rotation;
             _roadNode = roadNode;
             _prev = prev;
             _next = next;
+            this.Lane = lane;
             _distanceToPrevNode = distanceToPrevNode;
         }
         public bool IsIntersection() => _roadNode.IsIntersection();
@@ -43,7 +46,7 @@ namespace RoadGenerator
 
         public override LaneNode Copy()
         {
-            return new LaneNode(_position, _rotation, _roadNode, _prev, _next, _distanceToPrevNode);
+             return new LaneNode(_position, _rotation, _roadNode, _prev, _next, Lane, _distanceToPrevNode);
         }
         
         /// <summary>Tries to assign a vehicle to this node. Returns `true` if it succeded, `false` if there is already a vehicle assigned</summary>
