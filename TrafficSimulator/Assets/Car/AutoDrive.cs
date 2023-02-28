@@ -69,11 +69,16 @@ namespace Car {
         private LaneNode _startNode;
         private LaneNode _endNode;
         private LaneNode _currentNode;
+        private Intersection _prevIntersection;
+        public Stack<NavigationNodeEdge> Path { get; set; }
 
         public LaneNode CustomStartNode = null;
 
         void Start()
         {
+            // TEMPORARY FOR DEBUGGING
+            _road.RoadSystem.Setup();
+            
             _vehicleController = GetComponent<VehicleController>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
             
@@ -123,6 +128,8 @@ namespace Car {
                 rigidbody.useGravity = false;
                 P_MoveToFirstPosition();
             }
+            Path = Navigation.GetRandomPath(_road.RoadSystem, _target.RoadNode.NavigationNodeEdge);
+            Debug.Log("Path: " + Path.Count);
         }
 
         void Update()
@@ -338,6 +345,7 @@ namespace Car {
             // Move to the first position of the lane
             transform.position = _startNode.Position;
             transform.rotation = _startNode.Rotation;
+            Path = Navigation.GetRandomPath(_road.RoadSystem, _startNode.RoadNode.NavigationNodeEdge);
         }
 
         private void P_MoveToNextPosition()
@@ -359,6 +367,18 @@ namespace Car {
             }
             transform.position = targetPosition;
             transform.rotation = targetRotation;
+            if (_target.Type == RoadNodeType.JunctionEdge)
+            {
+               
+                if (Path.Count != 0 && _target.RoadNode.Intersection != _prevIntersection)
+                {
+                     Debug.Log("Junction");
+                    NavigationNodeEdge temp = Path.Pop();
+                    _target = _target.RoadNode.Intersection.GetNewLaneNode(temp);
+                    _prevIntersection = _target.RoadNode.Intersection;
+                }
+
+            }
         }
 
         private Vector3 P_GetLerpPosition(Vector3 target)
