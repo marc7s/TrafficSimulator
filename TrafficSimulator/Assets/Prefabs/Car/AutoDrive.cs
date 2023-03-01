@@ -208,7 +208,7 @@ namespace Car {
         private void Q_TeleportToLane()
         {
             // Move it to the current position, offset in the opposite direction of the lane
-            transform.position = _currentNode.Position - (2 * (_currentNode.Rotation * Vector3.forward).normalized);
+            transform.position = _currentNode.Position - (_currentNode.Rotation * Vector3.forward * _vehicleLength / 2);
             
             // Rotate it to face the current position
             transform.rotation = _currentNode.Rotation;
