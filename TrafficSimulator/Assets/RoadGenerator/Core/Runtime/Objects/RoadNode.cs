@@ -92,7 +92,8 @@ namespace RoadGenerator
                     if (nextNavigationNode.Edges.Count < 2)
                     {
                         curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
-                        return;
+                        curr = curr.Next;
+                        continue;
                     }
                     curr.PrimaryNavigationNodeEdge = nextNavigationNode.PrimaryDirectionEdge;
                     curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
