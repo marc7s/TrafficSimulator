@@ -2,10 +2,18 @@ using UnityEngine;
 
 namespace DataModel
 {
-    public class Vehicle
+    abstract public class Vehicle : MonoBehaviour
     {
         private string _id;
-        private GameObject _vehicle;
-        public Vehicle(string id, GameObject vehicle) => (_id, _vehicle) = (id, vehicle);
+
+        protected void Init()
+        {
+            _id = System.Guid.NewGuid().ToString();
+        }
+
+        protected string Id
+        {
+            get => _id;
+        }
     }
 }

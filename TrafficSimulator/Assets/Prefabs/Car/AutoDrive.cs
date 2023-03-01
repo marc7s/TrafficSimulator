@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using EVP;
 using RoadGenerator;
+using DataModel;
 
 
 namespace Car {
@@ -28,7 +29,8 @@ namespace Car {
         None,
         Target,
         BrakeTarget,
-        Both
+        CurrentPosition,
+        All
     }
     public class AutoDrive : MonoBehaviour
     {
@@ -36,6 +38,7 @@ namespace Car {
         public Road Road;
         public GameObject NavigationTargetMarker;
         public int LaneIndex = 0;
+        [SerializeField] private GameObject _mesh;
 
         [Header("Settings")]
         [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
@@ -57,6 +60,9 @@ namespace Car {
         [Header("Statistics")]
         [SerializeField] private float _totalDistance = 0;
 
+        private Vehicle _vehicle;
+        private float _vehicleLength;
+
         // Quality variables
         private float _targetLookaheadDistance = 0;
         private float _brakeDistance = 0;
@@ -75,6 +81,7 @@ namespace Car {
         private Vector3? _prevIntersectionPosition;
         private NavigationNode _navigationPathEndNode;
         private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
+        private List<LaneNode> _occupiedNodes = new List<LaneNode>();
 
         public LaneNode CustomStartNode = null;
 
@@ -86,6 +93,8 @@ namespace Car {
             _navigationPathContainer = new GameObject("Navigation Path");
 
             _vehicleController = GetComponent<VehicleController>();
+            _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
+            _vehicle = GetComponent<Vehicle>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
             
             // If the road has not updated yet there will be no lanes, so update them first
@@ -150,6 +159,7 @@ namespace Car {
                 // Steer towards the target and update to next target
                 Q_SteerTowardsTarget();
                 Q_UpdateTarget();
+                Q_Brake();
                 Q_UpdateCurrent();
                 
                 if (_showTargetLines != ShowTargetLines.None)
@@ -159,6 +169,40 @@ namespace Car {
             {
                 P_MoveToNextPosition();
             }
+            updateOccupiedNodes();
+        }
+
+        // Update the list of nodes that the vehicle is currently occupying
+        private void updateOccupiedNodes()
+        {
+            foreach (LaneNode node in _occupiedNodes)
+            {
+                node.UnsetVehicle(_vehicle);
+            }
+            _occupiedNodes.Clear();
+            _occupiedNodes = getOccupiedNodes(_currentNode);
+            foreach (LaneNode node in _occupiedNodes)
+            {
+                node.SetVehicle(_vehicle);
+            }
+        }
+
+        // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
+        private List<LaneNode> getOccupiedNodes(LaneNode node)
+        {
+            List<LaneNode> nodes = new List<LaneNode>();
+            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
+            {
+                nodes.Add(node);
+                node = node.Prev;
+            }
+            node = _currentNode.Next;
+            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
+            {
+                nodes.Add(node);
+                node = node.Next;
+            }
+            return nodes;
         }
 
         private void Q_TeleportToLane()
@@ -169,6 +213,7 @@ namespace Car {
             // Rotate it to face the current position
             transform.rotation = _currentNode.Rotation;
         }
+
         private void Q_SteerTowardsTarget()
         {
             // Calculate the direction, which is the vector from our current position to the target
@@ -247,7 +292,10 @@ namespace Car {
                 // Set the target to the next point in the lane
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
             }
+        }
 
+        private void Q_Brake()
+        {
             // If the vehicle is closer to the target than the brake distance, brake
             // Also, do not brake at the end node if we are looping
             if (Vector3.Distance(transform.position, _brakeTarget.Position) <= _brakeDistance)
@@ -268,7 +316,8 @@ namespace Car {
         {
             // Set the brake target point to the point closest to the target that is at least _brakeDistance points away
             // If the road end behaviour is set to stop and the brake target is the end node, do not update the brake target
-            while (Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance && (_brakeTarget != _endNode || _roadEndBehaviour == RoadEndBehaviour.Loop))
+            // If the next node has a vehicle, do not update the brake target
+            while (!(GetNextLaneNode(_brakeTarget, 0, true).HasVehicle()) && Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance && (_brakeTarget != _endNode || _roadEndBehaviour == RoadEndBehaviour.Loop))
             {
                 _brakeTarget = GetNextLaneNode(_brakeTarget, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
             }
@@ -338,9 +387,13 @@ namespace Car {
                     _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position });
                     _targetLineRenderer.positionCount = 2;
                     break;
-                case ShowTargetLines.Both:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, Q_GetTarget().Position });
-                    _targetLineRenderer.positionCount = 3;
+                case ShowTargetLines.CurrentPosition:
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _currentNode.Position, transform.position });
+                    _targetLineRenderer.positionCount = 2;
+                    break;
+                case ShowTargetLines.All:
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, Q_GetTarget().Position, transform.position, _currentNode.Position});
+                    _targetLineRenderer.positionCount = 4;
                     break;
             }
         }
@@ -463,6 +516,11 @@ namespace Car {
         public LaneNode CurrentNode
         {
             get => _currentNode;
+        }
+
+        public double getTotalDistance()
+        {
+            return _totalDistance;
         }
         
     }

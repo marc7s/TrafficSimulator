@@ -75,5 +75,10 @@ namespace RoadGenerator
             Debug.LogError("Trying to unset a different vehicle");
             return false;
         }
+
+        public bool HasVehicle()
+        {
+            return _vehicle != null;
+        }
     }
 }
