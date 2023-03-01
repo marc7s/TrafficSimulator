@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace RoadGenerator
 {
@@ -73,18 +74,8 @@ namespace RoadGenerator
         {
             RoadNode curr = this;
             NavigationNode prevNavigationNode = startNavigationNode;
-            NavigationNodeEdge navigationEdge = startNavigationNode.Edges[0];
-            NavigationNode nextNavigationNode = navigationEdge.EndNavigationNode;
-            NavigationNodeEdge secondaryNavigationEdge;
-            if (nextNavigationNode.Edges[0].EndNavigationNode.RoadNode.Position == prevNavigationNode.RoadNode.Position)
-            {
-                secondaryNavigationEdge = navigationEdge.EndNavigationNode.Edges[0];
-            }
-            else
-            {
-                secondaryNavigationEdge = navigationEdge.EndNavigationNode.Edges[1];
-            }
-            //Debug.Log(navigationEdge.EndNavigationNode.RoadNode.Position + "KEBAB");
+            NavigationNode nextNavigationNode = startNavigationNode.Edges[0].EndNavigationNode;
+
             // Using a sliding window with the start being a navigational node and the end begin the edge pointing in the road direction
             while(curr != null) 
             {
@@ -101,30 +92,16 @@ namespace RoadGenerator
                     {
                         return;
                     }
-                    if (nextNavigationNode.Edges[0].EndNavigationNode.RoadNode.Position == prevNavigationNode.RoadNode.Position)
-                    {
-                        prevNavigationNode = navigationEdge.EndNavigationNode;
-                        //nextNavigationNode
-                        //if (navigationEdge.EndNavigationNode.Edges[0])
-                        navigationEdge = nextNavigationNode.Edges[1];
-
-                        nextNavigationNode = navigationEdge.EndNavigationNode;
-                        if (nextNavigationNode.Edges[0].EndNavigationNode.RoadNode.Position == prevNavigationNode.RoadNode.Position)
-                            secondaryNavigationEdge = navigationEdge.EndNavigationNode.Edges[0];
-                        else
-                            secondaryNavigationEdge = navigationEdge.EndNavigationNode.Edges[1];                   
-                    }
-                    else
-                    {
-                        prevNavigationNode = navigationEdge.EndNavigationNode;
-                        secondaryNavigationEdge = navigationEdge.EndNavigationNode.Edges[1];
-                        navigationEdge = navigationEdge.EndNavigationNode.Edges[0];
-                    }
+                    prevNavigationNode = nextNavigationNode;
+                    if (nextNavigationNode.PrimaryDirectionEdge == null)
+                        return;
+                    nextNavigationNode = nextNavigationNode.PrimaryDirectionEdge.EndNavigationNode;
+           
                     curr = curr.Next;
                     continue;
                 }
-                curr.PrimaryNavigationNodeEdge = navigationEdge;
-                curr.SecondaryNavigationNodeEdge = secondaryNavigationEdge;
+                curr.PrimaryNavigationNodeEdge = prevNavigationNode.PrimaryDirectionEdge;
+                curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                 curr = curr.Next;
             }
 
@@ -213,13 +190,6 @@ namespace RoadGenerator
                 if (curr == null)
                     break;
             }
-        }
-        /// <summary>Reverses the roadNode linked list</summary>
-        public override RoadNode Reverse()
-        {
-            RoadNode reversedNode = base.Reverse();
-            reversedNode.ReverseEdges();
-            return reversedNode;
         }
 
         /// <summary>Returns `true` if this node is an intersection</summary>

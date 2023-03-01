@@ -32,7 +32,7 @@ namespace RoadGenerator
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
-        [SerializeField][HideInInspector] public Dictionary<string, NavigationNode> RoadSystemGraph;
+        [SerializeField][HideInInspector] public List<NavigationNode> RoadSystemGraph;
         [HideInInspector] public GameObject GraphContainer;
 
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
@@ -178,25 +178,6 @@ namespace RoadGenerator
             // Generate a new graph
             RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
 
-            List<NavigationNode> nodes = new List<NavigationNode>(RoadSystemGraph.Values);
-
-
-
-            foreach (NavigationNode node in RoadSystemGraph.Values)
-            {
-                
-                foreach (NavigationNode node2 in RoadSystemGraph.Values)
-                {
-                    //Debug.Log("Nodes edges:_" + node2.RoadNode.Position);
-                foreach (NavigationNodeEdge edge in node2.Edges)
-                {
-                  //  Debug.Log(edge.EndNavigationNode.RoadNode.Position);
-                    //Debug.Log("start pos" + node.RoadNode.Position + " end pos" + edge.EndNavigationNode.RoadNode.Position);
-                    //Navigation.GetPathToNode(node, edge.EndNavigationNode);
-                    //Navigation.GetRandomPath(this, edge);
-                }
-                }
-            }
             
            
 
