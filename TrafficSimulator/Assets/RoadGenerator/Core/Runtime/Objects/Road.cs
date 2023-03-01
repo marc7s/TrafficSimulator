@@ -339,8 +339,9 @@ namespace RoadGenerator
             // Calculate the position of the new node
             Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
             
+            Quaternion rotation = roadNode.Rotation * Quaternion.Euler(0, isPrimary ? 0 : 180, 0);
             // Create the new node
-            current = new LaneNode(position, roadNode.Rotation, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, rotation, roadNode, previous, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
