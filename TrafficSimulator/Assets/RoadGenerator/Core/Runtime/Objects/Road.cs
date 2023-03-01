@@ -19,17 +19,31 @@ namespace RoadGenerator
         public float Distance;
         public Vector3 Position;
         public bool EndsIntersection;
-        public QueuedNode(RoadNodeType nodeType, float distance, Vector3 position, bool endsIntersection)
+        public string Reference;
+        public QueuedNode(RoadNodeType nodeType, float distance, Vector3 position, bool endsIntersection, string reference)
         {
             NodeType = nodeType;
             Distance = distance;
             Position = position;
             EndsIntersection = endsIntersection;
+            Reference = reference;
         }
         public int CompareTo(QueuedNode other)
         {
-            return Distance.CompareTo(other.Distance);
+            int distCmp = Distance.CompareTo(other.Distance);
+
+            // Compare the distance first, if they are equal compare the node type
+            return distCmp == 0 ? NodeType.CompareTo(other.NodeType) : distCmp;
         }
+    }
+
+    // A struct used for building RoadNodes. It keeps the necessary information to be able to append new nodes to the end of the list
+    struct NodeBuilder
+    {
+        public RoadNode Prev;
+        public RoadNode Curr;
+        public float CurrLength;
+        public NodeBuilder(RoadNode prev, RoadNode curr, float currLength) => (Prev, Curr, CurrLength) = (prev, curr, currLength);
     }
 
     
@@ -50,10 +64,9 @@ namespace RoadGenerator
         public LaneAmount LaneAmount = LaneAmount.One;
         public float LaneWidth = 4f;
         [Range (0, .5f)] public float Thickness = .15f;
-        
-
-        [Header ("Lane settings")]
-        [Range(0.1f, 10f)] public float LaneVertexSpacing = 1f;
+        [Range(0.1f, 5f)] public float MaxAngleError = 2f;
+        [Range(0, 5f)] public float MinVertexDistance = 0;
+        [Range(1f, 20f)] public float MaxRoadNodeDistance = 5f;
         
 
         [Header ("Debug settings")]
@@ -75,7 +88,6 @@ namespace RoadGenerator
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
-        private const string ROAD_NODE_NAME = "RoadNode";
         private const string ROAD_NODE_CONTAINER_NAME = "Road nodes";
         private const string LANE_NODE_NAME = "LaneNode";
         private const string LANE_NODE_CONTAINER_NAME = "Lane nodes";
@@ -120,9 +132,14 @@ namespace RoadGenerator
         public void UpdateMesh()
         {
             UpdateRoadNodes();
+            UpdateLanes();
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
             if(roadMeshCreator != null)
                 roadMeshCreator.UpdateMesh();
+
+            // There might have been changes to the RoadNodes and therefore LaneNodes, so we need to update the visual representations
+            ShowRoadNodes();
+            ShowLaneNodes();
         }
 
         private void UpdateRoad()
@@ -144,15 +161,12 @@ namespace RoadGenerator
 
         private void AddIntersectionNode(ref RoadNode curr, Vector3 position, RoadNodeType type)
         {
-            // TODO: Look into if these distances need to follow the path
-            float distanceToIntersection = Vector3.Distance(curr.Position, position);
-
             RoadNode next = curr.Next == null ? null : curr.Next.Next;
 
             float time = next == null ? curr.Time : (next.Time + curr.Time) / 2;
 
             // Add the intersection node
-            curr.Next = new RoadNode(position, curr.Tangent, curr.Normal, type, curr, next, distanceToIntersection, time);
+            curr.Next = new RoadNode(position, curr.Tangent, curr.Normal, type, curr, next, Vector3.Distance(curr.Position, position), time);
             curr = curr.Next;
 
             // If the road does not end at the intersection, update the distance on the following node as well
@@ -174,13 +188,87 @@ namespace RoadGenerator
             
             return (firstPos, secondPos, firstDistance, secondDistance);
         }
+
+        /// <summary> Appends a new RoadNode to the end and returns the new NodeBuilder </summary>
+        private NodeBuilder AppendNode(NodeBuilder builder, Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type)
+        {
+            // Update the previous node
+            builder.Prev = builder.Curr;
+            
+            // Calculate the distance from the new position to the previous node, and update the current length accordingly
+            float dstToPrev = Vector3.Distance(builder.Prev.Position, position);
+            builder.CurrLength += dstToPrev;
+
+            // Add the new node to the end
+            builder.Curr = new RoadNode(position, tangent, normal, type, builder.Prev, null, dstToPrev, builder.CurrLength / Length);
+            
+            // Update the previous node's next pointer
+            builder.Prev.Next = builder.Curr;
+
+            return builder;
+        }
         
+        /// <summary> Adds intermediate RoadNodes between start and end point to bridge the gap, making sure the MaxRoadNodeDistance invariant is upheld </summary>
+        private NodeBuilder AddIntermediateNodes(NodeBuilder builder, Vector3 start, Vector3 end, Vector3 tangent, Vector3 normal, bool endIsLastNode, RoadNodeType type = RoadNodeType.Default)
+        {
+            // Calculate the total distance that needs to be bridged
+            float distanceToBridge = Vector3.Distance(start, end);
+
+            // If the distance is less than the max distance, no intermediate nodes need to be added
+            if(distanceToBridge <= MaxRoadNodeDistance)
+                return builder;
+            
+            // Create a list to hold all intermediate positions that need to be added
+            List<Vector3> roadNodePositions = new List<Vector3>();
+
+            // Calculate how many intermediate nodes to add
+            int positionsToAdd = Mathf.CeilToInt(distanceToBridge / MaxRoadNodeDistance);
+
+            // Calculate the distance between each intermediate node
+            float distanceBetweenPoints = distanceToBridge / positionsToAdd;
+            
+            // Add the intermediate positions to the list
+            for(int posCount = 0; posCount < positionsToAdd; posCount++)
+            {
+                // Calculate the percentage of how far along the line from the start to the end node this intermediate node should be
+                float t = (float)(posCount + 1) / (positionsToAdd);
+
+                // Calculate the position of the intermediate node
+                Vector3 pos = Vector3.Lerp(start, end, t);
+
+                // Add the position to the list
+                roadNodePositions.Add(pos);
+            }
+
+            // Add all the intermediate nodes
+            while(roadNodePositions.Count > 0)
+            {
+                // Get the first position to add
+                Vector3 position = roadNodePositions[0];
+
+                // The current node type is assumed to be the desired type
+                RoadNodeType currentType = type;
+                
+                // If the current node is the last node in the path, then the current node type is an end node
+                if(endIsLastNode && roadNodePositions.Count == 1)
+                    currentType = RoadNodeType.End;
+
+                // Add the intermediate node
+                builder = AppendNode(builder, position, tangent, normal, currentType);
+
+                // This position has now been added, so remove it from the list
+                roadNodePositions.RemoveAt(0);
+            }
+
+            return builder;
+        }
+
         /// <summary>Updates the road nodes</summary>
         public void UpdateRoadNodes()
         {
             // Create the vertex path for the road
             BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
-            _path = new VertexPath(path, transform, LaneVertexSpacing);
+            _path = new VertexPath(path, transform, MaxAngleError, MinVertexDistance);
             
             this._length = _path.length;
 
@@ -188,11 +276,10 @@ namespace RoadGenerator
             this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
             // Create the start node for the road. The start node must be an end node
-            this._start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, _path.times[0]);
+            this._start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, 0);
             
-            // Create a previous and current node that will be used when creating the linked list
-            RoadNode prev = null;
-            RoadNode curr = _start;
+            // Create a new node builder starting at the start node
+            NodeBuilder roadBuilder = new NodeBuilder(null, _start, 0);
 
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
@@ -212,9 +299,9 @@ namespace RoadGenerator
 
                         (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
 
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection.ID));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection.ID));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection.ID));
                     }
                     else
                     {
@@ -230,34 +317,37 @@ namespace RoadGenerator
                         
                         float junctionDistance = _path.GetClosestDistanceAlongPath(anchor1);
 
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart, intersection.ID));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart, intersection.ID));
+
+                        if(!isStart)
+                            queuedNodes.Enqueue(new QueuedNode(RoadNodeType.End, intersectionDistance, intersection.IntersectionPosition, false, intersection.ID));
                     }
                 }
                 else if(intersection.Type == IntersectionType.FourWayIntersection)
                 {
                     Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
                     Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
-                    float firstDistance = _path.GetClosestDistanceAlongPath(anchor1);
                     float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
-                    float secondDistance = _path.GetClosestDistanceAlongPath(anchor2);
 
-                    bool swap = firstDistance > secondDistance;
 
                     (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
 
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection.ID));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection.ID));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection.ID));
                 }
             }
 
-            // Go through each point in the path of the road
-            bool intersectionStarted = false;
-            bool intersectionEnded = false;
+            // A dictionary to keep track of the intersections. If it is empty then we are currently not inside an intersection
+            Dictionary<string, int> insideIntersections = new Dictionary<string, int>();
             
+            // Go through each point in the path of the road
             for(int i = 0; i < _path.NumPoints; i++)
             {
+                Vector3 lastPosition = roadBuilder.Curr.Position;
+                Vector3 currPosition = _path.GetPoint(i);
+                
                 // Add an intersection node if there is an intersection between the previous node and the current node
                 QueuedNode? possibleNextIntersectionNode = queuedNodes.Count > 0 ? queuedNodes.Peek() : null;
                 
@@ -274,54 +364,46 @@ namespace RoadGenerator
                         while(queuedNodes.Count > 0 && (i == _path.NumPoints - 1 || queuedNodes.Peek().Distance <= _path.cumulativeLengthAtEachVertex[i + 1]))
                         {
                             QueuedNode nextNode = (QueuedNode)queuedNodes.Peek();
-                            
-                            // Create a new node for the queued intersection node
-                            prev = curr;
-                            curr = new RoadNode(nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType, prev, null, Vector3.Distance(prev.Position, nextNode.Position), _path.times[i]);
-                            prev.Next = curr;
 
-                            // Update the flags used to determine if we are inside an intersection
+                            // At this point we know that we have a queued node to be added this iteration. However, it might be too far away, so if we are not yet
+                            // in the intersection we need to bridge the gap and add intermediate RoadNodes up to the junction edge
+                            if(insideIntersections.Count == 0)
+                                roadBuilder = AddIntermediateNodes(roadBuilder, roadBuilder.Curr.Position, nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), false);
+                            
+                            // Append the queued node
+                            roadBuilder = AppendNode(roadBuilder, nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType);
+                            
+
+                            // Update the dictionary used to determine if we are inside an intersection
                             // Inside for 4 way intersections meaning between the junction edge, for 3 way meaning between the junction edge and intersection
                             if(nextNode.EndsIntersection)
-                                intersectionEnded = true;
+                                insideIntersections.Remove(nextNode.Reference);  
                             else
-                                intersectionStarted = true;
+                                insideIntersections.TryAdd(nextNode.Reference, i);
+                                
 
+                            // The queued node has now been added, so dequeue it
                             queuedNodes.Dequeue();
+                            
+                            // If an intersection ended at this node, then we need to update the last and current position so no 
+                            // intermediate nodes are created prior to this as those have already been created
+                            if(nextNode.EndsIntersection)
+                            {
+                                lastPosition = roadBuilder.Curr.Position;
+                                currPosition = lastPosition;
+                            }
                         }
-                    }
-                    // If a started intersection has ended, reset the flags and do not add this vertex point
-                    if(intersectionStarted && intersectionEnded)
-                    {
-                        intersectionStarted = false;
-                        intersectionEnded = false;
-                        continue;
                     }
                     
                     // If we are inside an intersection, do not add this vertex point RoadNode
-                    if(intersectionStarted && !intersectionEnded)
+                    if(insideIntersections.Count > 0)
+                    {
                         continue;
-                }
-                
-                // The first iteration is only for 3-way intersections at the start, so skip the rest of the first iteration
-                if(i == 0)
-                    continue;
-                
-                // The current node type is assumed to be default
-                RoadNodeType currentType = RoadNodeType.Default;
-                
-                // If the current node is the last node in the path, then the current node type is an end node
-                if(i == _path.NumPoints - 1)
-                {
-                    currentType = RoadNodeType.End;
+                    }
                 }
 
-                // Update the previous node and create a new current node
-                prev = curr;
-                curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), currentType, prev, null, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
-
-                // Set the next pointer for the previous node
-                prev.Next = curr;
+                // Bridge the gap between the current node and the current vertex point
+                roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i), i == _path.NumPoints - 1);
             }
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
@@ -528,7 +610,7 @@ namespace RoadGenerator
                 while(curr != null)
                 {
                     GameObject roadNodeObject = Instantiate(RoadNodePrefab, curr.Position, curr.Rotation, _roadNodeContainer.transform);
-                    roadNodeObject.name = ROAD_NODE_NAME + i;
+                    roadNodeObject.name = i + " " + curr.Type;
 
                     curr = curr.Next;
                     i++;
