@@ -101,6 +101,8 @@ namespace RoadGenerator
                     continue;
                 }
                 curr.PrimaryNavigationNodeEdge = prevNavigationNode.PrimaryDirectionEdge;
+                if (nextNavigationNode.SecondaryDirectionEdge == null)
+                    Debug.Log(nextNavigationNode.RoadNode.Position + "dlkföggsfdklögsfdklöjgjflkdsö");
                 curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                 curr = curr.Next;
             }
