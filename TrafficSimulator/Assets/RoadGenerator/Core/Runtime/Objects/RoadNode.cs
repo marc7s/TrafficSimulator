@@ -35,6 +35,7 @@ namespace RoadGenerator
             _next = next;
             _distanceToPrevNode = distanceToPrevNode;
             _time = time;
+            _rotation = Quaternion.LookRotation(_tangent, Vector3.up);
         }
 
         public override RoadNode Copy()

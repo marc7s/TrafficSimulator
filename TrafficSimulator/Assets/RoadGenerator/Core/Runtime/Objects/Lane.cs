@@ -6,8 +6,8 @@ namespace RoadGenerator
     /// <summary>The side of the lane on the road. The primary side is the driving side of the road system</summary>
     public enum LaneSide
     {
-        PRIMARY,
-        SECONDARY
+        Primary,
+        Secondary
     }
     
     /// <summary>Represents the type of lane. Contains information on the side and index of the lane</summary>
