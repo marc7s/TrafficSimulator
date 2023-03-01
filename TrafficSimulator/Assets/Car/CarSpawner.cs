@@ -80,7 +80,7 @@ namespace RoadGenerator
             // Loop through all roads
             for (int i = 0; i < _roadSystem.RoadCount; i++)
             {
-                _roads[i].OnChange();
+                //_roads[i].OnChange();
 
                 // Loop through all lanes
                 for (int j = 0; j < _roads[i].LaneCount; j++)
@@ -123,7 +123,7 @@ namespace RoadGenerator
             // Loop through all roads
             foreach (Road road in _roadSystem.Roads)
             {
-                road.OnChange();
+               // road.OnChange();
                 laneIndex = 0;
 
                 // Loop through all lanes
@@ -223,9 +223,12 @@ namespace RoadGenerator
         private void SpawnCar(int index)
         {
             _currentCar = Instantiate(_carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-
+            Debug.Log("Spawning car at lane index: ");
             _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
             _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
+            _currentCar.GetComponent<AutoDrive>()._mode = Car.DrivingMode.Performance;
+            _currentCar.GetComponent<AutoDrive>().NavigationMode = Car.NavigationMode.RandomNavigationPath;
+          //  _currentCar.GetComponent<AutoDrive>()._showNavigationPath = true;
             if (_laneNodeCurrent.Next != null)
             {
                 _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next;

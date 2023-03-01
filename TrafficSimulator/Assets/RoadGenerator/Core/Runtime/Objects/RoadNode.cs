@@ -90,13 +90,18 @@ namespace RoadGenerator
                     // If the intersection only have one edge, then it is a three way intersection the last node of the road
                     if (nextNavigationNode.Edges.Count < 2)
                     {
+                        curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                         return;
                     }
                     curr.PrimaryNavigationNodeEdge = nextNavigationNode.PrimaryDirectionEdge;
                     curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
-                    prevNavigationNode = nextNavigationNode;
+                    
                     if (nextNavigationNode.PrimaryDirectionEdge == null)
-                        return;
+                    {
+                        curr = curr.Next;
+                        continue;
+                    }
+                    prevNavigationNode = nextNavigationNode;    
                     nextNavigationNode = nextNavigationNode.PrimaryDirectionEdge.EndNavigationNode;
             
                     curr = curr.Next;
