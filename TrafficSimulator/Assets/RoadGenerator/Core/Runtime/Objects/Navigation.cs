@@ -113,6 +113,8 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
 
         public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container)
         {
+            // TODO DRAW ACTUAL LANE PATH
+
             foreach (Transform child in container.transform)
             {
                 GameObject.Destroy(child.gameObject);

@@ -93,7 +93,7 @@ namespace RoadGenerator
         public void Setup()
         {
             if (IsSetup) return;
-            IsSetup = true;
+               IsSetup = true;
             // Find roads
             foreach(Transform roadT in _roadContainer.transform)
             {
