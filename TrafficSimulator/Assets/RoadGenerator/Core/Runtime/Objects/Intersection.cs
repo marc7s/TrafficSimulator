@@ -448,7 +448,7 @@ namespace RoadGenerator
                     }
                     currentNode = currentNode.Next;
                 }
-            }   
+            }     
         }
         private bool IsThreeWayIntersection()
         {
