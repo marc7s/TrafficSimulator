@@ -110,7 +110,7 @@ namespace Car {
             _endNode = lane.StartNode.Last;
             _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = _currentNode;
-            _startNode = _currentNode.Lane.StartNode;
+            _startNode = _currentNode.First;
             
             if (_mode == DrivingMode.Quality)
             {
@@ -125,8 +125,8 @@ namespace Car {
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
                 Q_TeleportToLane();
                 
-                _brakeTarget = lane.StartNode;
-                _repositioningTarget = lane.StartNode;
+                _brakeTarget = _currentNode;
+                _repositioningTarget = _currentNode;
                 
                 _vehicleController.throttleInput = 1f;
             }
@@ -179,7 +179,7 @@ namespace Car {
         private void Q_TeleportToLane()
         {
             // Move it to the current position, offset in the opposite direction of the lane
-            transform.position = _currentNode.Position - (2 * (_currentNode.Next.Position - _currentNode.Position));
+            transform.position = _currentNode.Position - (2 * (_currentNode.Rotation * Vector3.forward).normalized);
             
             // Rotate it to face the current position
             transform.rotation = _currentNode.Rotation;
@@ -418,12 +418,12 @@ namespace Car {
                     NavigationNodeEdge temp = _navigationPath.Pop();
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
                     _target = _target.RoadNode.Intersection.GetNewLaneNode(temp);
-                    _startNode = _target.Lane.StartNode;
+                    _startNode = _target.First;
                 }
                 else if (NavigationMode == NavigationMode.Random && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition && _target.RoadNode.ID != _previousTarget.RoadNode.ID)
                 {
                     _target = _target.RoadNode.Intersection.GetRandomLaneNode();
-                    _startNode = _target.Lane.StartNode;
+                    _startNode = _target.First;
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
                 }
             }   
