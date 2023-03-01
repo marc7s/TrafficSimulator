@@ -228,7 +228,7 @@ namespace RoadGenerator
             _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
             _currentCar.GetComponent<AutoDrive>()._mode = Car.DrivingMode.Quality;
             _currentCar.GetComponent<AutoDrive>().NavigationMode = Car.NavigationMode.Random;
-            _currentCar.GetComponent<AutoDrive>()._showNavigationPath = true;
+            _currentCar.GetComponent<AutoDrive>().ShowNavigationPath = true;
             if (_laneNodeCurrent.Next != null)
             {
                 _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next;

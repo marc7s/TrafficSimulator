@@ -165,7 +165,7 @@ namespace RoadGenerator
         }
         void Start()
         {
-            //Setup();
+            Setup();
         }
         public void UpdateRoadSystemGraph()
         {

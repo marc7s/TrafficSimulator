@@ -98,10 +98,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             System.Random random = new System.Random();
             int randomIndex = random.Next(0, nodeList.Count);
             NavigationNode targetNode = nodeList[randomIndex];
-            if (cube2 != null)
-            {
-                GameObject.Destroy(cube2);
-            }
+
             nodeToFind = targetNode;
             Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
             if (path.Count < 2)

@@ -288,10 +288,6 @@ namespace RoadGenerator
                             prev = curr;
                             curr = new RoadNode(nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType, prev, null, Vector3.Distance(prev.Position, nextNode.Position), _path.times[i], nextNode.Intersection);
                             prev.Next = curr;
-                            
-                            // If an end node is at the same place as an intersection the end node have to point to the intersection
-                            if (curr.Prev.Position == curr.Position)
-                                curr.Prev.Intersection = curr.Intersection;
 
                             // Update the flags used to determine if we are inside an intersection
                             // Inside for 4 way intersections meaning between the junction edge, for 3 way meaning between the junction edge and intersection
@@ -332,7 +328,10 @@ namespace RoadGenerator
                 // Update the previous node and create a new current node
                 prev = curr;
                 curr = new RoadNode(_path.GetPoint(i), _path.GetTangent(i), _path.GetNormal(i), currentType, prev, null, _path.DistanceBetweenPoints(i - 1, i), _path.times[i]);
-
+                
+                // If an end node is at the same place as an intersection the end node have to point to the intersection
+                if (curr.Prev.Position == curr.Position && curr.Prev.IsIntersection())
+                    curr.Intersection = curr.Prev.Intersection;
                 // Set the next pointer for the previous node
                 prev.Next = curr;
             }
