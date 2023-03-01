@@ -25,6 +25,10 @@ namespace RoadGenerator
     {
         public RoadNode RoadNode;
         public List<NavigationNodeEdge> Edges = new List<NavigationNodeEdge>();
+
+        public NavigationNodeEdge PrimaryDirectionEdge;
+
+        public NavigationNodeEdge SecondaryDirectionEdge;
         public NavigationNode(RoadNode roadNode)
         {
             this.RoadNode = roadNode;
@@ -36,7 +40,7 @@ namespace RoadGenerator
         private Road _road;
         public NavigationNode StartNavigationNode;
         public NavigationNode EndNavigationNode;
-        public Dictionary<string, NavigationNode> Graph = new Dictionary<string, NavigationNode>();
+        public List<NavigationNode> Graph = new List<NavigationNode>();
 
         // The nodes that should become part of the navigation graph
         private readonly RoadNodeType[] _roadNodeTypesToAdd = 
@@ -53,7 +57,9 @@ namespace RoadGenerator
             RoadNode start = roadNode;
             RoadNode curr = roadNode;
             NavigationNode PreviouslyAddedNode = null;
-
+            NavigationNode closedStartNodePrimaryDirection = null;
+            NavigationNode closedStartNodeSecondaryDirection = null;
+            bool isPreviousNodeDivided = false;
             while (curr != null)
             {
                 // Increase the current cost if the current node is not the starting node
@@ -68,8 +74,12 @@ namespace RoadGenerator
                 // In a closed loop we never want to add the end node, so we skip it
                 if (curr.Type == RoadNodeType.End && isClosed && PreviouslyAddedNode != null)
                 {
-                    PreviouslyAddedNode.Edges.Add(new NavigationNodeEdge(StartNavigationNode, PreviouslyAddedNode, _currentCost));
-                    StartNavigationNode.Edges.Add(new NavigationNodeEdge(PreviouslyAddedNode, StartNavigationNode, _currentCost));
+                    NavigationNodeEdge edge = new NavigationNodeEdge(StartNavigationNode, PreviouslyAddedNode, _currentCost);
+                    PreviouslyAddedNode.Edges.Add(edge);
+                    PreviouslyAddedNode.PrimaryDirectionEdge = edge;
+                    edge = new NavigationNodeEdge(PreviouslyAddedNode, StartNavigationNode, _currentCost);
+                    StartNavigationNode.Edges.Add(edge);
+                    StartNavigationNode.SecondaryDirectionEdge = edge;
                     break;
                 }
             
@@ -78,29 +88,62 @@ namespace RoadGenerator
                 {
                     PreviouslyAddedNode = new NavigationNode(curr);
                     StartNavigationNode = PreviouslyAddedNode;
-                    Graph.Add(curr.Position.ToString(), PreviouslyAddedNode);
+                    Graph.Add(PreviouslyAddedNode);
                     if (isClosed)
                     {
+                        /*
+                        closedStartNodePrimaryDirection = PreviouslyAddedNode;
+                        closedStartNodeSecondaryDirection = new NavigationNode(curr);
+                        Graph.Add(closedStartNodeSecondaryDirection);
+                        isPreviousNodeDivided = true;
+                        */
                         curr.IsNavigationNode = true;
                     }
                         
                     curr = curr.Next;
                     continue;
                 }
-                string key = curr.Position.ToString();
-                if(!Graph.ContainsKey(key))
+                if(Graph.FindAll(x => x.RoadNode.Position == curr.Position).Count == 0)
                 {
                     NavigationNode graphNode = new NavigationNode(curr);
-                    Graph.Add(key, graphNode);
+                    Graph.Add(graphNode);
+
+                    if (isPreviousNodeDivided)
+                    {
+                        /*
+                        // Edges with the current cost are added in both directions
+                        //PreviouslyAddedNode.Edges.Add(new NavigationNodeEdge(graphNode, PreviouslyAddedNode, _currentCost));
+                        NavigationNodeEdge edge1 = new NavigationNodeEdge(closedStartNodeSecondaryDirection, graphNode, _currentCost);
+                        graphNode.Edges.Add(edge1);
+                        PreviouslyAddedNode = graphNode;
+                        _currentCost = 0f;
+                        isPreviousNodeDivided = false;
+                        continue;
+                        */
+                    }
+
                     // Edges with the current cost are added in both directions
-                    PreviouslyAddedNode.Edges.Add(new NavigationNodeEdge(graphNode, PreviouslyAddedNode, _currentCost));
-                    graphNode.Edges.Add(new NavigationNodeEdge(PreviouslyAddedNode, graphNode, _currentCost));
+                    NavigationNodeEdge edge = new NavigationNodeEdge(graphNode, PreviouslyAddedNode, _currentCost);
+                    PreviouslyAddedNode.Edges.Add(edge);
+                    PreviouslyAddedNode.PrimaryDirectionEdge = edge;
+                    edge = new NavigationNodeEdge(PreviouslyAddedNode, graphNode, _currentCost);
+                    graphNode.Edges.Add(edge);
+                    graphNode.SecondaryDirectionEdge = edge;
+
                     PreviouslyAddedNode = graphNode;
                     _currentCost = 0f;
                 }
                 curr = curr.Next;
             }
             EndNavigationNode = PreviouslyAddedNode;
+            if (isClosed)
+            {
+                /*
+                // Edges with the current cost are added in both directions
+                EndNavigationNode.Edges.Add(new NavigationNodeEdge(closedStartNodePrimaryDirection, EndNavigationNode, _currentCost));
+                closedStartNodeSecondaryDirection.Edges.Add(new NavigationNodeEdge(EndNavigationNode, closedStartNodeSecondaryDirection, _currentCost));
+                */
+            }
             
         }
         private float CalculateCost(float distance, float speedLimit = 1f)
@@ -116,10 +159,10 @@ namespace RoadGenerator
         private const float GRAPH_LIFT = 20f;
 
         /// <summary> Generates a graph representation for a road system </summary>
-        public static Dictionary<string, NavigationNode> GenerateRoadSystemNavigationGraph(RoadSystem roadSystem)
+        public static List<NavigationNode> GenerateRoadSystemNavigationGraph(RoadSystem roadSystem)
         {
             // The road system graph, key is the positions string representation
-            Dictionary<string, NavigationNode> roadSystemGraph = new Dictionary<string, NavigationNode>();
+            List<NavigationNode> roadSystemGraph = new List<NavigationNode>();
             foreach (Road road in roadSystem.Roads)
             {
                 // Map the road into the graph
@@ -139,22 +182,22 @@ namespace RoadGenerator
         }
 
         /// <summary> Updates a graph for the given road  </summary>
-        private static void UpdateGraphForRoad(Road road,  Dictionary<string, NavigationNode> roadSystemGraph)
+        private static void UpdateGraphForRoad(Road road,  List<NavigationNode> roadSystemGraph)
         {
-            NavigationNode[] roadNavigationGraph = new NavigationNode[road.NavigationGraph.Graph.Values.Count];
-            road.NavigationGraph.Graph.Values.CopyTo(roadNavigationGraph, 0);
-            for (int i = 0; i < roadNavigationGraph.Length; i++)
+            List<NavigationNode> roadNavigationGraph = road.NavigationGraph.Graph;
+            for (int i = 0; i < roadNavigationGraph.Count; i++)
             {
-                if (roadSystemGraph.ContainsKey(roadNavigationGraph[i].RoadNode.Position.ToString()))
+                if(roadSystemGraph.FindAll(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position).Count != 0)
                 {
-                    NavigationNode node = roadSystemGraph[roadNavigationGraph[i].RoadNode.Position.ToString()];
+                    NavigationNode node = roadSystemGraph.Find(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position);
                     node.Edges.AddRange(roadNavigationGraph[i].Edges);
                     UpdateEdgeEndNode(roadNavigationGraph[i], node.RoadNode.Position, node);
                     roadNavigationGraph[i] = node;
 
                     continue;
                 }
-                roadSystemGraph.Add(roadNavigationGraph[i].RoadNode.Position.ToString(), roadNavigationGraph[i]);
+                
+                roadSystemGraph.AddRange(roadNavigationGraph.FindAll(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position));
             }
         }
         private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, Vector3 oldNodePosition, NavigationNode newNode)
@@ -172,10 +215,11 @@ namespace RoadGenerator
         }
         
          /// <summary> Draws the graph </summary>
-        public static void DrawGraph(RoadSystem roadSystem, Dictionary<string, NavigationNode> roadGraph, GameObject graphNodePrefab)
+        public static void DrawGraph(RoadSystem roadSystem, List<NavigationNode> roadGraph, GameObject graphNodePrefab)
         {
-            foreach (NavigationNode node in roadGraph.Values)
+            foreach (NavigationNode node in roadGraph)
             {
+               // Debug.Log(node.RoadNode.Position);
                 // Spawn a new graph node sphere
                 GameObject nodeObject = GameObject.Instantiate(graphNodePrefab);
                 

@@ -95,7 +95,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
         {
             //roadSystem.Setup();
             List<NavigationNode> nodeList = new List<NavigationNode>();
-            nodeList.AddRange(roadSystem.RoadSystemGraph.Values);
+            nodeList.AddRange(roadSystem.RoadSystemGraph);
             System.Random random = new System.Random();
             NavigationNode targetNode = currentEdge.EndNavigationNode;
             //while(targetNode == currentEdge.EndNavigationNode)
