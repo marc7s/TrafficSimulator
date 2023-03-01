@@ -30,7 +30,10 @@ namespace RoadGenerator
         }
         public int CompareTo(QueuedNode other)
         {
-            return Distance.CompareTo(other.Distance);
+            int distCmp = Distance.CompareTo(other.Distance);
+
+            // Compare the distance first, if they are equal compare the node type
+            return distCmp == 0 ? NodeType.CompareTo(other.NodeType) : distCmp;
         }
     }
 
@@ -316,6 +319,9 @@ namespace RoadGenerator
 
                         queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart, intersection.ID));
                         queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart, intersection.ID));
+
+                        if(!isStart)
+                            queuedNodes.Enqueue(new QueuedNode(RoadNodeType.End, intersectionDistance, intersection.IntersectionPosition, false, intersection.ID));
                     }
                 }
                 else if(intersection.Type == IntersectionType.FourWayIntersection)
