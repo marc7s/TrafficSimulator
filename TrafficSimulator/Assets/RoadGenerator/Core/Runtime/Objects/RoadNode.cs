@@ -52,7 +52,7 @@ namespace RoadGenerator
                 
                 while(curr.Next != null)
                 {
-                    if(!(curr.IsIntersection() || curr.Type == RoadNodeType.JunctionEdge))
+                    if(!curr.IsIntersection())
                         count++;
                     curr = curr.Next;
                 }

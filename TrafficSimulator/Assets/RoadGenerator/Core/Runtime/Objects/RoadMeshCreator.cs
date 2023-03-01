@@ -200,7 +200,7 @@ namespace RoadGenerator
                 // Skip the end node if the previous node is a three way intersection
                 bool skipLast = curr.Type == RoadNodeType.End && curr.Prev != null && curr.Prev.Type == RoadNodeType.ThreeWayIntersection;
                 
-                if(curr.IsIntersection() || curr.Type == RoadNodeType.JunctionEdge || skipFirst || skipLast)
+                if(curr.IsIntersection() || skipFirst || skipLast)
                 {
                     curr = curr.Next;
                     continue;
@@ -299,7 +299,7 @@ namespace RoadGenerator
                 // Get the current lane triangle map
                 List<int> laneTriangleMap = laneTriangleMaps[_laneCount - 1];
                 
-                if((curr.Next != null && curr.Next.Type != RoadNodeType.JunctionEdge) || path.isClosedLoop)
+                if((curr.Next != null && !curr.Next.IsIntersection()) || path.isClosedLoop)
                 {
                     // Set the lane triangle indices
                     for (int j = 0; j < laneTriangleMap.Count; j++) 

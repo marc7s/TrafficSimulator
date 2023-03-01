@@ -3,6 +3,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using CustomProperties;
 
 namespace RoadGenerator
 {
@@ -31,6 +32,7 @@ namespace RoadGenerator
         [HideInInspector] public Vector3 Road2AnchorPoint2;
 
         [HideInInspector] public IntersectionType Type;
+        [ReadOnly] public string ID;
 
         [Header("Intersection settings")]
         [SerializeField][Range(0, 0.8f)] float _stretchFactor = 0.4f;
@@ -169,35 +171,17 @@ namespace RoadGenerator
                 {
                     // Swap the anchor nodes and extend the mesh to fill in the gap in road 2
                     RoadNode temp = road2Anchor1Node;
-                    road2Anchor1Node = road2Anchor2Node.Prev;
-                    road2Anchor2Node = temp.Next;
+                    road2Anchor1Node = road2Anchor2Node;
+                    road2Anchor2Node = temp;
                     
                     directionCoefficient = -1;
-                }
-                else
-                {
-                    // Extend the mesh to fill the gap in road 2
-                    road2Anchor1Node = road2Anchor1Node.Next == null ? road2Anchor1Node : road2Anchor1Node.Next;
-                    if(Type == IntersectionType.FourWayIntersection)
-                        road2Anchor2Node = road2Anchor2Node.Prev == null ? road2Anchor2Node : road2Anchor2Node.Prev;
                 }
             }
             else if(Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
             {
-                // Extend the mesh to fill the gap in road 2
-                if(Type == IntersectionType.ThreeWayIntersectionAtStart)
-                    road2Anchor1Node = road2Anchor1Node.Next == null ? road2Anchor1Node : road2Anchor1Node.Next;
-                else
-                    road2Anchor1Node = road2Anchor1Node.Prev == null ? road2Anchor1Node : road2Anchor1Node.Prev;
-                
                 if(roadAngle < 0)
                     directionCoefficient = -1;
             }
-
-
-            // Extend the mesh to fill the gap in road 1
-            road1Anchor1Node = road1Anchor1Node.Next;
-            road1Anchor2Node = road1Anchor2Node.Prev;
 
             List<int> topTris = new List<int>();
 
