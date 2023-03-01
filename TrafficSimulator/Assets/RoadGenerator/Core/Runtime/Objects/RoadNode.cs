@@ -44,6 +44,7 @@ namespace RoadGenerator
             _time = time;
             this.Intersection = intersection;
             ID = System.Guid.NewGuid().ToString();
+            _rotation = Quaternion.LookRotation(_tangent, Vector3.up);
         }
 
         public override RoadNode Copy()

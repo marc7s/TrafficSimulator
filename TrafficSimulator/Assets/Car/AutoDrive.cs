@@ -196,7 +196,7 @@ namespace Car {
             transform.position = _currentNode.Position - (2 * (_currentNode.Next.Position - _currentNode.Position));
             
             // Rotate it to face the current position
-            transform.rotation = Quaternion.LookRotation(_currentNode.Next.Position - _currentNode.Position);
+            transform.rotation = _currentNode.Rotation;
         }
         private void Q_SteerTowardsTarget()
         {
@@ -290,6 +290,42 @@ namespace Car {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
             }
+
+            
+            if (NavigationMode != NavigationMode.Line)
+            {
+                if (!_target.IsIntersection() && _target.RoadNode.IsNavigationNode)
+                {
+                    if (Path.Count != 0 && _previousTarget != null && _target.RoadNode.ID != _previousTarget.RoadNode.ID)
+                    {
+                        Path.Pop();
+                        _prevIntersection = Vector3.zero; 
+                    }
+                }
+                if (Path.Count == 0 && NavigationMode == NavigationMode.RandomNavigationPath)
+                {
+                    Path = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out nodeToFind);
+                    if (_showNavigationPath)
+                        Navigation.DrawNavigationPath(nodeToFind, _gpsContainer);
+                }   
+                if (_target.Type == RoadNodeType.JunctionEdge)
+                {
+                    if (Path.Count != 0 && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersection && _target.RoadNode.ID != _previousTarget.RoadNode.ID)
+                    { 
+                        NavigationNodeEdge temp = Path.Pop();
+                        _prevIntersection = _target.RoadNode.Intersection.IntersectionPosition;
+                        _target = _target.RoadNode.Intersection.GetNewLaneNode(temp);
+                        _startNode = _target.Lane.StartNode;
+                    }
+                    else if (NavigationMode == NavigationMode.Random && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersection && _target.RoadNode.ID != _previousTarget.RoadNode.ID)
+                    {
+                        _target = _target.RoadNode.Intersection.GetRandomLaneNode();
+                        _startNode = _target.Lane.StartNode;
+                        _prevIntersection = _target.RoadNode.Intersection.IntersectionPosition;
+                    }
+                }   
+            }
+            _previousTarget = _target;
         }
 
         private void Q_UpdateBrakeTarget()

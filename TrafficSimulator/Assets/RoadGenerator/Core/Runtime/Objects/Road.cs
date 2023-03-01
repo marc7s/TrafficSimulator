@@ -64,7 +64,7 @@ namespace RoadGenerator
         public bool DrawLaneNodes = false;
         public bool DrawLaneNodePointers = false;
         
-        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, Vector3.zero, Vector3.zero, RoadNodeType.End, 0, 0);
+        [SerializeField][HideInInspector] private RoadNode _start;
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private GameObject _roadNodeContainer;
@@ -375,9 +375,9 @@ namespace RoadGenerator
 
             // Calculate the position of the new node
             Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
-            
+            Quaternion rotation = roadNode.Rotation * Quaternion.Euler(0, isPrimary ? 0 : 180, 0);
             // Create the new node
-            current = new LaneNode(position, roadNode.Rotation, roadNode, previous, null, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, rotation, roadNode, previous, null, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
