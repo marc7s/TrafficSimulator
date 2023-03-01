@@ -62,7 +62,7 @@ namespace RoadGenerator
         public bool DrawLaneNodes = false;
         public bool DrawLaneNodePointers = false;
         
-        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, Vector3.zero, Vector3.zero, RoadNodeType.End, 0, 0);
+        [SerializeField][HideInInspector] private RoadNode _start;
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private GameObject _roadNodeContainer;
