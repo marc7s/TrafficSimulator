@@ -28,6 +28,8 @@ namespace RoadGenerator
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
 
+        [HideInInspector] public bool IsSetup = false;
+
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
@@ -90,6 +92,8 @@ namespace RoadGenerator
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {
+            if (IsSetup) return;
+            IsSetup = true;
             // Find roads
             foreach(Transform roadT in _roadContainer.transform)
             {

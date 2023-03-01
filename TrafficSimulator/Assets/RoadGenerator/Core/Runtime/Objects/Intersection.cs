@@ -450,6 +450,15 @@ namespace RoadGenerator
                 }
             }     
         }
+        public LaneNode GetRandomLaneNode()
+        {
+            
+            List<LaneNode> laneNodes = new List<LaneNode>(LaneNodeFromNavigationNodeEdge.Values);
+            System.Random random = new System.Random();
+            int randomLaneNodeIndex = random.Next(0, laneNodes.Count);
+            return laneNodes[randomLaneNodeIndex];
+
+        }
         private bool IsThreeWayIntersection()
         {
             return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
@@ -457,7 +466,6 @@ namespace RoadGenerator
         /// <summary> Get the lane node that leads to the navigation node edge </summary>
         public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
         {
-            Debug.Log(navigationNodeEdge.EndNavigationNode.RoadNode.Position);
             return LaneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
         }
 

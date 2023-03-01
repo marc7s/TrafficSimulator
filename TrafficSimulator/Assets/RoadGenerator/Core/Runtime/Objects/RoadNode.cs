@@ -92,17 +92,26 @@ namespace RoadGenerator
                     {
                         return;
                     }
+                    curr.PrimaryNavigationNodeEdge = nextNavigationNode.PrimaryDirectionEdge;
+                    curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                     prevNavigationNode = nextNavigationNode;
                     if (nextNavigationNode.PrimaryDirectionEdge == null)
                         return;
                     nextNavigationNode = nextNavigationNode.PrimaryDirectionEdge.EndNavigationNode;
-           
+            
                     curr = curr.Next;
                     continue;
                 }
+
+                if (curr.IsNavigationNode && !curr.IsIntersection() && isClosed && curr.Next == null)
+                {
+                    curr.PrimaryNavigationNodeEdge = nextNavigationNode.PrimaryDirectionEdge;
+                    curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
+                    return;
+                }
+
+
                 curr.PrimaryNavigationNodeEdge = prevNavigationNode.PrimaryDirectionEdge;
-                if (nextNavigationNode.SecondaryDirectionEdge == null)
-                    Debug.Log(nextNavigationNode.RoadNode.Position + "dlkföggsfdklögsfdklöjgjflkdsö");
                 curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                 curr = curr.Next;
             }

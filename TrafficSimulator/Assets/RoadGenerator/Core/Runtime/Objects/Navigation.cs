@@ -93,60 +93,37 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
 
         public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind)
         {
-            //roadSystem.Setup();
             List<NavigationNode> nodeList = new List<NavigationNode>();
             nodeList.AddRange(roadSystem.RoadSystemGraph);
             System.Random random = new System.Random();
-            NavigationNode targetNode = currentEdge.EndNavigationNode;
-            //while(targetNode == currentEdge.EndNavigationNode)
-            //{
-                int randomIndex = random.Next(0, nodeList.Count);
-                targetNode = nodeList[randomIndex];
-            //}
+            int randomIndex = random.Next(0, nodeList.Count);
+            NavigationNode targetNode = nodeList[randomIndex];
             if (cube2 != null)
             {
                 GameObject.Destroy(cube2);
             }
-            cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube2.transform.position = targetNode.RoadNode.Position;
-            cube2.transform.position = new Vector3(cube2.transform.position.x, cube2.transform.position.y + 10f, cube2.transform.position.z);
-            cube2.transform.localScale = new Vector3(5f, 5f, 5f);
-            var cubeRenderer = cube2.GetComponent<Renderer>();
-            cubeRenderer.material.SetColor("_Color", Color.red);
             nodeToFind = targetNode;
             Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
             if (path.Count < 2)
             {
                 return GetRandomPath(roadSystem, currentEdge, out nodeToFind);
             }
-            //DrawNavigationPath(path);
             return path;
         }
 
-        public static void DrawNavigationPath(Stack<NavigationNodeEdge> path, GameObject container = null)
+        public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container)
         {
             foreach (Transform child in container.transform)
             {
                 GameObject.Destroy(child.gameObject);
             }
-
-            foreach (NavigationNodeEdge edge in path)
-            {
-                HighLightEdge(edge, container);
-            }
-        }
-
-        public static void HighLightEdge(NavigationNodeEdge edge, GameObject container)
-        {
-            RoadNode current = edge.StartNavigationNode.RoadNode;
-            List<Vector3> positions = new List<Vector3>();
-            while (current != null)
-            {
-                positions.Add(current.Position);
-                current = current.Next;
-            }
-            lineDrawer.DrawDebugLine(positions, Color.green, 10f, container);
-           // Debug.DrawLine(edge.StartNavigationNode.RoadNode.Position, edge.EndNavigationNode.RoadNode.Position, Color.green, 100f);
+            cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube2.transform.parent = container.transform;
+            cube2.transform.position = nodeToFind.RoadNode.Position;
+            cube2.transform.position = new Vector3(cube2.transform.position.x, cube2.transform.position.y + 10f, cube2.transform.position.z);
+            cube2.transform.localScale = new Vector3(5f, 5f, 5f);
+            var cubeRenderer = cube2.GetComponent<Renderer>();
+            cubeRenderer.material.SetColor("_Color", Color.red);
         }
     }
 }

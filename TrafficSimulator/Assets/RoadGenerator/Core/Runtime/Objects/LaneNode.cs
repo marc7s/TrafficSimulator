@@ -33,7 +33,6 @@ namespace RoadGenerator
 
         public NavigationNodeEdge GetNavigationEdge()
         {
-            Debug.Assert(Lane != null, "Lane is null");
             if (Lane.Type.Side == LaneSide.PRIMARY)
                 return _roadNode.PrimaryNavigationNodeEdge;
             else 
