@@ -75,7 +75,7 @@ namespace RoadGenerator
         public bool DrawLaneNodes = false;
         public bool DrawLaneNodePointers = false;
         
-        [SerializeField][HideInInspector] private RoadNode _start = new RoadNode(Vector3.zero, Vector3.zero, Vector3.zero, RoadNodeType.End, 0, 0);
+        [SerializeField][HideInInspector] private RoadNode _start;
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private GameObject _roadNodeContainer;
@@ -422,7 +422,7 @@ namespace RoadGenerator
             Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
             
             // Create the new node
-            current = new LaneNode(position, roadNode.Rotation, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, roadNode, previous, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
@@ -453,10 +453,10 @@ namespace RoadGenerator
             for(int i = 0; i < laneCount; i++)
             {
                 // Primary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth / 2, currRoadNode.Rotation, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Primary, currRoadNode, 0)));
 
                 // Secondary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth / 2, currRoadNode.Rotation, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Secondary, currRoadNode, 0)));
             }
             
             // Go through all road nodes and add the corresponding lane nodes
@@ -485,8 +485,8 @@ namespace RoadGenerator
                 (LaneNode secondaryPrev, LaneNode secondaryCurr) = laneNodes[i + 1];
 
                 // Create the lanes
-                Lane primaryLane = new Lane(this, primaryCurr.First, new LaneType(LaneSide.PRIMARY, i / 2));
-                Lane secondaryLane = new Lane(this, secondaryCurr.First.Reverse(), new LaneType(LaneSide.SECONDARY, i / 2));
+                Lane primaryLane = new Lane(this, primaryCurr.First, new LaneType(LaneSide.Primary, i / 2));
+                Lane secondaryLane = new Lane(this, secondaryCurr.First.Reverse(), new LaneType(LaneSide.Secondary, i / 2));
 
                 // Add the lanes
                 _lanes.Add(primaryLane);
@@ -675,7 +675,7 @@ namespace RoadGenerator
             GameObject laneObject = new GameObject();
             
             // Set the lane name
-            string sidePrefix = lane.Type.Side == LaneSide.PRIMARY ? "Primary" : "Secondary";
+            string sidePrefix = lane.Type.Side == LaneSide.Primary ? "Primary" : "Secondary";
             laneObject.name = sidePrefix + LANE_NAME + lane.Type.Index;
             
             // Set the lane as a child of the Lanes container object
