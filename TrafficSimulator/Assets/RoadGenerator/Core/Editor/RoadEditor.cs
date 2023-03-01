@@ -11,7 +11,9 @@ namespace RoadEditor
             private SerializedProperty _laneAmount;
             private SerializedProperty _laneWidth;
             private SerializedProperty _thickness;
-            private SerializedProperty _laneVertexSpacing;
+            private SerializedProperty _maxAngleError;
+            private SerializedProperty _minVertexDistance;
+            private SerializedProperty _maxRoadNodeDistance;
             private SerializedProperty _drawLanes;
             private SerializedProperty _drawRoadNodes;
             private SerializedProperty _drawLaneNodes;
@@ -23,7 +25,9 @@ namespace RoadEditor
             _laneAmount = serializedObject.FindProperty("LaneAmount");
             _laneWidth = serializedObject.FindProperty("LaneWidth");
             _thickness = serializedObject.FindProperty("Thickness");
-            _laneVertexSpacing = serializedObject.FindProperty("LaneVertexSpacing");
+            _maxAngleError = serializedObject.FindProperty("MaxAngleError");
+            _minVertexDistance = serializedObject.FindProperty("MinVertexDistance");
+            _maxRoadNodeDistance = serializedObject.FindProperty("MaxRoadNodeDistance");
             _drawLanes = serializedObject.FindProperty("DrawLanes");
             _drawRoadNodes = serializedObject.FindProperty("DrawRoadNodes");
             _drawLaneNodes = serializedObject.FindProperty("DrawLaneNodes");
@@ -42,7 +46,9 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_laneAmount);
             EditorGUILayout.PropertyField(_laneWidth);
             EditorGUILayout.PropertyField(_thickness);
-            EditorGUILayout.PropertyField(_laneVertexSpacing);
+            EditorGUILayout.PropertyField(_maxAngleError);
+            EditorGUILayout.PropertyField(_minVertexDistance);
+            EditorGUILayout.PropertyField(_maxRoadNodeDistance);
             EditorGUILayout.PropertyField(_drawLanes);
             EditorGUILayout.PropertyField(_drawRoadNodes);
             EditorGUILayout.PropertyField(_drawLaneNodes);
@@ -70,10 +76,22 @@ namespace RoadEditor
                 road.Thickness = _thickness.floatValue;
             }
 
-            if(_laneVertexSpacing.floatValue != road.LaneVertexSpacing)
+            if(_maxAngleError.floatValue != road.MaxAngleError)
             {
                 changed = true;
-                road.LaneVertexSpacing = _laneVertexSpacing.floatValue;
+                road.MaxAngleError = _maxAngleError.floatValue;
+            }
+
+            if(_minVertexDistance.floatValue != road.MinVertexDistance)
+            {
+                changed = true;
+                road.MinVertexDistance = _minVertexDistance.floatValue;
+            }
+
+            if(_maxRoadNodeDistance.floatValue != road.MaxRoadNodeDistance)
+            {
+                changed = true;
+                road.MaxRoadNodeDistance = _maxRoadNodeDistance.floatValue;
             }
 
             if(_drawLanes.boolValue != road.DrawLanes)
