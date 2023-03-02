@@ -43,10 +43,10 @@ namespace Car {
         public int LaneIndex = 0;
 
         [Header("Settings")]
-        [SerializeField] public DrivingMode _mode = DrivingMode.Quality;
+        [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
-        public NavigationMode NavigationMode = NavigationMode.Line;
+        private NavigationMode _navigationMode = NavigationMode.Line;
 
         [Header("Quality mode settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -139,14 +139,14 @@ namespace Car {
                 P_MoveToFirstPosition();
             }
             
-            if (NavigationMode == NavigationMode.RandomNavigationPath)
+            if (_navigationMode == NavigationMode.RandomNavigationPath)
             {
                 _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEndNode);
                 // If something went wrong, switch to random navigation
                 if (_navigationPath == null)
                 {
                     Debug.LogError("Could not generate a random navigation path");
-                    NavigationMode = NavigationMode.Random;
+                    _navigationMode = NavigationMode.Random;
                 }
                 if (ShowNavigationPath)
                     Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPathContainer);  
@@ -402,7 +402,7 @@ namespace Car {
 
         private void UpdateTargetFromNavigation()
         {
-            if (NavigationMode == NavigationMode.Line)
+            if (_navigationMode == NavigationMode.Line)
                 return;
             
             bool isNonIntersectionNavigationNode = _target.RoadNode.IsNavigationNode && !_target.IsIntersection();
@@ -414,14 +414,14 @@ namespace Car {
             }
             
             // When the navigation path is empty, get a new one
-            if (_navigationPath.Count == 0 && NavigationMode == NavigationMode.RandomNavigationPath)
+            if (_navigationPath.Count == 0 && _navigationMode == NavigationMode.RandomNavigationPath)
             {
                 _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEndNode);
                 // If something went wrong, switch to random navigation
                 if (_navigationPath == null)
                 {
                     Debug.LogError("Could not generate a random navigation path");
-                    NavigationMode = NavigationMode.Random;
+                    _navigationMode = NavigationMode.Random;
                 }
                 if (ShowNavigationPath)
                     Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPathContainer);
@@ -433,15 +433,15 @@ namespace Car {
                 bool haveIntersectionBeenChecked = _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
                 if (haveIntersectionBeenChecked)
                 {
-                    if (NavigationMode == NavigationMode.RandomNavigationPath)
+                    if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
                         _target = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop());
                         // If the intersection doesn't have a lane node that matches the navigation path, unexpected behaviour has occurred, switch to random navigation
                         if (_target == null)
-                            NavigationMode = NavigationMode.Random;
+                            _navigationMode = NavigationMode.Random;
                     }
                         
-                    if (NavigationMode == NavigationMode.Random)
+                    if (_navigationMode == NavigationMode.Random)
                         _target = _target.RoadNode.Intersection.GetRandomLaneNode();
                     _startNode = _target.First;
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
