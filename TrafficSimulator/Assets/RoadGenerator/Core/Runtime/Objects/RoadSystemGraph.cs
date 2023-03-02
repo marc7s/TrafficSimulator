@@ -119,12 +119,7 @@ namespace RoadGenerator
                     }
 
                     // Edges with the current cost are added in both directions
-                    NavigationNodeEdge edge = new NavigationNodeEdge(graphNode, PreviouslyAddedNode, _currentCost);
-                    PreviouslyAddedNode.Edges.Add(edge);
-                    PreviouslyAddedNode.PrimaryDirectionEdge = edge;
-                    NavigationNodeEdge edge4 = new NavigationNodeEdge(PreviouslyAddedNode, graphNode, _currentCost);
-                    graphNode.Edges.Add(edge4);
-                    graphNode.SecondaryDirectionEdge = edge4;
+                    AddEdgeInBothDirections(PreviouslyAddedNode, graphNode, _currentCost);
 
                     PreviouslyAddedNode = graphNode;
                     _currentCost = 0f;
