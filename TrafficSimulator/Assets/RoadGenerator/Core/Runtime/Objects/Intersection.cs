@@ -101,8 +101,8 @@ namespace RoadGenerator
             {
                 CreateIntersectionContainer();
             }
-            //AssignTrafficLights();
-            AssignTrafficLights2();
+            AssignTrafficLights();
+            OffsetTrafficLights();
         }
 
         /// <summary> Returns a list of all RoadNodes that are of type `JunctionEdge` or an intersection. This is because for 3-way intersections, the intersection node are used as an anchor </summary>
@@ -147,11 +147,13 @@ namespace RoadGenerator
             trafficLight.transform.parent = TrafficLightController.transform;
         }
 
-        private void AssignTrafficLights2()
+        private void AssignTrafficLights()
         {
             List<RoadNode> intersectionNodes = new List<RoadNode>();
             RoadNode road1Node = Road1.StartNode;
             RoadNode road2Node = Road2.StartNode;
+
+            int trafficLightCounter = 0;
 
             //Find the edge nodes of the roads
             while (road1Node != null)
@@ -170,9 +172,6 @@ namespace RoadGenerator
                 }
                 road2Node = road2Node.Next;
             }
-
-            Debug.Log("Total junc nodes: " + intersectionNodes.Count);
-            int trafficLightCounter = 0;
 
             // Spawn a traffic light at each junction node
             if (Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
@@ -203,6 +202,18 @@ namespace RoadGenerator
                     }        
                     trafficLightCounter++;
                 }
+            }
+        }
+
+        private void OffsetTrafficLights()
+        {
+            float laneWidth = Road1.LaneWidth;
+            int laneCount1 = Road1.LaneCount;
+            int laneCount2 = Road2.LaneCount;
+
+            foreach(Transform child in TrafficLightController.transform)
+            {
+                child.position += (laneCount1/2) * child.right * laneWidth;
             }
         }
 
