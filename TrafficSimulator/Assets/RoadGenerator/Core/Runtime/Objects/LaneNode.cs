@@ -33,11 +33,9 @@ namespace RoadGenerator
 
         public NavigationNodeEdge GetNavigationEdge()
         {
-            if (_laneSide == LaneSide.Primary)
-                return _roadNode.PrimaryNavigationNodeEdge;
-            else 
-                return _roadNode.SecondaryNavigationNodeEdge;
+            return _laneSide == LaneSide.Primary ? _roadNode.PrimaryNavigationNodeEdge : _roadNode.SecondaryNavigationNodeEdge;
         }
+        
         public RoadNode RoadNode
         {
             get => _roadNode;
