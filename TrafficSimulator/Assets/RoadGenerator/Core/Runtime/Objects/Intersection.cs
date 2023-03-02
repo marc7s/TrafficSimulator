@@ -179,7 +179,14 @@ namespace RoadGenerator
             {
                 foreach (RoadNode junctionNode in intersectionNodes)
                 {
-
+                    if(trafficLightCounter % 2 == 0)
+                    {
+                        SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation);
+                    } else
+                    {
+                        SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation * Quaternion.Euler(0, 180, 0));
+                    }
+                    trafficLightCounter++;
                 }
             }
             // If its a 4-way intersection, spawn a traffic light at each junction node
@@ -190,8 +197,7 @@ namespace RoadGenerator
                     if(trafficLightCounter % 2 == 0)
                     {
                         SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation);
-                    }
-                    else
+                    } else
                     {
                         SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation * Quaternion.Euler(0, 180, 0));
                     }        
