@@ -66,7 +66,7 @@ namespace RoadGenerator
                 
                 while(curr.Next != null)
                 {
-                    if(!(curr.IsIntersection() || curr.Type == RoadNodeType.JunctionEdge))
+                    if(!curr.IsIntersection())
                         count++;
                     curr = curr.Next;
                 }
@@ -118,7 +118,7 @@ namespace RoadGenerator
                     curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                     return;
                 }
-
+           
                 curr.PrimaryNavigationNodeEdge = prevNavigationNode.PrimaryDirectionEdge;
                 curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                 curr = curr.Next;

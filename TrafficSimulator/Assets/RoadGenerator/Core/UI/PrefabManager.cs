@@ -10,7 +10,6 @@ namespace RoadGenerator
     {
     #if UNITY_EDITOR
         public GameObject RoadSystem;
-        public GameObject Intersection;
         public RoadSigns Signs;
 
         [Serializable]

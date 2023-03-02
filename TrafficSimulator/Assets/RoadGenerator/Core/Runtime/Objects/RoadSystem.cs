@@ -128,6 +128,7 @@ namespace RoadGenerator
             intersectionObject.transform.parent = _intersectionContainer.transform;
             
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
+            intersection.ID = System.Guid.NewGuid().ToString();
             intersection.Type = intersectionPointData.Type;
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;

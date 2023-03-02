@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using RoadGenerator.Utility;
+﻿using RoadGenerator.Utility;
 using UnityEngine;
 
 
