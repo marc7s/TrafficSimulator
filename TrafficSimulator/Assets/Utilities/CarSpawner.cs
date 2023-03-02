@@ -179,7 +179,6 @@ namespace RoadGenerator
 
         private void SpawnCar(int index)
         {
-            float _vehicleLength = _carPrefab.GetComponent<AutoDrive>().VehicleLength;
             _currentCar = Instantiate(_carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
             _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
             _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
