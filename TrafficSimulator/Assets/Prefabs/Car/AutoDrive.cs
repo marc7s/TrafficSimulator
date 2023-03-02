@@ -61,7 +61,7 @@ namespace Car {
         [SerializeField] private float _totalDistance = 0;
 
         private Vehicle _vehicle;
-        private float _vehicleLength;
+        public float _vehicleLength;
 
         // Quality variables
         private float _targetLookaheadDistance = 0;
@@ -179,8 +179,7 @@ namespace Car {
             {
                 node.UnsetVehicle(_vehicle);
             }
-            _occupiedNodes.Clear();
-            _occupiedNodes = getOccupiedNodes(_currentNode);
+            _occupiedNodes = getOccupiedNodes();
             foreach (LaneNode node in _occupiedNodes)
             {
                 node.SetVehicle(_vehicle);
@@ -188,15 +187,20 @@ namespace Car {
         }
 
         // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
-        private List<LaneNode> getOccupiedNodes(LaneNode node)
+        private List<LaneNode> getOccupiedNodes()
         {
             List<LaneNode> nodes = new List<LaneNode>();
+            LaneNode node = _currentNode;
             while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
             {
                 nodes.Add(node);
                 node = node.Prev;
             }
-            node = _currentNode.Next;
+            try {
+                node = _currentNode.Next;
+            } catch (Exception e) {
+                Debug.Log(e);
+            }
             while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
             {
                 nodes.Add(node);
@@ -393,7 +397,7 @@ namespace Car {
                     break;
                 case ShowTargetLines.All:
                     _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, Q_GetTarget().Position, transform.position, _currentNode.Position});
-                    _targetLineRenderer.positionCount = 4;
+                    _targetLineRenderer.positionCount = 5;
                     break;
             }
         }
@@ -518,9 +522,14 @@ namespace Car {
             get => _currentNode;
         }
 
-        public double getTotalDistance()
+        public float VehicleLength
         {
-            return _totalDistance;
+            get => _vehicleLength;
+        }
+
+        public double TotalDistance
+        {
+            get => _totalDistance;
         }
         
     }

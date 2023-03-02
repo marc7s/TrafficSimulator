@@ -11,7 +11,6 @@ namespace Car
         void Start()
         {
             base.Init();
-            Debug.Log(Id + " Im a car");
         }
 
         // Update is called once per frame
