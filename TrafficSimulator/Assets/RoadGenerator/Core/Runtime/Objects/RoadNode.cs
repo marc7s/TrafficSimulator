@@ -1,6 +1,5 @@
 using UnityEngine;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace RoadGenerator
 {
@@ -25,7 +24,6 @@ namespace RoadGenerator
         private RoadNodeType _type;
         public bool IsNavigationNode = false;
         private float _time;
-        
         private string _id;
 
         // A list of all intersection types
@@ -52,10 +50,11 @@ namespace RoadGenerator
         }
         public override RoadNode Copy()
         {
-            RoadNode copy = new RoadNode(_position, _tangent, _normal, _type, _prev, _next, _distanceToPrevNode, _time);
-            copy.PrimaryNavigationNodeEdge = PrimaryNavigationNodeEdge;
-            copy.Intersection = Intersection;
-            return copy;
+            return new RoadNode(_position, _tangent, _normal, _type, _prev, _next, _distanceToPrevNode, _time)
+            {
+                PrimaryNavigationNodeEdge = PrimaryNavigationNodeEdge,
+                Intersection = Intersection
+            };
         }
 
         public int CountNonIntersections
@@ -74,13 +73,13 @@ namespace RoadGenerator
                 return count;
             }
         }
-        public void AddNavigationEdgeToRoadNodes(NavigationNode startNavigationNode, NavigationNode endNavigationNode, bool isClosed)
+        public void AddNavigationEdgeToRoadNodes(NavigationNode startNavigationNode, bool isClosed)
         {
             RoadNode curr = this;
             NavigationNode prevNavigationNode = startNavigationNode;
             NavigationNode nextNavigationNode = startNavigationNode.Edges[0].EndNavigationNode;
 
-            // Using a sliding window with the start being a navigational node and the end begin the edge pointing in the road direction
+            // Using a sliding window with the start being a navigational node and the end being the next navigational node in the primary direction
             while(curr != null) 
             {
                 if (curr.IsIntersection())
@@ -106,20 +105,19 @@ namespace RoadGenerator
                         curr = curr.Next;
                         continue;
                     }
-                    prevNavigationNode = nextNavigationNode;    
+                    prevNavigationNode = nextNavigationNode;
                     nextNavigationNode = nextNavigationNode.PrimaryDirectionEdge.EndNavigationNode;
             
                     curr = curr.Next;
                     continue;
                 }
-
+                // If the end of the road and the road is closed
                 if (curr.IsNavigationNode && !curr.IsIntersection() && isClosed && curr.Next == null)
                 {
                     curr.PrimaryNavigationNodeEdge = nextNavigationNode.PrimaryDirectionEdge;
                     curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                     return;
                 }
-
 
                 curr.PrimaryNavigationNodeEdge = prevNavigationNode.PrimaryDirectionEdge;
                 curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
@@ -133,83 +131,26 @@ namespace RoadGenerator
             RoadNode curr = this;
             while(curr != null)
             {
-                if (curr.Type == RoadNodeType.JunctionEdge)
-                {
-                    foreach (Intersection intersection in road.Intersections)
-                    {
-                        if (curr.Position == intersection.Road1AnchorPoint1)
-                        {
-                            if(curr.PrimaryNavigationNodeEdge.EndNavigationNode.RoadNode.Position != intersection.IntersectionPosition)
-                            {
-                                intersection.Road1AnchorPoint1NavigationEdge = curr.PrimaryNavigationNodeEdge;
-                            }
-                            else
-                            {
-                                intersection.Road1AnchorPoint1NavigationEdge = curr.SecondaryNavigationNodeEdge;
-                            }
-                        }
-                        if (curr.Position == intersection.Road1AnchorPoint2)
-                        {
-                            if(curr.PrimaryNavigationNodeEdge.EndNavigationNode.RoadNode.Position != intersection.IntersectionPosition)
-                            {
-                                intersection.Road1AnchorPoint2NavigationEdge = curr.PrimaryNavigationNodeEdge;
-                            }
-                            else
-                            {
-                                intersection.Road1AnchorPoint2NavigationEdge = curr.SecondaryNavigationNodeEdge;
-                            }
-
-                        }
-                        if (curr.Position == intersection.Road2AnchorPoint1)
-                        {
-                            if(curr.PrimaryNavigationNodeEdge.EndNavigationNode.RoadNode.Position != intersection.IntersectionPosition)
-                            {
-                                intersection.Road2AnchorPoint1NavigationEdge = curr.PrimaryNavigationNodeEdge;
-                            }
-                            else
-                            {
-                                intersection.Road2AnchorPoint1NavigationEdge = curr.SecondaryNavigationNodeEdge;
-                            }
-                        }
-                        if (curr.Position == intersection.Road2AnchorPoint2)
-                        {
-                            if(curr.PrimaryNavigationNodeEdge.EndNavigationNode.RoadNode.Position != intersection.IntersectionPosition)
-                            {
-                                intersection.Road2AnchorPoint2NavigationEdge = curr.PrimaryNavigationNodeEdge;
-                            }
-                            else
-                            {
-                                intersection.Road2AnchorPoint2NavigationEdge = curr.SecondaryNavigationNodeEdge;
-                            }
-                        }
-                    }
-
-                }
-                curr = curr.Next;
-            }
-        }
-
-        public void ReverseEdges() 
-        {
-            RoadNode curr = this;
-            while (curr != null) 
-            {
-                if (curr.PrimaryNavigationNodeEdge == null)
+                if (curr.Type != RoadNodeType.JunctionEdge)
                 {
                     curr = curr.Next;
                     continue;
                 }
-                foreach (NavigationNodeEdge edge in curr.PrimaryNavigationNodeEdge.EndNavigationNode.Edges)
+                
+                foreach (Intersection intersection in road.Intersections)
                 {
-                    if (edge.EndNavigationNode == curr.PrimaryNavigationNodeEdge.StartNavigationNode)
-                    {
-
-                        curr.PrimaryNavigationNodeEdge = edge;
-                    }
+                    bool isPrimaryEdgePointingToIntersection = curr.PrimaryNavigationNodeEdge.EndNavigationNode.RoadNode.Position == intersection.IntersectionPosition;
+                    NavigationNodeEdge edge = isPrimaryEdgePointingToIntersection ? curr.SecondaryNavigationNodeEdge : curr.PrimaryNavigationNodeEdge;
+                    if (curr.Position == intersection.Road1AnchorPoint1)
+                        intersection.Road1AnchorPoint1NavigationEdge = edge;
+                    if (curr.Position == intersection.Road1AnchorPoint2)
+                        intersection.Road1AnchorPoint2NavigationEdge = edge;
+                    if (curr.Position == intersection.Road2AnchorPoint1)
+                        intersection.Road2AnchorPoint1NavigationEdge = edge;
+                    if (curr.Position == intersection.Road2AnchorPoint2)
+                        intersection.Road2AnchorPoint2NavigationEdge = edge;
                 }
                 curr = curr.Next;
-                if (curr == null)
-                    break;
             }
         }
 
