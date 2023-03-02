@@ -26,7 +26,7 @@ namespace RoadGenerator
         }
 
         public bool Equals(AStarNode other) {
-            return string.Equals(GraphNode.RoadNode.Position.ToString(), other.GraphNode.RoadNode.Position.ToString());
+            return GraphNode.RoadNode.Position.ToString() == other.GraphNode.RoadNode.Position.ToString();
         }
     }
 
@@ -45,18 +45,20 @@ namespace RoadGenerator
         {
             AStarNode start = new AStarNode(startNode, null, null, 0, 0);
             AStarNode target = new AStarNode(endNode, null, null, 0, 0);
-            PriorityQueue<AStarNode> toBeSearched = new PriorityQueue<AStarNode>();
+            
             Dictionary<string, double> costMap = new Dictionary<string, double>();
+            
+            PriorityQueue<AStarNode> toBeSearched = new PriorityQueue<AStarNode>();
             toBeSearched.Enqueue(start);
 
             while (toBeSearched.Count > 0)
             {
                 // Get the node with the lowest estimated cost to the target
                 AStarNode current = toBeSearched.Dequeue();
+                
                 if (current.Equals(target))
-                {
                     return GetPathToNode(current);
-                }
+
                 // Check all edges from the current node
                 foreach (NavigationNodeEdge edge in current.GraphNode.Edges)
                 {
@@ -110,21 +112,23 @@ namespace RoadGenerator
                 return new Stack<NavigationNodeEdge>();
             }
             List<NavigationNode> nodeList = roadSystem.RoadSystemGraph;
+            
             System.Random random = new System.Random();
             int randomIndex = random.Next(0, nodeList.Count);
             NavigationNode targetNode = nodeList[randomIndex];
+            
             navigationMode = NavigationMode.RandomNavigationPath;
             nodeToFind = targetNode;
             Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
-            if (path.Count < 1)
-                return GetRandomPath(roadSystem, currentEdge, out nodeToFind, out navigationMode, iterationCount + 1);
-            return path;
+            
+            return path.Count >= 1 ? path : GetRandomPath(roadSystem, currentEdge, out nodeToFind, out navigationMode, iterationCount + 1);
         }
         
         public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container, GameObject targetMarker)
         {
             if(nodeToFind == null)
                 return;
+            
             // TODO DRAW ACTUAL LANE PATH, CURRENTLY ONLY DRAWS A CUBE AT THE DESTINATION
 
             foreach (Transform child in container.transform)
@@ -134,11 +138,6 @@ namespace RoadGenerator
             Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
             GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
             marker.transform.parent = container.transform;
-            /*cube.transform.position = nodeToFind.RoadNode.Position;
-            cube.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y + 10f, cube.transform.position.z);
-            cube.transform.localScale = new Vector3(5f, 5f, 5f);
-            Renderer cubeRenderer = cube.GetComponent<Renderer>();
-            cubeRenderer.material.SetColor("_Color", Color.red);*/
         }
 
         private static void PlaceNavigationTargetMarker(UnityEngine.Object instance)
