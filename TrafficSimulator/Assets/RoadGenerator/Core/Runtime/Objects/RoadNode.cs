@@ -19,10 +19,10 @@ namespace RoadGenerator
         public Intersection Intersection;
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
         public NavigationNodeEdge SecondaryNavigationNodeEdge;
+        public bool IsNavigationNode = false;
         private Vector3 _tangent;
         private Vector3 _normal;
         private RoadNodeType _type;
-        public bool IsNavigationNode = false;
         private float _time;
         private string _id;
 
@@ -79,7 +79,7 @@ namespace RoadGenerator
             NavigationNode prevNavigationNode = startNavigationNode;
             NavigationNode nextNavigationNode = startNavigationNode.Edges[0].EndNavigationNode;
 
-            // Using a sliding window with the start being a navigational node and the end being the next navigational node in the primary direction
+            // Changing the prev and next navigation node to always be the nodes closest to the current node in each direction
             while(curr != null) 
             {
                 if (curr.IsIntersection())

@@ -33,7 +33,7 @@ namespace RoadGenerator
         [HideInInspector] public NavigationNodeEdge Road1AnchorPoint2NavigationEdge;
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
-        [HideInInspector] public Dictionary<string, LaneNode> LaneNodeFromNavigationNodeEdge;
+        [HideInInspector] private Dictionary<string, LaneNode> _laneNodeFromNavigationNodeEdge;
         [HideInInspector] public IntersectionType Type;
 
         [Header("Intersection settings")]
@@ -394,7 +394,7 @@ namespace RoadGenerator
         public void MapIntersectionNavigation()
         {
             // Map the lane node to take in order to get to the navigation node edge
-            LaneNodeFromNavigationNodeEdge = new Dictionary<string, LaneNode>();
+            _laneNodeFromNavigationNodeEdge = new Dictionary<string, LaneNode>();
             List<Lane> lanes = new List<Lane>();
             
             lanes.AddRange(Road1.Lanes);
@@ -420,16 +420,14 @@ namespace RoadGenerator
 
                     // If the node is an anchor point, we map the edge going out of the intersection to the node
                     if (currentNode.RoadNode.Position == Road1AnchorPoint1)
-                        LaneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint1NavigationEdge.ID, currentNode);
+                        _laneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint1NavigationEdge.ID, currentNode);
                     if (currentNode.RoadNode.Position == Road1AnchorPoint2)
-                        LaneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint2NavigationEdge.ID, currentNode);
+                        _laneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint2NavigationEdge.ID, currentNode);
                     if (currentNode.RoadNode.Position == Road2AnchorPoint1)
-                        LaneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint1NavigationEdge.ID, currentNode);
+                        _laneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint1NavigationEdge.ID, currentNode);
                     // If the intersection is a three way intersection, the second anchor point does not exist
                     if (!IsThreeWayIntersection() && currentNode.RoadNode.Position == Road2AnchorPoint2)
-                    {
-                        LaneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
-                    }
+                        _laneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
                     currentNode = currentNode.Next;
                 }
             }     
@@ -437,7 +435,7 @@ namespace RoadGenerator
         /// <summary> Get a random lane node that leads out of the intersection </summary>
         public LaneNode GetRandomLaneNode()
         {
-            List<LaneNode> laneNodes = new List<LaneNode>(LaneNodeFromNavigationNodeEdge.Values);
+            List<LaneNode> laneNodes = new List<LaneNode>(_laneNodeFromNavigationNodeEdge.Values);
             System.Random random = new System.Random();
             int randomLaneNodeIndex = random.Next(0, laneNodes.Count);
             return laneNodes[randomLaneNodeIndex];
@@ -445,12 +443,12 @@ namespace RoadGenerator
         /// <summary> Get the lane node that leads to the navigation node edge </summary>
         public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
         {
-            if (!LaneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
+            if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
                 return null;
             }  
-            return LaneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
+            return _laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
         }
         private bool IsThreeWayIntersection()
         {
