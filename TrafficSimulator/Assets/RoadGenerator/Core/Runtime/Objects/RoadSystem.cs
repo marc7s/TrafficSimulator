@@ -90,8 +90,11 @@ namespace RoadGenerator
         public void Setup()
         {
             // Making sure this is only called once
-            if (_isSetup) return;
-               _isSetup = true;
+            if (_isSetup) 
+                return;
+            
+            _isSetup = true;
+            
             // Find roads
             foreach(Transform roadT in _roadContainer.transform)
             {
