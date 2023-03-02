@@ -145,7 +145,7 @@ namespace RoadGenerator
         }
         public void UpdateRoadNoGraphUpdate()
         {
-           RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
+            RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
             if(roadMeshCreator != null)
             {
                 UpdateRoadNodes();

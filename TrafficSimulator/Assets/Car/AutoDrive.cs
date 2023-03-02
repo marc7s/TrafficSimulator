@@ -78,8 +78,8 @@ namespace Car {
         private LaneNode _endNode;
         private LaneNode _currentNode;
         private Vector3 _prevIntersectionPosition;
-        private NavigationNode _navigationPathEnd;
-        private Stack<NavigationNodeEdge> _navigationPath { get; set; } = new Stack<NavigationNodeEdge>();
+        private NavigationNode _navigationPathEndNode;
+        private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
 
         public LaneNode CustomStartNode = null;
 
@@ -141,7 +141,7 @@ namespace Car {
             
             if (NavigationMode == NavigationMode.RandomNavigationPath)
             {
-                _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEnd);
+                _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEndNode);
                 // If something went wrong, switch to random navigation
                 if (_navigationPath == null)
                 {
@@ -149,7 +149,7 @@ namespace Car {
                     NavigationMode = NavigationMode.Random;
                 }
                 if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEnd, _navigationPathContainer);  
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPathContainer);  
                 // If the starting node is an intersection, the previous intersection is set 
                 if (_target.RoadNode.Intersection != null)
                 {
@@ -412,7 +412,7 @@ namespace Car {
             // When the navigation path is empty, get a new one
             if (_navigationPath.Count == 0 && NavigationMode == NavigationMode.RandomNavigationPath)
             {
-                _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEnd);
+                _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEndNode);
                 // If something went wrong, switch to random navigation
                 if (_navigationPath == null)
                 {
@@ -420,7 +420,7 @@ namespace Car {
                     NavigationMode = NavigationMode.Random;
                 }
                 if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEnd, _navigationPathContainer);
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPathContainer);
             } 
             
             if (_target.Type == RoadNodeType.JunctionEdge && haveCurrentNodeBeenChecked)

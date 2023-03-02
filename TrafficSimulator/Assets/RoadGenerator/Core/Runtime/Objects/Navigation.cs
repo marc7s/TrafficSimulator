@@ -123,7 +123,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             cube.transform.position = nodeToFind.RoadNode.Position;
             cube.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y + 10f, cube.transform.position.z);
             cube.transform.localScale = new Vector3(5f, 5f, 5f);
-            var cubeRenderer = cube.GetComponent<Renderer>();
+            Renderer cubeRenderer = cube.GetComponent<Renderer>();
             cubeRenderer.material.SetColor("_Color", Color.red);
         }
     }

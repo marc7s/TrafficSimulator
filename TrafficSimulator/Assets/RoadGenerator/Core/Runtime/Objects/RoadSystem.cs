@@ -100,7 +100,6 @@ namespace RoadGenerator
                 
                 AddRoad(road);
             }
-            
 
             // Find intersections
             foreach(Transform intersectionT in _intersectionContainer.transform)
@@ -180,16 +179,12 @@ namespace RoadGenerator
             // Generate a new graph
             RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
 
-            
-           
-
             // Display the graph if the setting is active
             if (ShowGraph) {
                 // Create a new empty graph
                 CreateEmptyRoadGraph();
                 RoadSystemNavigationGraph.DrawGraph(this, RoadSystemGraph, _roadSystemGraphNodePrefab);
             }
-                
         }
 
         public void UpdateRoads()
