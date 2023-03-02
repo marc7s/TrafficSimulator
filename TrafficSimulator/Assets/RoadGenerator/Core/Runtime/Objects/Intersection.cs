@@ -14,12 +14,22 @@ namespace RoadGenerator
         FourWayIntersection
     }
 
+    public enum FlowType
+    {
+        TrafficLights,
+        StopSigns,
+    }
+
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     [ExecuteInEditMode()]
     [Serializable]
     public class Intersection : MonoBehaviour
     {
         [HideInInspector] public GameObject IntersectionObject;
+
+        [HideInInspector] public GameObject FlowContainer;
+        [HideInInspector] public GameObject TrafficLightController;
+
         [HideInInspector] public RoadSystem RoadSystem;
         [HideInInspector] public Vector3 IntersectionPosition;
         [HideInInspector] public Road Road1;
@@ -47,6 +57,8 @@ namespace RoadGenerator
         private float _thickness;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
+
+        [SerializeField] private GameObject _trafficLightPrefab;
 
         private Mesh _mesh;
         public const float IntersectionLength = 20f;
@@ -84,6 +96,13 @@ namespace RoadGenerator
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
+            // If intersection doesn't have a container, create one
+            if(FlowContainer == null)
+            {
+                CreateIntersectionContainer();
+            }
+            //AssignTrafficLights();
+            AssignTrafficLights2();
         }
 
         /// <summary> Returns a list of all RoadNodes that are of type `JunctionEdge` or an intersection. This is because for 3-way intersections, the intersection node are used as an anchor </summary>
@@ -100,6 +119,124 @@ namespace RoadGenerator
                 curr = curr.Next;
             }
             return junctionNodes;
+        }
+
+        private void CreateIntersectionContainer()
+        {
+            FlowContainer = new GameObject("FlowContainer");
+            FlowContainer.transform.parent = IntersectionObject.transform;
+            FlowContainer.transform.localPosition = Vector3.zero;
+            FlowContainer.transform.localRotation = Quaternion.identity;
+            FlowContainer.transform.localScale = Vector3.one;
+
+            CreateTrafficLightController();
+        }
+
+        private void CreateTrafficLightController()
+        {
+            TrafficLightController = new GameObject("TrafficLightController");
+            TrafficLightController.transform.parent = FlowContainer.transform;
+            TrafficLightController.transform.localPosition = Vector3.zero;
+            TrafficLightController.transform.localRotation = Quaternion.identity;
+            TrafficLightController.transform.localScale = Vector3.one;
+        }
+
+        private void SpawnTrafficLight(Vector3 position, Vector3 rotation)
+        {
+            GameObject trafficLight = Instantiate(_trafficLightPrefab, position, Quaternion.Euler(rotation));
+            trafficLight.transform.parent = TrafficLightController.transform;
+        }
+
+        private void AssignTrafficLights2()
+        {
+            List<RoadNode> veryepicnodes = new List<RoadNode>();
+            RoadNode road1Node = Road1.StartNode;
+            RoadNode road2Node = Road2.StartNode;
+
+            //Find the edge nodes of the roads
+            while (road1Node != null)
+            {
+                if (road1Node.Type == RoadNodeType.JunctionEdge)
+                {
+                    veryepicnodes.Add(road1Node);
+                }
+                road1Node = road1Node.Next;
+            }
+            while (road2Node != null)
+            {
+                if (road2Node.Type == RoadNodeType.JunctionEdge)
+                {
+                    veryepicnodes.Add(road2Node);
+                }
+                road2Node = road2Node.Next;
+            }
+            Debug.Log("Total junc nodes: " + veryepicnodes.Count);
+
+            int rotation = 0;
+            int rotationCounter = 0;
+            int trafficLightCounter = 0;
+            // Spawn a traffic light at each junction node
+            if (Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
+            {
+                foreach (RoadNode junctionNode in veryepicnodes)
+                {
+                    Debug.Log("Rotation: " + rotation + " | Counter: " + rotationCounter);
+                    SpawnTrafficLight(junctionNode.Position, new Vector3(0, rotation, 0));
+                    rotation += 90;
+                    if(rotationCounter == 0)
+                    {
+                        rotation += 90;
+                    }
+                    rotationCounter++;
+                }
+            }
+            // If its a 4-way intersection, spawn a traffic light at each junction node
+            else if (Type == IntersectionType.FourWayIntersection)
+            {
+                foreach (RoadNode junctionNode in veryepicnodes)
+                {                    
+                    Debug.Log("Rotation: " + junctionNode.Rotation);
+                    Debug.Log("Here");
+                    SpawnTrafficLight(junctionNode.Position, (junctionNode.Rotation * Quaternion.Euler(0, 180, 0).eulerAngles));
+                }
+            }
+        }
+
+        private void AssignTrafficLights()
+        {
+            int trafficLightCounter = 0;
+            // If its a 3-way intersection, spawn a traffic light at each junction node
+            if(Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
+            {
+                foreach(RoadNode junctionNode in GetJunctionNodes(Road1))
+                {
+                    if(trafficLightCounter == 0)
+                        SpawnTrafficLight(junctionNode.Position, new Vector3(0, 90, 0));
+                    else if(trafficLightCounter == 1)
+                        SpawnTrafficLight(junctionNode.Position, new Vector3(0, 180, 0));
+                    else if(trafficLightCounter == 2)
+                        SpawnTrafficLight(junctionNode.Position, new Vector3(0, 270, 0));
+                }
+            }
+            
+            // If its a 4-way intersection, spawn a traffic light at each junction node
+            else if(Type == IntersectionType.FourWayIntersection)
+            {
+                foreach(RoadNode junctionNode in GetJunctionNodes(Road1))
+                {
+                    if(trafficLightCounter == 0)
+                        SpawnTrafficLight(junctionNode.Position, new Vector3(0, 90, 0));
+                    else if(trafficLightCounter == 1)
+                        SpawnTrafficLight(junctionNode.Position, new Vector3(0, 180, 0));
+                }
+                foreach(RoadNode junctionNode in GetJunctionNodes(Road2))
+                {
+                    if(trafficLightCounter == 2)
+                        SpawnTrafficLight(junctionNode.Position, new Vector3(0, 270, 0));
+                    else if(trafficLightCounter == 3)
+                        SpawnTrafficLight(junctionNode.Position, new Vector3(0, 0, 0));
+                }
+            }
         }
 
         private void CreateIntersectionMesh()
