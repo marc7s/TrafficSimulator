@@ -228,7 +228,7 @@ namespace RoadGenerator
 
             // If the distance is less than the max distance, no intermediate nodes need to be added
             if(distanceToBridge <= MaxRoadNodeDistance)
-                return builder;
+                return endIsLastNode ? AppendNode(builder, end, tangent, normal, RoadNodeType.End) : builder;
             
             // Create a list to hold all intermediate positions that need to be added
             List<Vector3> roadNodePositions = new List<Vector3>();
@@ -410,9 +410,7 @@ namespace RoadGenerator
                         continue;
                     }
                 }
-                // If an end node is at the same place as an intersection the end node have to point to the intersection
-              //  if (curr.Prev.Position == curr.Position && curr.Prev.IsIntersection())
-                //    curr.Intersection = curr.Prev.Intersection;
+
                 // Bridge the gap between the current node and the current vertex point
                 roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i), i == _path.NumPoints - 1);
             }
