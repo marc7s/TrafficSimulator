@@ -27,16 +27,13 @@ namespace RoadGenerator
 
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
-
-        [HideInInspector] public bool IsSetup = false;
-
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
         [SerializeField][HideInInspector] public List<NavigationNode> RoadSystemGraph;
         [HideInInspector] public GameObject GraphContainer;
-
+        private bool _isSetup = false;
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
         public void AddRoad(Road road) => _roads.Add(road);
@@ -92,8 +89,9 @@ namespace RoadGenerator
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {
-            if (IsSetup) return;
-               IsSetup = true;
+            // Making sure this is only called once
+            if (_isSetup) return;
+               _isSetup = true;
             // Find roads
             foreach(Transform roadT in _roadContainer.transform)
             {

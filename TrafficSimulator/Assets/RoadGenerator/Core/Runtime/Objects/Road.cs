@@ -143,7 +143,7 @@ namespace RoadGenerator
                 ShowLaneNodes();
             }
         }
-        public void UpdateRoad2()
+        public void UpdateRoadNoGraphUpdate()
         {
            RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
             if(roadMeshCreator != null)
@@ -336,30 +336,13 @@ namespace RoadGenerator
                 prev.Next = curr;
             }
             // Create a new navigation graph
-            _navigationGraph = new RoadNavigationGraph(_start, this, path.IsClosed);
-            _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, _navigationGraph.EndNavigationNode, path.IsClosed); 
+            _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
+            _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
         
             RoadNode current = _start;
-///            Debug.Log("Road Nodes: ");
-            while(current != null)
-            {
-                if (current.Type == RoadNodeType.JunctionEdge)
-                {
-                  
-                    //Debug.Log("Node: " + current.Position + " is a navigation node");
-                }
-                current = current.Next;
-            }
-            
+            // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
-            {
-                // Update the navigation graph with the intersections
                 _start.UpdateIntersectionJunctionEdgeNavigation(this);
-            }
-            
-    
-
-             
             
         }
 
@@ -374,7 +357,6 @@ namespace RoadGenerator
 
             // Calculate the position of the new node
             Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
-            Quaternion rotation = roadNode.Rotation * Quaternion.Euler(0, isPrimary ? 0 : 180, 0);
             // Create the new node
             current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, roadNode, previous, null, Vector3.Distance(position, previous.Position));
             

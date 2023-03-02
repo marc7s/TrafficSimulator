@@ -33,7 +33,7 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
 
     public static class Navigation
     {
-        public static GameObject cube2;
+        private const int MAX_ITERATIONS = 100;
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
         public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNode startNode, NavigationNode endNode)
         {
@@ -90,38 +90,40 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             }
             return path;
         }
-
-        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind)
+        /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
+        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind, int iterationCount = 0)
         {
-            List<NavigationNode> nodeList = new List<NavigationNode>();
-            nodeList.AddRange(roadSystem.RoadSystemGraph);
+            // If a path is not found, return null
+            if (iterationCount > MAX_ITERATIONS)
+            {
+                nodeToFind = null;
+                return null;
+            }
+            List<NavigationNode> nodeList = roadSystem.RoadSystemGraph;
             System.Random random = new System.Random();
             int randomIndex = random.Next(0, nodeList.Count);
             NavigationNode targetNode = nodeList[randomIndex];
-
             nodeToFind = targetNode;
             Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
             if (path.Count < 2)
-            {
-                return GetRandomPath(roadSystem, currentEdge, out nodeToFind);
-            }
+                return GetRandomPath(roadSystem, currentEdge, out nodeToFind, iterationCount + 1);
             return path;
         }
-
+        
         public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container)
         {
-            // TODO DRAW ACTUAL LANE PATH
+            // TODO DRAW ACTUAL LANE PATH, CURRENTLY ONLY DRAWS A CUBE AT THE DESTINATION
 
             foreach (Transform child in container.transform)
             {
-                GameObject.Destroy(child.gameObject);
+                Object.Destroy(child.gameObject);
             }
-            cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube2.transform.parent = container.transform;
-            cube2.transform.position = nodeToFind.RoadNode.Position;
-            cube2.transform.position = new Vector3(cube2.transform.position.x, cube2.transform.position.y + 10f, cube2.transform.position.z);
-            cube2.transform.localScale = new Vector3(5f, 5f, 5f);
-            var cubeRenderer = cube2.GetComponent<Renderer>();
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.parent = container.transform;
+            cube.transform.position = nodeToFind.RoadNode.Position;
+            cube.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y + 10f, cube.transform.position.z);
+            cube.transform.localScale = new Vector3(5f, 5f, 5f);
+            var cubeRenderer = cube.GetComponent<Renderer>();
             cubeRenderer.material.SetColor("_Color", Color.red);
         }
     }

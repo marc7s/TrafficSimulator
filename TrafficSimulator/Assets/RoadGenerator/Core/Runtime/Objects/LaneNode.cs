@@ -37,7 +37,6 @@ namespace RoadGenerator
                 return _roadNode.PrimaryNavigationNodeEdge;
             else 
                 return _roadNode.SecondaryNavigationNodeEdge;
-
         }
         public RoadNode RoadNode
         {
@@ -51,7 +50,6 @@ namespace RoadGenerator
         {
             get => _vehicle;
         }
-
         public override LaneNode Copy()
         {
             return new LaneNode(_position, _laneSide, _roadNode, _prev, _next, _distanceToPrevNode);

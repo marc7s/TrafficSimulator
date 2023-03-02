@@ -11,15 +11,16 @@ namespace RoadGenerator
     {
         public NavigationNode EndNavigationNode;
         public NavigationNode StartNavigationNode;
-        public string ID;
+        private string _id;
         public double Cost;
         public NavigationNodeEdge(NavigationNode endNode, NavigationNode startNode, double cost)
         {
-            ID = System.Guid.NewGuid().ToString();
+            _id = System.Guid.NewGuid().ToString();
             EndNavigationNode = endNode;
             StartNavigationNode = startNode;
             Cost = cost;
         }
+        public string ID { get { return _id; } }
     }
     public class NavigationNode
     {
@@ -37,7 +38,6 @@ namespace RoadGenerator
     /// <summary> A graph representation of a road </summary>
     public class RoadNavigationGraph
     {
-        private Road _road;
         public NavigationNode StartNavigationNode;
         public NavigationNode EndNavigationNode;
         public List<NavigationNode> Graph = new List<NavigationNode>();
@@ -51,15 +51,15 @@ namespace RoadGenerator
         };
 
         private float _currentCost = 0f;
-        public RoadNavigationGraph(RoadNode roadNode, Road road, bool isClosed)
+        public RoadNavigationGraph(RoadNode roadNode, bool isClosed)
         {
-            _road = road;
-            RoadNode start = roadNode;
             RoadNode curr = roadNode;
             NavigationNode PreviouslyAddedNode = null;
             NavigationNode closedStartNodePrimaryDirection = null;
             NavigationNode closedStartNodeSecondaryDirection = null;
-            bool isPreviousNodeDivided = false;
+            NavigationNode prevNonIntersectionNodePrimary = null;
+            NavigationNode prevIntersectionNodeSecondary = null;
+            bool isPreviousNodeNotIntersection = false;
             while (curr != null)
             {
                 // Increase the current cost if the current node is not the starting node
@@ -86,9 +86,11 @@ namespace RoadGenerator
                     if (isClosed)
                     {
                         closedStartNodePrimaryDirection = PreviouslyAddedNode;
+                        prevNonIntersectionNodePrimary = closedStartNodePrimaryDirection;
                         closedStartNodeSecondaryDirection = new NavigationNode(curr);
+                        prevIntersectionNodeSecondary = closedStartNodeSecondaryDirection;
                         Graph.Add(closedStartNodeSecondaryDirection);
-                        isPreviousNodeDivided = true;
+                        isPreviousNodeNotIntersection = true;
                         curr.IsNavigationNode = true;
                     }
                         
@@ -100,24 +102,22 @@ namespace RoadGenerator
                     NavigationNode graphNode = new NavigationNode(curr);
                     Graph.Add(graphNode);
 
-                    if (isPreviousNodeDivided)
+                    // When a non intersection node is added, we need to one node for the primary direction and one for the secondary direction
+                    if (isPreviousNodeNotIntersection)
                     {
-                        
                         // Edges with the current cost are added in both directions
-                        //PreviouslyAddedNode.Edges.Add(new NavigationNodeEdge(graphNode, PreviouslyAddedNode, _currentCost));
-                        NavigationNodeEdge edge1 = new NavigationNodeEdge(closedStartNodeSecondaryDirection, graphNode, _currentCost);
-                        graphNode.Edges.Add(edge1);
-                        graphNode.SecondaryDirectionEdge = edge1;
-                        NavigationNodeEdge edge2 = new NavigationNodeEdge(graphNode, closedStartNodePrimaryDirection, _currentCost);
-                        closedStartNodePrimaryDirection.Edges.Add(edge2);
-                        closedStartNodeSecondaryDirection.PrimaryDirectionEdge = edge2;
-                        closedStartNodePrimaryDirection.PrimaryDirectionEdge = edge2;
+                        NavigationNodeEdge edgeSecondaryDirection = new NavigationNodeEdge(prevIntersectionNodeSecondary, graphNode, _currentCost);
+                        graphNode.Edges.Add(edgeSecondaryDirection);
+                        graphNode.SecondaryDirectionEdge = edgeSecondaryDirection;
+                        NavigationNodeEdge edgePrimaryDirection = new NavigationNodeEdge(graphNode, prevNonIntersectionNodePrimary, _currentCost);
+                        prevNonIntersectionNodePrimary.Edges.Add(edgePrimaryDirection);
+                        prevIntersectionNodeSecondary.PrimaryDirectionEdge = edgePrimaryDirection;
+                        prevNonIntersectionNodePrimary.PrimaryDirectionEdge = edgePrimaryDirection;
 
                         PreviouslyAddedNode = graphNode;
                         _currentCost = 0f;
-                        isPreviousNodeDivided = false;
+                        isPreviousNodeNotIntersection = false;
                         continue;
-                        
                     }
 
                     // Edges with the current cost are added in both directions
@@ -134,20 +134,27 @@ namespace RoadGenerator
                 curr = curr.Next;
             }
             EndNavigationNode = PreviouslyAddedNode;
+            // If the road is closed we need to add the edges between the start and end node
             if (isClosed)
             {
-                
-                // Edges with the current cost are added in both directions
-                NavigationNodeEdge edge = new NavigationNodeEdge(closedStartNodeSecondaryDirection, EndNavigationNode, _currentCost);
-                EndNavigationNode.PrimaryDirectionEdge = edge;
-                EndNavigationNode.Edges.Add(edge);
-                NavigationNodeEdge edge2 = new NavigationNodeEdge(EndNavigationNode, closedStartNodeSecondaryDirection, _currentCost);
-                closedStartNodeSecondaryDirection.Edges.Add(edge2);
-                closedStartNodeSecondaryDirection.SecondaryDirectionEdge = edge2;
-                closedStartNodePrimaryDirection.SecondaryDirectionEdge = edge2;
-                
+                NavigationNodeEdge edgePrimary = new NavigationNodeEdge(closedStartNodeSecondaryDirection, EndNavigationNode, _currentCost);
+                EndNavigationNode.PrimaryDirectionEdge = edgePrimary;
+                EndNavigationNode.Edges.Add(edgePrimary);
+                NavigationNodeEdge edgeSecondary = new NavigationNodeEdge(EndNavigationNode, closedStartNodeSecondaryDirection, _currentCost);
+                closedStartNodeSecondaryDirection.Edges.Add(edgeSecondary);
+                closedStartNodeSecondaryDirection.SecondaryDirectionEdge = edgeSecondary;
+                closedStartNodePrimaryDirection.SecondaryDirectionEdge = edgeSecondary;   
             }
-            
+        }
+        
+        private void AddEdgeInBothDirections(NavigationNode prevNode, NavigationNode newNode, double cost)
+        {
+            NavigationNodeEdge edgePrimary = new NavigationNodeEdge(newNode, prevNode, cost);
+            prevNode.Edges.Add(edgePrimary);
+            prevNode.PrimaryDirectionEdge = edgePrimary;
+            NavigationNodeEdge edgeSecondary = new NavigationNodeEdge(prevNode, newNode, cost);
+            newNode.Edges.Add(edgeSecondary);
+            newNode.SecondaryDirectionEdge = edgeSecondary;
         }
         private float CalculateCost(float distance, float speedLimit = 1f)
         {
@@ -169,7 +176,7 @@ namespace RoadGenerator
             foreach (Road road in roadSystem.Roads)
             {
                 // Map the road into the graph
-                road.UpdateRoad2();
+                road.UpdateRoadNoGraphUpdate();
             }
             // Loop through all roads in the road system
             foreach(Road road in roadSystem.Roads)
@@ -179,6 +186,7 @@ namespace RoadGenerator
             }
             foreach (Intersection intersection in roadSystem.Intersections)
             {
+                // Map the intersections navigation
                 intersection.MapIntersectionNavigation(); 
             }
 
@@ -192,13 +200,13 @@ namespace RoadGenerator
             List<NavigationNode> addedFromThisRoad = new List<NavigationNode>();
             for (int i = 0; i < roadNavigationGraph.Count; i++)
             {
-                if(roadSystemGraph.FindAll(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position).Count != 0)
+                bool doesNodeExistInGraph = roadSystemGraph.FindAll(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position).Count != 0;
+                if(doesNodeExistInGraph)
                 {
                     NavigationNode node = roadSystemGraph.Find(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position);
+                    // If a node with the same position has already been added from this road, we don't want to add it again
                     if (addedFromThisRoad.Find(x => x.RoadNode.Position == node.RoadNode.Position) != null)
-                    {
                         continue;
-                    }
                     node.Edges.AddRange(roadNavigationGraph[i].Edges);
                     UpdateEdgeEndNode(roadNavigationGraph[i], node.RoadNode.Position, node);
                     roadNavigationGraph[i] = node;
@@ -209,11 +217,13 @@ namespace RoadGenerator
                 roadSystemGraph.AddRange(roadNavigationGraph.FindAll(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position));
             }
         }
+
         private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, Vector3 oldNodePosition, NavigationNode newNode)
         {
-            foreach (NavigationNodeEdge edge in navigationNodeToUpdate.Edges)
+            foreach (NavigationNodeEdge edge1 in navigationNodeToUpdate.Edges)
             {
-                foreach (NavigationNodeEdge edge2 in edge.EndNavigationNode.Edges)
+                // Finding the edges with the old node as the end node and updating them to the new node
+                foreach (NavigationNodeEdge edge2 in edge1.EndNavigationNode.Edges)
                 {
                     if (edge2.EndNavigationNode.RoadNode.Position == oldNodePosition)
                     {
