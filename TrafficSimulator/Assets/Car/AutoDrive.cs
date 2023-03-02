@@ -155,6 +155,10 @@ namespace Car {
                 {
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
                 }
+                if (_target.RoadNode.Next != null && _target.RoadNode.Next.Intersection != null && _target.RoadNode.Position == _target.RoadNode.Next.Position)
+                {
+                    _prevIntersectionPosition = _target.RoadNode.Next.Intersection.IntersectionPosition;
+                }
             }
         }
 
