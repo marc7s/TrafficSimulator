@@ -4,31 +4,38 @@ using UnityEngine;
 namespace RoadGenerator
 {
 /// <summary> A* wrapper class for the GraphNode class.  </summary>
-public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarNode>
- {
-    public NavigationNode GraphNode;
-    public AStarNode PreviousNode;
-    public double RouteCost;
-    public double EstimatedCost;
-    
-    public NavigationNodeEdge NavigationEdge;
-    public AStarNode(NavigationNode node, AStarNode previousNode, NavigationNodeEdge navigationNodeEdge, double routeCost, double estimatedCost){
-        GraphNode = node;
-        PreviousNode = previousNode;
-        RouteCost = routeCost;
-        EstimatedCost = estimatedCost;
-        NavigationEdge = navigationNodeEdge;
-    }
-
-    public int CompareTo(AStarNode other)
+    public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarNode>
     {
-        return EstimatedCost.CompareTo(other.EstimatedCost);
+        public NavigationNode GraphNode;
+        public AStarNode PreviousNode;
+        public double RouteCost;
+        public double EstimatedCost;
+        
+        public NavigationNodeEdge NavigationEdge;
+        public AStarNode(NavigationNode node, AStarNode previousNode, NavigationNodeEdge navigationNodeEdge, double routeCost, double estimatedCost){
+            GraphNode = node;
+            PreviousNode = previousNode;
+            RouteCost = routeCost;
+            EstimatedCost = estimatedCost;
+            NavigationEdge = navigationNodeEdge;
+        }
+
+        public int CompareTo(AStarNode other)
+        {
+            return EstimatedCost.CompareTo(other.EstimatedCost);
+        }
+
+        public bool Equals(AStarNode other) {
+            return string.Equals(GraphNode.RoadNode.Position.ToString(), other.GraphNode.RoadNode.Position.ToString());
+        }
     }
 
-    public bool Equals(AStarNode other) {
-        return string.Equals(GraphNode.RoadNode.Position.ToString(), other.GraphNode.RoadNode.Position.ToString());
+    public enum NavigationMode
+    {
+        Line,
+        Random, // Completely random at every intersection
+        RandomNavigationPath // Generates a random path and follows it
     }
-}
 
     public static class Navigation
     {
@@ -90,40 +97,53 @@ public class AStarNode : System.IComparable<AStarNode>, System.IEquatable<AStarN
             return path;
         }
         /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
-        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind, int iterationCount = 0)
+        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind, out NavigationMode navigationMode, int iterationCount = 0)
         {
             // If a path is not found, return null
             if (iterationCount > MAX_ITERATIONS)
             {
+                Debug.LogError("Could not generate a random navigation path");
+
+                // Switch over to random navigation mode
+                navigationMode = NavigationMode.Random;
                 nodeToFind = null;
-                return null;
+                return new Stack<NavigationNodeEdge>();
             }
             List<NavigationNode> nodeList = roadSystem.RoadSystemGraph;
             System.Random random = new System.Random();
             int randomIndex = random.Next(0, nodeList.Count);
             NavigationNode targetNode = nodeList[randomIndex];
+            navigationMode = NavigationMode.RandomNavigationPath;
             nodeToFind = targetNode;
             Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
-            if (path.Count < 2)
-                return GetRandomPath(roadSystem, currentEdge, out nodeToFind, iterationCount + 1);
+            if (path.Count < 1)
+                return GetRandomPath(roadSystem, currentEdge, out nodeToFind, out navigationMode, iterationCount + 1);
             return path;
         }
         
-        public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container)
+        public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container, GameObject targetMarker)
         {
+            if(nodeToFind == null)
+                return;
             // TODO DRAW ACTUAL LANE PATH, CURRENTLY ONLY DRAWS A CUBE AT THE DESTINATION
 
             foreach (Transform child in container.transform)
             {
                 Object.Destroy(child.gameObject);
             }
-            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.transform.parent = container.transform;
-            cube.transform.position = nodeToFind.RoadNode.Position;
+            Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
+            GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
+            marker.transform.parent = container.transform;
+            /*cube.transform.position = nodeToFind.RoadNode.Position;
             cube.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y + 10f, cube.transform.position.z);
             cube.transform.localScale = new Vector3(5f, 5f, 5f);
             Renderer cubeRenderer = cube.GetComponent<Renderer>();
-            cubeRenderer.material.SetColor("_Color", Color.red);
+            cubeRenderer.material.SetColor("_Color", Color.red);*/
+        }
+
+        private static void PlaceNavigationTargetMarker(UnityEngine.Object instance)
+        {
+
         }
     }
 }
