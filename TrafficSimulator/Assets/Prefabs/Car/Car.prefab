@@ -1865,6 +1865,7 @@ MonoBehaviour:
   _speed: 20
   _rotationSpeed: 5
   _totalDistance: 0
+  _vehicleLength: 0
 --- !u!54 &1577973480894095029
 Rigidbody:
   m_ObjectHideFlags: 0

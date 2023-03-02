@@ -11,7 +11,6 @@ namespace Bus
         void Start()
         {
             base.Init();
-            Debug.Log(Id + " Im a bus");
         }
 
         // Update is called once per frame
