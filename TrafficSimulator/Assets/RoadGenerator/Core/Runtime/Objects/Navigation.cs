@@ -97,28 +97,25 @@ namespace RoadGenerator
             return path;
         }
         /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
-        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind, out NavigationMode navigationMode, int iterationCount = 0)
+        public static Stack<NavigationNodeEdge> GetRandomPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, out NavigationNode nodeToFind)
         {
-            // If a path is not found, return null
-            if (iterationCount > MAX_ITERATIONS)
-            {
-                Debug.LogError("Could not generate a random navigation path");
-
-                // Switch over to random navigation mode
-                navigationMode = NavigationMode.Random;
-                nodeToFind = null;
-                return new Stack<NavigationNodeEdge>();
-            }
             List<NavigationNode> nodeList = roadSystem.RoadSystemGraph;
-            System.Random random = new System.Random();
-            int randomIndex = random.Next(0, nodeList.Count);
-            NavigationNode targetNode = nodeList[randomIndex];
-            navigationMode = NavigationMode.RandomNavigationPath;
-            nodeToFind = targetNode;
-            Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
-            if (path.Count < 1)
-                return GetRandomPath(roadSystem, currentEdge, out nodeToFind, out navigationMode, iterationCount + 1);
-            return path;
+            for (int i = 0; i < MAX_ITERATIONS; i++)
+            {
+                System.Random random = new System.Random();
+                int randomIndex = random.Next(0, nodeList.Count);
+                NavigationNode targetNode = nodeList[randomIndex];
+                nodeToFind = targetNode;
+                Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
+                // Trying to find a path that is not too short
+                if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
+                    return path;
+            }
+            Debug.LogError("Could not generate a random navigation path");
+
+            // Switch over to random navigation mode
+            nodeToFind = null;
+            return new Stack<NavigationNodeEdge>();
         }
         
         public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container, GameObject targetMarker)
