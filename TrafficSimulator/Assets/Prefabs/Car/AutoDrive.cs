@@ -191,7 +191,7 @@ namespace Car {
         {
             List<LaneNode> nodes = new List<LaneNode>();
             LaneNode node = _currentNode;
-            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
+            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/1.5)
             {
                 nodes.Add(node);
                 node = node.Prev;
@@ -201,7 +201,7 @@ namespace Car {
             } catch (Exception e) {
                 Debug.Log(e);
             }
-            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
+            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/1.5)
             {
                 nodes.Add(node);
                 node = node.Next;

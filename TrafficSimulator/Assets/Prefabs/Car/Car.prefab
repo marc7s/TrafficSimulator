@@ -1859,7 +1859,7 @@ MonoBehaviour:
   ShowNavigationPath: 0
   _navigationMode: 0
   _showTargetLines: 0
-  _brakeOffset: 5
+  _brakeOffset: 2
   _maxRepositioningSpeed: 5
   _baseTLD: 10
   _TLDSpeedDivider: 20
