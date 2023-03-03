@@ -32,7 +32,7 @@ namespace RoadGenerator
 
     public enum NavigationMode
     {
-        Line,
+        Disabled,
         Random, // Completely random at every intersection
         RandomNavigationPath // Generates a random path and follows it
     }
@@ -92,7 +92,7 @@ namespace RoadGenerator
         {
             Stack<NavigationNodeEdge> path = new Stack<NavigationNodeEdge>();
             while (node.NavigationEdge != null)
-            {   
+            {
                 path.Push(node.NavigationEdge);
                 node = node.PreviousNode;
             }
