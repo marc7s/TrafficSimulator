@@ -27,14 +27,13 @@ namespace RoadGenerator
 
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
-
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
-        [SerializeField][HideInInspector] private Dictionary<string, GraphNode> _roadSystemGraph;
+        [SerializeField][HideInInspector] public List<NavigationNode> RoadSystemGraph;
         [HideInInspector] public GameObject GraphContainer;
-
+        private bool _isSetup = false;
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
         public void AddRoad(Road road) => _roads.Add(road);
@@ -90,6 +89,12 @@ namespace RoadGenerator
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {
+            // Making sure this is only called once
+            if (_isSetup) 
+                return;
+            
+            _isSetup = true;
+            
             // Find roads
             foreach(Transform roadT in _roadContainer.transform)
             {
@@ -108,8 +113,15 @@ namespace RoadGenerator
                 AddIntersection(intersection);
             }
 
+            foreach (Road road in _roads)
+            {
+                road.OnChange();
+            }
+
             // Find the graph container
             GraphContainer = GameObject.Find("Graph");
+            // Update the road system graph
+            UpdateRoadSystemGraph();
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
@@ -119,6 +131,7 @@ namespace RoadGenerator
             intersectionObject.transform.parent = _intersectionContainer.transform;
             
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
+            intersection.ID = System.Guid.NewGuid().ToString();
             intersection.Type = intersectionPointData.Type;
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
@@ -151,6 +164,10 @@ namespace RoadGenerator
             }
             return false;
         }
+        void Start()
+        {
+            Setup();
+        }
         public void UpdateRoadSystemGraph()
         {
             // Clear the graph
@@ -164,15 +181,14 @@ namespace RoadGenerator
             }
 
             // Generate a new graph
-            _roadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
+            RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
 
             // Display the graph if the setting is active
             if (ShowGraph) {
                 // Create a new empty graph
                 CreateEmptyRoadGraph();
-                RoadSystemNavigationGraph.DrawGraph(this, _roadSystemGraph, _roadSystemGraphNodePrefab);
+                RoadSystemNavigationGraph.DrawGraph(this, RoadSystemGraph, _roadSystemGraphNodePrefab);
             }
-                
         }
 
         public void UpdateRoads()
@@ -184,7 +200,7 @@ namespace RoadGenerator
         }
 
         private void ClearRoadGraph() {
-            _roadSystemGraph = null;
+            RoadSystemGraph = null;
             if(GraphContainer != null) {
                 DestroyImmediate(GraphContainer);
             }
@@ -207,6 +223,10 @@ namespace RoadGenerator
         public List<Road> Roads 
         {
             get => _roads;
+        }
+        public List<Intersection> Intersections 
+        {
+            get => _intersections;
         }
         void OnDestroy()
         {
