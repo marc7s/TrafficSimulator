@@ -1853,6 +1853,7 @@ MonoBehaviour:
   Road: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
   LaneIndex: 0
+  _mesh: {fileID: 1577973480899245783}
   _mode: 1
   _roadEndBehaviour: 1
   ShowNavigationPath: 0
