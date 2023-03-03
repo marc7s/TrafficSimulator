@@ -55,7 +55,9 @@ MonoBehaviour:
   LaneAmount: 1
   LaneWidth: 4
   Thickness: 0.15
-  LaneVertexSpacing: 1
+  MaxAngleError: 2
+  MinVertexDistance: 0
+  MaxRoadNodeDistance: 5
   DrawLanes: 0
   DrawRoadNodes: 0
   DrawLaneNodes: 0
@@ -64,7 +66,7 @@ MonoBehaviour:
   _roadNodeContainer: {fileID: 0}
   _laneNodeContainer: {fileID: 0}
   _endOfPathInstruction: 2
-  _intersections: []
+  Intersections: []
   _length: 0
 --- !u!114 &2234105199191049172
 MonoBehaviour:
@@ -100,18 +102,18 @@ MonoBehaviour:
   editorData:
     _bezierPath:
       points:
-      - {x: -2.2688723, y: 0, z: -0.58209443}
-      - {x: 1.7703009, y: 0, z: -0.43657082}
-      - {x: 9.848646, y: 0, z: -0.14552361}
-      - {x: 13.887819, y: 0, z: 0}
+      - {x: -5, y: 0, z: 0}
+      - {x: 2.9122047, y: 0, z: -0.07645643}
+      - {x: 18.736614, y: 0, z: -0.22936928}
+      - {x: 26.648819, y: 0, z: -0.3058257}
       isClosed: 0
       space: 2
       controlMode: 3
       autoControlLength: 0.3
       boundsUpToDate: 0
       bounds:
-        m_Center: {x: 5.951812, y: -0.000002682209, z: 0.008635521}
-        m_Extent: {x: 7.9360075, y: 0.000002682209, z: 0.008635521}
+        m_Center: {x: 0, y: 0, z: 0}
+        m_Extent: {x: 5, y: 0, z: 0.14433756}
       perAnchorNormalsAngle:
       - 0
       - 0

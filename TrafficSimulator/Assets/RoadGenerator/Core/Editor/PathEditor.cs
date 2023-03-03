@@ -407,9 +407,9 @@ namespace RoadGeneratorEditor
 				// If the handle was just released, call the OnChange event
 				// Otherwise the handle is still being dragged, so call the OnMove event
 				if(e.type == EventType.MouseUp)
-					road.OnChange();
+					RoadOnChange();
 				else
-					road.OnDrag();
+					RoadOnDrag();
 			}
 			
 			// Find which handle mouse is over. Start by looking at previous handle index first, as most likely to still be closest to mouse
@@ -474,7 +474,7 @@ namespace RoadGeneratorEditor
 					}
 					
 					// A node was added, so we update the road
-					road.OnChange();
+					RoadOnChange();
 				}
 			}
 
@@ -492,7 +492,7 @@ namespace RoadGeneratorEditor
 					mouseOverHandleIndex = -1;
 					
 					// A node was removed, so we update the road
-					road.OnChange();
+					RoadOnChange();
 					
 					Repaint();
 				}
@@ -529,8 +529,16 @@ namespace RoadGeneratorEditor
 
 		Road TryGetRoad(PathCreator pathCreator)
 		{
-			RoadSystem roadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
+			GameObject roadSystemObject = GameObject.Find("RoadSystem");
+			if(roadSystemObject == null)
+			{
+				Debug.LogError("ERROR, RoadSystem not found");
+				return null;
+			}
 			
+			RoadSystem roadSystem = roadSystemObject.GetComponent<RoadSystem>();
+
+
 			// If Unity has been restarted and the road system reset, we need to set it up again
 			if(roadSystem.RoadCount < 1)
 			{
@@ -765,6 +773,18 @@ namespace RoadGeneratorEditor
 		#endregion
 
 		#region Internal methods
+
+		private void RoadOnDrag()
+		{
+			if(road != null)
+				road.OnDrag();
+		}
+
+		private void RoadOnChange()
+		{
+			if(road != null)
+				road.OnChange();
+		}
 
 		void OnDisable()
 		{
