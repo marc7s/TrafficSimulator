@@ -1848,10 +1848,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4917cdb6fe8416049bdfc1c039e5240e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _road: {fileID: 0}
-  _laneIndex: 0
+  Road: {fileID: 0}
+  NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
+  LaneIndex: 0
   _mode: 1
   _roadEndBehaviour: 0
+  ShowNavigationPath: 0
+  _navigationMode: 0
   _showTargetLines: 0
   _brakeOffset: 5
   _maxRepositioningSpeed: 5
@@ -2237,9 +2240,7 @@ LineRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Positions:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
+  m_Positions: []
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
