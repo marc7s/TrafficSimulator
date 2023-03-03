@@ -41,7 +41,7 @@ namespace Car {
         [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
-        [SerializeField] private NavigationMode _navigationMode = NavigationMode.Line;
+        [SerializeField] private NavigationMode _navigationMode = NavigationMode.Disabled;
 
         [Header("Quality mode settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -350,13 +350,14 @@ namespace Car {
             // If the starting node is an intersection, the previous intersection is set 
             if (_target.RoadNode.Intersection != null)
                 _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
-                // If the starting node is at a three way intersection, the target will be an EndNode but the next will be an intersection node, so we need to set the previous intersection
+                
+            // If the starting node is at a three way intersection, the target will be an EndNode but the next will be an intersection node, so we need to set the previous intersection
             if (_target.RoadNode.Next != null && _target.RoadNode.Next.Intersection != null && _target.RoadNode.Position == _target.RoadNode.Next.Position)
                 _prevIntersectionPosition = _target.RoadNode.Next.Intersection.IntersectionPosition;
 
+            // If the starting node is a junction edge, the previous intersection is set
             if (_target.RoadNode.Prev != null && _target.RoadNode.Prev.Intersection != null && _target.RoadNode.Position == _target.RoadNode.Prev.Position)
-                _prevIntersectionPosition = _target.RoadNode.Prev.Intersection.IntersectionPosition;
-                    
+                _prevIntersectionPosition = _target.RoadNode.Prev.Intersection.IntersectionPosition;           
         }
 
         // Performance methods
@@ -366,9 +367,7 @@ namespace Car {
             {
                 UpdateRandomPath();
                 SetInitialPrevIntersection();
-
             }
-                
 
             // Move to the first position of the lane
             transform.position = _startNode.Position;
@@ -399,7 +398,7 @@ namespace Car {
 
         private void UpdateTargetFromNavigation()
         {
-            if (_navigationMode == NavigationMode.Line)
+            if (_navigationMode == NavigationMode.Disabled)
                 return;
             
             bool isNonIntersectionNavigationNode = _target.RoadNode.IsNavigationNode && !_target.IsIntersection();

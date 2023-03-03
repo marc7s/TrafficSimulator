@@ -18,7 +18,10 @@ namespace RoadGenerator
             StartNavigationNode = startNode;
             Cost = cost;
         }
-        public string ID { get { return _id; } }
+        public string ID
+        {
+            get => _id;
+        }
     }
     public class NavigationNode
     {
@@ -33,6 +36,7 @@ namespace RoadGenerator
             this.RoadNode = roadNode;
         }
     }
+    
     /// <summary> A graph representation of a road </summary>
     public class RoadNavigationGraph
     {
@@ -52,12 +56,17 @@ namespace RoadGenerator
         public RoadNavigationGraph(RoadNode roadNode, bool isClosed)
         {
             RoadNode curr = roadNode;
+            
             NavigationNode PreviouslyAddedNode = null;
+            
             NavigationNode closedStartNodePrimaryDirection = null;
             NavigationNode closedStartNodeSecondaryDirection = null;
+            
             NavigationNode prevNonIntersectionNodePrimary = null;
             NavigationNode prevIntersectionNodeSecondary = null;
+            
             bool isPreviousNodeNotIntersection = false;
+            
             while (curr != null)
             {
                 // Increase the current cost if the current node is not the starting node
@@ -71,9 +80,7 @@ namespace RoadGenerator
                 }
                 // In a closed loop we never want to add the end node, so we skip it
                 if (curr.Type == RoadNodeType.End && isClosed && PreviouslyAddedNode != null)
-                {
                     break;   
-                }
             
                 // If the current node is the first node to be added
                 if (PreviouslyAddedNode == null)
@@ -95,6 +102,7 @@ namespace RoadGenerator
                     curr = curr.Next;
                     continue;
                 }
+                
                 if(Graph.FindAll(x => x.RoadNode.Position == curr.Position).Count == 0)
                 {
                     NavigationNode graphNode = new NavigationNode(curr);
@@ -127,6 +135,7 @@ namespace RoadGenerator
                 curr = curr.Next;
             }
             EndNavigationNode = PreviouslyAddedNode;
+            
             // If the road is closed we need to add the edges between the start and end node
             if (isClosed)
             {
@@ -153,7 +162,6 @@ namespace RoadGenerator
         {
             return distance / speedLimit;
         }
-
     }
 
     public static class RoadSystemNavigationGraph
@@ -197,9 +205,11 @@ namespace RoadGenerator
                 if(doesNodeExistInGraph)
                 {
                     NavigationNode node = roadSystemGraph.Find(x => x.RoadNode.Position == roadNavigationGraph[i].RoadNode.Position);
+                    
                     // If a node with the same position has already been added from this road, we don't want to add it again
                     if (addedFromThisRoad.Find(x => x.RoadNode.Position == node.RoadNode.Position) != null)
                         continue;
+                    
                     node.Edges.AddRange(roadNavigationGraph[i].Edges);
                     UpdateEdgeEndNode(roadNavigationGraph[i], node.RoadNode.Position, node);
                     roadNavigationGraph[i] = node;
@@ -219,19 +229,16 @@ namespace RoadGenerator
                 foreach (NavigationNodeEdge edge2 in edge1.EndNavigationNode.Edges)
                 {
                     if (edge2.EndNavigationNode.RoadNode.Position == oldNodePosition)
-                    {
                         edge2.EndNavigationNode = newNode;
-                    }
                 }
             }
         }
         
-         /// <summary> Draws the graph </summary>
+        /// <summary> Draws the graph </summary>
         public static void DrawGraph(RoadSystem roadSystem, List<NavigationNode> roadGraph, GameObject graphNodePrefab)
         {
             foreach (NavigationNode node in roadGraph)
             {
-               // Debug.Log(node.RoadNode.Position);
                 // Spawn a new graph node sphere
                 GameObject nodeObject = GameObject.Instantiate(graphNodePrefab);
                 
@@ -252,21 +259,19 @@ namespace RoadGenerator
                 }
 
                 // Draw the lines between the graph nodes
-                lineDrawer.DrawDebugLine(graphNodePositions, color: Color.blue, width: EDGE_LINE_WIDTH, parent: nodeObject.gameObject);
+                LineDrawer.DrawDebugLine(graphNodePositions, color: Color.blue, width: EDGE_LINE_WIDTH, parent: nodeObject.gameObject);
             }
         }
+        
         /// <summary>Return a vertically transposed vector for creating the graph above the road system</summary>
         private static Vector3 lift(Vector3 vector)
         {
             return vector + Vector3.up * GRAPH_LIFT;
         }
-
-       
-
     }
-    public static class lineDrawer
+    public static class LineDrawer
     {
-         #nullable enable
+        #nullable enable
         /// <summary>Draws a line, used for debugging</summary>
         public static void DrawDebugLine(List<Vector3> line, Color? color = null, float width = 0.5f, GameObject? parent = null)
         {
@@ -287,7 +292,8 @@ namespace RoadGenerator
             DrawLanePath(lineObject, line, color: color ?? Color.red, width: width);
         }
         #nullable disable
-                /// <summary>Helper function that performs the drawing of a lane's path</summary>
+        
+        /// <summary>Helper function that performs the drawing of a lane's path</summary>
         private static void DrawLanePath(GameObject line, List<Vector3> lane, Color color, float width = 0.5f)
         {
             // Get the line renderer
@@ -307,8 +313,6 @@ namespace RoadGenerator
             lr.positionCount = lane.Count;
             lr.SetPositions(lane.ToArray());
         }
-
     }
-    
-    }
+}
     
