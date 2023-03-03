@@ -321,10 +321,19 @@ namespace Car {
             // Set the brake target point to the point closest to the target that is at least _brakeDistance points away
             // If the road end behaviour is set to stop and the brake target is the end node, do not update the brake target
             // If the next node has a vehicle, do not update the brake target
-            while (!(GetNextLaneNode(_brakeTarget, 0, true).HasVehicle()) && Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance && (_brakeTarget != _endNode || _roadEndBehaviour == RoadEndBehaviour.Loop))
+            while (updateBrakeTarget())
             {
-                _brakeTarget = GetNextLaneNode(_brakeTarget, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
+                _brakeTarget = GetNextLaneNode(_brakeTarget, 0, true);
             }
+        }
+
+        private bool updateBrakeTarget()
+        {
+            bool _nextNodeHasVehicle = GetNextLaneNode(_brakeTarget, 0, true).HasVehicle();
+            bool _brakeTargetIsEndNode = _brakeTarget.Type == RoadNodeType.End && _brakeTarget.Position != _startNode.Position;
+            bool _brakeTargetIsEndNodeAndLoop = _brakeTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop;
+            bool _brakeDistanceIsGreaterThanBrakeTargetDistance = Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance;
+            return _brakeDistanceIsGreaterThanBrakeTargetDistance && !_nextNodeHasVehicle && (!_brakeTargetIsEndNode | _brakeTargetIsEndNodeAndLoop);
         }
 
         private void Q_UpdateBrakeDistance()
