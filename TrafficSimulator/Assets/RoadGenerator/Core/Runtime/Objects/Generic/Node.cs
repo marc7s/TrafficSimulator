@@ -4,22 +4,23 @@ using System.Collections.Generic;
 namespace RoadGenerator
 {
     /// <summary>A generic implementation of a node</summary>
-    public class Node<T> where T : Node<T>
+    public abstract class Node<T> where T : Node<T>
     {
         protected T _next;
         protected T _prev;
         protected Vector3 _position;
         protected Quaternion _rotation;
+        protected float _distanceToPrevNode;
 
         /// <summary>Gets the next node</summary>
-        public T Next
+        public virtual T Next
         {
             get => _next;
             set => _next = value;
         }
         
         /// <summary>Returns the previous node</summary>
-        public T Prev
+        public virtual T Prev
         {
             get => _prev;
             set => _prev = value;
@@ -54,6 +55,21 @@ namespace RoadGenerator
             }
         }
 
+        /// <summary>Returns the first node in the linked list</summary>
+        public T First
+        {
+            get
+            {
+                T curr = (T)this;
+                
+                while(curr.Prev != null)
+                {
+                    curr = curr.Prev;
+                }
+                return curr;
+            }
+        }
+
         /// <summary>Returns the last node in the linked list</summary>
         public T Last
         {
@@ -67,6 +83,13 @@ namespace RoadGenerator
                 }
                 return curr;
             }
+        }
+
+        /// <summary>Returns the distance to the next node</summary>
+        public float DistanceToPrevNode
+        {
+            get => _distanceToPrevNode;
+            set => _distanceToPrevNode = value;
         }
 
         /// <summary>Returns all linked node positions as an array</summary>
@@ -86,13 +109,13 @@ namespace RoadGenerator
         /// <summary>Reverses the linked nodes. Returns the head of the reversed nodes</summary>
         public T Reverse()
         {
-            T curr = (T)this;
+            T curr = Copy();
             T prev = null;
             T next = null;
             
             while(curr != null)
             {
-                next = curr.Next;
+                next = curr.Next?.Copy();
                 curr.Next = prev;
                 curr.Prev = next;
                 prev = curr;
@@ -100,5 +123,7 @@ namespace RoadGenerator
             }
             return prev;
         }
+
+        public abstract T Copy();
     }
 }

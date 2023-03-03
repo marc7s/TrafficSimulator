@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
 using System;
 
@@ -21,26 +20,33 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _intersectionPrefab;
 
+        [SerializeField] private GameObject _roadSystemGraphNodePrefab;
+
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
-        [SerializeField] private bool _spawnRoadsAtOrigin = false;
 
+        public bool ShowGraph = false;
+        public bool SpawnRoadsAtOrigin = false;
         [SerializeField][HideInInspector] private List<Road> _roads = new List<Road>();
 
-        public List<Intersection> Intersections {get; private set;} = new List<Intersection>();
+        [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
 
-        public void AddIntersection(Intersection intersection) => Intersections.Add(intersection);
-        public void RemoveIntersection(Intersection intersection) => Intersections.Remove(intersection);
+        [SerializeField][HideInInspector] public List<NavigationNode> RoadSystemGraph;
+        [HideInInspector] public GameObject GraphContainer;
+        private bool _isSetup = false;
+        public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
+        public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
         public void AddRoad(Road road) => _roads.Add(road);
 
         public void RemoveRoad(Road road) => _roads.Remove(road);
         public void AddNewRoad()
         {
             Vector3 spawnPoint = Vector3.zero;
-            if(!_spawnRoadsAtOrigin)
+            #if UNITY_EDITOR
+            if(!SpawnRoadsAtOrigin)
             {
                 RaycastHit hit;
-                SceneView sceneView = SceneView.lastActiveSceneView;
+                UnityEditor.SceneView sceneView = UnityEditor.SceneView.lastActiveSceneView;
                 Camera camera = sceneView.camera;
                 
                 // Get the nearest point on the surface the camera is looking at
@@ -51,6 +57,7 @@ namespace RoadGenerator
                 }
                 spawnPoint = hit.point;
             }
+            #endif
             
 
             // Instantiate a new road prefab
@@ -82,6 +89,12 @@ namespace RoadGenerator
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {
+            // Making sure this is only called once
+            if (_isSetup) 
+                return;
+            
+            _isSetup = true;
+            
             // Find roads
             foreach(Transform roadT in _roadContainer.transform)
             {
@@ -99,19 +112,30 @@ namespace RoadGenerator
                 
                 AddIntersection(intersection);
             }
+
+            foreach (Road road in _roads)
+            {
+                road.OnChange();
+            }
+
+            // Find the graph container
+            GraphContainer = GameObject.Find("Graph");
+            // Update the road system graph
+            UpdateRoadSystemGraph();
         }
 
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
         {
-            Vector3 intersectionPosition = new Vector3(intersectionPointData.Position.x, 0, intersectionPointData.Position.y);
-            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPosition, intersectionPointData.Rotation);
+            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, intersectionPointData.Rotation);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = _intersectionContainer.transform;
             
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
+            intersection.ID = System.Guid.NewGuid().ToString();
+            intersection.Type = intersectionPointData.Type;
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
-            intersection.IntersectionPosition = intersectionPosition;
+            intersection.IntersectionPosition = intersectionPointData.Position;
             intersection.Road1PathCreator = intersectionPointData.Road1PathCreator;
             intersection.Road2PathCreator = intersectionPointData.Road2PathCreator;
             intersection.Road1 = road1;
@@ -123,6 +147,7 @@ namespace RoadGenerator
             
             road1.AddIntersection(intersection);
             road2.AddIntersection(intersection);
+            
             AddIntersection(intersection);
             
             return intersection;
@@ -130,7 +155,7 @@ namespace RoadGenerator
         /// <summary> Checks if an intersection already exists at the given position </summary>
         public bool DoesIntersectionExist(Vector3 position)
         {
-            foreach (Intersection intersection in Intersections)
+            foreach (Intersection intersection in _intersections)
             {
                 if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
                 {
@@ -139,9 +164,56 @@ namespace RoadGenerator
             }
             return false;
         }
+        void Start()
+        {
+            Setup();
+        }
+        public void UpdateRoadSystemGraph()
+        {
+            // Clear the graph
+            ClearRoadGraph();
+            
+            foreach (Road road in _roads)
+            {
+                // This needs to be called because after script update the scene reloads and the roads don't save their graph correctly
+                // This can be removed if roads serialize the graph correctly
+                road.UpdateRoadNodes();
+            }
+
+            // Generate a new graph
+            RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
+
+            // Display the graph if the setting is active
+            if (ShowGraph) {
+                // Create a new empty graph
+                CreateEmptyRoadGraph();
+                RoadSystemNavigationGraph.DrawGraph(this, RoadSystemGraph, _roadSystemGraphNodePrefab);
+            }
+        }
+
+        public void UpdateRoads()
+        {
+            foreach(Road road in _roads)
+            {
+                road.OnChange();
+            }
+        }
+
+        private void ClearRoadGraph() {
+            RoadSystemGraph = null;
+            if(GraphContainer != null) {
+                DestroyImmediate(GraphContainer);
+            }
+            GraphContainer = null;
+        }
+
+        private void CreateEmptyRoadGraph() {
+            GraphContainer = new GameObject("Graph");
+            GraphContainer.transform.parent = transform;
+        }
         public int IntersectionCount 
         {
-            get => Intersections.Count;
+            get => _intersections.Count;
         }
         /// <summary>Returns the number of roads in the road system</summary>
         public int RoadCount 
@@ -151,6 +223,16 @@ namespace RoadGenerator
         public List<Road> Roads 
         {
             get => _roads;
+        }
+        public List<Intersection> Intersections 
+        {
+            get => _intersections;
+        }
+        void OnDestroy()
+        {
+            // Need to disable showing the graph as the road system is being destroyed
+            // Otherwise the a graph will be created in the same frame as the road system is destroyed and will cause an error
+            ShowGraph = false;
         }
     }
 }
