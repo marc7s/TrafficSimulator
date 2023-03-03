@@ -407,9 +407,9 @@ namespace RoadGeneratorEditor
 				// If the handle was just released, call the OnChange event
 				// Otherwise the handle is still being dragged, so call the OnMove event
 				if(e.type == EventType.MouseUp)
-					road.OnChange();
+					RoadOnChange();
 				else
-					road.OnDrag();
+					RoadOnDrag();
 			}
 			
 			// Find which handle mouse is over. Start by looking at previous handle index first, as most likely to still be closest to mouse
@@ -474,7 +474,7 @@ namespace RoadGeneratorEditor
 					}
 					
 					// A node was added, so we update the road
-					road.OnChange();
+					RoadOnChange();
 				}
 			}
 
@@ -492,7 +492,7 @@ namespace RoadGeneratorEditor
 					mouseOverHandleIndex = -1;
 					
 					// A node was removed, so we update the road
-					road.OnChange();
+					RoadOnChange();
 					
 					Repaint();
 				}
@@ -529,8 +529,16 @@ namespace RoadGeneratorEditor
 
 		Road TryGetRoad(PathCreator pathCreator)
 		{
-			RoadSystem roadSystem = GameObject.Find("RoadSystem").GetComponent<RoadSystem>();
+			GameObject roadSystemObject = GameObject.Find("RoadSystem");
+			if(roadSystemObject == null)
+			{
+				Debug.LogError("ERROR, RoadSystem not found");
+				return null;
+			}
 			
+			RoadSystem roadSystem = roadSystemObject.GetComponent<RoadSystem>();
+
+
 			// If Unity has been restarted and the road system reset, we need to set it up again
 			if(roadSystem.RoadCount < 1)
 			{
@@ -639,7 +647,7 @@ namespace RoadGeneratorEditor
 			{
 				for (int i = 0; i < bezierPath.NumPoints; i += 3)
 				{
-					DrawHandle(i);
+					DrawHandle(i, i == 0, i == bezierPath.NumPoints - 1);
 				}
 			}
 			if (displayControlPoints)
@@ -652,7 +660,7 @@ namespace RoadGeneratorEditor
 			}
 		}
 
-		void DrawHandle(int i)
+		void DrawHandle(int i, bool isStart = false, bool isEnd = false)
 		{
 			Vector3 handlePosition = MathUtility.TransformPoint(bezierPath[i], creator.transform, bezierPath.Space);
 
@@ -671,7 +679,7 @@ namespace RoadGeneratorEditor
 			}
 			var cap = capFunctions[(isAnchorPoint) ? globalDisplaySettings.anchorShape : globalDisplaySettings.controlShape];
 			PathHandle.HandleInputType handleInputType;
-			handlePosition = PathHandle.DrawHandle(handlePosition, bezierPath.Space, isInteractive, handleSize, cap, handleColours, out handleInputType, i);
+			handlePosition = PathHandle.DrawHandle(handlePosition, bezierPath.Space, isInteractive, handleSize, cap, handleColours, out handleInputType, i, isStart, isEnd);
 
 			if (doTransformHandle)
 			{
@@ -766,6 +774,18 @@ namespace RoadGeneratorEditor
 
 		#region Internal methods
 
+		private void RoadOnDrag()
+		{
+			if(road != null)
+				road.OnDrag();
+		}
+
+		private void RoadOnChange()
+		{
+			if(road != null)
+				road.OnChange();
+		}
+
 		void OnDisable()
 		{
 			Tools.hidden = false;
@@ -832,8 +852,8 @@ namespace RoadGeneratorEditor
 		void UpdateGlobalDisplaySettings()
 		{
 			var gds = globalDisplaySettings;
-			splineAnchorColours = new PathHandle.HandleColours(gds.anchor, gds.anchorHighlighted, gds.anchorSelected, gds.handleDisabled);
-			splineControlColours = new PathHandle.HandleColours(gds.control, gds.controlHighlighted, gds.controlSelected, gds.handleDisabled);
+			splineAnchorColours = new PathHandle.HandleColours(gds.anchor, gds.startAnchor, gds.endAnchor, gds.anchorHighlighted, gds.anchorSelected, gds.handleDisabled);
+			splineControlColours = new PathHandle.HandleColours(gds.control, gds.startAnchor, gds.endAnchor, gds.controlHighlighted, gds.controlSelected, gds.handleDisabled);
 
 			anchorAngleHandle.fillColor = new Color(1, 1, 1, .05f);
 			anchorAngleHandle.wireframeColor = Color.grey;

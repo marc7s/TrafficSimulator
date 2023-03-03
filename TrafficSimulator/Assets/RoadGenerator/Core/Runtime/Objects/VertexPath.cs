@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using RoadGenerator.Utility;
+﻿using RoadGenerator.Utility;
 using UnityEngine;
 
 
@@ -254,14 +253,16 @@ namespace RoadGenerator {
             return Mathf.Lerp (cumulativeLengthAtEachVertex[data.previousIndex], cumulativeLengthAtEachVertex[data.nextIndex], data.percentBetweenIndices);
         }
 
+        public float DistanceBetweenPoints (int index1, int index2)
+        {
+            return cumulativeLengthAtEachVertex[Mathf.Clamp(index2, 0, NumPoints - 1)] - cumulativeLengthAtEachVertex[Mathf.Clamp(index1, 0, NumPoints - 1)];
+        }
+
         /// Finds the closest point index on the path from any point in the world
         public int GetClosestIndexOnPath (Vector3 worldPoint, bool getPreviousPoint = true) {
             Vector3 localPoint = MathUtility.InverseTransformPoint(worldPoint, transform, space);
             TimeOnPathData data = CalculateClosestPointOnPathData(localPoint);
-            if (getPreviousPoint) 
-            return data.previousIndex;
-            else
-            return data.nextIndex;
+            return getPreviousPoint ? data.previousIndex : data.nextIndex;
         }
 
         #endregion
