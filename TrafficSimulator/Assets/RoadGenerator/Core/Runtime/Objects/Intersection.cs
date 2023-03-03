@@ -3,6 +3,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using CustomProperties;
 
 namespace RoadGenerator
 {
@@ -29,8 +30,13 @@ namespace RoadGenerator
         [HideInInspector] public Vector3 Road1AnchorPoint2;
         [HideInInspector] public Vector3 Road2AnchorPoint1;
         [HideInInspector] public Vector3 Road2AnchorPoint2;
-
+        [HideInInspector] public NavigationNodeEdge Road1AnchorPoint1NavigationEdge;
+        [HideInInspector] public NavigationNodeEdge Road1AnchorPoint2NavigationEdge;
+        [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
+        [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
+        [HideInInspector] private Dictionary<string, LaneNode> _laneNodeFromNavigationNodeEdge;
         [HideInInspector] public IntersectionType Type;
+        [ReadOnly] public string ID;
 
         [Header("Intersection settings")]
         [SerializeField][Range(0, 0.8f)] float _stretchFactor = 0.4f;
@@ -169,35 +175,17 @@ namespace RoadGenerator
                 {
                     // Swap the anchor nodes and extend the mesh to fill in the gap in road 2
                     RoadNode temp = road2Anchor1Node;
-                    road2Anchor1Node = road2Anchor2Node.Prev;
-                    road2Anchor2Node = temp.Next;
+                    road2Anchor1Node = road2Anchor2Node;
+                    road2Anchor2Node = temp;
                     
                     directionCoefficient = -1;
-                }
-                else
-                {
-                    // Extend the mesh to fill the gap in road 2
-                    road2Anchor1Node = road2Anchor1Node.Next == null ? road2Anchor1Node : road2Anchor1Node.Next;
-                    if(Type == IntersectionType.FourWayIntersection)
-                        road2Anchor2Node = road2Anchor2Node.Prev == null ? road2Anchor2Node : road2Anchor2Node.Prev;
                 }
             }
             else if(Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
             {
-                // Extend the mesh to fill the gap in road 2
-                if(Type == IntersectionType.ThreeWayIntersectionAtStart)
-                    road2Anchor1Node = road2Anchor1Node.Next == null ? road2Anchor1Node : road2Anchor1Node.Next;
-                else
-                    road2Anchor1Node = road2Anchor1Node.Prev == null ? road2Anchor1Node : road2Anchor1Node.Prev;
-                
                 if(roadAngle < 0)
                     directionCoefficient = -1;
             }
-
-
-            // Extend the mesh to fill the gap in road 1
-            road1Anchor1Node = road1Anchor1Node.Next;
-            road1Anchor2Node = road1Anchor2Node.Prev;
 
             List<int> topTris = new List<int>();
 
@@ -386,7 +374,70 @@ namespace RoadGenerator
                 _meshRenderer.sharedMaterials = materials;
             }
         }
+        /// <summary> Maps the navigation for the intersection </summary>
+        public void MapIntersectionNavigation()
+        {
+            // Map the lane node to take in order to get to the navigation node edge
+            _laneNodeFromNavigationNodeEdge = new Dictionary<string, LaneNode>();
+            List<Lane> lanes = new List<Lane>();
+            
+            lanes.AddRange(Road1.Lanes);
+            lanes.AddRange(Road2.Lanes);
+            foreach (Lane lane in lanes)
+            {
+                LaneNode currentNode = lane.StartNode;
+                while(currentNode != null)
+                {
+                    if (currentNode.Type != RoadNodeType.JunctionEdge)
+                    {
+                        currentNode = currentNode.Next;
+                        continue;
+                    }
 
+                    bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
+                    // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
+                    if (isEdgePointingToIntersection)
+                    {
+                        currentNode = currentNode.Next;
+                        continue;
+                    }
+
+                    // If the node is an anchor point, we map the edge going out of the intersection to the node
+                    if (currentNode.RoadNode.Position == Road1AnchorPoint1)
+                        _laneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint1NavigationEdge.ID, currentNode);
+                    if (currentNode.RoadNode.Position == Road1AnchorPoint2)
+                        _laneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint2NavigationEdge.ID, currentNode);
+                    if (currentNode.RoadNode.Position == Road2AnchorPoint1)
+                        _laneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint1NavigationEdge.ID, currentNode);
+                    // If the intersection is a three way intersection, the second anchor point does not exist
+                    if (!IsThreeWayIntersection() && currentNode.RoadNode.Position == Road2AnchorPoint2)
+                        _laneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
+                    currentNode = currentNode.Next;
+                }
+            }     
+        }
+        /// <summary> Get a random lane node that leads out of the intersection </summary>
+        public LaneNode GetRandomLaneNode()
+        {
+            List<LaneNode> laneNodes = new List<LaneNode>(_laneNodeFromNavigationNodeEdge.Values);
+            System.Random random = new System.Random();
+            int randomLaneNodeIndex = random.Next(0, laneNodes.Count);
+            return laneNodes[randomLaneNodeIndex];
+        }
+        /// <summary> Get the lane node that leads to the navigation node edge </summary>
+        public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
+        {
+            if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
+            {
+                Debug.LogError("Error, The navigation node edge does not exist in the intersection");
+                return null;
+            }  
+            return _laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
+        }
+        private bool IsThreeWayIntersection()
+        {
+            return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
+        }
         /// <summary>Cleans up the intersection and removes the references to it from the road system and roads</summary>
         void OnDestroy()
         {

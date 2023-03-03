@@ -31,6 +31,11 @@ namespace RoadGenerator
         }
         public bool IsIntersection() => _roadNode.IsIntersection();
 
+        public NavigationNodeEdge GetNavigationEdge()
+        {
+            return _laneSide == LaneSide.Primary ? _roadNode.PrimaryNavigationNodeEdge : _roadNode.SecondaryNavigationNodeEdge;
+        }
+        
         public RoadNode RoadNode
         {
             get => _roadNode;
@@ -43,7 +48,6 @@ namespace RoadGenerator
         {
             get => _vehicle;
         }
-
         public override LaneNode Copy()
         {
             return new LaneNode(_position, _laneSide, _roadNode, _prev, _next, _distanceToPrevNode);
