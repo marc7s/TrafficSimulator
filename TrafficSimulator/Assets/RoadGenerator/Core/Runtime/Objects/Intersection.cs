@@ -54,8 +54,6 @@ namespace RoadGenerator
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
 
-        [SerializeField] private GameObject _trafficLightPrefab;
-
         private Mesh _mesh;
         public const float IntersectionLength = 20f;
         public const float IntersectionBoundsLengthMultiplier = 1.2f;
@@ -139,7 +137,7 @@ namespace RoadGenerator
 
         private void SpawnTrafficLight(Vector3 position, Quaternion rotation)
         {
-            GameObject trafficLight = Instantiate(_trafficLightPrefab, position, rotation);
+            GameObject trafficLight = Instantiate(RoadSystem._defaultTrafficLightPrefab, position, rotation);
             trafficLight.transform.parent = TrafficLightController.transform;
         }
 
