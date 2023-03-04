@@ -128,7 +128,6 @@ namespace RoadGenerator
         {
             // Update the intersections and road when a node is changed
             IntersectionCreator.UpdateIntersections(this);
-            //NewIntersectionPointAlgorithm(true);
             UpdateRoad();
         }
 
@@ -162,7 +161,7 @@ namespace RoadGenerator
                 ShowLaneNodes();
             }
         }
-        
+
         public void UpdateRoadNoGraphUpdate()
         {
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
