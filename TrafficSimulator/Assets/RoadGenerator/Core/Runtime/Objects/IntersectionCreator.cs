@@ -39,23 +39,7 @@ namespace RoadGenerator
                     if (!otherPathCreator.bezierPath.PathBounds.Intersects(otherPathCreator.bezierPath.PathBounds))
                         continue;
 
-                    intersectionPointDatas.AddRange(GetBezierPathIntersections(road.RoadObject, otherRoad.RoadObject, pathCreator,  otherPathCreator));
-                    /*
-
-                    // Otherwise, intersection might be possible so we have to check thoroughly
-                    // Loop through all segments of the other road
-                    for (int i = 0; i < otherPathCreator.bezierPath.NumSegments; i++) 
-                    {
-                        // Get the segment points for the other road
-                        Vector3[] otherSegmentPoints = otherPathCreator.bezierPath.GetPointsInSegment(i);
-                        
-                        // If the two segment bounds are overlapping there might be an intersection, so we need to check it thoroughly
-                        if (IntersectionUtility.IsBezierPathIntersectionPossible(segmentPoints, otherSegmentPoints)) 
-                        {
-                            // Get all intersections of this segment and add them to the list
-                            intersectionPointDatas.AddRange(GetBezierPathIntersections(startVertexIndex, endVertexIndex, pathCreator,  otherPathCreator, otherSegmentPoints));
-                        }
-                    }*/
+                    intersectionPointDatas.AddRange(GetBezierPathIntersections(road.RoadObject.transform, otherRoad.RoadObject.transform, pathCreator,  otherPathCreator));
                 }
 
                 // Go through all the intersections and create an intersection at every position
@@ -96,11 +80,11 @@ namespace RoadGenerator
             return intersectionPointDatas.Count < 1 || intersectionPointDatas.Any(x => Vector3.Distance(x.Position, intersectionPosition) < uniqueDistance);
         }
 
-        private static List<IntersectionPointData> GetBezierPathIntersections(GameObject road1Object, GameObject road2Object, PathCreator road1PathCreator, PathCreator road2PathCreator)
+        private static List<IntersectionPointData> GetBezierPathIntersections(Transform road1Transform, Transform road2Transform, PathCreator road1PathCreator, PathCreator road2PathCreator)
         {
             List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
 
-            List<BezierIntersection> bezierIntersections = road1PathCreator.bezierPath.IntersectionPoints(road1Object.transform, road2Object.transform, road2PathCreator.bezierPath);
+            List<BezierIntersection> bezierIntersections = road1PathCreator.bezierPath.IntersectionPoints(road1Transform, road2Transform, road2PathCreator.bezierPath);
             
             foreach(BezierIntersection bezierIntersection in bezierIntersections)
             {
@@ -108,7 +92,7 @@ namespace RoadGenerator
                 Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, bezierIntersection.direction);
                 intersectionPointDatas.Add(CalculateIntersectionData(bezierIntersection.point, rotation, road1PathCreator, road2PathCreator));
             }
-            
+
             return intersectionPointDatas;
         }
 

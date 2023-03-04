@@ -561,7 +561,7 @@ namespace RoadGenerator
 		private List<BezierIntersection> BezierIntersections(Bezier b1, Bezier b2, List<BezierIntersection> intersections)
 		{
 			// A small value that determines how close to the true intersection point the algorithm will get
-			const float resolution = 0.5f;
+			const float resolution = 1f;
 			Bounds b1Bounds = GetBezierBounds(b1);
 			Bounds b2Bounds = GetBezierBounds(b2);
 			
