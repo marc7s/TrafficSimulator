@@ -158,9 +158,7 @@ namespace RoadGenerator
             foreach (Intersection intersection in _intersections)
             {
                 if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
-                {
                     return true;
-                }
             }
             return false;
         }
