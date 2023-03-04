@@ -16,6 +16,13 @@ namespace RoadGenerator
 		public Vector3 p0, p1, p2, p3;
 		public Bezier(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3) => (this.p0, this.p1, this.p2, this.p3) = (p0, p1, p2, p3);
 	}
+
+	public struct BezierIntersection
+	{
+		public Vector3 point;
+		public Vector3 direction;
+		public BezierIntersection(Vector3 point, Vector3 direction) => (this.point, this.direction) = (point, direction);
+	}
 	/// A bezier path is a path made by stitching together any number of (cubic) bezier curves.
 	/// A single cubic bezier curve is defined by 4 points: anchor1, control1, control2, anchor2
 	/// The curve moves between the 2 anchors, and the shape of the curve is affected by the positions of the 2 control points
@@ -140,33 +147,6 @@ namespace RoadGenerator
 		#endregion
 
 		#region Public methods and accessors
-
-		/// <summary> Creates a path offset in the normal direction from an existing path </summary>
-		///<param name="offset"> The amount to offset. Note that this will be used in a local context, so each point will be offset in its respective normal direction </param>
-		///<param name="transform"> The transform to create the path at. </param>
-		///<param name="reverse"> Reverses the path </param>
-		public BezierPath OffsetInNormalDirection(float offset, Transform transform, float vertexSpacing, bool reverse = false)
-		{
-			// Create an empty list of points
-			List<Vector3> points = new List<Vector3>();
-
-			// Get the vertex path for this bezier path
-			VertexPath vertexPath = new VertexPath(this, transform, vertexSpacing);
-
-			// Loop through each point in the vertex path, offset it and then add it to the points
-			for (int i = 0; i < vertexPath.NumPoints; i++)
-			{
-				points.Add(vertexPath.localPoints[i] + vertexPath.GetNormal(i) * offset);
-			}
-
-			// Reverse the points if needed
-			if(reverse)
-			{
-				points.Reverse();
-			}
-
-			return new BezierPath(points, this.isClosed, this.space);
-		}
 
 		/// <summary>Get world space position of point</summary>
 		public Vector3 this[int i]
@@ -535,13 +515,13 @@ namespace RoadGenerator
 		}
 
 		/// <summary>Returns all unique intersection points with the specified BezierPath</summary>
-		public List<Vector3> IntersectionPoints(Transform transform, Transform otherTransform, BezierPath other)
+		public List<BezierIntersection> IntersectionPoints(Transform transform, Transform otherTransform, BezierPath other)
 		{
 			// The minimum distance between two intersecting points to be considered unique
 			// Non-unique points are discarded
 			const float minUniqueDistance = 1f;
 
-			List<Vector3> intersections = new List<Vector3>();
+			List<BezierIntersection> intersections = new List<BezierIntersection>();
 			List<SegmentIntersection> segmentIntersections = SegmentIntersections(transform, otherTransform, other, Enumerable.Range(0, NumSegments).ToList(), Enumerable.Range(0, other.NumSegments).ToList(), new List<SegmentIntersection>());
 			
 			foreach(SegmentIntersection segmentIntersection in segmentIntersections)
@@ -552,33 +532,33 @@ namespace RoadGenerator
 				Bezier b1 = new Bezier(points[0], points[1], points[2], points[3]);
 				Bezier b2 = new Bezier(otherPoints[0], otherPoints[1], otherPoints[2], otherPoints[3]);
 				
-				List<Vector3> intersectionPoints = BezierIntersections(b1, b2, new List<Vector3>());
-				List<Vector3> uniqueIntersectionPoints = new List<Vector3>();
+				List<BezierIntersection> intersectionPoints = BezierIntersections(b1, b2, new List<BezierIntersection>());
+				List<BezierIntersection> uniqueBezierIntersections = new List<BezierIntersection>();
 				
 				for(int i = 0; i < intersectionPoints.Count; i++)
 				{
-					Vector3 newPoint = intersectionPoints[i];
+					BezierIntersection newIntersection = intersectionPoints[i];
 					bool unique = true;
-					foreach(Vector3 uniqueIntersectionPoint in uniqueIntersectionPoints)
+					foreach(BezierIntersection uniqueBezierIntersection in uniqueBezierIntersections)
 					{
-						if(Vector3.Distance(uniqueIntersectionPoint, intersectionPoints[i]) < minUniqueDistance)
+						if(Vector3.Distance(uniqueBezierIntersection.point, newIntersection.point) < minUniqueDistance)
 						{
 							unique = false;
 							break;
 						}
 					}
 					if(unique)
-						uniqueIntersectionPoints.Add(newPoint);
+						uniqueBezierIntersections.Add(newIntersection);
 				}
 
-				intersections.AddRange(uniqueIntersectionPoints);
+				intersections.AddRange(uniqueBezierIntersections);
 			}
 			return intersections;
 		}
 
-		/// <summary>Recursive helper function that returns all intersecting points between two Beziers</summary>
+		/// <summary>Recursive helper function that returns all intersecting points between two Beziers as well as their directions on the first path</summary>
 		/// Uses De Casteljau's algorithm to recursively split the Bezier curves into smaller curves
-		private List<Vector3> BezierIntersections(Bezier b1, Bezier b2, List<Vector3> intersections)
+		private List<BezierIntersection> BezierIntersections(Bezier b1, Bezier b2, List<BezierIntersection> intersections)
 		{
 			// A small value that determines how close to the true intersection point the algorithm will get
 			const float resolution = 0.5f;
@@ -594,18 +574,20 @@ namespace RoadGenerator
 			{
 				Vector3 b1mid = MidPoint(b1.p0, b1.p3);
 				Vector3 b2mid = MidPoint(b2.p0, b2.p3);
+
+				Vector3 direction = (b1.p3 - b1.p0).normalized;
 				
-				intersections.Add(MidPoint(b1mid, b2mid));
+				intersections.Add(new BezierIntersection(MidPoint(b1mid, b2mid), direction));
 				return intersections;
 			}
 
 			(Bezier b1a, Bezier b1b) = SplitAtHalf(b1);
 			(Bezier b2a, Bezier b2b) = SplitAtHalf(b2);
 
-			List<Vector3> i1 = BezierIntersections(b1a, b2a, intersections);
-			List<Vector3> i2 = BezierIntersections(b1a, b2b, intersections);
-			List<Vector3> i3 = BezierIntersections(b1b, b2a, intersections);
-			List<Vector3> i4 = BezierIntersections(b1b, b2b, intersections);
+			List<BezierIntersection> i1 = BezierIntersections(b1a, b2a, intersections);
+			List<BezierIntersection> i2 = BezierIntersections(b1a, b2b, intersections);
+			List<BezierIntersection> i3 = BezierIntersections(b1b, b2a, intersections);
+			List<BezierIntersection> i4 = BezierIntersections(b1b, b2b, intersections);
 
 			return i1.Concat(i2).Concat(i3).Concat(i4).ToList();
 		}
