@@ -151,7 +151,9 @@ namespace RoadGenerator
 
         private void AssignTrafficLights()
         {
-            List<RoadNode> intersectionNodes = new List<RoadNode>();
+            List<RoadNode> road1IntersectionNodes = new List<RoadNode>();
+            List<RoadNode> road2IntersectionNodes = new List<RoadNode>();
+
             RoadNode road1Node = Road1.StartNode;
             RoadNode road2Node = Road2.StartNode;
 
@@ -160,25 +162,39 @@ namespace RoadGenerator
             //Find the edge nodes of the roads
             while (road1Node != null)
             {
-                if (road1Node.Type == RoadNodeType.JunctionEdge)
+                if (road1Node.Type == RoadNodeType.JunctionEdge && (road1Node.Position == Road1AnchorPoint1 || road1Node.Position == Road1AnchorPoint2))
                 {
-                    intersectionNodes.Add(road1Node);
+                    road1IntersectionNodes.Add(road1Node);
                 }
                 road1Node = road1Node.Next;
             }
             while (road2Node != null)
             {
-                if (road2Node.Type == RoadNodeType.JunctionEdge)
+                if (road2Node.Type == RoadNodeType.JunctionEdge && (road2Node.Position == Road2AnchorPoint1 || road2Node.Position == Road2AnchorPoint2))
                 {
-                    intersectionNodes.Add(road2Node);
+                    road2IntersectionNodes.Add(road2Node);
                 }
                 road2Node = road2Node.Next;
             }
 
-            // Spawn a traffic light at each junction node
-            if (Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
+            List<RoadNode> longRoad = new List<RoadNode>();
+            List<RoadNode> shortRoad = new List<RoadNode>();
+
+            if (road1IntersectionNodes.Count > road2IntersectionNodes.Count)
             {
-                foreach (RoadNode junctionNode in intersectionNodes)
+                longRoad = road1IntersectionNodes;
+                shortRoad = road2IntersectionNodes;
+            } else
+            {
+                longRoad = road2IntersectionNodes;
+                shortRoad = road1IntersectionNodes;
+            }
+
+            Debug.Log("Long road: " + longRoad.Count + ", Short road: " + shortRoad.Count);
+
+            if (Type == IntersectionType.ThreeWayIntersectionAtStart)
+            {
+                foreach (RoadNode junctionNode in longRoad)
                 {
                     if(trafficLightCounter % 2 == 0)
                     {
@@ -189,11 +205,30 @@ namespace RoadGenerator
                     }
                     trafficLightCounter++;
                 }
+                trafficLightCounter = 0;
+                SpawnTrafficLight(shortRoad[0].Position, shortRoad[0].Rotation * Quaternion.Euler(0, 180, 0));
             }
+            else if (Type == IntersectionType.ThreeWayIntersectionAtEnd)
+            {
+                foreach (RoadNode junctionNode in longRoad)
+                {
+                    if(trafficLightCounter % 2 == 0)
+                    {
+                        SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation);
+                    } else
+                    {
+                        SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation * Quaternion.Euler(0, 180, 0));
+                    }
+                    trafficLightCounter++;
+                }
+                trafficLightCounter = 0;
+                SpawnTrafficLight(shortRoad[0].Position, shortRoad[0].Rotation);
+            }
+
             // If its a 4-way intersection, spawn a traffic light at each junction node
             else if (Type == IntersectionType.FourWayIntersection)
             {
-                foreach (RoadNode junctionNode in intersectionNodes)
+                foreach (RoadNode junctionNode in road1IntersectionNodes)
                 {   
                     if(trafficLightCounter % 2 == 0)
                     {
@@ -202,6 +237,18 @@ namespace RoadGenerator
                     {
                         SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation * Quaternion.Euler(0, 180, 0));
                     }        
+                    trafficLightCounter++;
+                }
+                trafficLightCounter = 0;
+                foreach (RoadNode junctionNode in road2IntersectionNodes)
+                {
+                    if(trafficLightCounter % 2 == 0)
+                    {
+                        SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation);
+                    } else
+                    {
+                        SpawnTrafficLight(junctionNode.Position, junctionNode.Rotation * Quaternion.Euler(0, 180, 0));
+                    }
                     trafficLightCounter++;
                 }
             }
