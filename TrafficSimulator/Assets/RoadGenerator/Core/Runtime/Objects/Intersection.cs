@@ -98,6 +98,10 @@ namespace RoadGenerator
             if(FlowContainer == null)
             {
                 CreateIntersectionContainer();
+            } else 
+            {
+                DestroyImmediate(FlowContainer);
+                CreateIntersectionContainer();
             }
             AssignTrafficLights();
             OffsetTrafficLights();
