@@ -214,7 +214,6 @@ namespace RoadGenerator
             }
         }
 
-
         private void CreateIntersectionMesh()
         {
             Road1.UpdateRoadNodes();
