@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TrafficLight
+namespace RoadGenerator
 {
     enum State{RED, TOGO, TOSTOP, GREEN};
 

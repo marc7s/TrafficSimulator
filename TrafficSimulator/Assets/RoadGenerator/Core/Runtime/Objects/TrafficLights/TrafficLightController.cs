@@ -1,13 +1,15 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System;
 
-namespace TrafficLight
+namespace RoadGenerator
 {
     enum Mode{FIRST, SECOND, TOFIRST, TOSECOND};
 
     public class TrafficLightController : MonoBehaviour
     {
-        [SerializeField] private TrafficLight[] _trafficLightsGroup1; // Starts green
-        [SerializeField] private TrafficLight[] _trafficLightsGroup2; // Starts red
+        [SerializeField] public List<TrafficLight> _trafficLightsGroup1; // Starts green
+        [SerializeField] public List<TrafficLight> _trafficLightsGroup2; // Starts red
 
         public float Delay = 10f;
         public float TransitionDelay = 2f;
@@ -66,7 +68,7 @@ namespace TrafficLight
             }
         }
 
-        private void SetGroupState(TrafficLight[] group, bool isGo)
+        private void SetGroupState(List<TrafficLight> group, bool isGo)
         {
             foreach(TrafficLight trafficLight in group)
             {
