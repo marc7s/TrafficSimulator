@@ -1,13 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/MenuStyles.uss?fileID=7433441132597879392&amp;guid=2a52f77de35e43240844819b355f1b18&amp;type=3#MenuStyles" />
-    <ui:VisualElement style="height: 504px; width: 1147px; align-items: center;">
-        <ui:Label text="Settings" display-tooltip-when-elided="true" style="height: 47px; width: 163px; font-size: 40px; margin-top: 20px; margin-bottom: 40px;" />
-        <ui:Toggle label="FPS counter" name="FPSToggle" class="settings" style="width: 300px; height: 30px; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;" />
-        <ui:Toggle label="Fullscreen" name="FullscreenToggle" class="settings" style="width: 300px; height: 37px; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;" />
-        <ui:DropdownField label="Graphics Quality" index="0" choices="High, Medium, Low" name="GraphicsQualityDropDown" class="settings" style="align-items: stretch; width: 300px; height: 37px;" />
-        <ui:Slider picking-mode="Ignore" label="FOV" value="42" high-value="100" name="FOVSlider" class="settings" style="width: 300px; height: 37px;" />
-        <ui:Slider picking-mode="Ignore" label="Volume" value="42" high-value="100" name="MasterVolumeSlider" class="settings" style="width: 300px; height: 37px;" />
+    <ui:VisualElement style="height: 100%; width: 100%; align-items: center; flex-direction: column;">
+        <ui:Label text="Settings" display-tooltip-when-elided="true" style="height: 47px; width: 163px; font-size: 40px; margin-top: 20px; margin-bottom: 40px; color: rgb(207, 207, 207);" />
+        <ui:Toggle label="FPS counter" name="FPSToggle" class="settings" style="width: 300px; height: 30px; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px; color: rgb(207, 207, 207);" />
+        <ui:Toggle label="Fullscreen" name="FullscreenToggle" class="settings" style="width: 300px; height: 37px; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px; color: rgb(207, 207, 207);" />
+        <ui:DropdownField label="Graphics Quality" index="0" choices="High, Medium, Low" name="GraphicsQualityDropDown" class="settings" style="align-items: stretch; width: 300px; height: 37px; color: rgb(207, 207, 207);" />
+        <ui:Slider picking-mode="Ignore" label="FOV" value="42" high-value="100" name="FOVSlider" class="settings" style="width: 300px; height: 37px; color: rgb(207, 207, 207);" />
+        <ui:Slider picking-mode="Ignore" label="Volume" value="42" high-value="100" name="MasterVolumeSlider" class="settings" style="width: 300px; height: 37px; color: rgb(207, 207, 207);" />
         <ui:Button text="Go Back" display-tooltip-when-elided="true" name="BackButton" class="menu-button" style="height: 59px; width: 200px; margin-top: 50px;" />
     </ui:VisualElement>
-    <ui:VisualElement />
 </ui:UXML>

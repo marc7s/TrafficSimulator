@@ -2,7 +2,7 @@
     <Style src="project://database/Assets/UI/MenuStyles.uss?fileID=7433441132597879392&amp;guid=2a52f77de35e43240844819b355f1b18&amp;type=3#MenuStyles" />
     <ui:VisualElement style="height: 100%; justify-content: flex-start; align-items: center; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; background-color: rgb(60, 58, 58); width: 100%;">
         <ui:VisualElement style="align-items: flex-end; height: 35px; width: 100%;">
-            <ui:Label text="FPS: 300" display-tooltip-when-elided="true" name="FPSLabel" style="display: flex; align-items: center; justify-content: flex-start; height: 19px; width: 66px;" />
+            <ui:Label text="FPS: 300" display-tooltip-when-elided="true" name="FPSLabel" style="display: flex; align-items: center; justify-content: flex-start; height: 19px; width: 66px; color: rgb(207, 207, 207);" />
         </ui:VisualElement>
         <ui:Label text="Traffic Simulator" display-tooltip-when-elided="true" style="height: 63px; width: 394px; font-size: 50px;" />
         <ui:VisualElement name="StartMenuButtons" style="align-items: center;">

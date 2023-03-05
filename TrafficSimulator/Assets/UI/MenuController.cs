@@ -15,45 +15,63 @@ public class MenuController : MonoBehaviour
     private Button _settingsBackButton;
     private Toggle _fpsToggle;
 
-    private Toggle _fullScreenToggle;
+    private Toggle _fullscreenToggle;
     private DropdownField _graphicsQualityDropdown;
     private Slider _masterVolumeSlider;
     private Slider _fovSlider;
     private Label _fpsLabel;
+    
+    private bool _showFPS = false;
+
+    private const int _fpsUpdateFrequency = 15;
+    private float _fpsLastUpdateTime = 0;
+
+    private const string FPS_COUNTER = "FPSCounter";
+    private const string FULLSCREEN = "Fullscreen";
 
 
     void Awake()
     {
         _doc = GetComponent<UIDocument>();
-        // set the displayed container to the start menu
+        // Set the displayed container to the start menu
         _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
 
         // Start Menu UI
         _startButton = _doc.rootVisualElement.Q<Button>("StartButton");
         _startButton.clicked += StartButtonOnClicked;
+        
         _settingsButton = _doc.rootVisualElement.Q<Button>("SettingsButton");
         _settingsButton.clicked += SettingsButtonOnClicked;
+        
         _exitButton = _doc.rootVisualElement.Q<Button>("ExitButton");
         _exitButton.clicked += ExitButtonOnClicked;
+        
         _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
 
         // Settings UI
         _settingsContainer = _settingsUI.CloneTree();
+        
         _settingsBackButton = _settingsContainer.Q<Button>("BackButton");
         _settingsBackButton.clicked += SettingsBackButtonOnClicked;
+        
         _fpsToggle = _settingsContainer.Q<Toggle>("FPSToggle");
         _fpsToggle.RegisterValueChangedCallback(evt => OnFPSToggleChanged(evt.newValue));
-        _fullScreenToggle = _settingsContainer.Q<Toggle>("FullscreenToggle");
-        _fullScreenToggle.RegisterValueChangedCallback(evt => OnFullScreenToggleChanged(evt.newValue));
+        
+        _fullscreenToggle = _settingsContainer.Q<Toggle>("FullscreenToggle");
+        _fullscreenToggle.RegisterValueChangedCallback(evt => OnFullscreenToggleChanged(evt.newValue));
+        
         _graphicsQualityDropdown = _settingsContainer.Q<DropdownField>("GraphicsQualityDropdown");
         _graphicsQualityDropdown.RegisterValueChangedCallback(evt => OnGraphicsQualityDropdownChanged(evt.newValue));
+        
         _masterVolumeSlider = _settingsContainer.Q<Slider>("MasterVolumeSlider");
         _masterVolumeSlider.RegisterValueChangedCallback(evt => OnMasterVolumeSliderChanged(evt.newValue));
+        
         _fovSlider = _settingsContainer.Q<Slider>("FOVSlider");
         _fovSlider.RegisterValueChangedCallback(evt => OnFOVSliderChanged(evt.newValue));
-        _fovSlider = _settingsContainer.Q<Slider>("FOVSlider");
 
-        
+        // Load settings
+        _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
+        SetFPSVisibility(_showFPS);
     }
     private void StartButtonOnClicked()
     {
@@ -66,8 +84,10 @@ public class MenuController : MonoBehaviour
         // Clear the displayed container and add the settings UI
         _displayedContainer.Clear();
         _displayedContainer.Add(_settingsContainer);
-        _fpsToggle.value = PlayerPrefs.GetInt("FPSCounter", 0) == 1;
-        _fullScreenToggle.value = Screen.fullScreen;
+        
+        _fpsToggle.value = PlayerPrefsGetBool(FPS_COUNTER);
+        
+        _fullscreenToggle.value = Screen.fullScreen;
     }
 
     private void ExitButtonOnClicked()
@@ -77,13 +97,14 @@ public class MenuController : MonoBehaviour
 
     private void OnFPSToggleChanged(bool value)
     {
-        PlayerPrefs.SetInt("FPSCounter", value ? 1 : 0);
-        _fpsLabel.visible = value;
+        PlayerPrefsSetBool(FPS_COUNTER, value);
+        _showFPS = value;
+        SetFPSVisibility(value);   
     }
 
-    private void OnFullScreenToggleChanged(bool value)
+    private void OnFullscreenToggleChanged(bool value)
     {
-        PlayerPrefs.SetInt("FullScreen", value ? 1 : 0);
+        PlayerPrefsSetBool(FULLSCREEN, value);
         Screen.fullScreen = value;
     }
     private void OnGraphicsQualityDropdownChanged(string value)
@@ -110,12 +131,33 @@ public class MenuController : MonoBehaviour
         _displayedContainer.Add(_exitButton);
     }
 
+    /// <summary>Wrapper to allow setting bools in PlayerPrefs</summary>
+    private void PlayerPrefsSetBool(string name, bool value)
+    {
+        PlayerPrefs.SetInt(name, value ? 1 : 0);
+    }
+
+    /// <summary>Wrapper to allow getting bools from PlayerPrefs</summary>
+    private bool PlayerPrefsGetBool(string name)
+    {
+        return PlayerPrefs.GetInt(name, 0) == 1;
+    }
+
+    private void DisplayFPS(float fps)
+    {
+        _fpsLabel.text = "FPS: " + fps.ToString("F0");
+        _fpsLastUpdateTime = Time.time;
+    }
+
+    private void SetFPSVisibility(bool visible)
+    {
+        _fpsLabel.visible = visible;
+    }
+
     void Update()
     {
         // FPS counter
-        if (PlayerPrefs.GetInt("FPSCounter", 0) == 1)
-            _fpsLabel.text = "FPS: " + (1f / Time.unscaledDeltaTime).ToString("F0");
-        else
-            _fpsLabel.text = "";
+        if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
+            DisplayFPS(1f / Time.unscaledDeltaTime);
     }
 }
