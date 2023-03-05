@@ -25,7 +25,7 @@ public class MenuController : MonoBehaviour
     void Awake()
     {
         _doc = GetComponent<UIDocument>();
-        // 
+        // set the displayed container to the start menu
         _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
 
         // Start Menu UI
@@ -63,6 +63,7 @@ public class MenuController : MonoBehaviour
 
     private void SettingsButtonOnClicked()
     {
+        // Clear the displayed container and add the settings UI
         _displayedContainer.Clear();
         _displayedContainer.Add(_settingsContainer);
         _fpsToggle.value = PlayerPrefs.GetInt("FPSCounter", 0) == 1;
@@ -102,6 +103,7 @@ public class MenuController : MonoBehaviour
 
     private void SettingsBackButtonOnClicked()
     {
+        // Clear the displayed container and add the start menu UI
         _displayedContainer.Clear();
         _displayedContainer.Add(_startButton);
         _displayedContainer.Add(_settingsButton);
