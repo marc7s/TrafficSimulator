@@ -1,13 +1,15 @@
 using UnityEngine;
+using System.Collections.Generic;
+using System;
 
-namespace TrafficLight
+namespace RoadGenerator
 {
     enum Mode{FIRST, SECOND, TOFIRST, TOSECOND};
 
     public class TrafficLightController : MonoBehaviour
     {
-        [SerializeField] private TrafficLight[] _trafficLightsGroup1; // Starts green
-        [SerializeField] private TrafficLight[] _trafficLightsGroup2; // Starts red
+        [SerializeField] public List<TrafficLight> TrafficLightsGroup1; // Starts green
+        [SerializeField] public List<TrafficLight> TrafficLightsGroup2; // Starts red
 
         public float Delay = 10f;
         public float TransitionDelay = 2f;
@@ -39,11 +41,11 @@ namespace TrafficLight
             switch (_currentMode)
             {
                 case Mode.TOFIRST:
-                    SetGroupState(_trafficLightsGroup2, true);
+                    SetGroupState(TrafficLightsGroup2, true);
                     _currentMode = Mode.FIRST;
                     break;
                 case Mode.TOSECOND:
-                    SetGroupState(_trafficLightsGroup1, true);
+                    SetGroupState(TrafficLightsGroup1, true);
                     _currentMode = Mode.SECOND;
                     break;
             }
@@ -54,19 +56,19 @@ namespace TrafficLight
             switch (_currentMode)
             {
                 case Mode.FIRST:
-                    SetGroupState(_trafficLightsGroup1, false);
-                    SetGroupState(_trafficLightsGroup2, false);
+                    SetGroupState(TrafficLightsGroup1, false);
+                    SetGroupState(TrafficLightsGroup2, false);
                     _currentMode = Mode.TOSECOND;
                     break;
                 case Mode.SECOND:
-                    SetGroupState(_trafficLightsGroup1, false);
-                    SetGroupState(_trafficLightsGroup2, false);
+                    SetGroupState(TrafficLightsGroup1, false);
+                    SetGroupState(TrafficLightsGroup2, false);
                     _currentMode = Mode.TOFIRST;
                     break;
             }
         }
 
-        private void SetGroupState(TrafficLight[] group, bool isGo)
+        private void SetGroupState(List<TrafficLight> group, bool isGo)
         {
             foreach(TrafficLight trafficLight in group)
             {
