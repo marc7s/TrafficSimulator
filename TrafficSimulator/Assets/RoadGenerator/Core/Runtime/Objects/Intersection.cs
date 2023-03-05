@@ -93,15 +93,10 @@ namespace RoadGenerator
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
+            CreateIntersectionContainer();
             // If intersection doesn't have a container, create one
-            if(FlowContainer == null)
-            {
-                CreateIntersectionContainer();
-            } else 
-            {
+            if(FlowContainer != null)
                 DestroyImmediate(FlowContainer);
-                CreateIntersectionContainer();
-            }
             AssignTrafficLights();
             OffsetTrafficLights();
         }
@@ -158,17 +153,13 @@ namespace RoadGenerator
             while (road1Node != null)
             {
                 if (road1Node.Type == RoadNodeType.JunctionEdge && (road1Node.Position == Road1AnchorPoint1 || road1Node.Position == Road1AnchorPoint2))
-                {
                     road1IntersectionNodes.Add(road1Node);
-                }
                 road1Node = road1Node.Next;
             }
             while (road2Node != null)
             {
                 if (road2Node.Type == RoadNodeType.JunctionEdge && (road2Node.Position == Road2AnchorPoint1 || road2Node.Position == Road2AnchorPoint2))
-                {
                     road2IntersectionNodes.Add(road2Node);
-                }
                 road2Node = road2Node.Next;
             }
 
@@ -214,11 +205,12 @@ namespace RoadGenerator
             }
         }
 
+        // Offsets the traffic lights. Currently only works for 2 lane roads
         private void OffsetTrafficLights()
         {
             foreach(Transform child in TrafficLightController.transform)
             {
-                child.position += (Road1.LaneCount/2) * child.right * Road1.LaneWidth;
+                child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
             }
         }
 
