@@ -5,7 +5,7 @@
             <ui:Label text="FPS: 300" display-tooltip-when-elided="true" name="FPSLabel" style="display: flex; align-items: center; justify-content: flex-start; height: 19px; width: 66px;" />
         </ui:VisualElement>
         <ui:Label text="Traffic Simulator" display-tooltip-when-elided="true" style="height: 63px; width: 394px; font-size: 50px;" />
-        <ui:VisualElement name="Buttons" style="align-items: center;">
+        <ui:VisualElement name="StartMenuButtons" style="align-items: center;">
             <ui:Button text="Start" display-tooltip-when-elided="true" name="StartButton" class="menu-button" style="height: 43px; width: 251px; margin-top: 50px;" />
             <ui:Button text="Settings" display-tooltip-when-elided="true" name="SettingsButton" class="menu-button" style="height: 43px; width: 251px; margin-top: 20px;" />
             <ui:Button text="Exit" display-tooltip-when-elided="true" name="ExitButton" class="menu-button" style="height: 43px; width: 251px; margin-top: 20px;" />

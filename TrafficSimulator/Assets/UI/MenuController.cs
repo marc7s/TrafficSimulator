@@ -3,28 +3,30 @@ using UnityEngine.UIElements;
 public class MenuController : MonoBehaviour
 {
     private UIDocument _doc;
-    private VisualElement _buttonWrapper;
-    private VisualElement _settingsButtons;
-    [SerializeField] private VisualTreeAsset _settingsUI;
+    private VisualElement _displayedContainer;
+    // Start Menu UI
+    private VisualElement _settingsContainer;
     private Button _startButton;
     private Button _settingsButton;
     private Button _exitButton;
 
     //  Settings UI
+    [SerializeField] private VisualTreeAsset _settingsUI;
     private Button _settingsBackButton;
-    private Toggle _FPSToggle;
+    private Toggle _fpsToggle;
 
-    private Toggle _FullScreenToggle;
-    private DropdownField _GraphicsQualityDropdown;
-    private Slider _MasterVolumeSlider;
-    private Slider _FOVSlider;
+    private Toggle _fullScreenToggle;
+    private DropdownField _graphicsQualityDropdown;
+    private Slider _masterVolumeSlider;
+    private Slider _fovSlider;
     private Label _fpsLabel;
 
 
     void Awake()
     {
         _doc = GetComponent<UIDocument>();
-        _buttonWrapper = _doc.rootVisualElement.Q<VisualElement>("Buttons");
+        // 
+        _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
 
         // Start Menu UI
         _startButton = _doc.rootVisualElement.Q<Button>("StartButton");
@@ -36,20 +38,20 @@ public class MenuController : MonoBehaviour
         _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
 
         // Settings UI
-        _settingsButtons = _settingsUI.CloneTree();
-        _settingsBackButton = _settingsButtons.Q<Button>("BackButton");
+        _settingsContainer = _settingsUI.CloneTree();
+        _settingsBackButton = _settingsContainer.Q<Button>("BackButton");
         _settingsBackButton.clicked += SettingsBackButtonOnClicked;
-        _FPSToggle = _settingsButtons.Q<Toggle>("FPSToggle");
-        _FPSToggle.RegisterValueChangedCallback(evt => OnFPSToggleChanged(evt.newValue));
-        _FullScreenToggle = _settingsButtons.Q<Toggle>("FullscreenToggle");
-        _FullScreenToggle.RegisterValueChangedCallback(evt => OnFullScreenToggleChanged(evt.newValue));
-        _GraphicsQualityDropdown = _settingsButtons.Q<DropdownField>("GraphicsQualityDropdown");
-        _GraphicsQualityDropdown.RegisterValueChangedCallback(evt => OnGraphicsQualityDropdownChanged(evt.newValue));
-        _MasterVolumeSlider = _settingsButtons.Q<Slider>("MasterVolumeSlider");
-        _MasterVolumeSlider.RegisterValueChangedCallback(evt => OnMasterVolumeSliderChanged(evt.newValue));
-        _FOVSlider = _settingsButtons.Q<Slider>("FOVSlider");
-        _FOVSlider.RegisterValueChangedCallback(evt => OnFOVSliderChanged(evt.newValue));
-        _FOVSlider = _settingsButtons.Q<Slider>("FOVSlider");
+        _fpsToggle = _settingsContainer.Q<Toggle>("FPSToggle");
+        _fpsToggle.RegisterValueChangedCallback(evt => OnFPSToggleChanged(evt.newValue));
+        _fullScreenToggle = _settingsContainer.Q<Toggle>("FullscreenToggle");
+        _fullScreenToggle.RegisterValueChangedCallback(evt => OnFullScreenToggleChanged(evt.newValue));
+        _graphicsQualityDropdown = _settingsContainer.Q<DropdownField>("GraphicsQualityDropdown");
+        _graphicsQualityDropdown.RegisterValueChangedCallback(evt => OnGraphicsQualityDropdownChanged(evt.newValue));
+        _masterVolumeSlider = _settingsContainer.Q<Slider>("MasterVolumeSlider");
+        _masterVolumeSlider.RegisterValueChangedCallback(evt => OnMasterVolumeSliderChanged(evt.newValue));
+        _fovSlider = _settingsContainer.Q<Slider>("FOVSlider");
+        _fovSlider.RegisterValueChangedCallback(evt => OnFOVSliderChanged(evt.newValue));
+        _fovSlider = _settingsContainer.Q<Slider>("FOVSlider");
 
         
     }
@@ -61,10 +63,10 @@ public class MenuController : MonoBehaviour
 
     private void SettingsButtonOnClicked()
     {
-        _buttonWrapper.Clear();
-        _buttonWrapper.Add(_settingsButtons);
-        _FPSToggle.value = PlayerPrefs.GetInt("FPSCounter", 0) == 1;
-        _FullScreenToggle.value = Screen.fullScreen;
+        _displayedContainer.Clear();
+        _displayedContainer.Add(_settingsContainer);
+        _fpsToggle.value = PlayerPrefs.GetInt("FPSCounter", 0) == 1;
+        _fullScreenToggle.value = Screen.fullScreen;
     }
 
     private void ExitButtonOnClicked()
@@ -100,10 +102,10 @@ public class MenuController : MonoBehaviour
 
     private void SettingsBackButtonOnClicked()
     {
-        _buttonWrapper.Clear();
-        _buttonWrapper.Add(_startButton);
-        _buttonWrapper.Add(_settingsButton);
-        _buttonWrapper.Add(_exitButton);
+        _displayedContainer.Clear();
+        _displayedContainer.Add(_startButton);
+        _displayedContainer.Add(_settingsButton);
+        _displayedContainer.Add(_exitButton);
     }
 
     void Update()
