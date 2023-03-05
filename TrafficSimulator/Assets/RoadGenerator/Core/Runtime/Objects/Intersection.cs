@@ -26,8 +26,6 @@ namespace RoadGenerator
     public class Intersection : MonoBehaviour
     {
         [HideInInspector] public GameObject IntersectionObject;
-        [HideInInspector] public GameObject FlowContainer;
-        [HideInInspector] public GameObject TrafficLightController;
         [HideInInspector] public RoadSystem RoadSystem;
         [HideInInspector] public Vector3 IntersectionPosition;
         [HideInInspector] public Road Road1;
@@ -55,6 +53,9 @@ namespace RoadGenerator
         private float _thickness;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
+
+        private GameObject TrafficLightController;
+        private GameObject FlowContainer;
 
         private Mesh _mesh;
         public const float IntersectionLength = 20f;
@@ -126,9 +127,6 @@ namespace RoadGenerator
         {
             FlowContainer = new GameObject("FlowContainer");
             FlowContainer.transform.parent = IntersectionObject.transform;
-            FlowContainer.transform.localPosition = Vector3.zero;
-            FlowContainer.transform.localRotation = Quaternion.identity;
-            FlowContainer.transform.localScale = Vector3.one;
 
             CreateTrafficLightController();
         }
@@ -136,14 +134,13 @@ namespace RoadGenerator
         // Creates a gameobject container to control the intersections traffic lights
         private void CreateTrafficLightController()
         {
-            TrafficLightController = Instantiate(RoadSystem._defaultTrafficLightControllerPrefab, Vector3.zero, Quaternion.identity);
+            TrafficLightController = Instantiate(RoadSystem.DefaultTrafficLightControllerPrefab, Vector3.zero, Quaternion.identity);
             TrafficLightController.transform.parent = FlowContainer.transform;
-            TrafficLightController.transform.localScale = Vector3.one;
         }
 
         private TrafficLight SpawnTrafficLight(Vector3 position, Quaternion rotation)
         {
-            GameObject trafficLight = Instantiate(RoadSystem._defaultTrafficLightPrefab, position, rotation);
+            GameObject trafficLight = Instantiate(RoadSystem.DefaultTrafficLightPrefab, position, rotation);
             trafficLight.transform.parent = TrafficLightController.transform;
             return trafficLight.GetComponent<TrafficLight>();
         }
@@ -175,17 +172,17 @@ namespace RoadGenerator
                 road2Node = road2Node.Next;
             }
 
-            List<RoadNode> longRoad = new List<RoadNode>();
-            List<RoadNode> shortRoad = new List<RoadNode>();
+            List<RoadNode> twoJunctionNodeRoad = new List<RoadNode>();
+            List<RoadNode> oneJunctionNodeRoad = new List<RoadNode>();
 
             if (road1IntersectionNodes.Count > road2IntersectionNodes.Count)
             {
-                longRoad = road1IntersectionNodes;
-                shortRoad = road2IntersectionNodes;
+                twoJunctionNodeRoad = road1IntersectionNodes;
+                oneJunctionNodeRoad = road2IntersectionNodes;
             } else
             {
-                longRoad = road2IntersectionNodes;
-                shortRoad = road1IntersectionNodes;
+                twoJunctionNodeRoad = road2IntersectionNodes;
+                oneJunctionNodeRoad = road1IntersectionNodes;
             }
 
             List<TrafficLight> trafficLightsGroup1 = TrafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup1;
@@ -193,40 +190,35 @@ namespace RoadGenerator
 
             if (Type == IntersectionType.ThreeWayIntersectionAtStart)
             {
-                trafficLightsGroup1.Add(SpawnTrafficLight(longRoad[0].Position, longRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(longRoad[1].Position, longRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
 
-                trafficLightsGroup2.Add(SpawnTrafficLight(shortRoad[0].Position, shortRoad[0].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation * Quaternion.Euler(0, 180, 0)));
             }
             else if (Type == IntersectionType.ThreeWayIntersectionAtEnd)
             {
-                trafficLightsGroup1.Add(SpawnTrafficLight(longRoad[0].Position, longRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(longRoad[1].Position, longRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
 
-                trafficLightsGroup2.Add(SpawnTrafficLight(shortRoad[0].Position, shortRoad[0].Rotation));
+                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation));
             }
 
             // If its a 4-way intersection, spawn a traffic light at each junction node
             else if (Type == IntersectionType.FourWayIntersection)
             {
-                trafficLightsGroup1.Add(SpawnTrafficLight(longRoad[0].Position, longRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(longRoad[1].Position, longRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
 
-                trafficLightsGroup2.Add(SpawnTrafficLight(shortRoad[0].Position, shortRoad[0].Rotation));
-                trafficLightsGroup2.Add(SpawnTrafficLight(shortRoad[1].Position, shortRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
-
+                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[1].Position, oneJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
             }
         }
 
         private void OffsetTrafficLights()
         {
-            float laneWidth = Road1.LaneWidth;
-            int laneCount1 = Road1.LaneCount;
-            int laneCount2 = Road2.LaneCount;
-
             foreach(Transform child in TrafficLightController.transform)
             {
-                child.position += (laneCount1/2) * child.right * laneWidth;
+                child.position += (Road1.LaneCount/2) * child.right * Road1.LaneWidth;
             }
         }
 

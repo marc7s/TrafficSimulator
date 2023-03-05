@@ -26,8 +26,8 @@ namespace RoadGenerator
         public DrivingSide DrivingSide = DrivingSide.Right;
         
         [Header("Default models")]
-        [SerializeField] public GameObject _defaultTrafficLightPrefab;
-        [SerializeField] public GameObject _defaultTrafficLightControllerPrefab;
+        public GameObject DefaultTrafficLightPrefab;
+        public GameObject DefaultTrafficLightControllerPrefab;
 
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;

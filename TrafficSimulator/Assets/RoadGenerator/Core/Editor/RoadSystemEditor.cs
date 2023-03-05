@@ -19,8 +19,8 @@ namespace RoadSystemGenerator
             _showGraph = serializedObject.FindProperty("ShowGraph");
             _spawnRoadsAtOrigin = serializedObject.FindProperty("SpawnRoadsAtOrigin");
             _drivingSide = serializedObject.FindProperty("DrivingSide");
-            _defaultTrafficLight = serializedObject.FindProperty("_defaultTrafficLightPrefab");
-            _defaultTrafficLightController = serializedObject.FindProperty("_defaultTrafficLightControllerPrefab");
+            _defaultTrafficLight = serializedObject.FindProperty("DefaultTrafficLightPrefab");
+            _defaultTrafficLightController = serializedObject.FindProperty("DefaultTrafficLightControllerPrefab");
 
         }
         public override void OnInspectorGUI()
@@ -57,14 +57,14 @@ namespace RoadSystemGenerator
                 roadSystem.ShowGraph = _showGraph.boolValue;
             }
 
-            if(_defaultTrafficLight.objectReferenceValue != (GameObject)roadSystem._defaultTrafficLightPrefab)
+            if(_defaultTrafficLight.objectReferenceValue != (GameObject)roadSystem.DefaultTrafficLightPrefab)
             {
-                roadSystem._defaultTrafficLightPrefab = (GameObject)_defaultTrafficLight.objectReferenceValue;
+                roadSystem.DefaultTrafficLightPrefab = (GameObject)_defaultTrafficLight.objectReferenceValue;
             }
 
-            if(_defaultTrafficLightController.objectReferenceValue != (GameObject)roadSystem._defaultTrafficLightControllerPrefab)
+            if(_defaultTrafficLightController.objectReferenceValue != (GameObject)roadSystem.DefaultTrafficLightControllerPrefab)
             {
-                roadSystem._defaultTrafficLightControllerPrefab = (GameObject)_defaultTrafficLightController.objectReferenceValue;
+                roadSystem.DefaultTrafficLightControllerPrefab = (GameObject)_defaultTrafficLightController.objectReferenceValue;
             }
 
             if(GUILayout.Button("Add new road"))
