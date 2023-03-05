@@ -8,8 +8,8 @@ namespace RoadGenerator
 
     public class TrafficLightController : MonoBehaviour
     {
-        [SerializeField] public List<TrafficLight> _trafficLightsGroup1; // Starts green
-        [SerializeField] public List<TrafficLight> _trafficLightsGroup2; // Starts red
+        [SerializeField] public List<TrafficLight> TrafficLightsGroup1; // Starts green
+        [SerializeField] public List<TrafficLight> TrafficLightsGroup2; // Starts red
 
         public float Delay = 10f;
         public float TransitionDelay = 2f;
@@ -41,11 +41,11 @@ namespace RoadGenerator
             switch (_currentMode)
             {
                 case Mode.TOFIRST:
-                    SetGroupState(_trafficLightsGroup2, true);
+                    SetGroupState(TrafficLightsGroup2, true);
                     _currentMode = Mode.FIRST;
                     break;
                 case Mode.TOSECOND:
-                    SetGroupState(_trafficLightsGroup1, true);
+                    SetGroupState(TrafficLightsGroup1, true);
                     _currentMode = Mode.SECOND;
                     break;
             }
@@ -56,13 +56,13 @@ namespace RoadGenerator
             switch (_currentMode)
             {
                 case Mode.FIRST:
-                    SetGroupState(_trafficLightsGroup1, false);
-                    SetGroupState(_trafficLightsGroup2, false);
+                    SetGroupState(TrafficLightsGroup1, false);
+                    SetGroupState(TrafficLightsGroup2, false);
                     _currentMode = Mode.TOSECOND;
                     break;
                 case Mode.SECOND:
-                    SetGroupState(_trafficLightsGroup1, false);
-                    SetGroupState(_trafficLightsGroup2, false);
+                    SetGroupState(TrafficLightsGroup1, false);
+                    SetGroupState(TrafficLightsGroup2, false);
                     _currentMode = Mode.TOFIRST;
                     break;
             }

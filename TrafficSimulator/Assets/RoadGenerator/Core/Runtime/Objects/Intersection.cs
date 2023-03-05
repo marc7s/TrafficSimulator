@@ -26,10 +26,8 @@ namespace RoadGenerator
     public class Intersection : MonoBehaviour
     {
         [HideInInspector] public GameObject IntersectionObject;
-
         [HideInInspector] public GameObject FlowContainer;
         [HideInInspector] public GameObject TrafficLightController;
-
         [HideInInspector] public RoadSystem RoadSystem;
         [HideInInspector] public Vector3 IntersectionPosition;
         [HideInInspector] public Road Road1;
@@ -190,8 +188,8 @@ namespace RoadGenerator
                 shortRoad = road1IntersectionNodes;
             }
 
-            List<TrafficLight> trafficLightsGroup1 = TrafficLightController.GetComponent<TrafficLightController>()._trafficLightsGroup1;
-            List<TrafficLight> trafficLightsGroup2 = TrafficLightController.GetComponent<TrafficLightController>()._trafficLightsGroup2;
+            List<TrafficLight> trafficLightsGroup1 = TrafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup1;
+            List<TrafficLight> trafficLightsGroup2 = TrafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup2;
 
             if (Type == IntersectionType.ThreeWayIntersectionAtStart)
             {
