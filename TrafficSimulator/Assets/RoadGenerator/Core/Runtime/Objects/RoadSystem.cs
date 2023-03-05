@@ -27,6 +27,7 @@ namespace RoadGenerator
         
         [Header("Default models")]
         [SerializeField] public GameObject _defaultTrafficLightPrefab;
+        [SerializeField] public GameObject _defaultTrafficLightControllerPrefab;
 
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
