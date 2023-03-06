@@ -106,14 +106,13 @@ namespace RoadGenerator
             {
                 CreateTrafficLightController();
                 AssignTrafficLights();
-                OffsetTrafficLights();
             }
             else if (_flowType == FlowType.StopSigns)
             {
                 CreateStopSignController();
                 AssignStopSigns();
-                OffsetStopSigns();
             }
+            OffsetSigns();
         }
 
         /// <summary> Returns a list of all RoadNodes that are of type `JunctionEdge` or an intersection. This is because for 3-way intersections, the intersection node are used as an anchor </summary>
@@ -226,14 +225,6 @@ namespace RoadGenerator
             }
         }
 
-        private void OffsetStopSigns()
-        {
-            foreach (Transform child in StopSignController.transform)
-            {
-                child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
-            }
-        }
-
         // Finds intersections junction nodes and assigns traffic lights to them
         private void AssignTrafficLights()
         {
@@ -268,12 +259,21 @@ namespace RoadGenerator
             }
         }
 
-        // Offsets the traffic lights. Currently only works for 2 lane roads
-        private void OffsetTrafficLights()
+        private void OffsetSigns()
         {
-            foreach(Transform child in TrafficLightController.transform)
+            if(_flowType == FlowType.TrafficLights)
             {
-                child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
+                foreach (Transform child in TrafficLightController.transform)
+                {
+                    child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
+                }
+            }
+            else if(_flowType == FlowType.StopSigns)
+            {
+                foreach (Transform child in StopSignController.transform)
+                {
+                    child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
+                }
             }
         }
 
