@@ -39,20 +39,7 @@ namespace RoadGenerator
                     if (!otherPathCreator.bezierPath.PathBounds.Intersects(otherPathCreator.bezierPath.PathBounds))
                         continue;
 
-                    // Otherwise, intersection might be possible so we have to check thoroughly
-                    // Loop through all segments of the other road
-                    for (int i = 0; i < otherPathCreator.bezierPath.NumSegments; i++) 
-                    {
-                        // Get the segment points for the other road
-                        Vector3[] otherSegmentPoints = otherPathCreator.bezierPath.GetPointsInSegment(i);
-                        
-                        // If the two segment bounds are overlapping there might be an intersection, so we need to check it thoroughly
-                        if (IntersectionUtility.IsBezierPathIntersectionPossible(segmentPoints, otherSegmentPoints)) 
-                        {
-                            // Get all intersections of this segment and add them to the list
-                            intersectionPointDatas.AddRange(GetBezierPathIntersections(startVertexIndex, endVertexIndex, pathCreator,  otherPathCreator, otherSegmentPoints));
-                        }
-                    }
+                    intersectionPointDatas.AddRange(GetBezierPathIntersections(road.RoadObject.transform, otherRoad.RoadObject.transform, pathCreator,  otherPathCreator));
                 }
 
                 // Go through all the intersections and create an intersection at every position
@@ -93,47 +80,20 @@ namespace RoadGenerator
             return intersectionPointDatas.Count < 1 || intersectionPointDatas.Any(x => Vector3.Distance(x.Position, intersectionPosition) < uniqueDistance);
         }
 
-        /// <summary>Get the intersections from the start vertex index to the end index</summary>
-        static List<IntersectionPointData> GetBezierPathIntersections(int road1StartVertexIndex, int road1EndVertexIndex, PathCreator road1PathCreator, PathCreator road2PathCreator, Vector3[] road2SegmentPoints)
+        private static List<IntersectionPointData> GetBezierPathIntersections(Transform road1Transform, Transform road2Transform, PathCreator road1PathCreator, PathCreator road2PathCreator)
         {
-            List<IntersectionPointData> intersectionPoints = new List<IntersectionPointData>();
-            
-            // Get the anchor positions for the start and end of the segment
-            Vector3 road2SegmentAnchorPosition1 = road2SegmentPoints[SEGMENT_ANCHOR1_INDEX];
-            Vector3 road2SegmentAnchorPosition2 = road2SegmentPoints[SEGMENT_ANCHOR2_INDEX];
-            
-            // Get the start and end vertex indices on this segment of road2 that are closest to its anchor positions for this segment
-            int startVertexIndexRoad2 = road2PathCreator.path.GetClosestIndexOnPath(road2SegmentAnchorPosition1);
-            int endVertexIndexRoad2 = road2PathCreator.path.GetClosestIndexOnPath(road2SegmentAnchorPosition2, false);
+            List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
 
-            // Go through all vertex point combinations between road1 and road2
-            for (int i = 0; i < road1EndVertexIndex - road1StartVertexIndex; i++)
+            List<BezierIntersection> bezierIntersections = road1PathCreator.bezierPath.IntersectionPoints(road1Transform, road2Transform, road2PathCreator.bezierPath);
+            
+            foreach(BezierIntersection bezierIntersection in bezierIntersections)
             {
-                for (int j = 0; j < endVertexIndexRoad2 - startVertexIndexRoad2; j++)
-                {
-                    // Project this and the next point on road1 to the XZ plane since we ignore the vertical axises when creating intersections
-                    Vector2 road1VertexPoint1 = IntersectionUtility.GetXZPlaneProjection(road1PathCreator.path.GetPoint(road1StartVertexIndex + i));
-                    Vector2 road1VertexPoint2 = IntersectionUtility.GetXZPlaneProjection(road1PathCreator.path.GetPoint(road1StartVertexIndex + i + 1));
-                    
-                   // Project this and the next point on road2 to the XZ plane since we ignore the vertical axises when creating intersections
-                    Vector2 road2VertexPoint1 = IntersectionUtility.GetXZPlaneProjection(road2PathCreator.path.GetPoint(startVertexIndexRoad2 + j));
-                    Vector2 road2VertexPoint2 = IntersectionUtility.GetXZPlaneProjection(road2PathCreator.path.GetPoint(startVertexIndexRoad2 + j + 1));
-                    
-                    // Check if the lines drawn between the two points in one road intersects with the other
-                    if (IntersectionUtility.IntersectLineSegments2D(road1VertexPoint1, road1VertexPoint2, road2VertexPoint1, road2VertexPoint2, out Vector2 intersectionPoint))
-                    {
-                        // Get the direction from the first point to the second point on road1
-                        Vector3 lineDirection = new Vector3(road1VertexPoint1.x, 0, road1VertexPoint1.y) - new Vector3(road1VertexPoint2.x, 0, road1VertexPoint2.y);
-                        
-                        // Set the rotation of the intersection to that of the line
-                        Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, lineDirection);
-                        if(IntersectionIsUnique(intersectionPoints, intersectionPoint))
-                            intersectionPoints.Add(CalculateIntersectionData(intersectionPoint, rotation, road1PathCreator, road2PathCreator));
-                    }
-                }
+                // Set the rotation of the intersection to that of the line
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, bezierIntersection.direction);
+                intersectionPointDatas.Add(CalculateIntersectionData(bezierIntersection.point, rotation, road1PathCreator, road2PathCreator));
             }
 
-            return intersectionPoints;
+            return intersectionPointDatas;
         }
 
         static IntersectionType GetThreeWayIntersectionType(PathCreator pathCreator, float distanceAlongPath)
@@ -143,18 +103,15 @@ namespace RoadGenerator
             return isAtEnd ? IntersectionType.ThreeWayIntersectionAtEnd : IntersectionType.ThreeWayIntersectionAtStart;
         }
 
-        static IntersectionPointData CalculateIntersectionData(Vector2 intersectionPosition, Quaternion rotation, PathCreator road1PathCreator, PathCreator road2PathCreator)
+        static IntersectionPointData CalculateIntersectionData(Vector3 intersectionPosition, Quaternion rotation, PathCreator road1PathCreator, PathCreator road2PathCreator)
         {
-            // Project the intersection position on the XZ plane
-            Vector3 intersectionPoint = new Vector3(intersectionPosition.x, 0, intersectionPosition.y);
-            
             // Get the closest segment indices at the intersection point
-            int road1SegmentIndex = GetClosestSegmentIndex(road1PathCreator, intersectionPoint);
-            int road2SegmentIndex = GetClosestSegmentIndex(road2PathCreator, intersectionPoint);
+            int road1SegmentIndex = GetClosestSegmentIndex(road1PathCreator, intersectionPosition);
+            int road2SegmentIndex = GetClosestSegmentIndex(road2PathCreator, intersectionPosition);
 
             // Get the distance along the path at the intersection point
-            float road1DistanceAtIntersection = road1PathCreator.path.GetClosestDistanceAlongPath(intersectionPoint);
-            float road2DistanceAtIntersection = road2PathCreator.path.GetClosestDistanceAlongPath(intersectionPoint);
+            float road1DistanceAtIntersection = road1PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition);
+            float road2DistanceAtIntersection = road2PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition);
             
             // Get the anchor points on either side of the intersection for the two roads
             (Vector3 road1AnchorPoint1, Vector3 road1AnchorPoint2) = GetIntersectionAnchorPoints(road1PathCreator.path, road1DistanceAtIntersection);
@@ -187,7 +144,7 @@ namespace RoadGenerator
                 road2SegmentIndex = tempIndex;
 
                 // Since we capped the distance at the end of the road, the correct anchor point will be the one furthest away
-                if(Vector3.Distance(road2AnchorPoint2, intersectionPoint) > Vector3.Distance(road2AnchorPoint1, intersectionPoint))
+                if(Vector3.Distance(road2AnchorPoint2, intersectionPosition) > Vector3.Distance(road2AnchorPoint1, intersectionPosition))
                     road2AnchorPoint1 = road2AnchorPoint2;
                 
 
@@ -200,7 +157,7 @@ namespace RoadGenerator
                 type = GetThreeWayIntersectionType(road2PathCreator, road2DistanceAtIntersection);
 
                 // Since we capped the distance at the end of the road, the correct anchor point will be the one furthest away
-                if(Vector3.Distance(road2AnchorPoint2, intersectionPoint) > Vector3.Distance(road2AnchorPoint1, intersectionPoint))
+                if(Vector3.Distance(road2AnchorPoint2, intersectionPosition) > Vector3.Distance(road2AnchorPoint1, intersectionPosition))
                     road2AnchorPoint1 = road2AnchorPoint2;
                 
                 // For three way intersections Road2 will only have one anchor point, so we zero out the other one to avoid hard to find bugs if the wrong one is used
@@ -208,7 +165,7 @@ namespace RoadGenerator
             }
 
             IntersectionPointData intersectionPointData = new IntersectionPointData(
-                intersectionPoint, rotation, road1PathCreator, road2PathCreator, road1AnchorPoint1,
+                intersectionPosition, rotation, road1PathCreator, road2PathCreator, road1AnchorPoint1,
                 road1AnchorPoint2, road2AnchorPoint1, road2AnchorPoint2, road1SegmentIndex, road2SegmentIndex, type, road1PathCreator.GetComponent<Road>()
                 );
 

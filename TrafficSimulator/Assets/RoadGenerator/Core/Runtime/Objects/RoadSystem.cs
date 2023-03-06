@@ -24,6 +24,10 @@ namespace RoadGenerator
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
+        
+        [Header("Default models")]
+        public GameObject DefaultTrafficLightPrefab;
+        public GameObject DefaultTrafficLightControllerPrefab;
 
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
@@ -158,9 +162,7 @@ namespace RoadGenerator
             foreach (Intersection intersection in _intersections)
             {
                 if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
-                {
                     return true;
-                }
             }
             return false;
         }

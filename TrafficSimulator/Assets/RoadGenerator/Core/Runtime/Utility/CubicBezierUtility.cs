@@ -8,6 +8,30 @@ namespace RoadGenerator.Utility {
     /// (a curve with a start and end 'anchor' point, and two 'control' points to define the shape of the curve between the anchors)
     public static class CubicBezierUtility {
 
+        /// <summary> Calculates the bounds of a set of segments of a BezierPath </summary>
+        public static Bounds CalculateBounds(Transform transform, BezierPath path, List<int> segments)
+        {
+            MinMax3D minMax = new MinMax3D();
+            foreach (int segment in segments)
+            {
+                Vector3[] points = path.GetPointsInSegment(segment);
+                for(int i = 0; i < points.Length; i++)
+                {
+                    points[i] = MathUtility.TransformPoint(points[i], transform, path.Space);
+                }
+                minMax.AddValue(points[0]);
+                minMax.AddValue(points[3]);
+
+                List<float> extremePointTimes = CubicBezierUtility.ExtremePointTimes(points[0], points[1], points[2], points[3]);
+				foreach (float t in extremePointTimes)
+				{
+					minMax.AddValue(CubicBezierUtility.EvaluateCurve(points, t));
+				}
+            }
+
+            return new Bounds ((minMax.Min + minMax.Max) / 2, minMax.Max - minMax.Min);
+        }
+
         /// Returns point at time 't' (between 0 and 1) along bezier curve defined by 4 points (anchor_1, control_1, control_2, anchor_2)
         public static Vector3 EvaluateCurve (Vector3[] points, float t) {
             return EvaluateCurve (points[0], points[1], points[2], points[3], t);
