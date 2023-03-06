@@ -17,7 +17,7 @@ namespace RoadGenerator
     public enum FlowType
     {
         TrafficLights,
-        StopSigns,
+        StopSigns
     }
 
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -55,12 +55,12 @@ namespace RoadGenerator
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
 
-        private GameObject TrafficLightController;
-        private GameObject StopSignController;
-        private GameObject FlowContainer;
+        private GameObject _trafficLightController;
+        private GameObject _stopSignController;
+        private GameObject _flowContainer;
 
-        private List<RoadNode> twoJunctionNodeRoad = new List<RoadNode>();
-        private List<RoadNode> oneJunctionNodeRoad = new List<RoadNode>();
+        private List<RoadNode> _twoJunctionNodeRoad = new List<RoadNode>();
+        private List<RoadNode> _oneJunctionNodeRoad = new List<RoadNode>();
 
         private Mesh _mesh;
         public const float IntersectionLength = 20f;
@@ -99,8 +99,8 @@ namespace RoadGenerator
             AssignMaterials();
             CreateIntersectionMesh();
             // If intersection doesn't have a container, create one
-            if(FlowContainer != null)
-                DestroyImmediate(FlowContainer);
+            if(_flowContainer != null)
+                DestroyImmediate(_flowContainer);
             CreateIntersectionContainer();
             if (_flowType == FlowType.TrafficLights)
             {
@@ -134,34 +134,34 @@ namespace RoadGenerator
         // Creates a gameobject container for the intersection to keep track of all assets in the intersection
         private void CreateIntersectionContainer()
         {
-            FlowContainer = new GameObject("FlowContainer");
-            FlowContainer.transform.parent = IntersectionObject.transform;
+            _flowContainer = new GameObject("FlowContainer");
+            _flowContainer.transform.parent = IntersectionObject.transform;
         }
 
         // Creates a gameobject container to control the intersections traffic lights
         private void CreateTrafficLightController()
         {
-            TrafficLightController = Instantiate(RoadSystem.DefaultTrafficLightControllerPrefab, Vector3.zero, Quaternion.identity);
-            TrafficLightController.transform.parent = FlowContainer.transform;
+            _trafficLightController = Instantiate(RoadSystem.DefaultTrafficLightControllerPrefab, Vector3.zero, Quaternion.identity);
+            _trafficLightController.transform.parent = _flowContainer.transform;
         }
 
         private void CreateStopSignController()
         {
-            StopSignController = new GameObject("StopSignController");
-            StopSignController.transform.parent = FlowContainer.transform;
+            _stopSignController = new GameObject("StopSignController");
+            _stopSignController.transform.parent = _flowContainer.transform;
         }
 
         private TrafficLight SpawnTrafficLight(Vector3 position, Quaternion rotation)
         {
             GameObject trafficLight = Instantiate(RoadSystem.DefaultTrafficLightPrefab, position, rotation);
-            trafficLight.transform.parent = TrafficLightController.transform;
+            trafficLight.transform.parent = _trafficLightController.transform;
             return trafficLight.GetComponent<TrafficLight>();
         }
 
         private void SpawnStopSign(Vector3 position, Quaternion rotation)
         {
             GameObject stopSign = Instantiate(RoadSystem.DefaultStopSignPrefab, position, rotation);
-            stopSign.transform.parent = StopSignController.transform;
+            stopSign.transform.parent = _stopSignController.transform;
         }
 
         private void GetIntersectionNodes()
@@ -188,12 +188,12 @@ namespace RoadGenerator
 
             if (road1IntersectionNodes.Count > road2IntersectionNodes.Count)
             {
-                twoJunctionNodeRoad = road1IntersectionNodes;
-                oneJunctionNodeRoad = road2IntersectionNodes;
+                _twoJunctionNodeRoad = road1IntersectionNodes;
+                _oneJunctionNodeRoad = road2IntersectionNodes;
             } else
             {
-                twoJunctionNodeRoad = road2IntersectionNodes;
-                oneJunctionNodeRoad = road1IntersectionNodes;
+                _twoJunctionNodeRoad = road2IntersectionNodes;
+                _oneJunctionNodeRoad = road1IntersectionNodes;
             }
         }
 
@@ -203,25 +203,25 @@ namespace RoadGenerator
 
             if (Type == IntersectionType.ThreeWayIntersectionAtStart)
             {
-                SpawnStopSign(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
+                SpawnStopSign(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation);
+                SpawnStopSign(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
 
-                SpawnStopSign(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation * Quaternion.Euler(0, 180, 0));
+                SpawnStopSign(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation * Quaternion.Euler(0, 180, 0));
             }
             else if (Type == IntersectionType.ThreeWayIntersectionAtEnd)
             {
-                SpawnStopSign(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
+                SpawnStopSign(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation);
+                SpawnStopSign(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
 
-                SpawnStopSign(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation);
+                SpawnStopSign(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation);
             }
             else if (Type == IntersectionType.FourWayIntersection)
             {
-                SpawnStopSign(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
+                SpawnStopSign(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation);
+                SpawnStopSign(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
 
-                SpawnStopSign(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(oneJunctionNodeRoad[1].Position, oneJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
+                SpawnStopSign(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation);
+                SpawnStopSign(_oneJunctionNodeRoad[1].Position, _oneJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
             }
         }
 
@@ -230,32 +230,32 @@ namespace RoadGenerator
         {
             GetIntersectionNodes();
 
-            List<TrafficLight> trafficLightsGroup1 = TrafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup1;
-            List<TrafficLight> trafficLightsGroup2 = TrafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup2;
+            List<TrafficLight> trafficLightsGroup1 = _trafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup1;
+            List<TrafficLight> trafficLightsGroup2 = _trafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup2;
 
             if (Type == IntersectionType.ThreeWayIntersectionAtStart)
             {
-                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
 
-                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation * Quaternion.Euler(0, 180, 0)));
             }
             else if (Type == IntersectionType.ThreeWayIntersectionAtEnd)
             {
-                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
 
-                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation));
             }
 
             // If its a 4-way intersection, spawn a traffic light at each junction node
             else if (Type == IntersectionType.FourWayIntersection)
             {
-                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[0].Position, twoJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(twoJunctionNodeRoad[1].Position, twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
 
-                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[0].Position, oneJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup2.Add(SpawnTrafficLight(oneJunctionNodeRoad[1].Position, oneJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
+                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation));
+                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[1].Position, _oneJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
             }
         }
 
@@ -263,14 +263,14 @@ namespace RoadGenerator
         {
             if(_flowType == FlowType.TrafficLights)
             {
-                foreach (Transform child in TrafficLightController.transform)
+                foreach (Transform child in _trafficLightController.transform)
                 {
                     child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
                 }
             }
             else if(_flowType == FlowType.StopSigns)
             {
-                foreach (Transform child in StopSignController.transform)
+                foreach (Transform child in _stopSignController.transform)
                 {
                     child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
                 }
