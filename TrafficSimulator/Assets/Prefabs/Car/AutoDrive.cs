@@ -76,6 +76,8 @@ namespace Car {
         private NavigationNode _navigationPathEndNode;
         private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
 
+        private TrafficLight _currentTrafficLight;
+
         public LaneNode CustomStartNode = null;
 
         private GameObject _navigationPathContainer;
@@ -244,8 +246,17 @@ namespace Car {
             // If the vehicle is driving and the target is in front of us and we are close enough
             else if (_status == Status.Driving && dot > 0 && direction.magnitude <= _targetLookaheadDistance)
             {
-                // Set the target to the next point in the lane
-                _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
+                if(_currentTrafficLight == null || !(_target.RoadNode.Position == _currentTrafficLight.RoadNode.Position && (_currentTrafficLight.GetState() != TrafficLight.State.RED)))
+                {
+                    // Set the target to the next point in the lane
+                    Debug.Log("Target reached, moving to next target...");
+                    _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
+                }
+
+                else
+                {
+                    Debug.Log("Waiting for traffic light...");
+                }
             }
 
             // If the vehicle is closer to the target than the brake distance, brake
@@ -261,11 +272,26 @@ namespace Car {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
             }
+
+            if (_brakeTarget.RoadNode.TrafficLight != null && _currentTrafficLight == null)
+            {
+                _currentTrafficLight = _brakeTarget.RoadNode.TrafficLight;
+            }
+            if (_currentTrafficLight != null)
+            {
+                if (_currentTrafficLight.GetState() == TrafficLight.State.GREEN)
+                {
+                    //_vehicleController.throttleInput = 1f;
+                    _currentTrafficLight = null;
+                }
+            }
            UpdateTargetFromNavigation();
         }
 
         private void Q_UpdateBrakeTarget()
         {
+            if (_currentTrafficLight != null)
+                return;
             // Set the brake target point to the point closest to the target that is at least _brakeDistance points away
             // If the road end behaviour is set to stop and the brake target is the end node, do not update the brake target
             while (Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance && (_brakeTarget != _endNode || _roadEndBehaviour == RoadEndBehaviour.Loop))
@@ -391,6 +417,7 @@ namespace Car {
                     return;
                 }
             }
+
             transform.position = targetPosition;
             transform.rotation = targetRotation;
             UpdateTargetFromNavigation();

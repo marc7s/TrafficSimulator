@@ -2,16 +2,19 @@ using UnityEngine;
 
 namespace RoadGenerator
 {
-    enum State{RED, TOGO, TOSTOP, GREEN};
 
     public class TrafficLight : MonoBehaviour
     {
+        public enum State{RED, TOGO, TOSTOP, GREEN};
+
         public GameObject RedLight;
         public GameObject YellowLight;
         public GameObject GreenLight;
 
         private float _lastSwitchTime;
         public float SwitchTime = 2f;
+
+        public RoadNode RoadNode;
 
         private State _currentState = State.RED;
         private State _lastState = State.RED;
@@ -90,6 +93,10 @@ namespace RoadGenerator
                     GreenLight.GetComponent<Light>().enabled = true;
                     break;
             }
+        }
+        public State GetState()
+        {
+            return _currentState;
         }
     }
 }

@@ -17,6 +17,7 @@ namespace RoadGenerator
 	public class RoadNode : Node<RoadNode>
 	{
         public Intersection Intersection;
+        public TrafficLight TrafficLight;
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
         public NavigationNodeEdge SecondaryNavigationNodeEdge;
         public bool IsNavigationNode = false;

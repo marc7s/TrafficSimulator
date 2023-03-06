@@ -170,6 +170,9 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
+                foreach(Intersection intersection in Intersections)
+                    intersection.UpdateMesh();
+                
             } 
         }
 
@@ -448,7 +451,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Updates the lanes</summary>
-        private void UpdateLanes()
+        public void UpdateLanes()
         {
             // Get the lane count
             int laneCount = (int)LaneAmount;
