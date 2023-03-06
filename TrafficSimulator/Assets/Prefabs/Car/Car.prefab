@@ -1858,7 +1858,7 @@ MonoBehaviour:
   _roadEndBehaviour: 1
   ShowNavigationPath: 0
   _navigationMode: 0
-  _showTargetLines: 0
+  _showTargetLines: 3
   _brakeOffset: 2
   _maxRepositioningSpeed: 5
   _baseTLD: 10

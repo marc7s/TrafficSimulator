@@ -62,6 +62,7 @@ namespace Car {
 
         private Vehicle _vehicle;
         public float _vehicleLength;
+        private Bounds _vehicleBounds;
 
         // Quality variables
         private float _targetLookaheadDistance = 0;
@@ -94,6 +95,8 @@ namespace Car {
 
             _vehicleController = GetComponent<VehicleController>();
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
+            // TODO - use this to decide whether a node is occupied or not
+            //_vehicleBounds = _mesh.GetComponent<MeshRenderer>().bounds;
             _vehicle = GetComponent<Vehicle>();
             _originalMaxSpeed = _vehicleController.maxSpeedForward;
             
@@ -191,20 +194,27 @@ namespace Car {
         {
             List<LaneNode> nodes = new List<LaneNode>();
             LaneNode node = _currentNode;
-            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/1.5)
+            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
             {
                 nodes.Add(node);
                 node = node.Prev;
             }
-            try {
-                node = _currentNode.Next;
-            } catch (Exception e) {
-                Debug.Log(e);
+            if (node != null)
+            {
+                nodes.Add(node);
             }
-            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/1.5)
+            if (_currentNode.Next != null)
+            {
+                node = _currentNode.Next;
+            }
+            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
             {
                 nodes.Add(node);
                 node = node.Next;
+            }
+            if (node != null)
+            {
+                nodes.Add(node);
             }
             return nodes;
         }
@@ -212,7 +222,7 @@ namespace Car {
         private void Q_TeleportToLane()
         {
             // Move it to the current position, offset in the opposite direction of the lane
-            transform.position = _currentNode.Position - (_currentNode.Rotation * Vector3.forward * _vehicleLength / 2);
+            transform.position = _currentNode.Position - (2 * (_currentNode.Rotation * Vector3.forward).normalized);
             
             // Rotate it to face the current position
             transform.rotation = _currentNode.Rotation;
@@ -301,14 +311,13 @@ namespace Car {
         private void Q_Brake()
         {
             // If the vehicle is closer to the target than the brake distance, brake
-            // Also, do not brake at the end node if we are looping
-            if (Vector3.Distance(transform.position, _brakeTarget.Position) <= _brakeDistance)
+            if (_currentNode.DistanceToNode(_brakeTarget) <= _brakeDistance)
             {
                 _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
                 _vehicleController.throttleInput = 0f;
             }
             // If the vehicle is further away from the target than the brake distance, accelerate
-            else if (Vector3.Distance(transform.position, _brakeTarget.Position) > _brakeDistance + 1)
+            else if (_currentNode.DistanceToNode(_brakeTarget) > _brakeDistance + 1)
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
@@ -330,10 +339,13 @@ namespace Car {
         private bool updateBrakeTarget()
         {
             bool _nextNodeHasVehicle = GetNextLaneNode(_brakeTarget, 0, true).HasVehicle();
+            // TODO: Curretly we use position to check if the node is the end node (not startNode), but this should be Id
+            //       This is because the NodeList has a bug where we get duplicate nodes with the same position and type
+            //       but different Ids
             bool _brakeTargetIsEndNode = _brakeTarget.Type == RoadNodeType.End && _brakeTarget.Position != _startNode.Position;
             bool _brakeTargetIsEndNodeAndLoop = _brakeTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop;
-            bool _brakeDistanceIsGreaterThanBrakeTargetDistance = Vector3.Distance(transform.position, _brakeTarget.Position) < _brakeDistance;
-            return _brakeDistanceIsGreaterThanBrakeTargetDistance && !_nextNodeHasVehicle && (!_brakeTargetIsEndNode | _brakeTargetIsEndNodeAndLoop);
+            bool _brakeDistanceIsGreaterThanBrakeTargetDistance = _currentNode.DistanceToNode(_brakeTarget) < _brakeDistance;
+            return _brakeDistanceIsGreaterThanBrakeTargetDistance && !_nextNodeHasVehicle && (!_brakeTargetIsEndNode || _brakeTargetIsEndNodeAndLoop);
         }
 
         private void Q_UpdateBrakeDistance()
@@ -401,12 +413,12 @@ namespace Car {
                     _targetLineRenderer.positionCount = 2;
                     break;
                 case ShowTargetLines.CurrentPosition:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _currentNode.Position, transform.position });
-                    _targetLineRenderer.positionCount = 2;
+                    _targetLineRenderer.SetPositions(_occupiedNodes.Select(x => x.Position).ToArray());
+                    _targetLineRenderer.positionCount = _occupiedNodes.Count;
                     break;
                 case ShowTargetLines.All:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, Q_GetTarget().Position, transform.position, _currentNode.Position});
-                    _targetLineRenderer.positionCount = 5;
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, _currentNode.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
+                    _targetLineRenderer.positionCount = 3 + _occupiedNodes.Count;
                     break;
             }
         }
