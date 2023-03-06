@@ -9,6 +9,7 @@ namespace RoadGenerator
         private RoadNode _roadNode;
         private LaneSide _laneSide;
         private Vehicle _vehicle;
+        private string _id;
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
         public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, roadNode, null, null, distanceToPrevNode){}
         
@@ -26,8 +27,22 @@ namespace RoadGenerator
             _prev = prev;
             _next = next;
             _distanceToPrevNode = distanceToPrevNode;
+            _id = System.Guid.NewGuid().ToString();
 
             _rotation = laneSide == LaneSide.Primary ? roadNode.Rotation : roadNode.Rotation * Quaternion.Euler(0, 180f, 0);
+        }
+
+        // Calculates the distance from one node to another
+        public float DistanceToNode(LaneNode targetNode)
+        {
+            float distance = 0;
+            LaneNode startNode = this;
+            while (startNode.Id != targetNode.Id && startNode.Next != null)
+            {
+                startNode = startNode.Next;
+                distance += startNode.DistanceToPrevNode;
+            }
+            return distance;
         }
         public bool IsIntersection() => _roadNode.IsIntersection();
 
@@ -47,6 +62,10 @@ namespace RoadGenerator
         public Vehicle Vehicle
         {
             get => _vehicle;
+        }
+        public string Id
+        {
+            get => _id;
         }
         public override LaneNode Copy()
         {
