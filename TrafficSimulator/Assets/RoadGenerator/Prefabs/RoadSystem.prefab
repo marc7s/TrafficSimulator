@@ -54,6 +54,7 @@ MonoBehaviour:
   DrivingSide: -1
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
+  DefaultStopSignPrefab: {fileID: 4825263326744654715, guid: d945c309c5faf7b47b400e9d4832b381, type: 3}
   ShowGraph: 0
   SpawnRoadsAtOrigin: 0
   _roads: []
