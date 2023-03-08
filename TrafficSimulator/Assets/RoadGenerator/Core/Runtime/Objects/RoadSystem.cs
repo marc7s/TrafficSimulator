@@ -28,6 +28,7 @@ namespace RoadGenerator
         [Header("Default models")]
         public GameObject DefaultTrafficLightPrefab;
         public GameObject DefaultTrafficLightControllerPrefab;
+        public GameObject DefaultStopSignPrefab;
 
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
