@@ -8,7 +8,7 @@ namespace RoadGenerator
     //[CreateAssetMenu(menuName = "RoadGenerator/PrefabManager")]
     public class PrefabManager : ScriptableObject
     {
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         public GameObject RoadSystem;
         public RoadSigns Signs;
 
@@ -18,19 +18,19 @@ namespace RoadGenerator
         public GameObject StopSign;
         public GameObject YieldSign;
         }
-    #endif
+#endif
     }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     [CustomEditor(typeof(PrefabManager))]
     public class PrefabManagerEditor : Editor
     {
     public override void OnInspectorGUI()
-    {
-        base.OnInspectorGUI();
+        {
+            base.OnInspectorGUI();
 
-        EditorGUILayout.HelpBox("If you move this file somewhere else, also change the path in RoadGeneratorMenu! ", MessageType.Info);
+            EditorGUILayout.HelpBox("If you move this file somewhere else, also change the path in RoadGeneratorMenu! ", MessageType.Info);
+        }
     }
-    }
-    #endif
+#endif
 }

@@ -69,6 +69,8 @@ namespace RoadGenerator
         [Range(0.1f, 5f)] public float MaxAngleError = 2f;
         [Range(0, 5f)] public float MinVertexDistance = 0;
         [Range(1f, 20f)] public float MaxRoadNodeDistance = 5f;
+
+        public int SpeedLimit = 50;
         
 
         [Header ("Debug settings")]
@@ -87,7 +89,13 @@ namespace RoadGenerator
         [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] private float _length;
-        [SerializeField][HideInInspector] private List<TrafficSign> _trafficSigns = new List<TrafficSign>();
+        [SerializeField][HideInInspector] private List<RoadNode> trafficSigns = new List<RoadNode>();
+
+
+        [SerializeField] private GameObject _trafficSignPrefab;
+
+        // TEMPORARY
+
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
@@ -139,7 +147,7 @@ namespace RoadGenerator
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
             if(roadMeshCreator != null)
                 roadMeshCreator.UpdateMesh();
-
+            //SpawnTrafficSigns();
             // There might have been changes to the RoadNodes and therefore LaneNodes, so we need to update the visual representations
             ShowRoadNodes();
             ShowLaneNodes();
@@ -172,21 +180,6 @@ namespace RoadGenerator
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
             } 
-        }
-
-        private void AddIntersectionNode(ref RoadNode curr, Vector3 position, RoadNodeType type)
-        {
-            RoadNode next = curr.Next == null ? null : curr.Next.Next;
-
-            float time = next == null ? curr.Time : (next.Time + curr.Time) / 2;
-
-            // Add the intersection node
-            curr.Next = new RoadNode(position, curr.Tangent, curr.Normal, type, curr, next, Vector3.Distance(curr.Position, position), time);
-            curr = curr.Next;
-
-            // If the road does not end at the intersection, update the distance on the following node as well
-            if(curr != null)
-                curr.DistanceToPrevNode = Vector3.Distance(position, curr.Position);
         }
 
         private (Vector3, Vector3, float, float) GetPositionsAndDistancesInOrder(Vector3 position1, Vector3 position2, VertexPath path)
@@ -368,11 +361,11 @@ namespace RoadGenerator
             _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
             _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
         
-            RoadNode current = _start;
             // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
                 _start.UpdateIntersectionJunctionEdgeNavigation(this);
-            
+
+            AssignTrafficSigns(_start);
         }
 
         /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
@@ -513,17 +506,54 @@ namespace RoadGenerator
             } 
             return queuedNodes;
         }
-
-        private void QueueTrafficSigns(PriorityQueue<QueuedNode> queuedNodes)
+        // Procedually places the traffic signs along the road
+        private void AssignTrafficSigns(RoadNode startNode)
         {
-            // Queue the traffic signs
-            foreach(TrafficSign trafficSign in _trafficSigns)
+            float speedSignDistance = 5;
+            bool intersectionFound = false;
+            startNode.TrafficSignType = TrafficSignType.SpeedSign;
+            startNode.Last.TrafficSignType = TrafficSignType.SpeedSign;
+            RoadNode current = startNode;
+            while (current != null)
             {
-               // float distance = _path.GetClosestDistanceAlongPath(trafficSign.RoadNodePosition);
-                //queuedNodes.Enqueue(new QueuedNode(RoadNodeType.TrafficSign, distance, trafficSign.Position, false, trafficSign));
+                if (current.Type == RoadNodeType.JunctionEdge)
+                {
+                    intersectionFound = !intersectionFound;
+                    PlaceTrafficSignAtDistance(current, intersectionFound ? speedSignDistance : -speedSignDistance, TrafficSignType.SpeedSign);
+                }
+                current = current.Next;
+            }
+        }
+        private void PlaceTrafficSignAtDistance(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType)
+        {
+            if (distanceFromRoadNode == 0)
+                roadNode.TrafficSignType = trafficSignType;
+            bool forwardDirection = distanceFromRoadNode > 0;
+            RoadNode current = roadNode.Next;
+            float currentDistance = 0;
+            while (current != null)
+            {
+                currentDistance += current.DistanceToPrevNode;
+                if (currentDistance >= Mathf.Abs(distanceFromRoadNode))
+                {
+                    current.TrafficSignType = trafficSignType;
+                    trafficSigns.Add(current);
+                    break;
+                }
+                current = forwardDirection ? current.Next : current.Prev;
             }
         }
 
+        private void SpawnTrafficSigns()
+        {
+            foreach (RoadNode roadNode in trafficSigns)
+            {
+                GameObject trafficSign = Instantiate(_trafficSignPrefab, roadNode.Position, Quaternion.identity);
+                trafficSign.transform.parent = transform;
+                trafficSign.transform.rotation = roadNode.Rotation;
+            }
+        }
+        
         /// <summary>Draws the lanes as coloured lines</summary>
         public void ShowLanes()
         {
