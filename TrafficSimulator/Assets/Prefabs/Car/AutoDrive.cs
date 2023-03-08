@@ -52,6 +52,7 @@ namespace Car {
         [SerializeField] private float _maxRepositioningSpeed = 5f;
         [SerializeField] [Range(0, 20f)] [Tooltip("The distance the vehicle will look ahead to find the next target. This value will be multiplied by the current speed to increase the lookahead distance when the vehicle is going faster")] private float _baseTLD = 10f;
         [SerializeField] [Tooltip("This constant is used to divide the speed multiplier when calculating the new TLD. Higher value = shorter TLD. Lower value = longer TLD")] private int _TLDSpeedDivider = 20;
+        [SerializeField] [Tooltip("This constant determines the offset to extend the bounds the vehicle uses to occupy nodes")] private float _vehicleOccupancyOffset = 3f;
 
         [Header("Performance mode settings")]
         [SerializeField] [Range(0, 100f)] private float _speed = 20f;
@@ -59,9 +60,9 @@ namespace Car {
 
         [Header("Statistics")]
         [SerializeField] private float _totalDistance = 0;
-
+        
         private Vehicle _vehicle;
-        public float _vehicleLength;
+        private float _vehicleLength;
         private Bounds _vehicleBounds;
 
         // Quality variables
@@ -172,49 +173,50 @@ namespace Car {
             {
                 P_MoveToNextPosition();
             }
-            updateOccupiedNodes();
+            UpdateOccupiedNodes();
         }
 
         // Update the list of nodes that the vehicle is currently occupying
-        private void updateOccupiedNodes()
+        private void UpdateOccupiedNodes()
         {
             foreach (LaneNode node in _occupiedNodes)
             {
                 node.UnsetVehicle(_vehicle);
             }
-            _occupiedNodes = getOccupiedNodes();
-            foreach (LaneNode node in _occupiedNodes)
+            List<LaneNode> spanNodes = GetVehicleSpanNodes();
+            _occupiedNodes.Clear();
+            foreach (LaneNode node in spanNodes)
             {
-                node.SetVehicle(_vehicle);
+                // Only add the span nodes we successfully acquire to the list of occupied nodes
+                if(node.SetVehicle(_vehicle))
+                    _occupiedNodes.Add(node);
             }
         }
 
         // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
-        private List<LaneNode> getOccupiedNodes()
+        private List<LaneNode> GetVehicleSpanNodes()
         {
-            List<LaneNode> nodes = new List<LaneNode>();
-            LaneNode node = _currentNode;
-            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
+            List<LaneNode> nodes = new List<LaneNode>(){ _currentNode };
+            LaneNode node = _currentNode.Prev;
+
+            float nodeDistance = _currentNode.DistanceToPrevNode;
+
+            // Add all occupied nodes prior to and including the current node
+            while (node != null && nodeDistance <= _vehicleLength / 2 + _vehicleOccupancyOffset)
             {
                 nodes.Add(node);
+                nodeDistance += node.DistanceToPrevNode;
                 node = node.Prev;
             }
-            if (node != null)
+            
+            nodeDistance = 0;
+            // Add all occupied nodes after and excluding the current node
+            node = _currentNode.Next;
+            while (node != null && nodeDistance <= _vehicleLength / 2 + _vehicleOccupancyOffset)
             {
                 nodes.Add(node);
-            }
-            if (_currentNode.Next != null)
-            {
-                node = _currentNode.Next;
-            }
-            while (node != null && Vector3.Distance(node.Position, transform.position) <= _vehicleLength/2)
-            {
-                nodes.Add(node);
+                nodeDistance += node.DistanceToPrevNode;
                 node = node.Next;
-            }
-            if (node != null)
-            {
-                nodes.Add(node);
             }
             return nodes;
         }
@@ -310,18 +312,22 @@ namespace Car {
 
         private void Q_Brake()
         {
-            // If the vehicle is closer to the target than the brake distance, brake
-            if (_currentNode.DistanceToNode(_brakeTarget) <= _brakeDistance)
-            {
-                _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
-                _vehicleController.throttleInput = 0f;
-            }
-            // If the vehicle is further away from the target than the brake distance, accelerate
-            else if (_currentNode.DistanceToNode(_brakeTarget) > _brakeDistance + 1)
+            float distanceToBrakeTarget;
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget);
+            
+            // If the brake target is not found or the vehicle is further away from the target than the brake distance, accelerate
+            if (!brakeTargetFound || distanceToBrakeTarget > _brakeDistance + 1)
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
             }
+            // If the vehicle is closer to the target than the brake distance, brake
+            else if (distanceToBrakeTarget <= _brakeDistance)
+            {
+                _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
+                _vehicleController.throttleInput = 0f;
+            }
+            
            UpdateTargetFromNavigation();
         }
 
@@ -330,21 +336,30 @@ namespace Car {
             // Set the brake target point to the point closest to the target that is at least _brakeDistance points away
             // If the road end behaviour is set to stop and the brake target is the end node, do not update the brake target
             // If the next node has a vehicle, do not update the brake target
-            while (updateBrakeTarget())
+            while (ShouldAdvanceBrakeTarget())
             {
                 _brakeTarget = GetNextLaneNode(_brakeTarget, 0, true);
             }
         }
 
-        private bool updateBrakeTarget()
+        private bool ShouldAdvanceBrakeTarget()
         {
-            bool _nextNodeHasVehicle = GetNextLaneNode(_brakeTarget, 0, true).HasVehicle();
+            float distanceToBrakeTarget;
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, true);
+            
+            // Return if the brake target was not found
+            if(!brakeTargetFound)
+                return false;
+            
+            Vehicle nextNodeVehicle = GetNextLaneNode(_brakeTarget, 0, true).Vehicle;
+            bool _nextNodeHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
             // TODO: Curretly we use position to check if the node is the end node (not startNode), but this should be Id
             //       This is because the NodeList has a bug where we get duplicate nodes with the same position and type
             //       but different Ids
             bool _brakeTargetIsEndNode = _brakeTarget.Type == RoadNodeType.End && _brakeTarget.Position != _startNode.Position;
             bool _brakeTargetIsEndNodeAndLoop = _brakeTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop;
-            bool _brakeDistanceIsGreaterThanBrakeTargetDistance = _currentNode.DistanceToNode(_brakeTarget) < _brakeDistance;
+            bool _brakeDistanceIsGreaterThanBrakeTargetDistance = distanceToBrakeTarget < _brakeDistance;
+            
             return _brakeDistanceIsGreaterThanBrakeTargetDistance && !_nextNodeHasVehicle && (!_brakeTargetIsEndNode || _brakeTargetIsEndNodeAndLoop);
         }
 
