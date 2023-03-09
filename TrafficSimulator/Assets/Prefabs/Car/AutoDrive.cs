@@ -124,7 +124,7 @@ namespace Car {
                 float targetLineWidth = 0.3f;
                 _targetLineRenderer = GetComponent<LineRenderer>();
                 _targetLineRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
-                _targetLineRenderer.sharedMaterial.SetColor("_Color", Color.red);
+                _targetLineRenderer.sharedMaterial.SetColor("_Color", Color.green);
                 _targetLineRenderer.startWidth = targetLineWidth;
                 _targetLineRenderer.endWidth = targetLineWidth;
 
@@ -159,11 +159,11 @@ namespace Car {
                 // Update brake distance and target
                 Q_UpdateBrakeDistance();
                 Q_UpdateBrakeTarget();
+                Q_Brake();
                 
                 // Steer towards the target and update to next target
                 Q_SteerTowardsTarget();
                 Q_UpdateTarget();
-                Q_Brake();
                 Q_UpdateCurrent();
                 
                 if (_showTargetLines != ShowTargetLines.None)
@@ -314,6 +314,7 @@ namespace Car {
         {
             float distanceToBrakeTarget;
             bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget);
+            distanceToBrakeTarget += Vector3.Distance(_currentNode.Position, transform.position);
             
             // If the brake target is not found or the vehicle is further away from the target than the brake distance, accelerate
             if (!brakeTargetFound || distanceToBrakeTarget > _brakeDistance + 1)
