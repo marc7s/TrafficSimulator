@@ -599,15 +599,29 @@ namespace RoadGenerator
             int randomLaneNodeIndex = random.Next(0, laneNodes.Count);
             return laneNodes[randomLaneNodeIndex];
         }
-        /// <summary> Get the lane node that leads to the navigation node edge </summary>
-        public LaneNode GetNewLaneNode(NavigationNodeEdge navigationNodeEdge)
+        /// <summary> Get the new start node, and the lane node that leads to the navigation node edge. Returns a pair in the format (StartNode, NextNode) </summary>
+        public (LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current)
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
-                return null;
-            }  
-            return _laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
+                return (null, null);
+            }
+            
+            LaneNode finalNode = _laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
+            LaneNode intersectionNode = current.Next != null && current.Next.IsIntersection() ? current.Next : current;
+
+            Vector3 controlPosition = intersectionNode == current ? IntersectionPosition : intersectionNode.Position;
+        
+            GuideNode controlPoint = new GuideNode(controlPosition, intersectionNode, intersectionNode.LaneSide, intersectionNode.RoadNode, current, finalNode, Vector3.Distance(controlPosition, current.Position));
+            
+            controlPoint.Prev = current;
+            controlPoint.Next = finalNode;
+            
+            // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
+            // never to it, once the vehicle passes the control point and reaches the start point, it can never come back to the control point
+            // which is then removed by the garbage collector
+            return (finalNode, controlPoint);
         }
         private bool IsThreeWayIntersection()
         {
