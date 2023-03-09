@@ -6,11 +6,20 @@ public class OverlayController : MonoBehaviour
     private UIDocument _doc;
     private MenuController _menuController;
     
-    // Overlay UI 
+    // Overlay Button
     private Button _menuButton;
+
+    // Camera Buttons
     private Button _freeCamButton;
     private Button _twoDButton;
     private Button _fpvButton;
+
+    // Mode Buttons
+    private Button _statisticsButton;
+    private Button _worldOptionButton;
+    private Button _editorButton;
+
+
     private Label _clockLabel;
 
 
@@ -39,6 +48,15 @@ public class OverlayController : MonoBehaviour
         _fpvButton = _doc.rootVisualElement.Q<Button>("FPV");
         _fpvButton.clicked += FPVButtonOnClicked;
 
+        _statisticsButton = _doc.rootVisualElement.Q<Button>("Statistics");
+        _statisticsButton.clicked += StatisticsButtonOnClicked;
+
+        _worldOptionButton = _doc.rootVisualElement.Q<Button>("WorldOptions");
+        _worldOptionButton.clicked += WorldOptionButtonOnClicked;
+
+        _editorButton = _doc.rootVisualElement.Q<Button>("Editor");
+        _editorButton.clicked += EditorButtonOnClicked;
+
         _doc.rootVisualElement.visible = false;
         
     }
@@ -62,6 +80,21 @@ public class OverlayController : MonoBehaviour
     private void FPVButtonOnClicked()
     {
         Debug.Log("FPV");
+    }
+
+    private void StatisticsButtonOnClicked()
+    {
+        Debug.Log("Statistics");
+    }
+
+    private void WorldOptionButtonOnClicked()
+    {
+        Debug.Log("WorldOptions");
+    }
+
+    private void EditorButtonOnClicked()
+    {
+        Debug.Log("Editor");
     }
 
     void Update()
