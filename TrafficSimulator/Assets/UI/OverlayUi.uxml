@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement>
+        <ui:Button text="Menu" display-tooltip-when-elided="true" name="MenuButton" style="height: 77px; width: 156px; white-space: nowrap; left: 1%; top: 1%;" />
+    </ui:VisualElement>
+</ui:UXML>
