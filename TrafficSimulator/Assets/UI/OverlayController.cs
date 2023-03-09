@@ -19,6 +19,11 @@ public class OverlayController : MonoBehaviour
     private Button _worldOptionButton;
     private Button _editorButton;
 
+    // Clock Buttons
+    private Button _rewindButton;
+    private Button _pausButton;
+    private Button _fastForwardButton;
+
 
     private Label _clockLabel;
 
