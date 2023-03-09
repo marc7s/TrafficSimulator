@@ -7,5 +7,10 @@
             <ui:Button text="2D" display-tooltip-when-elided="true" name="2D" style="width: 83px; height: 35px; position: absolute; top: 0; left: 84px;" />
             <ui:Button text="FPV" display-tooltip-when-elided="true" name="FPV" style="width: 83px; height: 35px; position: absolute; top: 0; left: 168px;" />
         </ui:VisualElement>
+        <ui:VisualElement name="ModeButtons" style="width: 82px; height: 252px; left: 93%; top: 55%;">
+            <ui:Button text="Statistics" display-tooltip-when-elided="true" name="Statistics" enable-rich-text="true" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px;" />
+            <ui:Button text="World" display-tooltip-when-elided="true" name="WorldOptions" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; top: 5%;" />
+            <ui:Button text="Editor" display-tooltip-when-elided="true" name="Editor" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; right: auto; top: 10%;" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
