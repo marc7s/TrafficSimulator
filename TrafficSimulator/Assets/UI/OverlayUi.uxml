@@ -1,5 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:VisualElement>
+    <ui:VisualElement style="height: 900px;">
         <ui:Button text="Menu" display-tooltip-when-elided="true" name="MenuButton" style="height: 77px; width: 156px; white-space: nowrap; left: 1%; top: 1%;" />
+        <ui:Label text="NO TIME" display-tooltip-when-elided="true" name="Clock" style="left: 220px; width: 119px; top: -50px;" />
+        <ui:VisualElement name="CameraButtons" style="width: 260px; top: 80%; left: 75%;">
+            <ui:Button text="Free Cam" display-tooltip-when-elided="true" name="FreeCam" style="width: 83px; height: 35px;" />
+            <ui:Button text="2D" display-tooltip-when-elided="true" name="2D" style="width: 83px; height: 35px; position: absolute; top: 0; left: 84px;" />
+            <ui:Button text="FPV" display-tooltip-when-elided="true" name="FPV" style="width: 83px; height: 35px; position: absolute; top: 0; left: 168px;" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
