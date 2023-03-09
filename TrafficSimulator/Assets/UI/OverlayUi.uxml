@@ -1,7 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:VisualElement style="height: 900px;">
         <ui:Button text="Menu" display-tooltip-when-elided="true" name="MenuButton" style="height: 77px; width: 156px; white-space: nowrap; left: 1%; top: 1%;" />
-        <ui:Label text="NO TIME" display-tooltip-when-elided="true" name="Clock" style="left: 220px; width: 119px; top: -50px;" />
+        <ui:Label text="NO TIME" display-tooltip-when-elided="true" name="Clock" style="left: 360px; width: 119px; top: -50px;" />
+        <ui:VisualElement name="ClockButtons" style="width: 142px; position: absolute; top: 23px; left: 200px;">
+            <ui:Button text="&lt;--" display-tooltip-when-elided="true" name="Rewind" style="width: 44px; height: 28px;" />
+            <ui:Button text="||" display-tooltip-when-elided="true" name="Paus" style="width: 44px; height: 28px; position: absolute; top: 0; left: 45px;" />
+            <ui:Button text="--&gt;" display-tooltip-when-elided="true" name="Fastforward" style="width: 44px; height: 28px; position: absolute; top: 0; left: 90px;" />
+        </ui:VisualElement>
         <ui:VisualElement name="CameraButtons" style="width: 260px; top: 80%; left: 75%;">
             <ui:Button text="Free Cam" display-tooltip-when-elided="true" name="FreeCam" style="width: 83px; height: 35px;" />
             <ui:Button text="2D" display-tooltip-when-elided="true" name="2D" style="width: 83px; height: 35px; position: absolute; top: 0; left: 84px;" />
