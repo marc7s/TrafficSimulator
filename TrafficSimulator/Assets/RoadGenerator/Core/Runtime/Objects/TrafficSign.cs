@@ -17,6 +17,6 @@ namespace RoadGenerator
         EightyKPH = 80,
         NinetyKPH = 90,
         OneHundredTenKPH = 110,
-        OneHundredThrityKPH = 130,
+        OneHundredThirtyKPH = 130
     }
 }
