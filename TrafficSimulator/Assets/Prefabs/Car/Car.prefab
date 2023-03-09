@@ -1808,6 +1808,8 @@ GameObject:
   - component: {fileID: 1577973480888051333}
   - component: {fileID: 1577973480888067133}
   - component: {fileID: 1577973480145491503}
+  - component: {fileID: 4931130297971086674}
+  - component: {fileID: 412107769271382469}
   m_Layer: 0
   m_Name: Car
   m_TagString: Untagged
@@ -1851,8 +1853,9 @@ MonoBehaviour:
   Road: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
   LaneIndex: 0
+  _mesh: {fileID: 1577973480899245783}
   _mode: 1
-  _roadEndBehaviour: 0
+  _roadEndBehaviour: 1
   ShowNavigationPath: 0
   _navigationMode: 0
   _showTargetLines: 0
@@ -1860,6 +1863,7 @@ MonoBehaviour:
   _maxRepositioningSpeed: 5
   _baseTLD: 10
   _TLDSpeedDivider: 20
+  _vehicleOccupancyOffset: 3
   _speed: 20
   _rotationSpeed: 5
   _totalDistance: 0
@@ -2296,6 +2300,37 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
+--- !u!114 &4931130297971086674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577973480899275759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5cbd697ee36e504cb3b8ba2931bf140, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &412107769271382469
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577973480899275759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a9e4b4a34c8e3d4e9651fa770be4508, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _fuelMode: 1
+  _fuelConsumptionAtIdle: 0.96
+  _fuelConsumptionCity: 10
+  _fuelConsumptionHighway: 6
+  _engineDisplacement: 1.6
+  _numberOfCylinders: 4
+  _idlingRPM: 650
 --- !u!1 &1577973480899416901
 GameObject:
   m_ObjectHideFlags: 0
