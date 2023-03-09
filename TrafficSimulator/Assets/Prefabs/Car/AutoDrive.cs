@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using EVP;
 using RoadGenerator;
+using CustomProperties;
 
 
 namespace Car {
@@ -55,7 +56,7 @@ namespace Car {
         [SerializeField] [Range(2f, 20f)] private float _rotationSpeed = 5f;
 
         [Header("Statistics")]
-        [SerializeField] private float _totalDistance = 0;
+        [SerializeField] [ReadOnly] private float _totalDistance = 0;
 
         // Quality variables
         private float _targetLookaheadDistance = 0;
@@ -423,7 +424,7 @@ namespace Car {
                 {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
-                        _target = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop());
+                        (_startNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
                         // If the intersection does not have a lane node that matches the navigation path, unexpected behaviour has occurred, switch to random navigation
                         if (_target == null)
                             _navigationMode = NavigationMode.Random;
