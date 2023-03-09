@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1387509832852011855}
   - component: {fileID: 5387963023345359458}
   - component: {fileID: 1131470622488222073}
+  - component: {fileID: 6349525408430712732}
   m_Layer: 0
   m_Name: Intersection
   m_TagString: Untagged
@@ -57,9 +58,12 @@ MonoBehaviour:
   Road1AnchorPoint2: {x: 0, y: 0, z: 0}
   Road2AnchorPoint1: {x: 0, y: 0, z: 0}
   Road2AnchorPoint2: {x: 0, y: 0, z: 0}
+  Type: 0
+  ID: 
+  _stretchFactor: 0.4
+  _flowType: 0
   _material: {fileID: 2100000, guid: 95fd35d811c46354da85037da76c5774, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: ac13cd34ea241854f9dc39260c81716b, type: 2}
-  _thickness: 1
 --- !u!33 &5387963023345359458
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -110,3 +114,17 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &6349525408430712732
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5761927508822258430}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
