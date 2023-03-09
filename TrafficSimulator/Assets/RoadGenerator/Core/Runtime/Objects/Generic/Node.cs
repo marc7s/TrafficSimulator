@@ -11,6 +11,7 @@ namespace RoadGenerator
         protected Vector3 _position;
         protected Quaternion _rotation;
         protected float _distanceToPrevNode;
+        protected string _id;
 
         /// <summary>Gets the next node</summary>
         public virtual T Next
@@ -53,6 +54,12 @@ namespace RoadGenerator
                 }
                 return count;
             }
+        }
+
+        /// <summary>Returns the ID of this node</summary>
+        public string ID
+        {
+            get => _id;
         }
 
         /// <summary>Returns the first node in the linked list</summary>
@@ -122,6 +129,24 @@ namespace RoadGenerator
                 curr = next;
             }
             return prev;
+        }
+
+        /// <summary>Override the generic equals for this class</summary>
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as T);
+        }
+
+        /// <summary>Define a custom equality function between Vehicles</summary>
+        public bool Equals(T other)
+        {
+            return other != null && other.ID == ID;
+        }
+
+        /// <summary>Override the hashcode function for this class</summary>
+        public override int GetHashCode()
+        {
+            return _id.GetHashCode();
         }
 
         public abstract T Copy();
