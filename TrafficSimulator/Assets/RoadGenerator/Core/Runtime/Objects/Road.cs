@@ -91,15 +91,12 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] private float _length;
         [SerializeField][HideInInspector] private GameObject _trafficSignContainer;
-
         [SerializeField][HideInInspector] private GameObject _speedSignThirtyKPH;
         [SerializeField][HideInInspector] private GameObject _speedSignFiftyKPH;
         [SerializeField][HideInInspector] private GameObject _speedSignEightyKPH;
         [SerializeField][HideInInspector] private GameObject _speedSignNinetyKPH;
         [SerializeField][HideInInspector] private GameObject _speedSignOneHundredTenKPH;
         [SerializeField][HideInInspector] private GameObject _speedSignOneHundredThirtyKPH;
-
-
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
@@ -520,21 +517,17 @@ namespace RoadGenerator
                 DestroyImmediate(_trafficSignContainer);
             _trafficSignContainer = new GameObject(TRAFFIC_SIGN_CONTAINER_NAME);
             _trafficSignContainer.transform.parent = transform;
-
-            bool intersectionFound = false;
-
             // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
-            if (_start.Next.Intersection != null)
-                intersectionFound = true;
+            bool intersectionFound = _start.Next.Intersection !=null;
+
             if (GenerateSpeedSigns)
             {
             // Place a speed sign at the start and end of the road
-            PlaceTrafficSignAtDistance(startNode, SpeedSignDistanceFromIntersectionEdge, GetActiveSpeedSign(), true);
-            PlaceTrafficSignAtDistance(startNode.Last, SpeedSignDistanceFromIntersectionEdge, GetActiveSpeedSign(), false);
+            PlaceTrafficSignAtDistance(startNode, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), true);
+            PlaceTrafficSignAtDistance(startNode.Last, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), false);
             }
 
             RoadNode current = startNode;
-
             while (current != null)
             {
                 // Place a speed sign after every junction edge
@@ -542,7 +535,7 @@ namespace RoadGenerator
                 {
                     if (GenerateSpeedSigns)
                     {
-                    PlaceTrafficSignAtDistance(current, intersectionFound ? SpeedSignDistanceFromIntersectionEdge : -SpeedSignDistanceFromIntersectionEdge, GetActiveSpeedSign(), intersectionFound);
+                    PlaceTrafficSignAtDistance(current, intersectionFound ? SpeedSignDistanceFromIntersectionEdge : -SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), intersectionFound);
                     intersectionFound = !intersectionFound;
                     }
                 }
@@ -552,6 +545,7 @@ namespace RoadGenerator
         /// <summary> Places a traffic sign at a specified distance from the road node </summary>
         private void PlaceTrafficSignAtDistance(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool forwardDirection)
         {
+            // Rotate the traffic sign so that it faces the road for the current driving side
             Quaternion rotation = roadNode.Rotation * (forwardDirection ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
             if (distanceFromRoadNode == 0)
             {
@@ -564,9 +558,10 @@ namespace RoadGenerator
             float currentDistance = 0;
             while (current != null)
             {
+                // Since we do not want to place a traffic sign at an intersection, we break when one is found
                 if (current.Type == RoadNodeType.JunctionEdge)
                     break;
-                currentDistance += Vector3.Distance(current.Position, forwardDirection ? current.Prev.Position : current.Next.Position );
+                currentDistance += Vector3.Distance(current.Position, forwardDirection ? current.Prev.Position : current.Next.Position);
                 if (currentDistance >= Mathf.Abs(distanceFromRoadNode))
                 {
                     current.TrafficSignType = trafficSignType;
@@ -579,13 +574,13 @@ namespace RoadGenerator
         /// <summary> Spawns the traffic signs along the road
         private void SpawnTrafficSigns(Vector3 position, Quaternion rotation)
         {
-            GameObject trafficSign = Instantiate(GetActiveSpeedSignPrefab(), position, rotation);
+            GameObject trafficSign = Instantiate(GetSpeedSignPrefab(), position, rotation);
             bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
-            trafficSign.transform.position += (LaneCount / 2) * trafficSign.transform.right * LaneWidth * (isDrivingRight ? -1 : 1);
+            trafficSign.transform.position += LaneCount / 2 * trafficSign.transform.right * LaneWidth * (isDrivingRight ? -1 : 1);
             trafficSign.transform.parent = _trafficSignContainer.transform;
         }
-        /// <summary> Returns the active speed sign type
-        private TrafficSignType GetActiveSpeedSign()
+        /// <summary> Returns the speed sign type for the current speed limit
+        private TrafficSignType GetSpeedSignType()
         {
             switch (SpeedLimit)
             {
@@ -605,8 +600,8 @@ namespace RoadGenerator
                     return TrafficSignType.SpeedSignFiftyKPH;
             }
         }
-        /// <summary> Returns the active speed sign prefab
-        private GameObject GetActiveSpeedSignPrefab()
+        /// <summary> Returns the speed sign prefab for the current speed limit
+        private GameObject GetSpeedSignPrefab()
         {
             switch (SpeedLimit)
             {
