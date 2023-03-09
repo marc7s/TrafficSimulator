@@ -263,9 +263,9 @@ namespace Car {
                 // Reposition to the point prior to the one we missed
                 _repositioningTarget = GetNextLaneNode(_target, -_repositioningOffset - 1, false);
 
-                // Slow down and limit the max speed to the repositioning speed or 30% of the max speed, whichever is lower
+                // Slow down and limit the max speed to the repositioning speed or the max speed, whichever is lower
                 _vehicleController.brakeInput = 1f;
-                _vehicleController.maxSpeedForward = Math.Min(_vehicleController.maxSpeedForward * 0.3f, _maxRepositioningSpeed);
+                _vehicleController.maxSpeedForward = Math.Min(_vehicleController.maxSpeedForward, _maxRepositioningSpeed);
             }
             // If the vehicle has started repositioning and slowed down enough
             else if (_status == Status.RepositioningInitiated && _vehicleController.speed <= _vehicleController.maxSpeedForward)
