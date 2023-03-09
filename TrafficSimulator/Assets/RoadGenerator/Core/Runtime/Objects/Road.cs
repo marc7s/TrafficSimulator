@@ -518,9 +518,9 @@ namespace RoadGenerator
             _trafficSignContainer = new GameObject(TRAFFIC_SIGN_CONTAINER_NAME);
             _trafficSignContainer.transform.parent = transform;
             // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
-            bool intersectionFound = _start.Next.Intersection !=null;
+            bool intersectionFound = _start.Next.Intersection !=null && _start.Position == _start.Next.Position;
 
-            if (GenerateSpeedSigns)
+            if (GenerateSpeedSigns && !IsClosed())
             {
             // Place a speed sign at the start and end of the road
             PlaceTrafficSignAtDistance(startNode, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), true);
@@ -533,7 +533,7 @@ namespace RoadGenerator
                 // Place a speed sign after every junction edge
                 if (current.Type == RoadNodeType.JunctionEdge)
                 {
-                    if (GenerateSpeedSigns)
+                    if (GenerateSpeedSigns && !IsClosed())
                     {
                     PlaceTrafficSignAtDistance(current, intersectionFound ? SpeedSignDistanceFromIntersectionEdge : -SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), intersectionFound);
                     intersectionFound = !intersectionFound;
@@ -559,7 +559,7 @@ namespace RoadGenerator
             while (current != null)
             {
                 // Since we do not want to place a traffic sign at an intersection, we break when one is found
-                if (current.Type == RoadNodeType.JunctionEdge)
+                if (current.Type == RoadNodeType.JunctionEdge || current.IsIntersection())
                     break;
                 currentDistance += Vector3.Distance(current.Position, forwardDirection ? current.Prev.Position : current.Next.Position);
                 if (currentDistance >= Mathf.Abs(distanceFromRoadNode))
@@ -872,6 +872,8 @@ namespace RoadGenerator
         {
             RoadSystem.RemoveRoad(this);
             int count = Intersections.Count;
+            if (_trafficSignContainer != null)
+                DestroyImmediate(_trafficSignContainer);
             for (var i = 0; i < count; i++)
             {
                 Intersection intersection = Intersections[0];
