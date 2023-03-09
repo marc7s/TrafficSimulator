@@ -69,8 +69,9 @@ namespace RoadGenerator
         [Range(0.1f, 5f)] public float MaxAngleError = 2f;
         [Range(0, 5f)] public float MinVertexDistance = 0;
         [Range(1f, 20f)] public float MaxRoadNodeDistance = 5f;
-
-        public int SpeedLimit = 50;
+        public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
+        public bool GenerateSpeedSigns = true;
+        public float SpeedSignDistanceFromIntersectionEdge = 5f;
         
 
         [Header ("Debug settings")]
@@ -89,12 +90,15 @@ namespace RoadGenerator
         [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] private float _length;
-        [SerializeField][HideInInspector] private List<RoadNode> trafficSigns = new List<RoadNode>();
+        [SerializeField][HideInInspector] private GameObject _trafficSignContainer;
 
+        [SerializeField][HideInInspector] private GameObject _speedSignThirtyKPH;
+        [SerializeField][HideInInspector] private GameObject _speedSignFiftyKPH;
+        [SerializeField][HideInInspector] private GameObject _speedSignEightyKPH;
+        [SerializeField][HideInInspector] private GameObject _speedSignNinetyKPH;
+        [SerializeField][HideInInspector] private GameObject _speedSignOneHundredTenKPH;
+        [SerializeField][HideInInspector] private GameObject _speedSignOneHundredThirtyKPH;
 
-        [SerializeField] private GameObject _trafficSignPrefab;
-
-        // TEMPORARY
 
         
         private const string LANE_NAME = "Lane";
@@ -103,6 +107,7 @@ namespace RoadGenerator
         private const string LANE_NODE_NAME = "LaneNode";
         private const string LANE_NODE_CONTAINER_NAME = "Lane nodes";
         private const string LANE_NODE_POINTER_NAME = "Lane node pointer";
+        private const string TRAFFIC_SIGN_CONTAINER_NAME = "Traffic Sign Container";
 
 
         public Intersection[] GetIntersections()
@@ -147,7 +152,7 @@ namespace RoadGenerator
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
             if(roadMeshCreator != null)
                 roadMeshCreator.UpdateMesh();
-            //SpawnTrafficSigns();
+            PlaceTrafficSigns();
             // There might have been changes to the RoadNodes and therefore LaneNodes, so we need to update the visual representations
             ShowRoadNodes();
             ShowLaneNodes();
@@ -165,6 +170,7 @@ namespace RoadGenerator
                 foreach(Intersection intersection in Intersections)
                     intersection.UpdateMesh();
                 RoadSystem.UpdateRoadSystemGraph();
+                PlaceTrafficSigns();
                 ShowLanes();
                 ShowRoadNodes();
                 ShowLaneNodes();
@@ -179,6 +185,7 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
+                PlaceTrafficSigns();
             } 
         }
 
@@ -364,8 +371,6 @@ namespace RoadGenerator
             // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
                 _start.UpdateIntersectionJunctionEdgeNavigation(this);
-
-            AssignTrafficSigns(_start);
         }
 
         /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
@@ -506,51 +511,119 @@ namespace RoadGenerator
             } 
             return queuedNodes;
         }
-        // Procedually places the traffic signs along the road
-        private void AssignTrafficSigns(RoadNode startNode)
+        // Procedurally places the traffic signs along the road
+        private void PlaceTrafficSigns()
         {
-            float speedSignDistance = 5;
+            RoadNode startNode = _start;
+            // Destroy the old container and create a new one
+            if (_trafficSignContainer != null)
+                DestroyImmediate(_trafficSignContainer);
+            _trafficSignContainer = new GameObject(TRAFFIC_SIGN_CONTAINER_NAME);
+            _trafficSignContainer.transform.parent = transform;
+
             bool intersectionFound = false;
-            startNode.TrafficSignType = TrafficSignType.SpeedSign;
-            startNode.Last.TrafficSignType = TrafficSignType.SpeedSign;
+
+            // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
+            if (_start.Next.Intersection != null)
+                intersectionFound = true;
+            if (GenerateSpeedSigns)
+            {
+            // Place a speed sign at the start and end of the road
+            PlaceTrafficSignAtDistance(startNode, SpeedSignDistanceFromIntersectionEdge, GetActiveSpeedSign(), true);
+            PlaceTrafficSignAtDistance(startNode.Last, SpeedSignDistanceFromIntersectionEdge, GetActiveSpeedSign(), false);
+            }
+
             RoadNode current = startNode;
+
             while (current != null)
             {
+                // Place a speed sign after every junction edge
                 if (current.Type == RoadNodeType.JunctionEdge)
                 {
+                    if (GenerateSpeedSigns)
+                    {
+                    PlaceTrafficSignAtDistance(current, intersectionFound ? SpeedSignDistanceFromIntersectionEdge : -SpeedSignDistanceFromIntersectionEdge, GetActiveSpeedSign(), intersectionFound);
                     intersectionFound = !intersectionFound;
-                    PlaceTrafficSignAtDistance(current, intersectionFound ? speedSignDistance : -speedSignDistance, TrafficSignType.SpeedSign);
+                    }
                 }
                 current = current.Next;
             }
         }
-        private void PlaceTrafficSignAtDistance(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType)
+        /// <summary> Places a traffic sign at a specified distance from the road node </summary>
+        private void PlaceTrafficSignAtDistance(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool forwardDirection)
         {
+            Quaternion rotation = roadNode.Rotation * (forwardDirection ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
             if (distanceFromRoadNode == 0)
+            {
                 roadNode.TrafficSignType = trafficSignType;
-            bool forwardDirection = distanceFromRoadNode > 0;
-            RoadNode current = roadNode.Next;
+                SpawnTrafficSigns(roadNode.Position, rotation);
+                return;
+            }
+
+            RoadNode current = forwardDirection ? roadNode.Next : roadNode.Prev;
             float currentDistance = 0;
             while (current != null)
             {
-                currentDistance += current.DistanceToPrevNode;
+                if (current.Type == RoadNodeType.JunctionEdge)
+                    break;
+                currentDistance += Vector3.Distance(current.Position, forwardDirection ? current.Prev.Position : current.Next.Position );
                 if (currentDistance >= Mathf.Abs(distanceFromRoadNode))
                 {
                     current.TrafficSignType = trafficSignType;
-                    trafficSigns.Add(current);
+                    SpawnTrafficSigns(current.Position, rotation);
                     break;
                 }
                 current = forwardDirection ? current.Next : current.Prev;
             }
         }
-
-        private void SpawnTrafficSigns()
+        /// <summary> Spawns the traffic signs along the road
+        private void SpawnTrafficSigns(Vector3 position, Quaternion rotation)
         {
-            foreach (RoadNode roadNode in trafficSigns)
+            GameObject trafficSign = Instantiate(GetActiveSpeedSignPrefab(), position, rotation);
+            bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
+            trafficSign.transform.position += (LaneCount / 2) * trafficSign.transform.right * LaneWidth * (isDrivingRight ? -1 : 1);
+            trafficSign.transform.parent = _trafficSignContainer.transform;
+        }
+        /// <summary> Returns the active speed sign type
+        private TrafficSignType GetActiveSpeedSign()
+        {
+            switch (SpeedLimit)
             {
-                GameObject trafficSign = Instantiate(_trafficSignPrefab, roadNode.Position, Quaternion.identity);
-                trafficSign.transform.parent = transform;
-                trafficSign.transform.rotation = roadNode.Rotation;
+                case SpeedLimit.ThirtyKPH:
+                    return TrafficSignType.SpeedSignThirtyKPH;
+                case SpeedLimit.FiftyKPH:
+                    return TrafficSignType.SpeedSignFiftyKPH;
+                case SpeedLimit.EightyKPH:
+                    return TrafficSignType.SpeedSignEightyKPH;
+                case SpeedLimit.NinetyKPH:
+                    return TrafficSignType.SpeedSignNinetyKPH;
+                case SpeedLimit.OneHundredTenKPH:
+                    return TrafficSignType.SpeedSignOneHundredTenKPH;
+                case SpeedLimit.OneHundredThrityKPH:
+                    return TrafficSignType.SpeedSignOneHundredThirtyKPH;
+                default:
+                    return TrafficSignType.SpeedSignFiftyKPH;
+            }
+        }
+        /// <summary> Returns the active speed sign prefab
+        private GameObject GetActiveSpeedSignPrefab()
+        {
+            switch (SpeedLimit)
+            {
+                case SpeedLimit.ThirtyKPH:
+                    return _speedSignThirtyKPH;
+                case SpeedLimit.FiftyKPH:
+                    return _speedSignFiftyKPH;
+                case SpeedLimit.EightyKPH:
+                    return _speedSignEightyKPH;
+                case SpeedLimit.NinetyKPH:
+                    return _speedSignNinetyKPH;
+                case SpeedLimit.OneHundredTenKPH:
+                    return _speedSignOneHundredTenKPH;
+                case SpeedLimit.OneHundredThrityKPH:
+                    return _speedSignOneHundredThirtyKPH;
+                default:
+                    return null;
             }
         }
         
