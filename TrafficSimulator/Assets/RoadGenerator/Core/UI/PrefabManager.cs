@@ -26,11 +26,11 @@ namespace RoadGenerator
     public class PrefabManagerEditor : Editor
     {
     public override void OnInspectorGUI()
-        {
-            base.OnInspectorGUI();
+    {
+        base.OnInspectorGUI();
 
-            EditorGUILayout.HelpBox("If you move this file somewhere else, also change the path in RoadGeneratorMenu! ", MessageType.Info);
-        }
+        EditorGUILayout.HelpBox("If you move this file somewhere else, also change the path in RoadGeneratorMenu! ", MessageType.Info);
+    }
     }
 #endif
 }
