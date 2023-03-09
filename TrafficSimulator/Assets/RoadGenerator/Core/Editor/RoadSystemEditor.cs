@@ -13,6 +13,7 @@ namespace RoadSystemGenerator
             private SerializedProperty _showGraph;
             private SerializedProperty _defaultTrafficLight;
             private SerializedProperty _defaultTrafficLightController;
+            private SerializedProperty _defaultStopSign;
         #endregion
         public void OnEnable()
         {
@@ -21,6 +22,7 @@ namespace RoadSystemGenerator
             _drivingSide = serializedObject.FindProperty("DrivingSide");
             _defaultTrafficLight = serializedObject.FindProperty("DefaultTrafficLightPrefab");
             _defaultTrafficLightController = serializedObject.FindProperty("DefaultTrafficLightControllerPrefab");
+            _defaultStopSign = serializedObject.FindProperty("DefaultStopSignPrefab");
 
         }
         public override void OnInspectorGUI()
@@ -39,6 +41,7 @@ namespace RoadSystemGenerator
             EditorGUILayout.PropertyField(_showGraph);
             EditorGUILayout.PropertyField(_defaultTrafficLight);
             EditorGUILayout.PropertyField(_defaultTrafficLightController);
+            EditorGUILayout.PropertyField(_defaultStopSign);
             
             if(_drivingSide.intValue != (int)roadSystem.DrivingSide)
             {
@@ -65,6 +68,11 @@ namespace RoadSystemGenerator
             if(_defaultTrafficLightController.objectReferenceValue != (GameObject)roadSystem.DefaultTrafficLightControllerPrefab)
             {
                 roadSystem.DefaultTrafficLightControllerPrefab = (GameObject)_defaultTrafficLightController.objectReferenceValue;
+            }
+
+            if(_defaultStopSign.objectReferenceValue != (GameObject)roadSystem.DefaultStopSignPrefab)
+            {
+                roadSystem.DefaultStopSignPrefab = (GameObject)_defaultStopSign.objectReferenceValue;
             }
 
             if(GUILayout.Button("Add new road"))

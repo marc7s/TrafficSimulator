@@ -9,6 +9,7 @@ namespace RoadGenerator
         private RoadNode _roadNode;
         private LaneSide _laneSide;
         private Vehicle _vehicle;
+
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
         public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, roadNode, null, null, distanceToPrevNode){}
         
@@ -18,6 +19,7 @@ namespace RoadGenerator
         /// <param name="roadNode">The road node this lane node relates to</param>
         /// <param name="prev">The previous lane node. Pass `null` if there is no previous</param>
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
+        /// <param name="distanceToPrevNode">The distance to the previous (current end node)</param>
         public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode)
         {
             _position = position;
@@ -26,8 +28,59 @@ namespace RoadGenerator
             _prev = prev;
             _next = next;
             _distanceToPrevNode = distanceToPrevNode;
+            _id = System.Guid.NewGuid().ToString();
 
             _rotation = laneSide == LaneSide.Primary ? roadNode.Rotation : roadNode.Rotation * Quaternion.Euler(0, 180f, 0);
+        }
+
+        /// <summary> Calculates the distance from one node to another. 
+        /// Returns true if the node is found, the distance is passed to the out parameter and is 0 if the node is not found 
+        /// The sign of the distance is along the node path, so a positive distance means the target is ahead of the current node </summary>
+        public bool DistanceToNode(LaneNode targetNode, out float distance, bool onlyLookAhead = false)
+        {
+            // Return if the target node is the current node
+            if(targetNode == this)
+            {
+                distance = 0;
+                return true;
+            }
+            
+            float dst = 0;
+            LaneNode curr = this.Next;
+
+            // Look forwards
+            while (curr != null)
+            {
+                dst += curr.DistanceToPrevNode;
+                
+                if(curr == targetNode)
+                {
+                    distance = dst;
+                    return true;
+                }
+
+                curr = curr.Next;
+            }
+
+            // Reset the current node and distance before looking for the target node backwards
+            curr = this;
+            dst = 0;
+            
+            // Look backwards
+            while (!onlyLookAhead && curr != null)
+            {
+                dst -= curr.DistanceToPrevNode;
+                curr = curr.Prev;
+                if(curr == targetNode)
+                {
+                    distance = dst;
+                    return true;
+                }
+            }
+            
+            // The target was not found, so set the distance to -1 and return false
+            distance = 0;
+            return false;
         }
         public bool IsIntersection() => _roadNode.IsIntersection();
 
@@ -74,6 +127,11 @@ namespace RoadGenerator
             }
             Debug.LogError("Trying to unset a different vehicle");
             return false;
+        }
+
+        public bool HasVehicle()
+        {
+            return _vehicle != null;
         }
     }
 }

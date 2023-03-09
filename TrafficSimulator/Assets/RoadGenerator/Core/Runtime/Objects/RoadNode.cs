@@ -25,7 +25,6 @@ namespace RoadGenerator
         private Vector3 _normal;
         private RoadNodeType _type;
         private float _time;
-        private string _id;
 
         // A list of all intersection types
         private static RoadNodeType[] _intersectionTypes = new RoadNodeType[]{ RoadNodeType.ThreeWayIntersection, RoadNodeType.FourWayIntersection, RoadNodeType.Roundabout };
@@ -44,10 +43,6 @@ namespace RoadGenerator
             Intersection = intersection;
             _id = System.Guid.NewGuid().ToString();
             _rotation = Quaternion.LookRotation(_tangent, Vector3.up);
-        }
-        public string ID
-        {
-            get => _id;
         }
         public override RoadNode Copy()
         {
