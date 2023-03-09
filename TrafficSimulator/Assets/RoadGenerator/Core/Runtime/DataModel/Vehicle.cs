@@ -2,10 +2,36 @@ using UnityEngine;
 
 namespace DataModel
 {
-    public class Vehicle
+    abstract public class Vehicle : MonoBehaviour
     {
-        private string _id;
-        private GameObject _vehicle;
-        public Vehicle(string id, GameObject vehicle) => (_id, _vehicle) = (id, vehicle);
+        protected string _id;
+
+        protected void Init()
+        {
+            _id = System.Guid.NewGuid().ToString();
+        }
+
+        protected string ID
+        {
+            get => _id;
+        }
+
+        /// <summary>Override the generic equals for this class</summary>
+        public override bool Equals(object other)
+        {
+            return Equals(other as Vehicle);
+        }
+
+        /// <summary>Define a custom equality function between Vehicles</summary>
+        public bool Equals(Vehicle other)
+        {
+            return other != null && other.ID == ID;
+        }
+
+        /// <summary>Override the hashcode function for this class</summary>
+        public override int GetHashCode()
+        {
+            return _id.GetHashCode();
+        }
     }
 }
