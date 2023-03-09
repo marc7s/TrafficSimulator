@@ -93,10 +93,11 @@ namespace RoadGenerator
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
-            CreateIntersectionContainer();
+
             // If intersection doesn't have a container, create one
             if(FlowContainer != null)
                 DestroyImmediate(FlowContainer);
+            CreateIntersectionContainer();
             AssignTrafficLights();
             OffsetTrafficLights();
         }
