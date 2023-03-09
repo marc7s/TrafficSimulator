@@ -61,33 +61,36 @@ namespace Car {
         [Header("Statistics")]
         [SerializeField] private float _totalDistance = 0;
         
+        // Public variables
+        public LaneNode CustomStartNode = null;
+
+        // Private variables
         private Vehicle _vehicle;
         private float _vehicleLength;
         private Bounds _vehicleBounds;
-
-        // Quality variables
-        private float _targetLookaheadDistance = 0;
-        private float _brakeDistance = 0;
-        private LaneNode _target;
-        private LaneNode _previousTarget;
-        private LaneNode _brakeTarget;
-        private LaneNode _repositioningTarget;
-        private LineRenderer _targetLineRenderer;
-        private int _repositioningOffset = 1;
-        private Status _status = Status.Driving;
-        private float _originalMaxSpeed;
-        private VehicleController _vehicleController;
-        private LaneNode _startNode;
-        private LaneNode _endNode;
-        private LaneNode _currentNode;
         private Vector3? _prevIntersectionPosition;
         private NavigationNode _navigationPathEndNode;
         private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
         private List<LaneNode> _occupiedNodes = new List<LaneNode>();
-
-        public LaneNode CustomStartNode = null;
-
+        float _lerpSpeed;
         private GameObject _navigationPathContainer;
+        private LaneNode _target;
+        private LineRenderer _targetLineRenderer;
+        private LaneNode _startNode;
+        private LaneNode _endNode;
+        private LaneNode _currentNode;
+
+        // Quality variables
+        private float _targetLookaheadDistance = 0;
+        private float _brakeDistance = 0;
+        private LaneNode _previousTarget;
+        private LaneNode _brakeTarget;
+        private LaneNode _repositioningTarget;
+        private int _repositioningOffset = 1;
+        private Status _status = Status.Driving;
+        private float _originalMaxSpeed;
+        private VehicleController _vehicleController;
+        
         
         void Start()
         {
@@ -116,23 +119,23 @@ namespace Car {
             _endNode = lane.StartNode.Last;
             _startNode = lane.StartNode;
             _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
-            _target = _currentNode;
+
+            // Setup target line renderer
+            float targetLineWidth = 0.3f;
+            _targetLineRenderer = GetComponent<LineRenderer>();
+            _targetLineRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
+            _targetLineRenderer.sharedMaterial.SetColor("_Color", Color.green);
+            _targetLineRenderer.startWidth = targetLineWidth;
+            _targetLineRenderer.endWidth = targetLineWidth;
             
             if (_mode == DrivingMode.Quality)
             {
-                // Setup target line renderer
-                float targetLineWidth = 0.3f;
-                _targetLineRenderer = GetComponent<LineRenderer>();
-                _targetLineRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
-                _targetLineRenderer.sharedMaterial.SetColor("_Color", Color.green);
-                _targetLineRenderer.startWidth = targetLineWidth;
-                _targetLineRenderer.endWidth = targetLineWidth;
-
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
                 Q_TeleportToLane();
                 
                 _brakeTarget = _currentNode;
                 _repositioningTarget = _currentNode;
+                _target = _currentNode;
                 
                 _vehicleController.throttleInput = 1f;
             }
@@ -142,6 +145,8 @@ namespace Car {
                 Rigidbody rigidbody = GetComponent<Rigidbody>();
                 rigidbody.isKinematic = false;
                 rigidbody.useGravity = false;
+                _target = _currentNode.Next;
+                _lerpSpeed = _speed;
                 P_MoveToFirstPosition();
             }
             
@@ -167,11 +172,13 @@ namespace Car {
                 Q_UpdateCurrent();
                 
                 if (_showTargetLines != ShowTargetLines.None)
-                    Q_DrawTargetLines();
+                    DrawTargetLines();
             }
             else if (_mode == DrivingMode.Performance)
             {
-                P_MoveToNextPosition();
+                P_UpdateTargetAndCurrent();
+                if (_showTargetLines != ShowTargetLines.None && _showTargetLines !=  ShowTargetLines.BrakeTarget)
+                    DrawTargetLines();
             }
             UpdateOccupiedNodes();
         }
@@ -416,7 +423,7 @@ namespace Car {
         }
         
         // Draw lines towards steering and braking target
-        private void Q_DrawTargetLines()
+        private void DrawTargetLines()
         {
             switch (_showTargetLines)
             {
@@ -433,9 +440,18 @@ namespace Car {
                     _targetLineRenderer.positionCount = _occupiedNodes.Count;
                     break;
                 case ShowTargetLines.All:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, _currentNode.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
-                    _targetLineRenderer.positionCount = 3 + _occupiedNodes.Count;
-                    break;
+                    if (_mode == DrivingMode.Performance)
+                    {
+                        _targetLineRenderer.SetPositions(new Vector3[]{_target.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
+                        _targetLineRenderer.positionCount = 1 + _occupiedNodes.Count;
+                        break;
+                    }
+                    else 
+                    {
+                        _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, _currentNode.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
+                        _targetLineRenderer.positionCount = 3 + _occupiedNodes.Count;
+                        break;
+                    }
             }
         }
         private void SetInitialPrevIntersection()
@@ -464,29 +480,52 @@ namespace Car {
             }
 
             // Move to the first position of the lane
-            transform.position = _startNode.Position;
-            transform.rotation = _startNode.Rotation;
+            transform.position = _currentNode.Position;
+            transform.rotation = _currentNode.Rotation;
+            P_MoveToTargetNode();
         }
 
-        private void P_MoveToNextPosition()
+        private void P_MoveToTargetNode()
         {
             Vector3 targetPosition = P_GetLerpPosition(_target.Position);
             Quaternion targetRotation = P_GetLerpQuaternion(_target.Rotation);
-            
-            if(transform.position == targetPosition && !(_roadEndBehaviour == RoadEndBehaviour.Stop && _target == _endNode)) 
+
+            transform.position = targetPosition;
+            transform.rotation = targetRotation;
+        }
+
+        private void P_UpdateTargetAndCurrent()
+        {
+            Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
+            bool _nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
+            bool _nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
+            _lerpSpeed = _speed;
+
+            if (_nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Stop)
+            {
+                _lerpSpeed = 10;
+                //Debug.Log("End node reached");
+            }
+            else if (_nextTargetHasVehicle)
+            {
+                _lerpSpeed = 10;
+                //Debug.Log("Next node has vehicle");
+            }
+            else if (_nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop)
+            {
+                _currentNode = _target;
+                _totalDistance += _currentNode.DistanceToPrevNode;
+                _target = _startNode;
+                Debug.Log("Looping");
+            }
+            else if (transform.position == _target.Position)
             {
                 _currentNode = _target;
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
-
-                if(_target == _startNode && _roadEndBehaviour == RoadEndBehaviour.Loop) 
-                {
-                    P_MoveToFirstPosition();
-                    return;
-                }
+                Debug.Log("Moving to next node");
             }
-            transform.position = targetPosition;
-            transform.rotation = targetRotation;
+            P_MoveToTargetNode();
             UpdateTargetFromNavigation();
         }
 
@@ -503,7 +542,7 @@ namespace Car {
                 _prevIntersectionPosition = Vector3.zero; 
             }
             
-            // When the navigation path is empty, get a new one
+            // If Navigation mode and navigation path is empty, get a new one
             if (_navigationPath.Count == 0 && _navigationMode == NavigationMode.RandomNavigationPath)
             {
                 UpdateRandomPath();
@@ -547,11 +586,11 @@ namespace Car {
 
         private Vector3 P_GetLerpPosition(Vector3 target)
         {
-            return Vector3.MoveTowards(transform.position, target, _speed * Time.deltaTime);
+            return Vector3.MoveTowards(transform.position, target, _lerpSpeed * Time.deltaTime);
         }
         private Quaternion P_GetLerpQuaternion(Quaternion target)
         {
-            return Quaternion.RotateTowards(transform.rotation, target, _rotationSpeed * _speed * Time.deltaTime);
+            return Quaternion.RotateTowards(transform.rotation, target, _rotationSpeed * _lerpSpeed * Time.deltaTime);
         }
         
         public LaneNode CurrentNode
