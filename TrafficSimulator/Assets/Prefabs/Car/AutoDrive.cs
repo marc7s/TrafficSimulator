@@ -507,8 +507,12 @@ namespace Car {
             // When the navigation path is empty, get a new one
             if (_navigationPath.Count == 0 && _navigationMode == NavigationMode.RandomNavigationPath)
             {
-                UpdateRandomPath();
-            } 
+                bool updateOnIntersectionExit = _target.Type == RoadNodeType.JunctionEdge && _target.RoadNode.Intersection.IntersectionPosition == _prevIntersectionPosition;
+                bool updateOnNonIntersectionGuideNode = _target.Type != RoadNodeType.IntersectionGuide;
+                
+                if(updateOnIntersectionExit || updateOnNonIntersectionGuideNode)
+                    UpdateRandomPath();
+            }
             
             if (_target.Type == RoadNodeType.JunctionEdge && currentNodeAlreadyChecked)
             {
@@ -519,14 +523,17 @@ namespace Car {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
                         (_startNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
+
                         // If the intersection does not have a lane node that matches the navigation path, unexpected behaviour has occurred, switch to random navigation
                         if (_target == null)
                             _navigationMode = NavigationMode.Random;
                     }
-                        
-                    if (_navigationMode == NavigationMode.Random)
+                    else if (_navigationMode == NavigationMode.Random)
+                    {
                         _target = _target.RoadNode.Intersection.GetRandomLaneNode();
-                    _startNode = _target.First;
+                        _startNode = _target.First;
+                    }
+                        
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
                 }
             }   

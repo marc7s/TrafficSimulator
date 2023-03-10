@@ -60,10 +60,14 @@ MonoBehaviour:
   Road2AnchorPoint2: {x: 0, y: 0, z: 0}
   Type: 0
   ID: 
+  GuideRoadNodePrefab: {fileID: 6519265059532225654, guid: 05acad94cfea5be4d9c4ae2b9e81982a, type: 3}
+  GuideLaneNodePrefab: {fileID: 6519265059532225654, guid: cd0b879c858f97b499405ab9f1cfcb01, type: 3}
   _stretchFactor: 0.4
   _flowType: 0
   _material: {fileID: 2100000, guid: 95fd35d811c46354da85037da76c5774, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: ac13cd34ea241854f9dc39260c81716b, type: 2}
+  _drawGuideNodes: 0
+  _guideNodeContainer: {fileID: 0}
 --- !u!33 &5387963023345359458
 MeshFilter:
   m_ObjectHideFlags: 0
