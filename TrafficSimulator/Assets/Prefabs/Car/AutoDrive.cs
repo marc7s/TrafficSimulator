@@ -30,6 +30,7 @@ namespace Car {
         Target,
         BrakeTarget,
         CurrentPosition,
+        OccupiedNodes,
         All
     }
     public class AutoDrive : MonoBehaviour
@@ -436,6 +437,10 @@ namespace Car {
                     _targetLineRenderer.positionCount = 2;
                     break;
                 case ShowTargetLines.CurrentPosition:
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _currentNode.Position, transform.position });
+                    _targetLineRenderer.positionCount = 2;
+                    break;
+                case ShowTargetLines.OccupiedNodes:
                     _targetLineRenderer.SetPositions(_occupiedNodes.Select(x => x.Position).ToArray());
                     _targetLineRenderer.positionCount = _occupiedNodes.Count;
                     break;
@@ -499,31 +504,36 @@ namespace Car {
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
             bool _nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
             bool _nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
-            _lerpSpeed = _speed;
 
             if (_nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Stop)
             {
-                _lerpSpeed = 10;
-                //Debug.Log("End node reached");
+                _currentNode = _target;
+                if (_lerpSpeed > 10f)
+                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.1f);
+                else
+                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.01f);
             }
             else if (_nextTargetHasVehicle)
             {
-                _lerpSpeed = 10;
-                //Debug.Log("Next node has vehicle");
+                _currentNode = _target;
+                if (_lerpSpeed > 10f)
+                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.1f);
+                else
+                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.01f);
             }
             else if (_nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop)
             {
                 _currentNode = _target;
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = _startNode;
-                Debug.Log("Looping");
+                _lerpSpeed = _speed;
             }
             else if (transform.position == _target.Position)
             {
                 _currentNode = _target;
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
-                Debug.Log("Moving to next node");
+                _lerpSpeed = _speed;
             }
             P_MoveToTargetNode();
             UpdateTargetFromNavigation();
