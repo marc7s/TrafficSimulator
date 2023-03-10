@@ -113,6 +113,20 @@ namespace RoadGenerator
             return points.ToArray();
         }
 
+        /// <summary>Returns all linked node rotations as an array</summary>
+        public Quaternion[] GetRotations()
+        {
+            List<Quaternion> rotations = new List<Quaternion>();
+            T curr = (T)this;
+            
+            while(curr != null)
+            {
+                rotations.Add(curr.Rotation);
+                curr = curr.Next;
+            }
+            return rotations.ToArray();
+        }
+
         /// <summary>Reverses the linked nodes. Returns the head of the reversed nodes</summary>
         public T Reverse()
         {

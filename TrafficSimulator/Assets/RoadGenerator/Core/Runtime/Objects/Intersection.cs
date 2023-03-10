@@ -3,6 +3,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using CustomProperties;
 
 namespace RoadGenerator
@@ -674,7 +675,10 @@ namespace RoadGenerator
 
                     currentNode = currentNode.Next;
                 }
-            }     
+            }
+
+            List<LaneNode> nodes = _intersectionEntryNodes.Values.ToList();
+            DebugUtility.AddMarkGroups(nodes, (LaneNode l) => l.ID);
         }
         private void CreateIntersectionLaneNodes(LaneNode start, LaneNode intersectionNode, LaneNode end)
         {
@@ -792,7 +796,7 @@ namespace RoadGenerator
 
             GuideNode guidePath = GetGuidePath(current, finalNode);
 
-            DebugUtility.MarkPositions(guidePath.GetPositions());
+            //DebugUtility.MarkPositions(guidePath.GetPositions());
             
             // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
             // never to it, once the vehicle passes the control point and reaches the start point, it can never come back to the control point

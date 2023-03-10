@@ -1,4 +1,8 @@
 using UnityEngine;
+using UnityEditor;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace RoadGenerator
 {
@@ -8,6 +12,9 @@ namespace RoadGenerator
         [SerializeField] private static GameObject _positionContainer;
         [SerializeField] private static GameObject _markerPrefab;
         private static Vector3 _markerPrefabScale = new Vector3(1.5f, 1f, 1f);
+        private static Dictionary<string, (Vector3[], Quaternion[])> _groups = new Dictionary<string, (Vector3[], Quaternion[])>();
+        private static bool _nextGroupPressed = false;
+        private static int _currentGroup = 0;
         private static bool _isSetup = false;
         private const string _debugUtilityContainer = "Debug Utility";
         private const string _positionContainerName = "Markers";
@@ -28,6 +35,16 @@ namespace RoadGenerator
 
             _isSetup = true;
         }
+
+        /// <summary> Mark all nodes in a linked list of nodes </summary>
+        public static void MarkPositions<T>(T nodes, float size = 1f) where T : Node<T>
+        {
+            Vector3[] positions = nodes.GetPositions();
+            Quaternion[] rotations = nodes.GetRotations();
+            MarkPositions(positions, rotations, size);
+        }
+        
+        /// <summary> Mark all positions in a list </summary>
         public static void MarkPositions(Vector3[] positions, Quaternion[] rotations = null, float size = 1f)
         {
             ClearMarkers();
@@ -37,21 +54,86 @@ namespace RoadGenerator
             
             for (int i = 0; i < positions.Length; i++)
             {
-                Quaternion rot = rotations != null ? rotations[i] : Quaternion.identity;
-                DebugUtility.MarkPosition(positions[i], rot, size);
+                Quaternion? rot = rotations == null ? null : rotations[i];
+                DebugUtility.MarkPosition(positions[i], rot, size, false);
             }
         }
-        public static void MarkPosition(Vector3 position, Quaternion? rotation = null, float size = 1f)
+
+        /// <summary> Mark a single position </summary>
+        public static void MarkPosition(Vector3 position, Quaternion? rotation = null, float size = 1f, bool clearMarkers = true)
         {
             if(!_isSetup)
                 Setup();
 
-            ClearMarkers();
+            if(clearMarkers)
+                ClearMarkers();
 
-            _markerPrefab.transform.localScale = _markerPrefabScale * size;
+            // If rotation was passed, rotate the marker and make it longer in the rotation direction. Otherwise, make it a cube
+            _markerPrefab.transform.localScale = rotation == null ? Vector3.one : _markerPrefabScale * size;
             GameObject marker = GameObject.Instantiate(_markerPrefab, position, rotation ?? Quaternion.identity);
             marker.name = "Marker";
             marker.transform.parent = _positionContainer.transform;
+        }
+
+        /// <summary> 
+        /// Adds several groups of positions to display at separate times. Press the `N` key to cycle through the groups. 
+        /// Only the positions for the current group is displayed. The key press is only detected in Play mode, in the Game view
+        /// For the easiest use, split the Game and Scene view so both are visible at the same time, and press the `N` key in the Game view window
+        /// and the markers will be visible in both views
+        /// </summary>
+        public static void AddMarkGroups(Dictionary<string, (Vector3[], Quaternion[])> groups)
+        {          
+            _groups = groups;
+            EditorApplication.update += UpdateDisplayedMarkGroups;
+        }
+
+        public static void AddMarkGroups<T>(List<T> nodes, Func<T, string> name) where T : Node<T>
+        {
+            _groups.Clear();
+            
+            foreach (T node in nodes)
+            {
+                _groups.Add(name(node), (node.GetPositions(), node.GetRotations()));
+            }
+            
+            EditorApplication.update += UpdateDisplayedMarkGroups;
+        }
+
+        public static void RemoveMarkGroups()
+        {          
+            _groups.Clear();
+            EditorApplication.update -= UpdateDisplayedMarkGroups;
+        }
+
+        private static void UpdateDisplayedMarkGroups()
+        {
+            bool nextKeyPressed = Input.GetKey(KeyCode.N);
+            
+            // If the key is still being pressed, return
+            if(nextKeyPressed && _nextGroupPressed)
+                return;
+
+            // Update the key state
+            _nextGroupPressed = nextKeyPressed;
+
+            // If the key is not pressed, return
+            if(!_nextGroupPressed)
+                return;
+            
+            // Check that there are groups to display
+            if(_groups.Count > 0)
+            {
+                // Increment the current group
+                _currentGroup = (_currentGroup + 1) % _groups.Count;
+
+                // Get the new group name
+                string group = _groups.Keys.ToList()[_currentGroup];
+                
+                // Log the new group being displayed and mark all its positions
+                (Vector3[] positions, Quaternion[] rotations) = _groups[group];
+                Debug.Log($"[Group {_currentGroup}, {positions.Length} positions]: {group}");
+                MarkPositions(positions,  rotations);
+            }
         }
 
         public static void ClearMarkers()
