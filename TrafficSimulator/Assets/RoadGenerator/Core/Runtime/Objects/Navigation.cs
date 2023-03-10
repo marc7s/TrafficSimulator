@@ -109,6 +109,8 @@ namespace RoadGenerator
                 NavigationNode targetNode = nodeList[randomIndex];
                 nodeToFind = targetNode;
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
+                if (path == null)
+                    continue;
                 // Trying to find a path that is not too short
                 if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
                     return path;
@@ -120,25 +122,62 @@ namespace RoadGenerator
             return new Stack<NavigationNodeEdge>();
         }
         
-        public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container, GameObject targetMarker)
+        public static void DrawNavigationPath(NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, GameObject targetMarker)
         {
             if(nodeToFind == null)
                 return;
-            
-            // TODO DRAW ACTUAL LANE PATH, CURRENTLY ONLY DRAWS A CUBE AT THE DESTINATION
-
             foreach (Transform child in container.transform)
             {
                 Object.Destroy(child.gameObject);
             }
+            LaneNode current = startNode;
+            var clonedStack = new Stack<NavigationNodeEdge>(new Stack<NavigationNodeEdge>(path));
+            container.AddComponent<LineRenderer>();
+            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
+            lineRenderer.startWidth = 1f;
+            lineRenderer.endWidth = 1f;
+            List<Vector3> positions = new List<Vector3>();
+            bool inIntersection = false;
+            Vector3 prevIntersectionPosition = Vector3.zero;
+            if (startNode.Type == RoadNodeType.JunctionEdge || startNode.IsIntersection())
+            {
+                prevIntersectionPosition = startNode.RoadNode.Intersection.IntersectionPosition;
+            }
+            while (current != null)
+            {
+                positions.Add(current.Position);
+                if (current.RoadNode == nodeToFind.RoadNode)
+                {
+                    break;
+                }
+
+                if (clonedStack.Count == 0)
+                {
+                    current = current.Next;
+                    continue;
+                }
+
+                bool isNonIntersectionNavigationNode = current.RoadNode.IsNavigationNode && !current.IsIntersection() && current.Type != RoadNodeType.JunctionEdge;
+                if (isNonIntersectionNavigationNode && clonedStack.Count != 0)
+                {
+                    clonedStack.Pop();
+                    prevIntersectionPosition = Vector3.zero; 
+                }
+                else if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
+                {
+                    prevIntersectionPosition = current.RoadNode.Intersection.IntersectionPosition;
+                    current = current.RoadNode.Intersection.GetNewLaneNode(clonedStack.Pop());
+                    continue;
+                }
+
+                current = current.Next;
+            }
+            lineRenderer.positionCount = positions.Count;
+            lineRenderer.SetPositions(positions.ToArray());
+
             Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
             GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
             marker.transform.parent = container.transform;
-        }
-
-        private static void PlaceNavigationTargetMarker(UnityEngine.Object instance)
-        {
-
         }
     }
 }
