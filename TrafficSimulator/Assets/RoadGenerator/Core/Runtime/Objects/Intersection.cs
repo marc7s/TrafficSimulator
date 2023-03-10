@@ -40,9 +40,16 @@ namespace RoadGenerator
         [HideInInspector] public NavigationNodeEdge Road1AnchorPoint2NavigationEdge;
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
-        [HideInInspector] private Dictionary<string, LaneNode> _laneNodeFromNavigationNodeEdge;
+        [HideInInspector] private Dictionary<string, LaneNode> _laneNodeFromNavigationNodeEdge = new Dictionary<string, LaneNode>();
+        [HideInInspector] private Dictionary<string, RoadNode> _intersectionGuideRoadNodes = new Dictionary<string, RoadNode>();
+        [HideInInspector] private Dictionary<string, LaneNode> _intersectionEntryNodes = new Dictionary<string, LaneNode>();
+        [HideInInspector] private Dictionary<string, LaneNode> _intersectionExitNodes = new Dictionary<string, LaneNode>();
         [HideInInspector] public IntersectionType Type;
         [ReadOnly] public string ID;
+
+        [Header("Connections")]
+        public GameObject GuideRoadNodePrefab;
+        public GameObject GuideLaneNodePrefab;
 
         [Header("Intersection settings")]
         [SerializeField][Range(0, 0.8f)] float _stretchFactor = 0.4f;
@@ -51,6 +58,10 @@ namespace RoadGenerator
         [Header ("Material settings")]
         [SerializeField] private Material _material;
         [SerializeField] private Material _bottomMaterial;
+
+        [Header ("Debug settings")]
+        [SerializeField] private bool _drawGuideNodes = false;
+
         private float _thickness;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
@@ -63,8 +74,10 @@ namespace RoadGenerator
         private List<RoadNode> _oneJunctionNodeRoad = new List<RoadNode>();
 
         private Mesh _mesh;
-        public const float IntersectionLength = 20f;
-        public const float IntersectionBoundsLengthMultiplier = 1.2f;
+        [SerializeField][HideInInspector] private GameObject _guideNodeContainer;
+        [HideInInspector] public const float IntersectionLength = 20f;
+        [HideInInspector] public const float IntersectionBoundsLengthMultiplier = 1.2f;
+        private const string GUIDE_NODE_CONTAINER_NAME = "Guide Nodes";
 
 #if DEBUG_INTERSECTION
             public void PrintRoadNodes(RoadNode start)
@@ -113,6 +126,7 @@ namespace RoadGenerator
                 AssignStopSigns();
             }
             OffsetSigns();
+            ShowGuideNodes();
         }
 
         /// <summary> Returns a list of all RoadNodes that are of type `JunctionEdge` or an intersection. This is because for 3-way intersections, the intersection node are used as an anchor </summary>
@@ -549,12 +563,79 @@ namespace RoadGenerator
                 _meshRenderer.sharedMaterials = materials;
             }
         }
+
+        public void ShowGuideNodes()
+        {
+            if(_guideNodeContainer == null)
+            {
+                // Try to find the lane container if it has already been created
+                foreach(Transform child in transform)
+                {
+                    if(child.name == GUIDE_NODE_CONTAINER_NAME)
+                    {
+                        _guideNodeContainer = child.gameObject;
+                        break;
+                    }
+                }
+            }
+
+            // Destroy the lane container, and with it all the previous lanes
+            if(_guideNodeContainer != null)
+                DestroyImmediate(_guideNodeContainer);
+
+            // Create a new empty lane container
+            _guideNodeContainer = new GameObject(GUIDE_NODE_CONTAINER_NAME);
+            _guideNodeContainer.transform.parent = transform;
+
+            // Draw the lines if the setting is enabled
+            if(_drawGuideNodes)
+            {
+                List<LaneNode> guideNodes = new List<LaneNode>();
+                guideNodes.AddRange(_intersectionEntryNodes.Values);
+                guideNodes.AddRange(_intersectionExitNodes.Values);
+
+                // Draw the lane nodes
+                foreach(LaneNode start in guideNodes)
+                {
+                    LaneNode curr = start;
+                    int i = 0;
+                    while(curr != null && curr.Type == RoadNodeType.IntersectionGuide)
+                    {
+                        GameObject roadNodeObject = Instantiate(GuideLaneNodePrefab, curr.Position, curr.Rotation, _guideNodeContainer.transform);
+                        roadNodeObject.name = i + " " + curr.Type;
+
+                        curr = curr.Next;
+                        i++;
+                    }
+                }
+
+                // Draw the road nodes
+                foreach(RoadNode start in _intersectionGuideRoadNodes.Values)
+                {
+                    RoadNode curr = start;
+                    int i = 0;
+                    while(curr != null && curr.Type == RoadNodeType.IntersectionGuide)
+                    {
+                        GameObject roadNodeObject = Instantiate(GuideRoadNodePrefab, curr.Position, curr.Rotation, _guideNodeContainer.transform);
+                        roadNodeObject.name = i + " " + curr.Type;
+
+                        curr = curr.Next;
+                        i++;
+                    }
+                }
+            }
+        }
+
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
             // Map the lane node to take in order to get to the navigation node edge
-            _laneNodeFromNavigationNodeEdge = new Dictionary<string, LaneNode>();
+            _laneNodeFromNavigationNodeEdge.Clear();
             List<Lane> lanes = new List<Lane>();
+
+            _intersectionEntryNodes.Clear();
+            _intersectionExitNodes.Clear();
+            _intersectionGuideRoadNodes.Clear();
             
             lanes.AddRange(Road1.Lanes);
             lanes.AddRange(Road2.Lanes);
@@ -568,6 +649,9 @@ namespace RoadGenerator
                         currentNode = currentNode.Next;
                         continue;
                     }
+
+                    if(currentNode.Next != null && currentNode.Next.IsIntersection() && currentNode.Next.Next != null)
+                        CreateIntersectionLaneNodes(currentNode, currentNode.Next, currentNode.Next.Next);
 
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
@@ -587,10 +671,89 @@ namespace RoadGenerator
                     // If the intersection is a three way intersection, the second anchor point does not exist
                     if (!IsThreeWayIntersection() && currentNode.RoadNode.Position == Road2AnchorPoint2)
                         _laneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
+
                     currentNode = currentNode.Next;
                 }
             }     
         }
+        private void CreateIntersectionLaneNodes(LaneNode start, LaneNode intersectionNode, LaneNode end)
+        {
+            RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(start.RoadNode, intersectionNode.RoadNode);
+
+            LaneNode entry = CreateLaneNodes(start, generatedRoadNodes, true);
+            LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, false);
+            
+            _intersectionEntryNodes.Add(start.ID, entry);
+            _intersectionExitNodes.Add(end.ID, exit);
+        }
+
+        private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, bool isPrimary)
+        {
+            float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
+            int laneNodeDirection = isPrimary ? 1 : -1;
+            LaneSide laneSide = isPrimary ? LaneSide.Primary : LaneSide.Secondary;
+            // Important: In order to get the correct direction of the lane nodes, we need to reverse the road nodes if the lane is secondary
+            // Since reverse creates copies of the nodes, this means that logic that relies on the road nodes being the same instance between entry and exit will not work
+            RoadNode currRoadNode = isPrimary ? roadNode : roadNode.Reverse();
+            
+            LaneNode curr = null;
+            LaneNode prev = null;
+            while(currRoadNode != null)
+            {
+                Vector3 position = currRoadNode.Position + currRoadNode.Normal * laneNodeOffset * laneNodeDirection;
+                
+                curr = curr == null ? new LaneNode(position, laneSide, currRoadNode, 0) : new LaneNode(position, laneSide, currRoadNode, prev, null, Vector3.Distance(prev.Position, position));
+                
+                if(prev != null)
+                    prev.Next = curr;
+                prev = curr;
+                currRoadNode = currRoadNode.Next;
+            }
+            
+            return curr.First;
+        }
+
+        private RoadNode FetchOrGenerateRoadNodes(RoadNode start, RoadNode end)
+        {
+            // Check if this road node has already been generated
+            if(_intersectionGuideRoadNodes.ContainsKey(start.ID))
+                return _intersectionGuideRoadNodes[start.ID];
+            
+            const float roadNodeDistance = 3f;
+            
+            RoadNode head = CreateEvenlySpacedGuideRoadNodes(start.Position, end.Position, roadNodeDistance);
+            if(head == null)
+                head = start;
+
+            head.Intersection = this;
+            _intersectionGuideRoadNodes.Add(start.ID, head);
+
+            return head;
+        }
+
+        private RoadNode CreateEvenlySpacedGuideRoadNodes(Vector3 start, Vector3 end, float distance)
+        {
+            int nodesToCreate = Mathf.FloorToInt(Vector3.Distance(start, end) / distance);
+            Vector3 path = end - start;
+
+            RoadNode curr = null;
+            RoadNode prev = null;
+            for(int i = 0; i < nodesToCreate; i++)
+            {
+                Vector3 position = Vector3.Lerp(start, end, (float)(i + 1) / (nodesToCreate + 1));
+                Vector3 tangent = path.normalized;
+                Vector3 normal = Quaternion.Euler(0, 90, 0) * tangent;
+                float distanceToPrev = prev == null ? 0 : Vector3.Distance(prev.Position, position);
+                
+                curr = curr == null ? new RoadNode(position, tangent, normal, RoadNodeType.IntersectionGuide, 0, 0) : new RoadNode(position, tangent, normal, RoadNodeType.IntersectionGuide, prev, null, 0, distanceToPrev);
+                
+                if(prev != null)
+                    prev.Next = curr;
+                prev = curr;
+            }
+            return curr == null ? null : curr.First;
+        }
+
         /// <summary> Get a random lane node that leads out of the intersection </summary>
         public LaneNode GetRandomLaneNode()
         {
@@ -607,21 +770,60 @@ namespace RoadGenerator
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
                 return (null, null);
             }
-            
-            LaneNode finalNode = _laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
-            LaneNode intersectionNode = current.Next != null && current.Next.IsIntersection() ? current.Next : current;
 
-            Vector3 controlPosition = intersectionNode == current ? IntersectionPosition : intersectionNode.Position;
-        
-            GuideNode controlPoint = new GuideNode(controlPosition, intersectionNode, intersectionNode.LaneSide, intersectionNode.RoadNode, current, finalNode, Vector3.Distance(controlPosition, current.Position));
+            if(!_intersectionEntryNodes.ContainsKey(current.ID))
+            {
+                Debug.LogError("Error, The lane node does not exist in the intersection entry list");
+                return (null, null);
+            }
+            LaneNode finalNode = _laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID];
+            if(!_intersectionExitNodes.ContainsKey(finalNode.ID))
+            {
+                Debug.LogError("Error, The lane node does not exist in the intersection exit list");
+                return (null, null);
+            }
             
-            controlPoint.Prev = current;
-            controlPoint.Next = finalNode;
+            LaneNode entrySection = _intersectionEntryNodes[current.ID];
+            LaneNode exitSection = _intersectionExitNodes[finalNode.ID];
+
+
+            GuideNode guidePath = GetGuidePath(current, finalNode);
             
             // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
             // never to it, once the vehicle passes the control point and reaches the start point, it can never come back to the control point
             // which is then removed by the garbage collector
-            return (finalNode, controlPoint);
+            return (current.First, guidePath);
+        }
+
+        private GuideNode GetGuidePath(LaneNode start, LaneNode end)
+        {
+            LaneNode entrySection = _intersectionEntryNodes[start.ID];
+            LaneNode exitSection = _intersectionExitNodes[end.ID];
+
+            LaneNode entryLast = entrySection.Last;
+
+            LaneNode currLaneNode = entrySection;
+            GuideNode curr = null;
+            GuideNode prev = null;
+            while(currLaneNode != null)
+            {
+                Vector3 position = currLaneNode.Position;
+                curr = new GuideNode(position, currLaneNode, currLaneNode.LaneSide, currLaneNode.RoadNode, prev, null, prev == null ? 0 : Vector3.Distance(prev.Position, position));
+                
+                if(prev != null)
+                    prev.Next = curr;
+                prev = curr;
+                currLaneNode = currLaneNode.Next;
+
+                if(currLaneNode == entryLast)
+                {
+                    currLaneNode = exitSection;
+                }
+            }
+
+            GuideNode guidePath = (GuideNode)curr.First;
+
+            return guidePath;
         }
         private bool IsThreeWayIntersection()
         {
