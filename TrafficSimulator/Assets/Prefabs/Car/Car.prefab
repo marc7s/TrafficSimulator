@@ -1852,6 +1852,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Road: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
+  NavigationPathMaterial: {fileID: 2100000, guid: 880f2a83b0b9f264a99790d7493b3ddf, type: 2}
   LaneIndex: 0
   _mesh: {fileID: 1577973480899245783}
   _mode: 1

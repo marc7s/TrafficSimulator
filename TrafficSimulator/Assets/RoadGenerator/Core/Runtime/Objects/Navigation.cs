@@ -40,6 +40,8 @@ namespace RoadGenerator
     public static class Navigation
     {
         private const int MAX_ITERATIONS = 100;
+
+        private static List<Vector3> _navigationPath = new List<Vector3>();
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
         public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNode startNode, NavigationNode endNode)
         {
@@ -108,6 +110,8 @@ namespace RoadGenerator
                 int randomIndex = random.Next(0, nodeList.Count);
                 NavigationNode targetNode = nodeList[randomIndex];
                 nodeToFind = targetNode;
+                if (!targetNode.RoadNode.IsIntersection())
+                    continue;
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
                 if (path == null)
                     continue;
@@ -122,34 +126,27 @@ namespace RoadGenerator
             return new Stack<NavigationNodeEdge>();
         }
         
-        public static void DrawNavigationPath(NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, GameObject targetMarker)
+        public static void DrawNavigationPath(NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, Material pathMaterial, Vector3? prevIntersectionPosition)
         {
             if(nodeToFind == null)
                 return;
-            foreach (Transform child in container.transform)
-            {
-                Object.Destroy(child.gameObject);
-            }
             LaneNode current = startNode;
             var clonedStack = new Stack<NavigationNodeEdge>(new Stack<NavigationNodeEdge>(path));
-            container.AddComponent<LineRenderer>();
+            if (container.GetComponent<LineRenderer>() == null)
+                container.AddComponent<LineRenderer>();
             LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
             lineRenderer.startWidth = 1f;
             lineRenderer.endWidth = 1f;
             List<Vector3> positions = new List<Vector3>();
-            bool inIntersection = false;
-            Vector3 prevIntersectionPosition = Vector3.zero;
-            if (startNode.Type == RoadNodeType.JunctionEdge || startNode.IsIntersection())
-            {
-                prevIntersectionPosition = startNode.RoadNode.Intersection.IntersectionPosition;
-            }
+
             while (current != null)
             {
                 positions.Add(current.Position);
                 if (current.RoadNode == nodeToFind.RoadNode)
-                {
+                 {
+                    Debug.Log("Found node");
                     break;
-                }
+                 }   
 
                 if (clonedStack.Count == 0)
                 {
@@ -163,21 +160,30 @@ namespace RoadGenerator
                     clonedStack.Pop();
                     prevIntersectionPosition = Vector3.zero; 
                 }
-                else if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
+                if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
                 {
-                    prevIntersectionPosition = current.RoadNode.Intersection.IntersectionPosition;
+
                     current = current.RoadNode.Intersection.GetNewLaneNode(clonedStack.Pop());
+                    prevIntersectionPosition = current.RoadNode.Intersection.IntersectionPosition;
                     continue;
                 }
 
                 current = current.Next;
             }
+            _navigationPath = positions;
+            lineRenderer.material = pathMaterial;
             lineRenderer.positionCount = positions.Count;
             lineRenderer.SetPositions(positions.ToArray());
+        }
 
-            Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
-            GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
-            marker.transform.parent = container.transform;
+        public static void DrawPathRemoveOldestPoint(GameObject container, Material pathMaterial)
+        {
+            if (_navigationPath.Count == 0)
+                return;
+            _navigationPath.RemoveAt(0);
+            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
+            lineRenderer.positionCount = _navigationPath.Count;
+            lineRenderer.SetPositions(_navigationPath.ToArray());
         }
     }
 }

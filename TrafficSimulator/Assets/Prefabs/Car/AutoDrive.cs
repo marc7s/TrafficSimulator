@@ -37,6 +37,8 @@ namespace Car {
         [Header("Connections")]
         public Road Road;
         public GameObject NavigationTargetMarker;
+
+        public Material NavigationPathMaterial;
         public int LaneIndex = 0;
         [SerializeField] private GameObject _mesh;
 
@@ -150,9 +152,10 @@ namespace Car {
             {
                 UpdateRandomPath();
                 _navigationPathEndNodeOld = _navigationPathEndNode;
-                if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _target, _navigationPathContainer, NavigationTargetMarker);
                 SetInitialPrevIntersection();
+                if (ShowNavigationPath)
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _target, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition);
+                
             }
         }
 
@@ -465,9 +468,10 @@ namespace Car {
             {
                 UpdateRandomPath();
                 _navigationPathEndNodeOld = _navigationPathEndNode;
-                if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _target, _navigationPathContainer, NavigationTargetMarker);
                 SetInitialPrevIntersection();
+                if (ShowNavigationPath)
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _target, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition);
+                
             }
 
             // Move to the first position of the lane
@@ -510,6 +514,9 @@ namespace Car {
                 _prevIntersectionPosition = Vector3.zero; 
             }
 
+            if (currentNodeNotChecked)
+                Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer, NavigationPathMaterial);
+
             // When the navigation path is empty, get a new one
             if (_navigationPath.Count == 0 && _navigationMode == NavigationMode.RandomNavigationPath)
             {
@@ -542,7 +549,6 @@ namespace Car {
                         if (_target == null)
                             _navigationMode = NavigationMode.Random;
                     }
-                        
                     if (_navigationMode == NavigationMode.Random)
                         _target = _target.RoadNode.Intersection.GetRandomLaneNode();
                     _startNode = _target.First;
@@ -554,7 +560,7 @@ namespace Car {
                _navigationPathEndNodeOld = _navigationPathEndNode;
                 Debug.Log("Reached end of navigation path");
                 if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNodeOld, _navigationPath, _target, _navigationPathContainer, NavigationTargetMarker);
+                    Navigation.DrawNavigationPath(_navigationPathEndNodeOld, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition);
  
             }
 
