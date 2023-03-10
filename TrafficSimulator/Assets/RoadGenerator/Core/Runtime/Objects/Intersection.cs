@@ -791,6 +791,8 @@ namespace RoadGenerator
 
 
             GuideNode guidePath = GetGuidePath(current, finalNode);
+
+            DebugUtility.MarkPositions(guidePath.GetPositions());
             
             // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
             // never to it, once the vehicle passes the control point and reaches the start point, it can never come back to the control point
