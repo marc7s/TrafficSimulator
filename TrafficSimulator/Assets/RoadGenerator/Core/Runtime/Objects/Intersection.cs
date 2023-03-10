@@ -782,9 +782,12 @@ namespace RoadGenerator
                 Debug.LogError("Error, The lane node does not exist in the intersection exit list");
                 return (null, null);
             }
-            
-            LaneNode entrySection = _intersectionEntryNodes[current.ID];
-            LaneNode exitSection = _intersectionExitNodes[finalNode.ID];
+
+            Debug.Log("Entry exit positions");
+            Debug.Log(current.Position);
+            Debug.Log(finalNode.Position);
+
+            Debug.Log("Exit node type: " + finalNode.Type);
 
 
             GuideNode guidePath = GetGuidePath(current, finalNode);
@@ -799,6 +802,10 @@ namespace RoadGenerator
         {
             LaneNode entrySection = _intersectionEntryNodes[start.ID];
             LaneNode exitSection = _intersectionExitNodes[end.ID];
+
+            Debug.Log("Entry exit positions");
+            Debug.Log(entrySection.Position);
+            Debug.Log(exitSection.Position);
 
             LaneNode entryLast = entrySection.Last;
 
@@ -817,10 +824,14 @@ namespace RoadGenerator
 
                 if(currLaneNode == entryLast)
                 {
+                    Debug.Log("Reached the end of the entry section. " + currLaneNode.Next);
                     currLaneNode = exitSection;
+                    Debug.Log(exitSection.Count);
+                    Debug.Log(exitSection.First.Count);
                 }
             }
-
+            
+            curr.Next = end;
             GuideNode guidePath = (GuideNode)curr.First;
 
             return guidePath;
