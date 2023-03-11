@@ -73,7 +73,7 @@ namespace Car {
         private NavigationNode _navigationPathEndNode;
         private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
         private List<LaneNode> _occupiedNodes = new List<LaneNode>();
-        float _lerpSpeed;
+        private float _lerpSpeed;
         private GameObject _navigationPathContainer;
         private LaneNode _target;
         private LineRenderer _targetLineRenderer;
@@ -490,6 +490,7 @@ namespace Car {
             P_MoveToTargetNode();
         }
 
+        // Move the vehicle to the target node
         private void P_MoveToTargetNode()
         {
             Vector3 targetPosition = P_GetLerpPosition(_target.Position);
@@ -502,32 +503,30 @@ namespace Car {
         private void P_UpdateTargetAndCurrent()
         {
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
-            bool _nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
-            bool _nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
+            bool nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
+            bool nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
 
-            if (_nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Stop)
+            // If the next target is an end node and the road end behaviour is stop, decelerate and update current node
+            if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Stop)
             {
                 _currentNode = _target;
-                if (_lerpSpeed > 10f)
-                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.1f);
-                else
-                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.01f);
+                _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, _lerpSpeed > 10f ? 0.1f : 0.01f);
             }
-            else if (_nextTargetHasVehicle)
+            // If the next target has a vehicle, decelerate and update current node
+            else if (nextTargetHasVehicle)
             {
                 _currentNode = _target;
-                if (_lerpSpeed > 10f)
-                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.1f);
-                else
-                    _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, 0.01f);
+                _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, _lerpSpeed > 10f ? 0.1f : 0.01f);
             }
-            else if (_nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop)
+            // If the next target is an end node and the road end behaviour is loop, set target to the start node and update current node
+            else if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop)
             {
                 _currentNode = _target;
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = _startNode;
                 _lerpSpeed = _speed;
             }
+            // If the car is at the target, set the target to the next node and update current node
             else if (transform.position == _target.Position)
             {
                 _currentNode = _target;
@@ -535,6 +534,7 @@ namespace Car {
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = _speed;
             }
+            // Move the vehicle to the target node
             P_MoveToTargetNode();
             UpdateTargetFromNavigation();
         }
@@ -552,7 +552,7 @@ namespace Car {
                 _prevIntersectionPosition = Vector3.zero; 
             }
             
-            // If Navigation mode and navigation path is empty, get a new one
+            // If Navigation mode is RandomPath and navigation path is empty, get a new one
             if (_navigationPath.Count == 0 && _navigationMode == NavigationMode.RandomNavigationPath)
             {
                 UpdateRandomPath();
