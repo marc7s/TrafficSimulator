@@ -78,7 +78,7 @@ namespace RoadGenerator
                 }
             }
             
-            // The target was not found, so set the distance to -1 and return false
+            // The target was not found, so set the distance to 0 and return false
             distance = 0;
             return false;
         }

@@ -10,6 +10,9 @@ namespace RoadGenerator
     {
         [SerializeField] private static GameObject _container;
         [SerializeField] private static GameObject _positionContainer;
+        [SerializeField] private static GameObject _lineContainer;
+        [SerializeField] private static LineRenderer _lineRenderer;
+        [SerializeField] private static GameObject _endPointPrefab;
         [SerializeField] private static GameObject _markerPrefab;
         private static Vector3 _markerPrefabScale = new Vector3(1.5f, 1f, 1f);
         private static Dictionary<string, (Vector3[], Quaternion[])> _groups = new Dictionary<string, (Vector3[], Quaternion[])>();
@@ -18,6 +21,7 @@ namespace RoadGenerator
         private static bool _isSetup = false;
         private const string _debugUtilityContainer = "Debug Utility";
         private const string _positionContainerName = "Markers";
+        private const string _lineContainerName = "Line";
         
         private static void Setup()
         {
@@ -33,7 +37,60 @@ namespace RoadGenerator
             _positionContainer = new GameObject(_positionContainerName);
             _positionContainer.transform.parent = _container.transform;
 
+            _endPointPrefab = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            _endPointPrefab.GetComponent<SphereCollider>().enabled = false;
+            _endPointPrefab.transform.localScale = Vector3.one * 1.3f;
+            _endPointPrefab.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
+
+            _lineContainer = new GameObject(_lineContainerName);
+            _lineRenderer = _lineContainer.AddComponent<LineRenderer>();
+            _lineContainer.transform.parent = _container.transform;
+
             _isSetup = true;
+        }
+
+        /// <summary> Draw a line between all positions in a list </summary>
+        public static void DrawLine(Vector3[] positions, bool markEndPoints = false)
+        {
+            if(!_isSetup)
+                Setup();
+            
+            _lineRenderer.positionCount = positions.Length;
+            _lineRenderer.SetPositions(positions);
+
+
+            if(markEndPoints)
+            {
+                GameObject start = GameObject.Instantiate(_endPointPrefab, positions[0], Quaternion.identity);
+                start.name = "Line start";
+                start.transform.parent = _lineContainer.transform;
+                start.GetComponent<Renderer>().material.SetColor("_Color", Color.green);
+
+                GameObject end = GameObject.Instantiate(_endPointPrefab, positions[positions.Length - 1], Quaternion.identity);
+                end.name = "Line end";
+                end.transform.parent = _lineContainer.transform;
+                end.GetComponent<Renderer>().material.SetColor("_Color", Color.red);
+            }
+        }
+
+        /// <summary> Draw a line between all nodes in a linked list of nodes </summary>
+        // Generic overload for nodes
+        public static void DrawLine<T>(T nodes, bool markEndPoints = false) where T : Node<T>
+        {
+            DrawLine(nodes.GetPositions(), markEndPoints);
+        }
+
+        /// <summary> Draw a line between all positions in a list </summary>
+        // Explicit overload for GuideNodes since GuideNode inherits from LaneNode, which in turn inherits from Node<LaneNode>
+        public static void DrawLine(GuideNode nodes, bool markEndPoints = false)
+        {
+            DrawLine(nodes.GetPositions(), markEndPoints);
+        }
+
+        public static void ClearLine()
+        {
+            _lineRenderer.SetPositions(new Vector3[]{});
+            _lineRenderer.positionCount = 0;
         }
 
         /// <summary> Mark all nodes in a linked list of nodes </summary>
