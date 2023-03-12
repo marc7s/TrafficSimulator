@@ -83,6 +83,7 @@ namespace Car {
         private LaneNode _endNode;
         private LaneNode _currentNode;
         private Vector3? _prevIntersectionPosition;
+        private Dictionary<string, LaneNode> _currentNodeTransitions = new Dictionary<string, LaneNode>();
         private NavigationNode _navigationPathEndNode;
         private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
         private List<LaneNode> _occupiedNodes = new List<LaneNode>();
@@ -400,10 +401,17 @@ namespace Car {
             _brakeDistance = _brakeOffset + (_vehicleController.speed / 2) + _vehicleController.speed * _vehicleController.speed / (_vehicleController.tireFriction * 9.81f);
         }
 
+        private LaneNode Q_GetNextCurrentNode()
+        {
+            bool transitionFound = _currentNodeTransitions.ContainsKey(_currentNode.ID);
+
+            return transitionFound ? _currentNodeTransitions[_currentNode.ID] : GetNextLaneNode(_currentNode, 0, false);
+        }
+
         private void Q_UpdateCurrent()
         {
-            LaneNode nextNode = GetNextLaneNode(_currentNode, 0, false);
-            LaneNode nextNextNode = GetNextLaneNode(_currentNode, 1, false);
+            LaneNode nextNode = Q_GetNextCurrentNode();
+            LaneNode nextNextNode = GetNextLaneNode(nextNode, 0, false);
             bool reachedEnd = !_isEnteringNetwork && _currentNode.Type == RoadNodeType.End;
 
             // Move the current node forward while we are closer to the next node than the current. Also check the node after the next as the next may be further away in intersections where the current road is switched
@@ -411,10 +419,13 @@ namespace Car {
             // This would cause our current position to skip ahead so repositioning is handled separately
             while(!reachedEnd && _status == Status.Driving && (Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position) || Vector3.Distance(transform.position, nextNextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position)))
             {
+                if(_currentNodeTransitions.ContainsKey(_currentNode.ID))
+                    _currentNodeTransitions.Remove(_currentNode.ID);
+                
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _currentNode = nextNode;
-                nextNode = GetNextLaneNode(_currentNode, 0, false);
-                nextNextNode = GetNextLaneNode(_currentNode, 1, false);
+                nextNode = Q_GetNextCurrentNode();
+                nextNextNode = GetNextLaneNode(nextNode, 0, false);
                 reachedEnd = reachedEnd || (!_isEnteringNetwork && _currentNode.Type == RoadNodeType.End);
             }
 
@@ -560,6 +571,7 @@ namespace Car {
             
             if (_target.Type == RoadNodeType.JunctionEdge && currentNodeAlreadyChecked)
             {
+                LaneNode entryNode = _target;
                 // Only check the intersection if the vehicle hasn't already just checked it
                 bool intersectionAlreadyChecked = _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
                 if (intersectionAlreadyChecked)
@@ -577,13 +589,11 @@ namespace Car {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetRandomLaneNode();
                     }
                     
-                    _currentNode = _target;
-                    _brakeTarget = _currentNode;
+                    _currentNodeTransitions.Add(entryNode.ID, _target);
+                    _brakeTarget = _target;
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
                 }
             }
-
-            DebugUtility.MarkPositions(new Vector3[]{_startNode.Position, _endNode.Position});
             
             _previousTarget = _target;
         }
