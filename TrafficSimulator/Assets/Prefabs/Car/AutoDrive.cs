@@ -92,6 +92,7 @@ namespace Car {
         private float _originalMaxSpeed;
         private VehicleController _vehicleController;
         
+        private TrafficLight _currentTrafficLight = null;
         
         void Start()
         {
@@ -313,8 +314,14 @@ namespace Car {
             // If the vehicle is driving and the target is in front of us and we are close enough
             else if (_status == Status.Driving && dot > 0 && direction.magnitude <= _targetLookaheadDistance)
             {
+                LaneNode nextNode = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
+                if (_target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red)
+                {
+                    Debug.Log("Traffic light is red, stopping...");
+                    return;
+                }
                 // Set the target to the next point in the lane
-                _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
+                _target = nextNode;
             }
         }
 
@@ -336,8 +343,8 @@ namespace Car {
                 _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
                 _vehicleController.throttleInput = 0f;
             }
-            
-           UpdateTargetFromNavigation();
+            if(!(_target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red))            
+                UpdateTargetFromNavigation();
         }
 
         private void Q_UpdateBrakeTarget()
@@ -353,6 +360,8 @@ namespace Car {
 
         private bool ShouldAdvanceBrakeTarget()
         {
+            if (_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red)
+                return false;    
             float distanceToBrakeTarget;
             bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, true);
             
@@ -534,6 +543,7 @@ namespace Car {
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = _speed;
             }
+
             // Move the vehicle to the target node
             P_MoveToTargetNode();
             UpdateTargetFromNavigation();
@@ -574,6 +584,9 @@ namespace Car {
                         
                     if (_navigationMode == NavigationMode.Random)
                         _target = _target.RoadNode.Intersection.GetRandomLaneNode();
+                    _brakeTarget = _target;
+                    // TEMPORARY, when smooth intersection turning is implemented this will be removed
+                    _currentNode = _target;
                     _startNode = _target.First;
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
                 }
