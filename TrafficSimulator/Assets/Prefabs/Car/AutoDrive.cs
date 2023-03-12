@@ -45,7 +45,8 @@ namespace Car {
         [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
-        [SerializeField] private NavigationMode _navigationMode = NavigationMode.Disabled;
+        [SerializeField][HideInInspector] private NavigationMode _navigationMode = NavigationMode.Disabled;
+        [SerializeField] private NavigationMode _startNavigationMode = NavigationMode.Disabled;
 
         [Header("Quality mode settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -132,7 +133,7 @@ namespace Car {
             if (_mode == DrivingMode.Quality)
             {
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                Q_TeleportToLane();
+                TeleportToLane();
                 
                 _brakeTarget = _currentNode;
                 _repositioningTarget = _currentNode;
@@ -156,6 +157,7 @@ namespace Car {
                 UpdateRandomPath();
                 SetInitialPrevIntersection();
             }
+            _navigationMode = _startNavigationMode;
         }
 
         void Update()
@@ -229,7 +231,7 @@ namespace Car {
             return nodes;
         }
 
-        private void Q_TeleportToLane()
+        private void TeleportToLane()
         {
             // Move it to the current position, offset in the opposite direction of the lane
             transform.position = _currentNode.Position - (2 * (_currentNode.Rotation * Vector3.forward).normalized);
@@ -521,10 +523,18 @@ namespace Car {
             // If the next target is an end node and the road end behaviour is loop, set target to the start node and update current node
             else if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop)
             {
-                _currentNode = _target;
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = _startNode;
+                _currentNode = _target;
                 _lerpSpeed = _speed;
+                TeleportToLane();
+                _navigationMode = _startNavigationMode;
+                if (_navigationMode == NavigationMode.RandomNavigationPath)
+                {
+                _prevIntersectionPosition = null;
+                UpdateRandomPath();
+                }
+
             }
             // If the car is at the target, set the target to the next node and update current node
             else if (transform.position == _target.Position)
