@@ -51,6 +51,7 @@ namespace Car {
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
         [SerializeField] [Tooltip("How far from the stopping point the vehicle will come to a full stop at")] private float _brakeOffset = 5f;
         [SerializeField] private float _maxRepositioningSpeed = 5f;
+        [SerializeField] private float _maxReverseDistance = 20f;
         [SerializeField] [Range(0, 20f)] [Tooltip("The distance the vehicle will look ahead to find the next target. This value will be multiplied by the current speed to increase the lookahead distance when the vehicle is going faster")] private float _baseTLD = 10f;
         [SerializeField] [Tooltip("This constant is used to divide the speed multiplier when calculating the new TLD. Higher value = shorter TLD. Lower value = longer TLD")] private int _TLDSpeedDivider = 20;
         [SerializeField] [Tooltip("This constant determines the offset to extend the bounds the vehicle uses to occupy nodes")] private float _vehicleOccupancyOffset = 3f;
@@ -236,9 +237,16 @@ namespace Car {
             // Calculate the direction, which is the vector from our current position to the target
             Vector3 direction = Q_GetTarget().Position - transform.position;
 
+            // Calculate the dot product between our forward vector and the direction. If the target is in front of us, the dot product will be positive. If it's behind us, it will be negative
+            float dot = Vector3.Dot(transform.forward, direction.normalized);
+
             // Calculate the desired steering angle as the angle between our forward vector and the direction to the target, divided by 90 to get a value between -1 and 1 if it is in front of us.
             // If it is behind us, the value will be between (-1, -2) or (1, 2) respectively which will be clamped to +-1 by the SetTurnAnglePercent method
             float steeringAngle = Vector3.SignedAngle(transform.forward, direction.normalized, Vector3.up) / 90;
+
+            // If the target is directly behind, steer slightly to the right to avoid continuing away from the target
+            if(steeringAngle == 0 && dot < 0)
+                steeringAngle = 0.1f;
 
             // Steer smoothly from the current steering angle to the desired
             _vehicleController.steerInput = Vector3.MoveTowards(new Vector3(_vehicleController.steerInput, 0, 0), new Vector3(steeringAngle, 0, 0), Time.deltaTime).x;
@@ -278,9 +286,8 @@ namespace Car {
             // If the vehicle is currently repositioning
             else if (_status == Status.Repositioning) 
             {
-                // Allow the vehicle to accelerate and reverse, whatever takes it to the target faster.
-                // It will accelerate if the target is in front, and reverse if it's behind
-                _vehicleController.throttleInput = dot > 0 ? 1 : -1;
+                // Allow the vehicle to accelerate and reverse. It will only reverse if the target is behind it, and within reversing distance
+                _vehicleController.throttleInput = Vector3.Distance(transform.position, Q_GetTarget().Position) < _maxReverseDistance && dot < 0 ? -1 : 1;
                 
                 // If the target is in front of us and we are close enough we have successfully repositioned
                 if (dot > 0 && direction.magnitude <= _targetLookaheadDistance - 1f) 
