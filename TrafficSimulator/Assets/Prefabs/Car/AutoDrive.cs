@@ -243,11 +243,15 @@ namespace Car {
 
         private void Q_TeleportToLane()
         {
-            // Move it to the current position, offset in the opposite direction of the lane
-            transform.position = _currentNode.Position - (2 * (_currentNode.Rotation * Vector3.forward).normalized);
-            
             // Rotate it to face the current position
-            transform.rotation = _currentNode.Rotation;
+            _vehicleController.cachedRigidbody.MoveRotation(_currentNode.Rotation);
+            
+            // Move it to the current position, offset in the opposite direction of the lane
+            _vehicleController.cachedRigidbody.MovePosition(_currentNode.Position - (2 * (_currentNode.Rotation * Vector3.forward).normalized));
+            
+            // Reset velocity and angular velocity
+            _vehicleController.cachedRigidbody.velocity = Vector3.zero;
+            _vehicleController.cachedRigidbody.angularVelocity = Vector3.zero;
         }
 
         private void Q_SteerTowardsTarget()
@@ -399,16 +403,18 @@ namespace Car {
         private void Q_UpdateCurrent()
         {
             LaneNode nextNode = GetNextLaneNode(_currentNode, 0, false);
+            LaneNode nextNextNode = GetNextLaneNode(_currentNode, 1, false);
             bool reachedEnd = !_isEnteringNetwork && _currentNode.Type == RoadNodeType.End;
 
-            // Move the current node forward while we are closer to the next node than the current
+            // Move the current node forward while we are closer to the next node than the current. Also check the node after the next as the next may be further away in intersections where the current road is switched
             // Note: only updates while driving. During repositioning the vehicle will be closer to the next node (the repositioning target) halfway through the repositioning
             // This would cause our current position to skip ahead so repositioning is handled separately
-            while(!reachedEnd && _status == Status.Driving && Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position))
+            while(!reachedEnd && _status == Status.Driving && (Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position) || Vector3.Distance(transform.position, nextNextNode.Position) <= Vector3.Distance(transform.position, _currentNode.Position)))
             {
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _currentNode = nextNode;
                 nextNode = GetNextLaneNode(_currentNode, 0, false);
+                nextNextNode = GetNextLaneNode(_currentNode, 1, false);
                 reachedEnd = reachedEnd || (!_isEnteringNetwork && _currentNode.Type == RoadNodeType.End);
             }
 
