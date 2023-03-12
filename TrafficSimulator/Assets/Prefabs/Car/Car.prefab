@@ -1854,11 +1854,11 @@ MonoBehaviour:
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
   LaneIndex: 0
   _mesh: {fileID: 1577973480899245783}
-  _mode: 1
+  _mode: 0
   _roadEndBehaviour: 1
   ShowNavigationPath: 0
   _navigationMode: 0
-  _showTargetLines: 0
+  _showTargetLines: 4
   _brakeOffset: 5
   _maxRepositioningSpeed: 5
   _baseTLD: 10
