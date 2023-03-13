@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+
 public class MenuController : MonoBehaviour
 {
     private UIDocument _doc;
     private VisualElement _displayedContainer;
+    private OverlayController _overlayController;
+
     // Start Menu UI
     private VisualElement _settingsContainer;
     private Button _startButton;
@@ -35,6 +38,9 @@ public class MenuController : MonoBehaviour
         _doc = GetComponent<UIDocument>();
         // Set the displayed container to the start menu
         _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
+
+        // Get the overlay controller
+        _overlayController = GameObject.Find("UIOverlay").GetComponent<OverlayController>();
 
         // Start Menu UI
         _startButton = _doc.rootVisualElement.Q<Button>("StartButton");
@@ -73,10 +79,12 @@ public class MenuController : MonoBehaviour
         _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
         SetFPSVisibility(_showFPS);
     }
+
+    // Hide Menu UI and activate Overlay UI
     private void StartButtonOnClicked()
     {
-        // TODO switch to game scene
-        Debug.Log("Start");
+        _doc.rootVisualElement.visible = false;
+        _overlayController.Enable();
     }
 
     private void SettingsButtonOnClicked()
@@ -159,5 +167,10 @@ public class MenuController : MonoBehaviour
         // FPS counter
         if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
             DisplayFPS(1f / Time.unscaledDeltaTime);
+    }
+
+    public void Enable()
+    {
+        _doc.rootVisualElement.visible = true;
     }
 }
