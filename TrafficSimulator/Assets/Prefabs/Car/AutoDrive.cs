@@ -593,6 +593,9 @@ namespace Car {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetRandomLaneNode();
                     }
                     
+                    if(_currentNodeTransitions.ContainsKey(entryNode.ID))
+                        _currentNodeTransitions.Remove(entryNode.ID);
+
                     _currentNodeTransitions.Add(entryNode.ID, _target);
                     _brakeTarget = _target;
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
