@@ -619,7 +619,7 @@ namespace Car {
 
         private Vector3 P_GetLerpPosition(Vector3 target)
         {
-            return Vector3.MoveTowards(transform.position, target, _speed * Time.deltaTime);
+            return Vector3.MoveTowards(transform.position, target + Vector3.up * 0.1f, _speed * Time.deltaTime);
         }
         private Quaternion P_GetLerpQuaternion(Quaternion target)
         {
