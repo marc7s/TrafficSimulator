@@ -703,6 +703,7 @@ namespace RoadGenerator
                 }
             }
         }
+        
         private void CreateEntryIntersectionLaneNodes(LaneNode start, LaneNode intersectionNode)
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(start.RoadNode, intersectionNode.RoadNode);

@@ -26,28 +26,36 @@ namespace RoadGenerator
         
         private static void Setup()
         {
+            // Remove an existing container if it is found
             GameObject existingContainer = GameObject.Find(_debugUtilityContainer);
             if(existingContainer != null)
                 GameObject.DestroyImmediate(existingContainer);
 
+            // Since creating game objects cannot be done without spawning them in the scene,
+            // this is used to move the "prefabs" out from visibility
             Vector3 farAway = new Vector3(0, -1000, 0);
 
+            // Create a prefab for markers that are cuboids
             _markerPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
             _markerPrefab.GetComponent<BoxCollider>().enabled = false;
             _markerPrefab.transform.localScale = _markerPrefabScale;
             _markerPrefab.transform.position = farAway;
 
+            // Create an empty container for all debug utility objects
             _container = new GameObject(_debugUtilityContainer);
             
+            // Create an empty container for all markers
             _positionContainer = new GameObject(_positionContainerName);
             _positionContainer.transform.parent = _container.transform;
 
+            // Create a prefab for line end points that are spheres
             _endPointPrefab = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             _endPointPrefab.GetComponent<SphereCollider>().enabled = false;
             _endPointPrefab.transform.localScale = _endPointPrefabScale;
             _endPointPrefab.transform.position = farAway;
             _endPointPrefab.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
 
+            // Create an empty container for the line
             _lineContainer = new GameObject(_lineContainerName);
             _lineRenderer = _lineContainer.AddComponent<LineRenderer>();
             _lineRenderer.positionCount = 0;

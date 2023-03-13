@@ -8,7 +8,6 @@ namespace Examples
     {
         private Dictionary<string, (Vector3[], Quaternion[])> _positionGroups = new Dictionary<string, (Vector3[], Quaternion[])>();
         private Vector3[] _linePositions = new Vector3[]{ Vector3.zero, new Vector3(10, 5, 10), new Vector3(15, 0, 10) };
-
         
         private void Start()
         {
@@ -32,10 +31,6 @@ namespace Examples
 
             DebugUtility.AddMarkGroups(_positionGroups);
             DebugUtility.DrawLine(_linePositions, true);
-        }
-        private void Update()
-        {
-
         }
     }
 }
