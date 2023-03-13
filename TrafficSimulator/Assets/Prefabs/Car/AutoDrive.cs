@@ -531,8 +531,8 @@ namespace Car {
                 _navigationMode = _startNavigationMode;
                 if (_navigationMode == NavigationMode.RandomNavigationPath)
                 {
-                _prevIntersectionPosition = null;
-                UpdateRandomPath();
+                    _prevIntersectionPosition = null;
+                    UpdateRandomPath();
                 }
             }
             // If the car is at the target, set the target to the next node and update current node
