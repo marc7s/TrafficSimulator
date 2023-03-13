@@ -63,7 +63,8 @@ namespace RoadGenerator
                 foreach (NavigationNodeEdge edge in current.GraphNode.Edges)
                 {
                     bool isStartNodeUturn = current == start && edge.EndNavigationNode.RoadNode.Position == startNode.StartNavigationNode.RoadNode.Position;
-                    bool isUTurn = edge.EndNavigationNode.RoadNode.Position == current.PreviousNode?.GraphNode.RoadNode.Position || isStartNodeUturn;
+
+                    bool isUTurn = isStartNodeUturn || (current.PreviousNode != null && edge.EndNavigationNode.RoadNode.Position == current.PreviousNode.GraphNode.RoadNode.Position);
                     // If the edge is a u turn, skip it
                     if (isUTurn)
                         continue;
