@@ -69,6 +69,7 @@ namespace Car {
 
         // Quality variables
         private float _targetLookaheadDistance = 0;
+        private const float _intersectionLookaheadDistance = 5f;
         private float _brakeDistance = 0;
         private LaneNode _target;
         private LaneNode _previousTarget;
@@ -276,14 +277,17 @@ namespace Car {
         }
         private void Q_UpdateTarget()
         {   
+            LaneNode target = Q_GetTarget();
+            
             // Calculate the direction, which is the vector from our current position to the target
-            Vector3 direction = Q_GetTarget().Position - transform.position;
+            Vector3 direction = target.Position - transform.position;
 
             // Calculate the dot product between our forward vector and the direction. If the target is in front of us, the dot product will be positive. If it's behind us, it will be negative
             float dot = Vector3.Dot(transform.forward, direction.normalized);
 
-            // Set new taget look ahead distance based on the current speed, if the speed is very low, use the base look ahead distance (multiplied by 1)
-            _targetLookaheadDistance = Math.Max(_baseTLD * _vehicleController.speed / _TLDSpeedDivider, _baseTLD);
+            // Set new taget look ahead distance based on the current speed. if the speed is very low, use the base look ahead distance (multiplied by 1)
+            // If the vehicle is driving in an intersection, instead use a constant small lookahead distance for precise steering
+            _targetLookaheadDistance = target.RoadNode.Intersection != null ? _intersectionLookaheadDistance : Math.Max(_baseTLD * _vehicleController.speed / _TLDSpeedDivider, _baseTLD);
 
             // If the vehicle is driving and the target is behind us and too far away
             if (_status == Status.Driving && dot < 0 && direction.magnitude > _targetLookaheadDistance + 1f)
