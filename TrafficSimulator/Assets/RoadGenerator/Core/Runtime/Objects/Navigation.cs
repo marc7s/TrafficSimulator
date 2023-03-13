@@ -121,7 +121,6 @@ namespace RoadGenerator
                 if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
                     return path;
             }
-           // Debug.LogError("Could not generate a random navigation path");
             nodeToFind = null;
             return new Stack<NavigationNodeEdge>();
         }
