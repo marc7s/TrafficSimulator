@@ -154,7 +154,7 @@ namespace Car {
                 Rigidbody rigidbody = GetComponent<Rigidbody>();
                 rigidbody.isKinematic = false;
                 rigidbody.useGravity = false;
-                TeleportToFirstPosition();
+                P_TeleportToFirstPosition();
             }
             
             if (_navigationMode == NavigationMode.RandomNavigationPath)
@@ -537,7 +537,7 @@ namespace Car {
                 _prevIntersectionPosition = _target.RoadNode.Prev.Intersection.IntersectionPosition;           
         }
 
-        private void TeleportToFirstPosition()
+        private void P_TeleportToFirstPosition()
         {
             if (_navigationMode == NavigationMode.RandomNavigationPath)
             {
@@ -589,7 +589,7 @@ namespace Car {
                 _currentNode = _target;
                 _lerpSpeed = _speed;
                 _navigationMode = _originalNavigationMode;
-                TeleportToFirstPosition();
+                P_TeleportToFirstPosition();
             }
             // If the car is at the target, set the target to the next node and update current node
             else if (P_HasReachedTarget())
