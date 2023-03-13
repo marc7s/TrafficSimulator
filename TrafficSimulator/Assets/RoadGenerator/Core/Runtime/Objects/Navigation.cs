@@ -41,9 +41,9 @@ namespace RoadGenerator
     {
         private const int MAX_ITERATIONS = 100;
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
-        public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNode startNode, NavigationNode endNode)
+        public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNodeEdge startNode, NavigationNode endNode)
         {
-            AStarNode start = new AStarNode(startNode, null, null, 0, 0);
+            AStarNode start = new AStarNode(startNode.EndNavigationNode, null, null, 0, 0);
             AStarNode target = new AStarNode(endNode, null, null, 0, 0);
             
             Dictionary<string, double> costMap = new Dictionary<string, double>();
@@ -62,6 +62,13 @@ namespace RoadGenerator
                 // Check all edges from the current node
                 foreach (NavigationNodeEdge edge in current.GraphNode.Edges)
                 {
+                    bool isStartNodeUturn = current == start && edge.EndNavigationNode.RoadNode.Position == startNode.StartNavigationNode.RoadNode.Position;
+
+                    bool isUTurn = isStartNodeUturn || edge.EndNavigationNode.RoadNode.Position == current.PreviousNode?.GraphNode.RoadNode.Position;
+                    // If the edge is a u turn, skip it
+                    if (isUTurn)
+                        continue;
+
                     double costToNode = current.RouteCost + edge.Cost;
                     string pos = edge.EndNavigationNode.RoadNode.Position.ToString();
                     // If the cost to the end node is lower than the current cost, update the cost and add the node to the queue
@@ -108,14 +115,13 @@ namespace RoadGenerator
                 int randomIndex = random.Next(0, nodeList.Count);
                 NavigationNode targetNode = nodeList[randomIndex];
                 nodeToFind = targetNode;
-                Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge.EndNavigationNode, targetNode);
+                Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge, targetNode);
+                if (path == null)
+                    continue;
                 // Trying to find a path that is not too short
                 if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
                     return path;
             }
-            Debug.LogError("Could not generate a random navigation path");
-
-            // Switch over to random navigation mode
             nodeToFind = null;
             return new Stack<NavigationNodeEdge>();
         }
