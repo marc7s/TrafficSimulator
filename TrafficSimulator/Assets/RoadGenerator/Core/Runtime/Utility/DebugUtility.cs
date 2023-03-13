@@ -15,6 +15,7 @@ namespace RoadGenerator
         [SerializeField] private static GameObject _endPointPrefab;
         [SerializeField] private static GameObject _markerPrefab;
         private static Vector3 _markerPrefabScale = new Vector3(1.5f, 1f, 1f);
+        private static Vector3 _endPointPrefabScale = Vector3.one * 1.3f;
         private static Dictionary<string, (Vector3[], Quaternion[])> _groups = new Dictionary<string, (Vector3[], Quaternion[])>();
         private static bool _nextGroupPressed = false;
         private static int _currentGroup = 0;
@@ -29,8 +30,12 @@ namespace RoadGenerator
             if(existingContainer != null)
                 GameObject.DestroyImmediate(existingContainer);
 
+            Vector3 farAway = new Vector3(0, -1000, 0);
+
             _markerPrefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
             _markerPrefab.GetComponent<BoxCollider>().enabled = false;
+            _markerPrefab.transform.localScale = _markerPrefabScale;
+            _markerPrefab.transform.position = farAway;
 
             _container = new GameObject(_debugUtilityContainer);
             
@@ -39,11 +44,13 @@ namespace RoadGenerator
 
             _endPointPrefab = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             _endPointPrefab.GetComponent<SphereCollider>().enabled = false;
-            _endPointPrefab.transform.localScale = Vector3.one * 1.3f;
+            _endPointPrefab.transform.localScale = _endPointPrefabScale;
+            _endPointPrefab.transform.position = farAway;
             _endPointPrefab.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
 
             _lineContainer = new GameObject(_lineContainerName);
             _lineRenderer = _lineContainer.AddComponent<LineRenderer>();
+            _lineRenderer.positionCount = 0;
             _lineContainer.transform.parent = _container.transform;
 
             _isSetup = true;
