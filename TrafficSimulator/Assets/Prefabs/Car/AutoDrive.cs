@@ -602,6 +602,7 @@ namespace Car {
 
         private bool P_HasReachedTarget()
         {
+            // Since the target position will be lifted in performance mode, we need to compare the XZ coordinates
             Vector3 targetPosition = _target.Position;
             targetPosition.y = transform.position.y;
             
@@ -698,7 +699,5 @@ namespace Car {
         {
             get => _totalDistance;
         }
-        
     }
 }
-
