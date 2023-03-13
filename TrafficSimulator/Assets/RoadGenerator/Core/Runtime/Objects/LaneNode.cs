@@ -6,9 +6,9 @@ namespace RoadGenerator
     /// <summary>Represents a single node in a lane</summary>
     public class LaneNode : Node<LaneNode>
     {
-        private RoadNode _roadNode;
-        private LaneSide _laneSide;
-        private Vehicle _vehicle;
+        protected RoadNode _roadNode;
+        protected LaneSide _laneSide;
+        protected Vehicle _vehicle;
 
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
         public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, roadNode, null, null, distanceToPrevNode){}
@@ -78,7 +78,7 @@ namespace RoadGenerator
                 }
             }
             
-            // The target was not found, so set the distance to -1 and return false
+            // The target was not found, so set the distance to 0 and return false
             distance = 0;
             return false;
         }
@@ -88,8 +88,13 @@ namespace RoadGenerator
         {
             return _laneSide == LaneSide.Primary ? _roadNode.PrimaryNavigationNodeEdge : _roadNode.SecondaryNavigationNodeEdge;
         }
+
+        public LaneSide LaneSide
+        {
+            get => _laneSide;
+        }
         
-        public RoadNode RoadNode
+        public virtual RoadNode RoadNode
         {
             get => _roadNode;
         }
@@ -97,7 +102,7 @@ namespace RoadGenerator
         {
             get => _roadNode.Type;
         }
-        public Vehicle Vehicle
+        public virtual Vehicle Vehicle
         {
             get => _vehicle;
         }
@@ -107,7 +112,7 @@ namespace RoadGenerator
         }
         
         /// <summary>Tries to assign a vehicle to this node. Returns `true` if it succeded, `false` if there is already a vehicle assigned</summary>
-        public bool SetVehicle(Vehicle vehicle)
+        public virtual bool SetVehicle(Vehicle vehicle)
         {
             if(_vehicle == null)
             {
@@ -118,7 +123,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Tries to unset a vehicle from this node. Returns `true` if it succeded, `false` if either no vehicle is assigned, or a different vehicle is assigned</summary>
-        public bool UnsetVehicle(Vehicle vehicle)
+        public virtual bool UnsetVehicle(Vehicle vehicle)
         {
             if(_vehicle == vehicle)
             {

@@ -135,10 +135,5 @@ namespace RoadGenerator
             GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
             marker.transform.parent = container.transform;
         }
-
-        private static void PlaceNavigationTargetMarker(UnityEngine.Object instance)
-        {
-
-        }
     }
 }
