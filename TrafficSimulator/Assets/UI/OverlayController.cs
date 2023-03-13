@@ -21,12 +21,10 @@ public class OverlayController : MonoBehaviour
 
     // Clock Buttons
     private Button _rewindButton;
-    private Button _pausButton;
+    private Button _pauseButton;
     private Button _fastForwardButton;
 
-
     private Label _clockLabel;
-
 
     private const string FULLSCREEN = "Fullscreen";
 
@@ -61,6 +59,15 @@ public class OverlayController : MonoBehaviour
 
         _editorButton = _doc.rootVisualElement.Q<Button>("Editor");
         _editorButton.clicked += EditorButtonOnClicked;
+
+        _rewindButton = _doc.rootVisualElement.Q<Button>("Rewind");
+        _rewindButton.clicked += RewindButtonOnClicked;
+
+        _pauseButton = _doc.rootVisualElement.Q<Button>("Pause");
+        _pauseButton.clicked += PauseButtonOnClicked;
+
+        _fastForwardButton = _doc.rootVisualElement.Q<Button>("Fastforward");
+        _fastForwardButton.clicked += FastForwardButtonOnClicked;
 
         _doc.rootVisualElement.visible = false;
         
@@ -100,6 +107,21 @@ public class OverlayController : MonoBehaviour
     private void EditorButtonOnClicked()
     {
         Debug.Log("Editor");
+    }
+
+    private void RewindButtonOnClicked()
+    {
+        Debug.Log("Rewind");
+    }
+
+    private void PauseButtonOnClicked()
+    {
+        Debug.Log("Pause");
+    }
+
+    private void FastForwardButtonOnClicked()
+    {
+        Debug.Log("Fastforward");
     }
 
     void Update()
