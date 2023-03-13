@@ -524,9 +524,8 @@ namespace Car {
             else if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop)
             {
                 _totalDistance += _currentNode.DistanceToPrevNode;
-                _currentNode = _target;
                 _target = _startNode;
-
+                _currentNode = _target;
                 _lerpSpeed = _speed;
                 P_MoveToFirstPosition();
                 _navigationMode = _startNavigationMode;
@@ -535,7 +534,6 @@ namespace Car {
                 _prevIntersectionPosition = null;
                 UpdateRandomPath();
                 }
-
             }
             // If the car is at the target, set the target to the next node and update current node
             else if (transform.position == _target.Position)
