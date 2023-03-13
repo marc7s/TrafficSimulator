@@ -133,7 +133,7 @@ namespace Car {
             if (_mode == DrivingMode.Quality)
             {
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                TeleportToLane();
+                Q_TeleportToLane();
                 
                 _brakeTarget = _currentNode;
                 _repositioningTarget = _currentNode;
@@ -231,7 +231,7 @@ namespace Car {
             return nodes;
         }
 
-        private void TeleportToLane()
+        private void Q_TeleportToLane()
         {
             // Move it to the current position, offset in the opposite direction of the lane
             transform.position = _currentNode.Position - (2 * (_currentNode.Rotation * Vector3.forward).normalized);
@@ -524,10 +524,11 @@ namespace Car {
             else if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop)
             {
                 _totalDistance += _currentNode.DistanceToPrevNode;
-                _target = _startNode;
                 _currentNode = _target;
+                _target = _startNode;
+
                 _lerpSpeed = _speed;
-                TeleportToLane();
+                P_MoveToFirstPosition();
                 _navigationMode = _startNavigationMode;
                 if (_navigationMode == NavigationMode.RandomNavigationPath)
                 {
