@@ -50,8 +50,8 @@ namespace RoadGenerator
         [ReadOnly] public string ID;
 
         [Header("Connections")]
-        public GameObject GuideRoadNodePrefab;
-        public GameObject GuideLaneNodePrefab;
+        [SerializeField] private GameObject _guideRoadNodePrefab;
+        [SerializeField] private GameObject _guideLaneNodePrefab;
 
         [Header("Intersection settings")]
         [SerializeField][Range(0, 0.8f)] float _stretchFactor = 0.4f;
@@ -603,7 +603,7 @@ namespace RoadGenerator
                     int i = 0;
                     while(curr != null && curr.Type == RoadNodeType.IntersectionGuide)
                     {
-                        GameObject roadNodeObject = Instantiate(GuideLaneNodePrefab, curr.Position, curr.Rotation, _guideNodeContainer.transform);
+                        GameObject roadNodeObject = Instantiate(_guideLaneNodePrefab, curr.Position, curr.Rotation, _guideNodeContainer.transform);
                         roadNodeObject.name = i + " " + curr.Type;
 
                         curr = curr.Next;
@@ -618,7 +618,7 @@ namespace RoadGenerator
                     int i = 0;
                     while(curr != null && curr.Type == RoadNodeType.IntersectionGuide)
                     {
-                        GameObject roadNodeObject = Instantiate(GuideRoadNodePrefab, curr.Position, curr.Rotation, _guideNodeContainer.transform);
+                        GameObject roadNodeObject = Instantiate(_guideRoadNodePrefab, curr.Position, curr.Rotation, _guideNodeContainer.transform);
                         roadNodeObject.name = i + " " + curr.Type;
 
                         curr = curr.Next;
@@ -755,9 +755,7 @@ namespace RoadGenerator
             
             const float roadNodeDistance = 3f;
             
-            RoadNode head = CreateEvenlySpacedGuideRoadNodes(start.Position, end.Position, roadNodeDistance);
-            if(head == null)
-                head = start;
+            RoadNode head = CreateEvenlySpacedGuideRoadNodes(start.Position, end.Position, roadNodeDistance) ?? start;
 
             head.Intersection = this;
             _intersectionGuideRoadNodes.Add(start.ID, head);
@@ -785,7 +783,7 @@ namespace RoadGenerator
                     prev.Next = curr;
                 prev = curr;
             }
-            return curr == null ? null : curr.First;
+            return curr?.First;
         }
 
         /// <summary> Get a random lane node that leads out of the intersection. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
