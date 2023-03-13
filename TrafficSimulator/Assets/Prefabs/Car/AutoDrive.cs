@@ -588,7 +588,7 @@ namespace Car {
                 _target = _startNode;
                 _currentNode = _target;
                 _lerpSpeed = _speed;
-                P_MoveToFirstPosition();
+                TeleportToFirstPosition();
                 _navigationMode = _startNavigationMode;
                 if (_navigationMode == NavigationMode.RandomNavigationPath)
                 {
