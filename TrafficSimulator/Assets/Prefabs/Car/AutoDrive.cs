@@ -47,7 +47,7 @@ namespace Car {
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
         [SerializeField][HideInInspector] private NavigationMode _navigationMode = NavigationMode.Disabled;
-        [SerializeField] private NavigationMode _startNavigationMode = NavigationMode.Disabled;
+        [SerializeField] private NavigationMode _originalNavigationMode = NavigationMode.Disabled;
 
         [Header("Quality mode settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -162,7 +162,7 @@ namespace Car {
                 UpdateRandomPath();
                 SetInitialPrevIntersection();
             }
-            _navigationMode = _startNavigationMode;
+            _navigationMode = _originalNavigationMode;
         }
 
         void Update()
@@ -200,7 +200,7 @@ namespace Car {
             _isEnteringNetwork = true;
 
             Q_TeleportToLane();
-
+            _navigationMode = _originalNavigationMode;
             if (_navigationMode == NavigationMode.RandomNavigationPath)
             {
                 UpdateRandomPath();
@@ -588,13 +588,8 @@ namespace Car {
                 _target = _startNode;
                 _currentNode = _target;
                 _lerpSpeed = _speed;
+                _navigationMode = _originalNavigationMode;
                 TeleportToFirstPosition();
-                _navigationMode = _startNavigationMode;
-                if (_navigationMode == NavigationMode.RandomNavigationPath)
-                {
-                    _prevIntersectionPosition = null;
-                    UpdateRandomPath();
-                }
             }
             // If the car is at the target, set the target to the next node and update current node
             else if (P_HasReachedTarget())
