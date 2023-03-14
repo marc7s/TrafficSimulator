@@ -438,36 +438,28 @@ namespace Car {
             switch (_showTargetLines)
             {
                 case ShowTargetLines.Target:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ Q_GetTarget().Position, transform.position });
                     _targetLineRenderer.positionCount = 2;
+                    _targetLineRenderer.SetPositions(new Vector3[]{ Q_GetTarget().Position, transform.position });
                     break;
                 case ShowTargetLines.BrakeTarget:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position });
                     _targetLineRenderer.positionCount = 2;
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position });
                     break;
                 case ShowTargetLines.CurrentPosition:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _currentNode.Position, transform.position });
                     _targetLineRenderer.positionCount = 2;
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _currentNode.Position, transform.position });
                     break;
                 case ShowTargetLines.OccupiedNodes:
-                    _targetLineRenderer.SetPositions(_occupiedNodes.Select(x => x.Position).ToArray());
                     _targetLineRenderer.positionCount = _occupiedNodes.Count;
+                    _targetLineRenderer.SetPositions( _occupiedNodes.Select(x => x.Position).ToArray() );
                     break;
                 case ShowTargetLines.All:
-                    if (_mode == DrivingMode.Performance)
-                    {
-                        _targetLineRenderer.SetPositions(new Vector3[]{_target.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
-                        _targetLineRenderer.positionCount = 1 + _occupiedNodes.Count;
-                        break;
-                    }
-                    else 
-                    {
-                        _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, _currentNode.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
-                        _targetLineRenderer.positionCount = 3 + _occupiedNodes.Count;
-                        break;
-                    }
-            }
+                    _targetLineRenderer.positionCount = 3 + _occupiedNodes.Count;
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position, _currentNode.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
+                    break;
+            }  
         }
+        
         private void SetInitialPrevIntersection()
         {
             _prevIntersectionPosition = null;
@@ -531,6 +523,7 @@ namespace Car {
             // If the vehicle is closer to the target than the brake distance, start decelerating
             if (distanceToBrakeTarget <= _brakeDistance)
             {
+                _currentNode = _target;
                 _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, 0, 20 * Time.deltaTime);
             } else
             {
