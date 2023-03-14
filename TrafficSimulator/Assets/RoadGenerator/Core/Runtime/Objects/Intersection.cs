@@ -114,6 +114,7 @@ namespace RoadGenerator
             AssignMaterials();
             CreateIntersectionMesh();
             // If intersection doesn't have a container, create one
+            _flowContainer = GameObject.Find("FlowContainer");
             if(_flowContainer != null)
                 DestroyImmediate(_flowContainer);
             CreateIntersectionContainer();
