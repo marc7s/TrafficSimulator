@@ -181,13 +181,14 @@ namespace RoadGenerator
             _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next != null ? _laneNodeCurrent.Next : _laneNodeCurrent;
         }
 
-        private LaneNode CalculateSpawnNode(float len, Lane lane)
+        // Finds next LaneNode in lane after a certain distance
+        private LaneNode CalculateSpawnNode(float targetLength, Lane lane)
         {
-            float length = 0;
+            float currentLength = 0;
             LaneNode curr = lane.StartNode;
-            while(curr != null && length < len)
+            while(curr != null && currentLength < targetLength)
             {
-                length += curr.DistanceToPrevNode;
+                currentLength += curr.DistanceToPrevNode;
                 curr = curr.Next;
             }
             return curr;
