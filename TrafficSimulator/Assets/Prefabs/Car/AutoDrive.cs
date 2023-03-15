@@ -95,6 +95,7 @@ namespace Car {
         private Status _status = Status.Driving;
         private float _targetLookaheadDistance = 0;
         private const float _intersectionLookaheadDistance = 5f;
+        private const float _intersectionMaxSpeed = 5f;
         private LaneNode _previousTarget;
         private LaneNode _brakeTarget;
         private LaneNode _repositioningTarget;
@@ -351,11 +352,10 @@ namespace Car {
             // If the vehicle is driving and the target is in front of us and we are close enough
             else if (_status == Status.Driving && dot > 0 && direction.magnitude <= _targetLookaheadDistance)
             {
-                if (_target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red)
-                {
-                    Debug.Log("Traffic light is red, stopping...");
+                bool trafficLightIsRed = _brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+                if (trafficLightIsRed && _target == _brakeTarget)
                     return;
-                }
+                _vehicleController.maxSpeedForward = _target.RoadNode.Intersection != null ? _intersectionMaxSpeed : _originalMaxSpeed;
                 // Set the target to the next point in the lane
                 _target = GetNextLaneNode(_target, 0, false);
             }
@@ -372,15 +372,19 @@ namespace Car {
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
+
             }
             // If the vehicle is closer to the target than the brake distance, brake
             else if (distanceToBrakeTarget <= _brakeDistance)
             {
-                _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
+                Debug.Log("Braking");
+                Debug.Log(_brakeDistance);
+                _vehicleController.brakeInput = 1f;
                 _vehicleController.throttleInput = 0f;
             }
-            if(!(_target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red))            
+            if(!(_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red))
                 UpdateTargetFromNavigation();
+                
         }
 
         private void Q_UpdateBrakeTarget()
@@ -396,8 +400,13 @@ namespace Car {
 
         private bool ShouldAdvanceBrakeTarget()
         {
-            if (_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red)
+            if (_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition)
+            {
+
                 return false;    
+                
+            }
+                
             float distanceToBrakeTarget;
             bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, true);
             
