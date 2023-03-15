@@ -105,6 +105,11 @@ namespace RoadGenerator
             }
 #endif
 
+        void Awake()
+        {
+            _flowContainer = IntersectionObject.transform.Find("FlowContainer").gameObject;
+        }
+
         public void UpdateMesh()
         {
             // Set the thickness of the intersection
