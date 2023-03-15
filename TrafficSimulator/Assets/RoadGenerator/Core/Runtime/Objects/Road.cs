@@ -181,24 +181,13 @@ namespace RoadGenerator
                 else if (Vector3.Distance(endPosOtherRoad, startPos) < connectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
                 {
                     bezierPath.SetFirstAnchorPos(endPosOtherRoad);
-                    ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.End);;
+                    ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.End);
                     road.ConnectedToAtEnd = new ConnectedRoad(this, EndOfRoadType.Start);
                     UpdateBezierPathControlPointsForConnectedRoads(road);
                 }  
                 else
                 {
-                    if (ConnectedToAtStart?.Road == road && ConnectedToAtStart != null)
-                    {
-                        BezierPath bezierPathConnectedRoad = ConnectedToAtStart?.Road.RoadObject.GetComponent<PathCreator>().bezierPath;
-                        bezierPathConnectedRoad.AutoSetAllControlPoints();
-                        bezierPathConnectedRoad.NotifyPathModified();
-                        ConnectedToAtStart?.Road.UpdateRoad();
-                        if (ConnectedToAtStart?.EndOfRoadType == EndOfRoadType.Start)
-                            road.ConnectedToAtStart = null;
-                        else
-                            road.ConnectedToAtEnd = null;
-                        ConnectedToAtStart = null;
-                    }
+                    ClearConnectedRoad(road, EndOfRoadType.Start);
                 }
                 if (Vector3.Distance(startPosOtherRoad, endPos) < connectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
                 {
@@ -216,23 +205,31 @@ namespace RoadGenerator
                 }
                 else
                 {
-                    if (ConnectedToAtEnd?.Road == road && ConnectedToAtEnd != null)
-                    {
-                        BezierPath bezierPathConnectedRoad = ConnectedToAtEnd?.Road.RoadObject.GetComponent<PathCreator>().bezierPath;
-                        bezierPathConnectedRoad.AutoSetAllControlPoints();
-                        bezierPathConnectedRoad.NotifyPathModified();
-                        ConnectedToAtEnd?.Road.UpdateRoad();
-                        if (ConnectedToAtEnd?.EndOfRoadType == EndOfRoadType.Start)
-                            road.ConnectedToAtStart = null;
-                        else
-                            road.ConnectedToAtEnd = null;
-                        ConnectedToAtEnd = null;
-                    }
+                    ClearConnectedRoad(road, EndOfRoadType.End);
                 }
             }
 
         }
-        
+        private void ClearConnectedRoad(Road road, EndOfRoadType type)
+        {
+            ConnectedRoad? connectedRoad = type == EndOfRoadType.Start ? ConnectedToAtStart : ConnectedToAtEnd;
+            if (connectedRoad?.Road == road && connectedRoad != null)
+            {
+                BezierPath bezierPathConnectedRoad = connectedRoad?.Road.RoadObject.GetComponent<PathCreator>().bezierPath;
+                bezierPathConnectedRoad.AutoSetAllControlPoints();
+                bezierPathConnectedRoad.NotifyPathModified();
+                connectedRoad?.Road.UpdateRoad();
+                if (connectedRoad?.EndOfRoadType == EndOfRoadType.Start)
+                    road.ConnectedToAtStart = null;
+                else
+                    road.ConnectedToAtEnd = null;
+
+                if (type == EndOfRoadType.Start)
+                    ConnectedToAtStart = null;
+                else
+                    ConnectedToAtEnd = null;
+            }
+        }
         private void UpdateBezierPathControlPointsForConnectedRoads(Road connectedRoad)
         {
             BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
