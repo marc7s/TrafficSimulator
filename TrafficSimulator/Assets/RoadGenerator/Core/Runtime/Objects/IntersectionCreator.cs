@@ -45,6 +45,10 @@ namespace RoadGenerator
                 // Go through all the intersections and create an intersection at every position
                 foreach (IntersectionPointData intersectionPointData in intersectionPointDatas)
                 {
+                    if (road.ConnectedToAtStart != null && Vector3.Distance(intersectionPointData.Position, pathCreator.bezierPath.GetFirstAnchorPos()) < 1f)
+                        continue;
+                    if (road.ConnectedToAtEnd != null && Vector3.Distance(intersectionPointData.Position, pathCreator.bezierPath.GetLastAnchorPos()) < 1f)
+                        continue;
                     // If the vertex count is small in a segment, then there is a possibility that the same intersection is added multiple times
                     // Therefore only add an intersection if it does not already exist
                     if (!roadSystem.DoesIntersectionExist(intersectionPointData.Position))

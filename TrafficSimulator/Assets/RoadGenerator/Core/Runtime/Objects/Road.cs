@@ -94,7 +94,7 @@ namespace RoadGenerator
         public bool DrawLaneNodes = false;
         public bool DrawLaneNodePointers = false;
         
-        [SerializeField][HideInInspector] private RoadNode _start;
+        [SerializeField][HideInInspector] public RoadNode Start;
         [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
         [SerializeField][HideInInspector] private GameObject _laneContainer;
         [SerializeField][HideInInspector] private GameObject _roadNodeContainer;
@@ -104,6 +104,9 @@ namespace RoadGenerator
         [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] private float _length;
+
+        [HideInInspector] public Road ConnectedToAtStart;
+        [HideInInspector] public Road ConnectedToAtEnd;
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
@@ -141,11 +144,147 @@ namespace RoadGenerator
             // Do nothing when nodes are moved
         }
 
+        private void ConnectRoadIfEndPointsAreClose()
+        {
+            if (IsClosed())
+                return;
+            BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
+            Vector3 startPos = bezierPath.GetFirstAnchorPos();
+            Vector3 endPos = bezierPath.GetLastAnchorPos();
+            float connectionDistanceThreshold = 3f;
+
+            foreach (Road road in RoadSystem.Roads)
+            {
+                if (road == this)
+                    continue;
+                BezierPath bezierPathOtherRoad = road.RoadObject.GetComponent<PathCreator>().bezierPath;
+                Vector3 startPosOtherRoad = bezierPathOtherRoad.GetFirstAnchorPos();
+                Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();
+                if (Vector3.Distance(startPosOtherRoad, startPos) < connectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart == this))
+                {
+                    bezierPath.SetFirstAnchorPos(startPosOtherRoad);
+                    ConnectedToAtStart = road;
+                    road.ConnectedToAtStart = this;
+                    UpdateBezierPathControlPointsForConnectedRoads(road);
+                }
+                else if (Vector3.Distance(endPosOtherRoad, startPos) < connectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart == this))
+                {
+                    bezierPath.SetFirstAnchorPos(endPosOtherRoad);
+                    ConnectedToAtStart = road;
+                    road.ConnectedToAtEnd = this;
+                    UpdateBezierPathControlPointsForConnectedRoads(road);
+                }  
+                else
+                {
+                    if (ConnectedToAtStart == road)
+                    {
+                        BezierPath bezierPathConnectedRoad = ConnectedToAtStart.RoadObject.GetComponent<PathCreator>().bezierPath;
+                        bezierPathConnectedRoad.AutoSetAllControlPoints();
+                        bezierPathConnectedRoad.NotifyPathModified();
+                        ConnectedToAtStart.UpdateRoad();
+                        ConnectedToAtStart = null;
+                    }
+                }
+                if (Vector3.Distance(startPosOtherRoad, endPos) < connectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd == this))
+                {
+                    bezierPath.SetLastAnchorPos(startPosOtherRoad);
+                    ConnectedToAtEnd = road;
+                    road.ConnectedToAtStart = this;
+                    UpdateBezierPathControlPointsForConnectedRoads(road);
+                }
+                else if (Vector3.Distance(endPosOtherRoad, endPos) < connectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd == this))
+                {
+                    bezierPath.SetLastAnchorPos(endPosOtherRoad);
+                    ConnectedToAtEnd = road;
+                    road.ConnectedToAtEnd = this;
+                    UpdateBezierPathControlPointsForConnectedRoads(road);
+                }
+                else
+                {
+                    if (ConnectedToAtEnd == road)
+                    {
+                        BezierPath bezierPathConnectedRoad = ConnectedToAtEnd.RoadObject.GetComponent<PathCreator>().bezierPath;
+                        bezierPathConnectedRoad.AutoSetAllControlPoints();
+                        bezierPathConnectedRoad.NotifyPathModified();
+                        ConnectedToAtEnd.UpdateRoad();
+                        ConnectedToAtEnd = null;
+                    }
+                }
+            }
+            
+        }
+        
+        private void UpdateBezierPathControlPointsForConnectedRoads(Road connectedRoad)
+        {
+            BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
+            List<Vector3> anchorPointsThisRoad = new List<Vector3>();
+            for (var i = 0; i < bezierPath.NumPoints; i +=3)
+            {
+                anchorPointsThisRoad.Add(bezierPath.GetPoint(i));
+            }
+            if (ConnectedToAtStart == connectedRoad)
+                anchorPointsThisRoad.Reverse();
+            
+            BezierPath bezierPathOtherRoad = connectedRoad.RoadObject.GetComponent<PathCreator>().bezierPath;
+            List<Vector3> anchorPointsOtherRoad = new List<Vector3>();
+            for (var i = 0; i < bezierPathOtherRoad.NumPoints; i +=3)
+            {
+                anchorPointsOtherRoad.Add(bezierPathOtherRoad.GetPoint(i));
+            }
+            Debug.Log("ConnectedToAtEnd " + connectedRoad.ConnectedToAtEnd);
+            if (connectedRoad.ConnectedToAtEnd == this)
+                anchorPointsOtherRoad.Reverse();
+            anchorPointsOtherRoad.RemoveAt(0);
+            List<Vector3> anchorPoints = new List<Vector3>();
+            anchorPoints.AddRange(anchorPointsThisRoad);
+            anchorPoints.AddRange(anchorPointsOtherRoad);
+            BezierPath bezierPathNew = new BezierPath(anchorPoints, false, PathSpace.xz);
+
+            int index = 0;
+            if (ConnectedToAtStart == connectedRoad)
+            {
+                for (int i = bezierPath.NumPoints - 1; i >= 0; i--)
+                {
+                    bezierPath.SetPoint(i, bezierPathNew.GetPoint(index));
+                    index++;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < bezierPath.NumPoints; i++)
+                {
+                    bezierPath.SetPoint(i, bezierPathNew.GetPoint(index));
+                    index++;
+                }
+            }
+            index--;
+
+            
+            if (connectedRoad.ConnectedToAtEnd == this)
+            {
+                for (int i = bezierPathOtherRoad.NumPoints - 1; i >= 0; i--)
+                {
+                    bezierPathOtherRoad.SetPoint(i, bezierPathNew.GetPoint(index));
+                    index++;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < bezierPathOtherRoad.NumPoints; i++)
+                {
+                    bezierPathOtherRoad.SetPoint(i, bezierPathNew.GetPoint(index));
+                    index++;
+                }
+            }
+            bezierPath.NotifyPathModified();
+            connectedRoad.UpdateRoad();
+        }
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
+            ConnectRoadIfEndPointsAreClose();
             // Update the intersections and road when a node is changed
-            IntersectionCreator.UpdateIntersections(this);
+          //  IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
         }
 
@@ -295,10 +434,10 @@ namespace RoadGenerator
             _endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
             // Create the start node for the road. The start node must be an end node
-            _start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, 0);
+            Start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, 0);
             
             // Create a new node builder starting at the start node
-            NodeBuilder roadBuilder = new NodeBuilder(null, _start, 0);
+            NodeBuilder roadBuilder = new NodeBuilder(null, Start, 0);
 
             PriorityQueue<QueuedNode> queuedNodes = QueueIntersectionNodes();
 
@@ -369,12 +508,12 @@ namespace RoadGenerator
                 roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i), i == _path.NumPoints - 1);
             }
             // Create a new navigation graph
-            _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
-            _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
+            _navigationGraph = new RoadNavigationGraph(Start, path.IsClosed);
+            Start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
         
             // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
-                _start.UpdateIntersectionJunctionEdgeNavigation(this);
+                Start.UpdateIntersectionJunctionEdgeNavigation(this);
         }
 
         /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
@@ -412,7 +551,7 @@ namespace RoadGenerator
             List<LaneNode> primaryLaneNodes = new List<LaneNode>();
             List<LaneNode> secondaryLaneNodes = new List<LaneNode>();
 
-            RoadNode currRoadNode = _start;
+            RoadNode currRoadNode = Start;
             // The list that will contain a pair of (PrevNode, CurrNode) used when creating the lane nodes
             List<(LaneNode, LaneNode)> laneNodes = new List<(LaneNode, LaneNode)>();
 
@@ -518,14 +657,14 @@ namespace RoadGenerator
         // Procedurally places the traffic signs along the road
         private void PlaceTrafficSigns()
         {
-            RoadNode startNode = _start;
+            RoadNode startNode = Start;
             // Destroy the old container and create a new one
             if (_trafficSignContainer != null)
                 DestroyImmediate(_trafficSignContainer);
             _trafficSignContainer = new GameObject(TRAFFIC_SIGN_CONTAINER_NAME);
             _trafficSignContainer.transform.parent = transform;
             // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
-            bool intersectionFound = _start.Next.Intersection != null && _start.Position == _start.Next.Position;
+            bool intersectionFound = Start.Next.Intersection != null && Start.Position == Start.Next.Position;
 
             if (GenerateSpeedSigns && !IsClosed())
             {
@@ -744,7 +883,7 @@ namespace RoadGenerator
             // Draw the lines if the setting is enabled
             if(DrawRoadNodes)
             {
-                RoadNode curr = _start;
+                RoadNode curr = Start;
                 int i = 0;
                 while(curr != null)
                 {
@@ -864,7 +1003,7 @@ namespace RoadGenerator
         }
         public RoadNode StartNode
         {
-            get => _start;
+            get => Start;
         }
         public EndOfPathInstruction EndOfPathInstruction
         {

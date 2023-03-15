@@ -808,7 +808,7 @@ namespace RoadGenerator
 		}
 
 		/// Determines good positions (for a smooth path) for all control points
-		void AutoSetAllControlPoints()
+		public void AutoSetAllControlPoints()
 		{
 			if (NumAnchorPoints > 2)
 			{
@@ -944,6 +944,23 @@ namespace RoadGenerator
 			}
 
 			NotifyPathModified();
+		}
+		public Vector3 GetFirstAnchorPos()
+		{
+			return points[0];
+		}
+		public Vector3 GetLastAnchorPos()
+		{
+			return points[points.Count - 1];
+		}
+		public void SetFirstAnchorPos(Vector3 pos)
+		{
+			MovePoint(0, pos);
+
+		}
+		public void SetLastAnchorPos(Vector3 pos)
+		{
+			MovePoint(points.Count - 1, pos);
 		}
 
 		/// Add/remove the extra 2 controls required for a closed path
