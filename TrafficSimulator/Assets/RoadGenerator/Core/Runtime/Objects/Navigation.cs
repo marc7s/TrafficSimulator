@@ -40,6 +40,7 @@ namespace RoadGenerator
     public static class Navigation
     {
         private const int MAX_ITERATIONS = 100;
+        private static List<Vector3> _navigationPath = new List<Vector3>();
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
         public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNodeEdge startNode, NavigationNode endNode)
         {
@@ -126,20 +127,63 @@ namespace RoadGenerator
             return new Stack<NavigationNodeEdge>();
         }
         
-        public static void DrawNavigationPath(NavigationNode nodeToFind, GameObject container, GameObject targetMarker)
+        public static void DrawNavigationPath(NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, Material pathMaterial, Vector3? prevIntersectionPosition)
         {
             if(nodeToFind == null)
                 return;
-            
-            // TODO DRAW ACTUAL LANE PATH, CURRENTLY ONLY DRAWS A CUBE AT THE DESTINATION
+            LaneNode current = startNode;
+            var clonedStack = new Stack<NavigationNodeEdge>(new Stack<NavigationNodeEdge>(path));
+            if (container.GetComponent<LineRenderer>() == null)
+                container.AddComponent<LineRenderer>();
+            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
+            lineRenderer.startWidth = 1f;
+            lineRenderer.endWidth = 1f;
+            List<Vector3> positions = new List<Vector3>();
 
-            foreach (Transform child in container.transform)
+            while (current != null)
             {
-                Object.Destroy(child.gameObject);
+                positions.Add(current.Position);
+                if (current.RoadNode == nodeToFind.RoadNode)
+                 {
+                    break;
+                 }   
+
+                if (clonedStack.Count == 0)
+                {
+                    current = current.Next;
+                    continue;
+                }
+
+                bool isNonIntersectionNavigationNode = current.RoadNode.IsNavigationNode && !current.IsIntersection() && current.Type != RoadNodeType.JunctionEdge;
+                if (isNonIntersectionNavigationNode && clonedStack.Count != 0)
+                {
+                    clonedStack.Pop();
+                    prevIntersectionPosition = Vector3.zero; 
+                }
+                if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
+                {
+
+                    (_, _, current) = current.RoadNode.Intersection.GetNewLaneNode(clonedStack.Pop(), current);
+                    prevIntersectionPosition = current.RoadNode.Intersection.IntersectionPosition;
+                    continue;
+                }
+
+                current = current.Next;
             }
-            Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
-            GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
-            marker.transform.parent = container.transform;
+            _navigationPath = positions;
+            lineRenderer.material = pathMaterial;
+            lineRenderer.positionCount = positions.Count;
+            lineRenderer.SetPositions(positions.ToArray());
+        }
+
+        public static void DrawPathRemoveOldestPoint(GameObject container, Material pathMaterial)
+        {
+            if (_navigationPath.Count == 0)
+                return;
+            _navigationPath.RemoveAt(0);
+            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
+            lineRenderer.positionCount = _navigationPath.Count;
+            lineRenderer.SetPositions(_navigationPath.ToArray());
         }
     }
 }
