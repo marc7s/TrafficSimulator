@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5387963023345359458}
   - component: {fileID: 1131470622488222073}
   - component: {fileID: 6349525408430712732}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Intersection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fe983f4c8631b24ab4c047047091ba0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntersectionObject: {fileID: 0}
+  IntersectionObject: {fileID: 5761927508822258430}
   RoadSystem: {fileID: 0}
   IntersectionPosition: {x: 0, y: 0, z: 0}
   Road1: {fileID: 0}
