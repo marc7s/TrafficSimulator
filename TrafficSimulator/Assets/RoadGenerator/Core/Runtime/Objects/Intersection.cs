@@ -661,27 +661,33 @@ namespace RoadGenerator
                         continue;
                     }
 
-                   
-
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
                     if (isEdgePointingToIntersection)
                     {
-                        // Add the node to the list of entry nodes
-                        entryNodes.Add(currentNode);
-                        
-                        // Create entry intersection lane nodes for navigation in the intersection
-                        CreateEntryIntersectionLaneNodes(currentNode, currentNode.Next);
-                        
+                        // Add entry nodes if the current node is related to this intersection
+                        if(currentNode.RoadNode.Intersection == this)
+                        {
+                            // Add the node to the list of entry nodes
+                            entryNodes.Add(currentNode);
+
+                            // Create entry intersection lane nodes for navigation in the intersection
+                            CreateEntryIntersectionLaneNodes(currentNode, currentNode.Next);
+                        }
+                            
                         currentNode = currentNode.Next;
                         continue;
                     }
 
-                    // Since it was not an entry node, it must be an exit node, so add it to the exit node list
-                    exitNodes.Add(currentNode);
+                    // Add exit nodes if the current node is related to this intersection
+                    if(currentNode.RoadNode.Intersection == this)
+                    {
+                        // Since it was not an entry node, it must be an exit node, so add it to the exit node list
+                        exitNodes.Add(currentNode);
 
-                    // Create exit intersection lane nodes for navigation in the intersection
-                    CreateExitIntersectionLaneNodes(currentNode, currentNode.Prev);
+                        // Create exit intersection lane nodes for navigation in the intersection
+                        CreateExitIntersectionLaneNodes(currentNode, currentNode.Prev);
+                    }
 
                     // If the node is an anchor point, we map the edge going out of the intersection to the node
                     if (currentNode.RoadNode.Position == Road1AnchorPoint1)
