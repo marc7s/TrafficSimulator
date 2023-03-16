@@ -425,6 +425,9 @@ namespace RoadGenerator
                 // Secondary lane node
                 laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Secondary, currRoadNode, 0)));
             }
+
+            // The lane nodes for the first road node has already been added, so we skip that one
+            currRoadNode = currRoadNode.Next;
             
             // Go through all road nodes and add the corresponding lane nodes
             while(currRoadNode != null)
