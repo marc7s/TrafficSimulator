@@ -107,7 +107,8 @@ namespace RoadGenerator
 
         void Awake()
         {
-            _flowContainer = IntersectionObject.transform.Find("FlowContainer").gameObject;
+            IntersectionObject = gameObject;
+            _flowContainer = IntersectionObject.transform.Find("FlowContainer")?.gameObject;
         }
 
         public void UpdateMesh()
