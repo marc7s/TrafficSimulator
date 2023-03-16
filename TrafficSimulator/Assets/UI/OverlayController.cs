@@ -111,22 +111,22 @@ public class OverlayController : MonoBehaviour
 
     private void RewindButtonOnClicked()
     {
-        Debug.Log("Rewind");
+        TimeManager.Rewind();
     }
 
     private void PauseButtonOnClicked()
     {
-        Debug.Log("Pause");
+        TimeManager.Pause();
     }
 
     private void FastForwardButtonOnClicked()
     {
-        Debug.Log("Fastforward");
+        TimeManager.FastForward();
     }
 
     void Update()
     {
-        _clockLabel.text = System.DateTime.Now.ToString("HH:mm");
+        _clockLabel.text = $"{TimeManager.Hour:00}:{TimeManager.Minute:00}";
     }
 
     public void Enable()
