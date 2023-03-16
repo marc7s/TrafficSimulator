@@ -38,6 +38,8 @@ namespace RoadGenerator
 
         [SerializeField][HideInInspector] public List<NavigationNode> RoadSystemGraph;
         [HideInInspector] public GameObject GraphContainer;
+        private const float NEW_ROAD_LENGTH = 10f;
+        
         private bool _isSetup = false;
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
@@ -47,22 +49,31 @@ namespace RoadGenerator
         public void AddNewRoad()
         {
             Vector3 spawnPoint = Vector3.zero;
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             if(!SpawnRoadsAtOrigin)
             {
+                int layerMask = LayerMask.GetMask("RoadSystem");
                 RaycastHit hit;
                 UnityEditor.SceneView sceneView = UnityEditor.SceneView.lastActiveSceneView;
                 Camera camera = sceneView.camera;
-                
-                // Get the nearest point on the surface the camera is looking at
-                if(!camera || !Physics.Raycast(camera.transform.position, camera.transform.forward, out hit))
+
+                // Get the nearest point on the surface the camera is looking at, ignoring the RoadSystem layer
+                if(!camera || !Physics.Raycast(camera.transform.position, camera.transform.forward, out hit, Mathf.Infinity, ~layerMask))
                 {
                     Debug.LogError("No surface found in line of sight to spawn road. Make sure the surface you are looking at has a collider");
                     return;
                 }
                 spawnPoint = hit.point;
+                
+                Vector3 roadStartPoint = spawnPoint + Vector3.left * NEW_ROAD_LENGTH / 2;
+                Vector3 roadEndPoint = roadStartPoint + Vector3.right * NEW_ROAD_LENGTH;
+                
+                if(PositionsAreInRoadSystem(new Vector3[]{ roadStartPoint, roadEndPoint })){
+                    Debug.LogError($"Cannot spawn a road at {hit.point}, there is already a road there");
+                    return;
+                }
             }
-            #endif
+#endif
             
 
             // Instantiate a new road prefab
@@ -79,7 +90,7 @@ namespace RoadGenerator
 
             // Move the road to the spawn point
             PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
-            pathCreator.bezierPath = new BezierPath(spawnPoint);
+            pathCreator.bezierPath = new BezierPath(spawnPoint, width: NEW_ROAD_LENGTH / 2);
             
             // Set the road pointers
             road.RoadObject = roadObj;
@@ -89,6 +100,21 @@ namespace RoadGenerator
             road.OnChange();
 
             AddRoad(road);
+        }
+
+        private bool PositionsAreInRoadSystem(Vector3[] positions)
+        {
+            bool collides = false;
+            // The distance up and down to check for road collisions. 
+            // We do not want this set too big as there might be roads above or below that do not interfere in the case of bridges and tunnels
+            const float collisionDetectionDistance = 10f;
+            int layerMask = LayerMask.GetMask("RoadSystem");
+            foreach(Vector3 pos in positions)
+            {
+                collides = collides || Physics.Raycast(pos, Vector3.up, out RaycastHit upHit, collisionDetectionDistance, layerMask);
+                collides = collides || Physics.Raycast(pos, Vector3.down, out RaycastHit downHit, collisionDetectionDistance, layerMask);
+            }
+            return collides;
         }
 
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
@@ -125,6 +151,7 @@ namespace RoadGenerator
 
             // Find the graph container
             GraphContainer = GameObject.Find("Graph");
+            
             // Update the road system graph
             UpdateRoadSystemGraph();
         }

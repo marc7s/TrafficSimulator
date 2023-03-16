@@ -14,7 +14,8 @@ GameObject:
   - component: {fileID: 4211003387211000974}
   - component: {fileID: -7222773781664253429}
   - component: {fileID: -8363121987229429450}
-  m_Layer: 0
+  - component: {fileID: 2968229505203983963}
+  m_Layer: 6
   m_Name: Road
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -103,6 +104,7 @@ MonoBehaviour:
   _laneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
   _textureTilingScale: 100
+  _mesh: {fileID: 0}
   _meshHolder: {fileID: 3821395399200801449}
 --- !u!114 &4211003387211000974
 MonoBehaviour:
@@ -210,3 +212,17 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &2968229505203983963
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
