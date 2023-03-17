@@ -13,8 +13,11 @@ namespace RoadGenerator
 
     public class CarSpawner : MonoBehaviour
     {
+        [Header("Connections")]
         [SerializeField] private GameObject _carPrefab;
         [SerializeField] private GameObject _roadSystemObject;
+
+        [Header("Settings")]
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
 
         public int TotalCars = 5; // Total number of cars to spawn in mode Total
@@ -182,6 +185,9 @@ namespace RoadGenerator
             _currentCar = Instantiate(_carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
             _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
             _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
+            
+            // If a custom car is being used as a spawn prefab it should be deactivated to not interfere, so activate this car
+            _currentCar.SetActive(true);
 
             _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next != null ? _laneNodeCurrent.Next : _laneNodeCurrent;
         }
