@@ -135,6 +135,8 @@ namespace RoadGenerator
             }
             OffsetSigns();
             ShowGuideNodes();
+
+            gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
         }
 
         /// <summary> Returns a list of all RoadNodes that are of type `JunctionEdge` or an intersection. This is because for 3-way intersections, the intersection node are used as an anchor </summary>
