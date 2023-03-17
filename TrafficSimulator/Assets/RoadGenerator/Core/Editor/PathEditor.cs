@@ -529,36 +529,24 @@ namespace RoadGeneratorEditor
 
 		Road TryGetRoad(PathCreator pathCreator)
 		{
-			GameObject roadSystemObject = GameObject.Find("RoadSystem");
-			if(roadSystemObject == null)
+			Road road = pathCreator.gameObject.GetComponent<Road>();
+			RoadSystem roadSystem = road?.RoadSystem;
+			
+			// Check if the PathCreator belongs to a Road
+			if (road == null) 
+				return null;
+
+			if(roadSystem == null)
 			{
 				Debug.LogError("ERROR, RoadSystem not found");
 				return null;
 			}
-			
-			RoadSystem roadSystem = roadSystemObject.GetComponent<RoadSystem>();
-
-
+		
 			// If Unity has been restarted and the road system reset, we need to set it up again
 			if(roadSystem.RoadCount < 1)
-			{
 				roadSystem.Setup();
-			}
-
-			Road foundRoad = null;
-			foreach (Road road in roadSystem.Roads)
-			{
-				if (road.RoadObject.GetComponent<PathCreator>() == pathCreator)
-				{
-					foundRoad = road;
-					break;
-				}
-			}
-			if (foundRoad == null) {
-				Debug.LogError("ERROR, Road not found");
-				return null;
-			}
-			return foundRoad;
+			
+			return road;
 		}
 		
 		

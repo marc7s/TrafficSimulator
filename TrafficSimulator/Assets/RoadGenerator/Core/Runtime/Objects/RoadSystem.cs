@@ -150,7 +150,7 @@ namespace RoadGenerator
             }
 
             // Find the graph container
-            GraphContainer = GameObject.Find("Graph");
+            GraphContainer = gameObject.transform.Find("Graph")?.gameObject;
             
             // Update the road system graph
             UpdateRoadSystemGraph();
@@ -214,7 +214,8 @@ namespace RoadGenerator
             RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
 
             // Display the graph if the setting is active
-            if (ShowGraph) {
+            if (ShowGraph)
+            {
                 // Create a new empty graph
                 CreateEmptyRoadGraph();
                 RoadSystemNavigationGraph.DrawGraph(this, RoadSystemGraph, _roadSystemGraphNodePrefab);
