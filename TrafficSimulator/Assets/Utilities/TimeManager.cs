@@ -22,7 +22,7 @@ public class TimeManager : MonoBehaviour
     public float minuteToRealTime = 60f;
     private float _targetMinuteToRealTime;
 
-    private float _timer;
+    private float timer;
 
     public static TimeMode Mode { get; private set; }
 
@@ -30,7 +30,7 @@ public class TimeManager : MonoBehaviour
     {
         Minute = 0;
         Hour = 23;
-        _timer = minuteToRealTime;
+        timer = minuteToRealTime;
         _targetMinuteToRealTime = minuteToRealTime;
         Mode = TimeMode.Running;
     }
@@ -47,14 +47,13 @@ public class TimeManager : MonoBehaviour
         
         if(Mode != TimeMode.Paused)
         {
-            _timer -= Time.deltaTime;
+            timer -= Time.deltaTime;
 
-            if(_timer <= 0)
+            if(timer <= 0)
             {
                 Minute++;
                 OnMinuteChanged?.Invoke();
                 OnHourChanged?.Invoke();
-                
                 if(Minute >= 60)
                 {
                     Hour++;
@@ -65,7 +64,7 @@ public class TimeManager : MonoBehaviour
                     Minute = 0;
                 }
 
-                _timer = minuteToRealTime;
+                timer = minuteToRealTime;
             }
             minuteToRealTime = _targetMinuteToRealTime;
         }
