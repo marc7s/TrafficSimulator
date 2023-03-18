@@ -36,7 +36,7 @@ public class OverlayController : MonoBehaviour
 
         // Labels
         _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
-        _clockLabel.text = "00:00";
+        _clockLabel.text = "00:00:00";
 
         // Buttons
         _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
@@ -126,7 +126,7 @@ public class OverlayController : MonoBehaviour
 
     void Update()
     {
-        _clockLabel.text = $"{TimeManager.Hour:00}:{TimeManager.Minute:00}";
+        _clockLabel.text = $"{TimeManager.Hour:00}:{TimeManager.Minute:00}:{TimeManager.Second:00}";
     }
 
     public void Enable()
