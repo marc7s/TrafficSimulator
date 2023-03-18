@@ -174,9 +174,19 @@ namespace RoadGenerator
                 startRoad.ConnectRoadIfEndPointsAreClose();
                 return;
             }
+            
+            if (ConnectedToAtStart != null || ConnectedToAtEnd != null)
+                UpdateAllConnectedRoads(GetConnectedRoadsBezierAnchorPoints());    
+
+        }
+        
+        private List<(Vector3, PathCreator, bool)> GetConnectedRoadsBezierAnchorPoints()
+        {
             PathCreator pathCreator = RoadObject.GetComponent<PathCreator>();
             BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
             List<(Vector3, PathCreator, bool)> points = new List<(Vector3, PathCreator, bool)>();
+            // If the road is not connected to its end, it will be reversed as the connecting road will connect to its start
+            // If the road os connected to both ends, it will be reversed as the connecting road will connect to its start
             bool willReverse = ConnectedToAtEnd == null || (ConnectedToAtStart != null && ConnectedToAtEnd != null);
             for (var i = 0; i < bezierPath.NumPoints; i +=3)
             {
@@ -187,24 +197,17 @@ namespace RoadGenerator
 
             if (ConnectedToAtStart != null)
             {
-                points.AddRange(ConnectedToAtStart?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.Start, false, this));
+                points.AddRange(ConnectedToAtStart?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.Start, this));
                 Debug.Log("ConnectedToAtStart");
             }
 
             else if (ConnectedToAtEnd != null)
-                points.AddRange(ConnectedToAtEnd?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.End, false, this));
+                points.AddRange(ConnectedToAtEnd?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.End, this));
             foreach ((Vector3, PathCreator, bool) point in points)
             {
-                Debug.Log(point.Item1);
+                Debug.Log(point.Item1 + "fdsfdsfdsfsf" + point.Item2 );
             }
-            if (ConnectedToAtStart != null || ConnectedToAtEnd != null)
-                UpdateAllConnectedRoads(points);    
-
-        }
-        
-        private List<(Vector3, PathCreator, bool)> GetConnectedRoadsBezierAnchorPoints()
-        {
-            
+            return points;
         }
         private Road FindStartRoadInConnection()
         {
@@ -338,7 +341,7 @@ namespace RoadGenerator
             }
         }
 
-        public List<(Vector3, PathCreator, bool)> GetBezierPointsInConnectedOrder(Road connectedRoad, EndOfRoadType endOfRoadType, bool directionTowardsConnectedRoad, Road startRoad)
+        public List<(Vector3, PathCreator, bool)> GetBezierPointsInConnectedOrder(Road connectedRoad, EndOfRoadType endOfRoadType, Road startRoad)
         {
             if (this == startRoad)
                 return new List<(Vector3, PathCreator, bool)>();
@@ -348,7 +351,11 @@ namespace RoadGenerator
             PathCreator pathCreator = RoadObject.GetComponent<PathCreator>();
             BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
             List<(Vector3, PathCreator, bool)> points1 = new List<(Vector3, PathCreator, bool)>();
-            bool willReverse = ConnectedToAtEnd?.Road == connectedRoad && !directionTowardsConnectedRoad; 
+            bool isClosed = ConnectedToAtEnd?.Road == connectedRoad && ConnectedToAtStart?.Road == connectedRoad;
+            bool closedRoadReverse = isClosed && Start.Position != connectedRoad.Start.Position;
+            bool roadReverse = ConnectedToAtEnd?.Road == connectedRoad;
+            bool willReverse = isClosed ? closedRoadReverse : roadReverse;
+            Debug.Log("willReverse " + willReverse);
             for (var i = 0; i < bezierPath.NumPoints; i +=3)
             {
                 points1.Add((bezierPath.GetPoint(i), pathCreator, willReverse));
@@ -364,13 +371,13 @@ namespace RoadGenerator
 
             if (ConnectedToAtStart?.Road == connectedRoad && ConnectedToAtEnd != null)
             {
-                List<(Vector3, PathCreator, bool)> points = ConnectedToAtEnd?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.End, directionTowardsConnectedRoad, startRoad);
+                List<(Vector3, PathCreator, bool)> points = ConnectedToAtEnd?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.End, startRoad);
                 bezierPoints.AddRange(points);
             }
 
             if (ConnectedToAtEnd?.Road == connectedRoad && ConnectedToAtStart != null)
             {
-                List<(Vector3, PathCreator, bool)> points = ConnectedToAtStart?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.Start, directionTowardsConnectedRoad, startRoad);
+                List<(Vector3, PathCreator, bool)> points = ConnectedToAtStart?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.Start, startRoad);
                 bezierPoints.AddRange(points);
             }
 
