@@ -143,7 +143,6 @@ namespace RoadGenerator
             {
                 // Calculate the number of cars to spawn
                 int carsToSpawn = _mode == SpawnMode.Total ? Mathf.CeilToInt(_ratios[i] * TotalCars) : Mathf.CeilToInt(_maxCarsPerLane[i] * LaneCarRatio);
-                Debug.Log("Spawn " + carsToSpawn + " in lane " + i);
 
                 // Return if there are no cars to spawn
                 if (carsToSpawn == 0)
@@ -155,7 +154,6 @@ namespace RoadGenerator
                 // Spawn cars
                 for (int j = 0; j < carsToSpawn; j++)
                 {
-                    Debug.Log("Current lane: " + i + ", Length: " + _lanes[i].Length + ", Spawn Length: " + _offset + ", Spawn Node: " + _laneNodeCurrent.Position);
                     // Check if max cars have been spawned
                     if (_mode == SpawnMode.Total && _carCounter >= TotalCars)
                         return;
@@ -164,7 +162,6 @@ namespace RoadGenerator
                     SpawnCar(i);
 
                     _carCounter++;
-
                     _offset += _lanes[i].Length / carsToSpawn;
                     _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
                 }
