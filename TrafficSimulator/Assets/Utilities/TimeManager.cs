@@ -15,7 +15,9 @@ public class TimeManager : MonoBehaviour
 {
     public static Action OnMinuteChanged;
     public static Action OnHourChanged;
+
     public static TimeMode Mode { get; private set; }
+
     public static int Minute { get; private set; }
     public static int Hour { get; private set; }
 
@@ -47,7 +49,7 @@ public class TimeManager : MonoBehaviour
                 RunTime();
                 _timer = minuteToRealTime;
             }
-            
+
             minuteToRealTime = _targetMinuteToRealTime;
         }
     }
