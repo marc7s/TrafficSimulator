@@ -31,9 +31,7 @@ public class TimeManager : MonoBehaviour
 
     void Start()
     {
-        Second = 0;
-        Minute = 0;
-        Hour = 8;
+        Hour = 8; Minute = 0; Second = 0;
         _timer = secondToRealTime;
         _targetSecondToRealTime = secondToRealTime;
         Mode = TimeMode.Running;
@@ -52,7 +50,6 @@ public class TimeManager : MonoBehaviour
                 RunTime();
                 _timer = secondToRealTime;
             }
-
             secondToRealTime = _targetSecondToRealTime;
         }
     }
