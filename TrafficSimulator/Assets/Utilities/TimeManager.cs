@@ -40,15 +40,22 @@ public class TimeManager : MonoBehaviour
         if(Mode == TimeMode.Fast)
         {
             minuteToRealTime = _targetMinuteToRealTime * 0.5f;
-        } else if(Mode == TimeMode.Rewind)
-        {
-            minuteToRealTime = _targetMinuteToRealTime * 2f;
         }
         
         if(Mode != TimeMode.Paused)
         {
             timer -= Time.deltaTime;
 
+            SwitchTimeDirection();
+            
+            minuteToRealTime = _targetMinuteToRealTime;
+        }
+    }
+
+    private void SwitchTimeDirection()
+    {
+        if(Mode != TimeMode.Rewind)
+        {
             if(timer <= 0)
             {
                 Minute++;
@@ -66,8 +73,27 @@ public class TimeManager : MonoBehaviour
 
                 timer = minuteToRealTime;
             }
-            minuteToRealTime = _targetMinuteToRealTime;
+        } else if(Mode == TimeMode.Rewind)
+        {
+            if(timer <= 0)
+            {
+                Minute--;
+                OnMinuteChanged?.Invoke();
+                OnHourChanged?.Invoke();
+                if(Minute < 1)
+                {
+                    Hour--;
+                    if(Hour < 1)
+                    {
+                        Hour = 23;
+                    }
+                    Minute = 59;
+                }
+                timer = minuteToRealTime;
+            }
         }
+
+
     }
 
     public static void FastForward()
