@@ -13,33 +13,36 @@ public enum TimeMode
 
 public class TimeManager : MonoBehaviour
 {
+    public static Action OnSecondChanged;
     public static Action OnMinuteChanged;
     public static Action OnHourChanged;
 
     public static TimeMode Mode { get; private set; }
 
+    public static int Second { get; private set; }
     public static int Minute { get; private set; }
     public static int Hour { get; private set; }
 
-    // Ratio between ingame time and real world time. Ex. 60f is 1:1 ratio, 30f is 2:1 ratio.
-    public float minuteToRealTime = 60f;
+    // Ratio between ingame time and real world time. Ex. 1f is 1:1 ratio, 5f is 5:1 ratio.
+    public float secondToRealTime = 1f;
 
-    private float _targetMinuteToRealTime;
+    private float _targetSecondToRealTime;
     private float _timer;
 
     void Start()
     {
+        Second = 0;
         Minute = 0;
         Hour = 8;
-        _timer = minuteToRealTime;
-        _targetMinuteToRealTime = minuteToRealTime;
+        _timer = secondToRealTime;
+        _targetSecondToRealTime = secondToRealTime;
         Mode = TimeMode.Running;
     }
 
     void Update()
     {
         if(Mode == TimeMode.Fast)
-            minuteToRealTime = _targetMinuteToRealTime * 0.5f;
+            secondToRealTime = _targetSecondToRealTime * 0.5f;
 
         if(Mode != TimeMode.Paused)
         {
@@ -47,10 +50,10 @@ public class TimeManager : MonoBehaviour
             if(_timer <= 0)
             {
                 RunTime();
-                _timer = minuteToRealTime;
+                _timer = secondToRealTime;
             }
 
-            minuteToRealTime = _targetMinuteToRealTime;
+            secondToRealTime = _targetSecondToRealTime;
         }
     }
 
@@ -59,27 +62,40 @@ public class TimeManager : MonoBehaviour
     {
         if(Mode != TimeMode.Rewind)
         {
-            Minute++;
+            Second++;
+            OnSecondChanged?.Invoke();
             OnMinuteChanged?.Invoke();
             OnHourChanged?.Invoke();
-            if(Minute >= 60)
+            if(Second >= 60)
             {
-                Hour++;
-                if(Hour >= 24)
-                    Hour = 0;
-                Minute = 0;
+                Minute++;
+                if(Minute >= 60)
+                {
+                    Hour++;
+                    if(Hour >= 24)
+                        Hour = 0;
+                    Minute = 0;
+                }
+                Second = 0;
             }
+
         } else if(Mode == TimeMode.Rewind)
         {
-            Minute--;
+            Second--;
+            OnSecondChanged?.Invoke();
             OnMinuteChanged?.Invoke();
             OnHourChanged?.Invoke();
-            if(Minute < 1)
+            if(Second < 0)
             {
-                Hour--;
-                if(Hour < 1)
-                    Hour = 23;
-                Minute = 59;
+                Minute--;
+                if(Minute < 0)
+                {
+                    Hour--;
+                    if(Hour < 0)
+                        Hour = 23;
+                    Minute = 59;
+                }
+                Second = 59;
             }
         }
     }
