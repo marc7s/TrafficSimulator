@@ -169,12 +169,13 @@ namespace RoadGenerator
             }
             PathCreator pathCreator = RoadObject.GetComponent<PathCreator>();
             BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
-            List<(Vector3, PathCreator)> points = new List<(Vector3, PathCreator)>();
+            List<(Vector3, PathCreator, bool)> points = new List<(Vector3, PathCreator, bool)>();
+            bool willReverse = ConnectedToAtEnd == null;
             for (var i = 0; i < bezierPath.NumPoints; i +=3)
             {
-                points.Add((bezierPath.GetPoint(i), pathCreator));
+                points.Add((bezierPath.GetPoint(i), pathCreator, willReverse));
             }
-            if(ConnectedToAtEnd == null)
+            if(willReverse)
                 points.Reverse();
 
             if (ConnectedToAtStart != null)
@@ -182,7 +183,7 @@ namespace RoadGenerator
 
             if (ConnectedToAtEnd != null)
                 points.AddRange(ConnectedToAtEnd?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.End, false));
-            foreach ((Vector3, PathCreator) point in points)
+            foreach ((Vector3, PathCreator, bool) point in points)
             {
                 Debug.Log(point.Item1);
             }
@@ -190,11 +191,11 @@ namespace RoadGenerator
                 UpdateAllConnectedRoads(points);    
 
         }
-        private void UpdateAllConnectedRoads(List<(Vector3, PathCreator)> bezierAnchorPoints)
+        private void UpdateAllConnectedRoads(List<(Vector3, PathCreator, bool)> bezierAnchorPoints)
         {
             Debug.Log("UpdateAllConnectedRoads" + bezierAnchorPoints.Count);
             List<Vector3> anchorPositions = new List<Vector3>();
-            foreach ((Vector3, PathCreator) bezierAnchorPoint in bezierAnchorPoints)
+            foreach ((Vector3, PathCreator, bool) bezierAnchorPoint in bezierAnchorPoints)
             {
                 anchorPositions.Add(bezierAnchorPoint.Item1);
             }
@@ -204,10 +205,11 @@ namespace RoadGenerator
             PathCreator currentPathCreator = bezierAnchorPoints[0].Item2;
             int pathIndex = 0;
             int listIndex = 0;
-            List<(int, PathCreator)> roadsCreator = new List<(int, PathCreator)>();
+            List<(int, PathCreator, bool)> roadsCreator = new List<(int, PathCreator, bool)>();
             int count = 0;
             bool first = true;
-            foreach ((Vector3, PathCreator) bezierAnchorPoint in bezierAnchorPoints)
+            bool prevReverse = bezierAnchorPoints[0].Item3;
+            foreach ((Vector3, PathCreator, bool) bezierAnchorPoint in bezierAnchorPoints)
             {
                 Debug.Log(bezierAnchorPoint.Item2 + " " + bezierAnchorPoint.Item1);
                 if (bezierAnchorPoint.Item2 != currentPathCreator)
@@ -216,27 +218,34 @@ namespace RoadGenerator
                         count ++;
                     else
                         first = false;
-                    roadsCreator.Add((count * 3 - 2, currentPathCreator));
+                    Debug.Log(prevReverse + "REVERSE");
+                    roadsCreator.Add((count * 3 - 2, currentPathCreator, prevReverse));
                     Debug.Log(count * 3 - 2);
                     currentPathCreator = bezierAnchorPoint.Item2;
+                    prevReverse = bezierAnchorPoint.Item3;
                     count = 0;
                 }
+                
                 count++;
             }
             if (!first)
                 count ++;
             else
                 first = false;
+            Debug.Log(prevReverse + "REVERSE");
             Debug.Log(count * 3 - 2);
-            roadsCreator.Add((count * 3 - 2, currentPathCreator));
+            roadsCreator.Add((count * 3 - 2, currentPathCreator, prevReverse));
             
             int index = 0;
-            foreach ((int, PathCreator) roadCreator in roadsCreator)
+            foreach ((int, PathCreator, bool) roadCreator in roadsCreator)
             {
                 for (var i = 0; i < roadCreator.Item1; i++)
                 {
-                    Debug.Log(roadCreator.Item2 + " " + connectedBezierPath.GetPoint(index));
-                    roadCreator.Item2.bezierPath.SetPoint(i, connectedBezierPath.GetPoint(index));
+                    int pathCreatorIndex = i;
+                    if (roadCreator.Item3)
+                        pathCreatorIndex = roadCreator.Item1 - i - 1;
+                    Debug.Log(roadCreator.Item2 + " pathIndex"  + pathCreatorIndex + " " + connectedBezierPath.GetPoint(index));
+                    roadCreator.Item2.bezierPath.SetPoint(pathCreatorIndex, connectedBezierPath.GetPoint(index));
                     index++;
                 }
                 index --;
@@ -276,14 +285,12 @@ namespace RoadGenerator
                 bezierPath.SetFirstAnchorPos(startPosOtherRoad);
                 ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.Start);
                 road.ConnectedToAtStart = new ConnectedRoad(this, EndOfRoadType.Start);
-                UpdateBezierPathControlPointsForConnectedRoads(road);
             }
             else if (Vector3.Distance(endPosOtherRoad, startPos) < connectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
             {
                 bezierPath.SetFirstAnchorPos(endPosOtherRoad);
                 ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.End);
                 road.ConnectedToAtEnd = new ConnectedRoad(this, EndOfRoadType.Start);
-                UpdateBezierPathControlPointsForConnectedRoads(road);
             }  
             else
             {
@@ -303,14 +310,12 @@ namespace RoadGenerator
                 bezierPath.SetLastAnchorPos(startPosOtherRoad);
                 ConnectedToAtEnd = new ConnectedRoad(road, EndOfRoadType.Start);
                 road.ConnectedToAtStart = new ConnectedRoad(this, EndOfRoadType.End);
-                UpdateBezierPathControlPointsForConnectedRoads(road);
             }
             else if (Vector3.Distance(endPosOtherRoad, endPos) < connectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
             {
                 bezierPath.SetLastAnchorPos(endPosOtherRoad);
                 ConnectedToAtEnd = new ConnectedRoad(road, EndOfRoadType.End);
                 road.ConnectedToAtEnd = new ConnectedRoad(this, EndOfRoadType.End);
-                UpdateBezierPathControlPointsForConnectedRoads(road);
             }
             else
             {
@@ -318,37 +323,37 @@ namespace RoadGenerator
             }
         }
 
-        public List<(Vector3, PathCreator)> GetBezierPointsInConnectedOrder(Road connectedRoad, EndOfRoadType endOfRoadType, bool directionTowardsConnectedRoad)
+        public List<(Vector3, PathCreator, bool)> GetBezierPointsInConnectedOrder(Road connectedRoad, EndOfRoadType endOfRoadType, bool directionTowardsConnectedRoad)
         {
             if (connectedRoad == null)
-                return new List<(Vector3, PathCreator)>();
-            List<(Vector3, PathCreator)> bezierPoints = new List<(Vector3, PathCreator)>();
+                return new List<(Vector3, PathCreator, bool)>();
+            List<(Vector3, PathCreator, bool)> bezierPoints = new List<(Vector3, PathCreator, bool)>();
             PathCreator pathCreator = RoadObject.GetComponent<PathCreator>();
             BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
-            List<(Vector3, PathCreator)> points1 = new List<(Vector3, PathCreator)>();
+            List<(Vector3, PathCreator, bool)> points1 = new List<(Vector3, PathCreator, bool)>();
+            bool willReverse = ConnectedToAtEnd?.Road == connectedRoad && !directionTowardsConnectedRoad; 
             for (var i = 0; i < bezierPath.NumPoints; i +=3)
             {
-                points1.Add((bezierPath.GetPoint(i), pathCreator));
+                points1.Add((bezierPath.GetPoint(i), pathCreator, willReverse));
             }
             // Always point outwards
-            if (ConnectedToAtEnd?.Road == connectedRoad)
+            if (willReverse)
             {
                 points1.Reverse();
             }
-            if (directionTowardsConnectedRoad)
-                points1.Reverse();
+
             points1.RemoveAt(0);
             bezierPoints.AddRange(points1);
 
             if (ConnectedToAtStart?.Road == connectedRoad && ConnectedToAtEnd != null)
             {
-                List<(Vector3, PathCreator)> points = ConnectedToAtEnd?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.End, directionTowardsConnectedRoad);
+                List<(Vector3, PathCreator, bool)> points = ConnectedToAtEnd?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.End, directionTowardsConnectedRoad);
                 bezierPoints.AddRange(points);
             }
 
             if (ConnectedToAtEnd?.Road == connectedRoad && ConnectedToAtStart != null)
             {
-                List<(Vector3, PathCreator)> points = ConnectedToAtStart?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.Start, directionTowardsConnectedRoad);
+                List<(Vector3, PathCreator, bool)> points = ConnectedToAtStart?.Road.GetBezierPointsInConnectedOrder(this, EndOfRoadType.Start, directionTowardsConnectedRoad);
                 bezierPoints.AddRange(points);
             }
 
@@ -374,80 +379,6 @@ namespace RoadGenerator
                 else
                     ConnectedToAtEnd = null;
             }
-        }
-        private void UpdateBezierPathControlPointsForConnectedRoads(Road connectedRoad)
-        {
-            return;
-            BezierPath bezierPath = RoadObject.GetComponent<PathCreator>().bezierPath;
-            
-
-            List<(Vector3, PathCreator)> anchorPointsThisRoad4 = new List<(Vector3, PathCreator)>();
-            anchorPointsThisRoad4 = GetBezierPointsInConnectedOrder(this, EndOfRoadType.Start, false);
-            foreach (var anchorPoint in anchorPointsThisRoad4)
-            {
-                Debug.Log(anchorPoint);
-            }
-
-            List<Vector3> anchorPointsThisRoad = new List<Vector3>();
-            for (var i = 0; i < bezierPath.NumPoints; i +=3)
-            {
-                anchorPointsThisRoad.Add(bezierPath.GetPoint(i));
-            }
-            if (ConnectedToAtStart?.Road == connectedRoad)
-                anchorPointsThisRoad.Reverse();
-            
-            BezierPath bezierPathOtherRoad = connectedRoad.RoadObject.GetComponent<PathCreator>().bezierPath;
-            List<Vector3> anchorPointsOtherRoad = new List<Vector3>();
-            for (var i = 0; i < bezierPathOtherRoad.NumPoints; i +=3)
-            {
-                anchorPointsOtherRoad.Add(bezierPathOtherRoad.GetPoint(i));
-            }
-            if (connectedRoad.ConnectedToAtEnd?.Road == this)
-                anchorPointsOtherRoad.Reverse();
-            anchorPointsOtherRoad.RemoveAt(0);
-            List<Vector3> anchorPoints = new List<Vector3>();
-            anchorPoints.AddRange(anchorPointsThisRoad);
-            anchorPoints.AddRange(anchorPointsOtherRoad);
-            BezierPath bezierPathNew = new BezierPath(anchorPoints, false, PathSpace.xz);
-
-            int index = 0;
-            if (ConnectedToAtStart?.Road == connectedRoad)
-            {
-                for (int i = bezierPath.NumPoints - 1; i >= 0; i--)
-                {
-                    bezierPath.SetPoint(i, bezierPathNew.GetPoint(index));
-                    index++;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < bezierPath.NumPoints; i++)
-                {
-                    bezierPath.SetPoint(i, bezierPathNew.GetPoint(index));
-                    index++;
-                }
-            }
-            index--;
-
-            
-            if (connectedRoad.ConnectedToAtEnd?.Road == this)
-            {
-                for (int i = bezierPathOtherRoad.NumPoints - 1; i >= 0; i--)
-                {
-                    bezierPathOtherRoad.SetPoint(i, bezierPathNew.GetPoint(index));
-                    index++;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < bezierPathOtherRoad.NumPoints; i++)
-                {
-                    bezierPathOtherRoad.SetPoint(i, bezierPathNew.GetPoint(index));
-                    index++;
-                }
-            }
-            bezierPath.NotifyPathModified();
-            connectedRoad.UpdateRoad();
         }
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
