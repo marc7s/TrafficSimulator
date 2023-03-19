@@ -49,6 +49,7 @@ namespace RoadGenerator
         {
             RoadNodeType.ThreeWayIntersection,
             RoadNodeType.FourWayIntersection,
+            RoadNodeType.RoadConnection,
             RoadNodeType.End
         };
 
