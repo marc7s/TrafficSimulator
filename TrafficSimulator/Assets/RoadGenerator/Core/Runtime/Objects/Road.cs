@@ -273,7 +273,7 @@ namespace RoadGenerator
                 count ++;
             Debug.Log(count * 3 - 2);
             roadsCreator.Add((count * 3 - 2, currentPathCreator, prevReverse));
-            
+            List<Road> roads = new List<Road>();
             int index = 0;
             foreach ((int, PathCreator, bool) roadCreator in roadsCreator)
             {
@@ -288,8 +288,15 @@ namespace RoadGenerator
                 }
                 index --;
                 roadCreator.Item2.bezierPath.NotifyPathModified();
+                if (!roads.Contains(roadCreator.Item2.gameObject.GetComponent<Road>()))
+                    roads.Add(roadCreator.Item2.gameObject.GetComponent<Road>());
+            }
+            foreach (Road road in roads)
+            {
+                road.UpdateRoad();
             }
         }
+        
 
         private void UpdateStartConnectionRoad(Road road)
         {
@@ -402,6 +409,7 @@ namespace RoadGenerator
                     ConnectedToAtStart = null;
                 else
                     ConnectedToAtEnd = null;
+                road.UpdateRoad();
                // road.ConnectRoadIfEndPointsAreClose();
             }
         }
@@ -500,7 +508,11 @@ namespace RoadGenerator
 
             // If the distance is less than the max distance, no intermediate nodes need to be added
             if(distanceToBridge <= MaxRoadNodeDistance)
-                return endIsLastNode ? AppendNode(builder, end, tangent, normal, RoadNodeType.End) : builder;
+            {
+                RoadNodeType endType = ConnectedToAtEnd == null ? RoadNodeType.End : RoadNodeType.RoadConnection;
+                return endIsLastNode ? AppendNode(builder, end, tangent, normal, endType) : builder;
+            }
+
             
             // Create a list to hold all intermediate positions that need to be added
             List<Vector3> roadNodePositions = new List<Vector3>();
@@ -559,8 +571,9 @@ namespace RoadGenerator
             // Set the end of path instruction depending on if the path is closed or not
             _endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
+            RoadNodeType startType = ConnectedToAtStart == null ? RoadNodeType.End : RoadNodeType.RoadConnection;
             // Create the start node for the road. The start node must be an end node
-            Start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, 0);
+            Start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
             
             // Create a new node builder starting at the start node
             NodeBuilder roadBuilder = new NodeBuilder(null, Start, 0);

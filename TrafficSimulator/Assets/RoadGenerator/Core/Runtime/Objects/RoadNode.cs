@@ -11,6 +11,7 @@ namespace RoadGenerator
         Roundabout,
         JunctionEdge,
         IntersectionGuide,
+        RoadConnection,
         End
     }
 
