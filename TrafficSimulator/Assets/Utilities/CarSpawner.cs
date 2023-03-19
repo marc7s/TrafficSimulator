@@ -39,7 +39,7 @@ namespace RoadGenerator
 
         private GameObject _currentCar;
 
-        private int _offset; // Offset for the lane index
+        private float _offset = 0; // Offset for the lane index
         private int _carCounter = 0;
 
         private bool _spawned = false;
@@ -152,7 +152,6 @@ namespace RoadGenerator
                     return;
 
                 // Calculate the offset
-                _offset = _lanes[i].StartNode.Count / carsToSpawn;
                 _laneNodeCurrent = _lanes[i].StartNode;
 
                 // Spawn cars
@@ -166,17 +165,10 @@ namespace RoadGenerator
                     SpawnCar(i);
 
                     _carCounter++;
-
-                    SetOffset(_offset);
+                    _offset += _lanes[i].Length / carsToSpawn;
+                    _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
                 }
-            }
-        }
-
-        private void SetOffset(int offset) 
-        {
-            for (int i = 0; i < offset; i++)
-            {
-                _laneNodeCurrent = _laneNodeCurrent.Next;
+                _offset = 0;
             }
         }
 
@@ -190,6 +182,19 @@ namespace RoadGenerator
             _currentCar.SetActive(true);
 
             _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next != null ? _laneNodeCurrent.Next : _laneNodeCurrent;
+        }
+
+        // Finds next LaneNode in lane after a certain distance
+        private LaneNode CalculateSpawnNode(float targetLength, Lane lane)
+        {
+            float currentLength = 0;
+            LaneNode curr = lane.StartNode;
+            while(curr != null && currentLength < targetLength)
+            {
+                currentLength += curr.DistanceToPrevNode;
+                curr = curr.Next;
+            }
+            return curr;
         }
     }
 }
