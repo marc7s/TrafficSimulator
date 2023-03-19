@@ -48,6 +48,7 @@ namespace Car {
         public bool ShowNavigationPath = false;
         [SerializeField][HideInInspector] private NavigationMode _navigationMode = NavigationMode.Disabled;
         [SerializeField] private NavigationMode _originalNavigationMode = NavigationMode.Disabled;
+        [SerializeField] private bool _logRepositioningInformation = true;
 
         [Header("Quality mode settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -304,7 +305,8 @@ namespace Car {
             // If the vehicle is driving and the target is behind us and too far away
             if (_status == Status.Driving && dot < 0 && direction.magnitude > _targetLookaheadDistance + 1f)
             {
-                Debug.Log("Repositioning started, slowing down...");
+                if(_logRepositioningInformation)
+                    Debug.Log("Repositioning started, slowing down...");
                 _status = Status.RepositioningInitiated;
 
                 // Reposition to the point prior to the one we missed
@@ -317,7 +319,8 @@ namespace Car {
             // If the vehicle has started repositioning and slowed down enough
             else if (_status == Status.RepositioningInitiated && _vehicleController.speed <= _vehicleController.maxSpeedForward)
             {
-                Debug.Log("Slowed down, releasing brakes and repositioning...");
+                if(_logRepositioningInformation)
+                    Debug.Log("Slowed down, releasing brakes and repositioning...");
                 _status = Status.Repositioning;
 
                 _vehicleController.brakeInput = 0f;
@@ -331,7 +334,8 @@ namespace Car {
                 // If the target is in front of us and we are close enough we have successfully repositioned
                 if (dot > 0 && direction.magnitude <= _targetLookaheadDistance - 1f) 
                 {
-                    Debug.Log("Repositioned, speeding back up...");
+                    if(_logRepositioningInformation)
+                        Debug.Log("Repositioned, speeding back up...");
                     _status = Status.Driving;
 
                     // Assume that the car travelled straight to the repositioning target

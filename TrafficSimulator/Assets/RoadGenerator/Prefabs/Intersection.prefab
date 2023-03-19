@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5387963023345359458}
   - component: {fileID: 1131470622488222073}
   - component: {fileID: 6349525408430712732}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Intersection
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fe983f4c8631b24ab4c047047091ba0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntersectionObject: {fileID: 0}
+  IntersectionObject: {fileID: 5761927508822258430}
   RoadSystem: {fileID: 0}
   IntersectionPosition: {x: 0, y: 0, z: 0}
   Road1: {fileID: 0}
@@ -62,7 +62,7 @@ MonoBehaviour:
   ID: 
   _guideRoadNodePrefab: {fileID: 6519265059532225654, guid: 05acad94cfea5be4d9c4ae2b9e81982a, type: 3}
   _guideLaneNodePrefab: {fileID: 6519265059532225654, guid: cd0b879c858f97b499405ab9f1cfcb01, type: 3}
-  _stretchFactor: 0.4
+  _stretchFactor: 0
   _flowType: 0
   _material: {fileID: 2100000, guid: 95fd35d811c46354da85037da76c5774, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: ac13cd34ea241854f9dc39260c81716b, type: 2}

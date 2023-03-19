@@ -54,7 +54,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _guideLaneNodePrefab;
 
         [Header("Intersection settings")]
-        [SerializeField][Range(0, 0.8f)] float _stretchFactor = 0.4f;
+        [SerializeField][Range(0, 0.8f)] private float _stretchFactor = 0;
         [SerializeField] private FlowType _flowType = FlowType.TrafficLights;
 
         [Header ("Material settings")]
@@ -105,6 +105,12 @@ namespace RoadGenerator
             }
 #endif
 
+        void Awake()
+        {
+            IntersectionObject = gameObject;
+            _flowContainer = IntersectionObject.transform.Find("FlowContainer")?.gameObject;
+        }
+
         public void UpdateMesh()
         {
             // Set the thickness of the intersection
@@ -129,6 +135,8 @@ namespace RoadGenerator
             }
             OffsetSigns();
             ShowGuideNodes();
+
+            gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
         }
 
         /// <summary> Returns a list of all RoadNodes that are of type `JunctionEdge` or an intersection. This is because for 3-way intersections, the intersection node are used as an anchor </summary>
@@ -417,15 +425,20 @@ namespace RoadGenerator
                 Vector3 topMidLeft = road1BottomLeft + tmlDir * road2HalfWidth * 2;
                 Vector3 topMidRight = road1TopLeft - tmlDir * road2HalfWidth * 2;
 
-                // Helper points in the middle between the road edges
-                Vector3 bottomLeftMid = Vector3.Lerp(road2BottomLeft, road1BottomRight, _stretchFactor);
-                Vector3 bottomRightMid = Vector3.Lerp(road2BottomRight, road1TopRight, _stretchFactor);
+                Vector3 road1Dir = (road1Anchor1Node.Position - road1Anchor2Node.Position).normalized;
+                Vector3 road2Dir = bottomCoefficient * (road2Anchor1Node.Position - IntersectionPosition).normalized;
+
+                (Vector3, Vector3) road1BottomRightLine = (road1BottomRight, road1Dir);
+                (Vector3, Vector3) road1TopRightLine = (road1TopRight, -road1Dir);
+                
+                (Vector3, Vector3) road2BottomLeftLine = (road2BottomLeft, road2Dir);
+                (Vector3, Vector3) road2BottomRightLine = (road2BottomRight, road2Dir);
 
                 // Mid points
-                Vector3 i1 = Vector3.Lerp(bottomLeftMid, IntersectionPosition, _stretchFactor);
+                Vector3 i1 = GetMidPointCorner(road2BottomLeftLine, road1BottomRightLine);
                 Vector3 i2 = topMidLeft;
                 Vector3 i3 = topMidRight;
-                Vector3 i4 = Vector3.Lerp(bottomRightMid, IntersectionPosition, _stretchFactor);
+                Vector3 i4 = GetMidPointCorner(road2BottomRightLine, road1TopRightLine);
                 
                 // Road edge points
                 Vector3 i5 = road2BottomLeft;
@@ -461,19 +474,25 @@ namespace RoadGenerator
 
                 Vector3 road2TopLeft = road2Anchor2Node.Position + directionCoefficient * road2Anchor2Node.Normal * road2HalfWidth;
                 Vector3 road2TopRight = road2Anchor2Node.Position - directionCoefficient * road2Anchor2Node.Normal * road2HalfWidth;
-                
-                // Helper points in the middle between the road edges
-                Vector3 bottomLeftMid = Vector3.Lerp(road1BottomLeft, road2BottomRight, 0.5f);
-                Vector3 bottomRightMid = Vector3.Lerp(road1BottomRight, road2TopRight, 0.5f);
-                Vector3 topLeftMid = Vector3.Lerp(road1TopLeft, road2BottomLeft, 0.5f);
-                Vector3 topRightMid = Vector3.Lerp(road1TopRight, road2TopLeft, 0.5f);
-                
+
+                Vector3 road1Dir = (road1Anchor1Node.Position - road1Anchor2Node.Position).normalized;
+                Vector3 road2Dir = (road2Anchor2Node.Position - road2Anchor1Node.Position).normalized;
+
+                (Vector3, Vector3) road1BottomLeftLine = (road1BottomLeft, road1Dir);
+                (Vector3, Vector3) road1BottomRightLine = (road1BottomRight, road1Dir);
+                (Vector3, Vector3) road1TopLeftLine = (road1TopLeft, -road1Dir);
+                (Vector3, Vector3) road1TopRightLine = (road1TopRight, -road1Dir);
+
+                (Vector3, Vector3) road2BottomLeftLine = (road2BottomLeft, road2Dir);
+                (Vector3, Vector3) road2BottomRightLine = (road2BottomRight, road2Dir);
+                (Vector3, Vector3) road2TopLeftLine = (road2TopLeft, -road2Dir);
+                (Vector3, Vector3) road2TopRightLine = (road2TopRight, -road2Dir);
 
                 // Mid points
-                Vector3 i1 = Vector3.Lerp(bottomLeftMid, IntersectionPosition, _stretchFactor);
-                Vector3 i2 = Vector3.Lerp(topLeftMid, IntersectionPosition, _stretchFactor);
-                Vector3 i3 = Vector3.Lerp(topRightMid, IntersectionPosition, _stretchFactor);
-                Vector3 i4 = Vector3.Lerp(bottomRightMid, IntersectionPosition, _stretchFactor);
+                Vector3 i1 = GetMidPointCorner(road1BottomLeftLine, road2BottomRightLine);
+                Vector3 i2 = GetMidPointCorner(road1TopLeftLine, road2BottomLeftLine);
+                Vector3 i3 = GetMidPointCorner(road2TopLeftLine, road1TopRightLine);
+                Vector3 i4 = GetMidPointCorner(road2TopRightLine, road1BottomRightLine);
 
                 // Road edge points
                 Vector3 i5 = road1BottomLeft;
@@ -515,6 +534,44 @@ namespace RoadGenerator
             _mesh.subMeshCount = 2;
 
             _mesh.SetTriangles(topTris.ToArray(), 0);
+        }
+
+        /// <summary> Returns the position of a mid point corner used for creating the intersections. Uses line intersection with a fallback for lerps </summary>
+        private Vector3 GetMidPointCorner((Vector3 position, Vector3 direction) main, (Vector3 position, Vector3 direction) projectionTarget)
+        {
+            // Normalize the directions. It should not matter for the algorithm,
+            // but if these vectors would be abnormally large the intersection point accuracy could be compromised, so this is mostly here for sanity
+            main.direction = main.direction.normalized;
+            projectionTarget.direction = projectionTarget.direction.normalized;
+
+            // Project the a direction onto the 2D plane as the intersection algorithm works in 2D
+            Vector2 a2Ddir = new Vector2(main.direction.x, main.direction.z);
+
+            // Project the b position and direction onto the 2D plane as the intersection algorithm works in 2D
+            Vector2 b2DPos = new Vector2(projectionTarget.position.x, projectionTarget.position.z);
+            Vector2 b2Ddir = new Vector2(projectionTarget.direction.x, projectionTarget.direction.z);
+
+            // Calculate the intersection coefficient for b, see the documentation for an explanation
+            float coefB = (main.direction.x * (projectionTarget.position.z - main.position.z) - main.direction.z * (projectionTarget.position.x - main.position.x)) 
+                / (main.direction.z * projectionTarget.direction.x - main.direction.x * projectionTarget.direction.z);
+
+            // Calculate the intersection point as the b point offset by the intersection coefficient for b in the direction of b
+            Vector2 intersectPos2D = b2DPos + coefB * b2Ddir;
+
+            // If there is no intersection (directions are parallell), or the intersection is too far away, use a default method instead
+            if(a2Ddir == b2Ddir || Vector2.Distance(intersectPos2D, b2DPos) > Vector3.Distance(main.position, projectionTarget.position))
+            {
+                Vector3 midPoint = Vector3.Lerp(main.position, projectionTarget.position, 0.5f);
+                return Vector3.Lerp(midPoint, IntersectionPosition, _stretchFactor);
+            }
+            else
+            {
+                // Project the intersection position back to the 3D plane, with the y coordinate set to the average y coordinate of the two points
+                Vector3 intersectPos = new Vector3(intersectPos2D.x, Vector3.Lerp(main.position, projectionTarget.position, 0.5f).y, intersectPos2D.y);
+                
+                // Return the intersection position, offset in the projection target position by the stretch factor to apply the stretch
+                return Vector3.Lerp(intersectPos, projectionTarget.position, _stretchFactor);
+            }
         }
 
         /// <summary>Returns a list of vertices that make up a rectangle</summary>
@@ -660,27 +717,33 @@ namespace RoadGenerator
                         continue;
                     }
 
-                   
-
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
                     if (isEdgePointingToIntersection)
                     {
-                        // Add the node to the list of entry nodes
-                        entryNodes.Add(currentNode);
-                        
-                        // Create entry intersection lane nodes for navigation in the intersection
-                        CreateEntryIntersectionLaneNodes(currentNode, currentNode.Next);
-                        
+                        // Add entry nodes if the current node is related to this intersection
+                        if(currentNode.RoadNode.Intersection == this)
+                        {
+                            // Add the node to the list of entry nodes
+                            entryNodes.Add(currentNode);
+
+                            // Create entry intersection lane nodes for navigation in the intersection
+                            CreateEntryIntersectionLaneNodes(currentNode, currentNode.Next);
+                        }
+                            
                         currentNode = currentNode.Next;
                         continue;
                     }
 
-                    // Since it was not an entry node, it must be an exit node, so add it to the exit node list
-                    exitNodes.Add(currentNode);
+                    // Add exit nodes if the current node is related to this intersection
+                    if(currentNode.RoadNode.Intersection == this)
+                    {
+                        // Since it was not an entry node, it must be an exit node, so add it to the exit node list
+                        exitNodes.Add(currentNode);
 
-                    // Create exit intersection lane nodes for navigation in the intersection
-                    CreateExitIntersectionLaneNodes(currentNode, currentNode.Prev);
+                        // Create exit intersection lane nodes for navigation in the intersection
+                        CreateExitIntersectionLaneNodes(currentNode, currentNode.Prev);
+                    }
 
                     // If the node is an anchor point, we map the edge going out of the intersection to the node
                     if (currentNode.RoadNode.Position == Road1AnchorPoint1)
