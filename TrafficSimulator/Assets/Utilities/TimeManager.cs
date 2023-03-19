@@ -46,8 +46,6 @@ public class TimeManager : MonoBehaviour
         // Initialize calendar
         InitCalendar();
 
-        AddEvent(2023, 3, 19, 13, 0, 30);
-
         _timer = secondToRealTime;
         _targetSecondToRealTime = secondToRealTime;
         Mode = TimeMode.Running;

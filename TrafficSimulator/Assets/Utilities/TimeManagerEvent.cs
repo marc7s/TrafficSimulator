@@ -7,12 +7,12 @@ public class TimeManagerEvent : System.IComparable<TimeManagerEvent>, System.IEq
     private TimeManagerEvent _prev;
     private TimeManagerEvent _next;
     public string TimeStamp;
-    public int Priority;
+    private int _priority;
 
     public TimeManagerEvent(int priority, string timeStamp) : this(priority, null, null, timeStamp){}
     public TimeManagerEvent(int priority, TimeManagerEvent prev, TimeManagerEvent next, string timeStamp)
     {
-        Priority = priority;
+        _priority = priority;
         _prev = prev;
         _next = next;
         TimeStamp = timeStamp;
@@ -20,7 +20,7 @@ public class TimeManagerEvent : System.IComparable<TimeManagerEvent>, System.IEq
 
     public int CompareTo(TimeManagerEvent other)
     {
-        return Priority.CompareTo(other.Priority);
+        return _priority.CompareTo(other._priority);
     }
 
     public bool Equals(TimeManagerEvent other) {
