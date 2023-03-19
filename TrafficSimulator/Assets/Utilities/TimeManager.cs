@@ -70,6 +70,7 @@ public class TimeManager : MonoBehaviour
         CheckSchedule();
     }
 
+    /// <summary> Looks if the next scheduled event should execute at the current time </summary>
     private void CheckSchedule()
     {
         // Check if there are any events scheduled for the current time
@@ -86,7 +87,7 @@ public class TimeManager : MonoBehaviour
         }
     }
 
-    // Determines if time should move forwards or backwards depending on current mode
+    /// <summary> Determines if time should move forwards or backwards depending on current mode </summary>
     private void RunTime()
     {
         if(Mode != TimeMode.Rewind)
@@ -162,7 +163,7 @@ public class TimeManager : MonoBehaviour
     }
 
 
-    // Initializes calendar with empty priority queues for each month
+    /// </summary> Initializes calendar with an empty priority queue for each month </summary>
     private void InitCalendar()
     {
         for(int i = 0; i < 12; i++)
@@ -171,7 +172,7 @@ public class TimeManager : MonoBehaviour
         }
     }
 
-    // Sets the current time to the given values
+    /// </summary> Sets the current time to the given values </summary>
     private void SetTime(int year, int month, int day, int hour, int minute, int second)
     {
         Year = year;
@@ -182,14 +183,14 @@ public class TimeManager : MonoBehaviour
         Second = second;
     }
 
-    // Returns a string with the given time values in the format "yyyy:MM:dd:HH:mm:ss"
+    /// </summary> Returns a string with the given time values in the format "yyyy:MM:dd:HH:mm:ss" </summary>
     private string GetTimeStamp(int year, int month, int day, int hour, int minute, int second)
     {
         string timeStamp = $"{year:0000}:{month:00}:{day:00}:{hour:00}:{minute:00}:{second:00}";
         return timeStamp;
     }
 
-    // Calculates the priority of an event based on the given time values
+    /// </summary> Calculates the priority of an event based on the given time values </summary>
     private int CalculatePriority(int year, int day, int hour, int minute, int second)
     {
         int priority = 0;
@@ -201,7 +202,7 @@ public class TimeManager : MonoBehaviour
         return priority;
     }
 
-    // Adds an event to the calendar
+    /// </summary> Adds an event to the calendar </summary>
     private void AddEvent(int year, int month, int day, int hour, int minute, int second)
     {
         string timeStamp = GetTimeStamp(year, month, day, hour, minute, second);
@@ -210,19 +211,19 @@ public class TimeManager : MonoBehaviour
         _calendar[month].Enqueue(new TimeManagerEvent(priority, timeStamp));
     }
 
-    // Sets current mode to fast forward
+    /// </summary> Sets current mode to fast forward </summary>
     public static void FastForward()
     {
         Mode = Mode != TimeMode.Fast ? TimeMode.Fast : TimeMode.Running;
     }
 
-    // Sets current mode to rewind
+    /// </summary> Sets current mode to rewind </summary>
     public static void Rewind()
     {
         Mode = Mode != TimeMode.Rewind ? TimeMode.Rewind : TimeMode.Running;
     }
 
-    // Sets current mode to paused
+    /// </summary> Sets current mode to paused </summary>
     public static void Pause()
     {
         Mode = Mode != TimeMode.Paused ? TimeMode.Paused : TimeMode.Running;
