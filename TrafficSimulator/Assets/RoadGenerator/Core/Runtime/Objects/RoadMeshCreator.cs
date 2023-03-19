@@ -18,7 +18,7 @@ namespace RoadGenerator
         private Material _laneMaterialCopy;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
-        private Mesh _mesh;
+        public Mesh _mesh;
         private Road _road;
         [SerializeField, HideInInspector] private GameObject _meshHolder;
 
@@ -53,6 +53,7 @@ namespace RoadGenerator
                 AssignMeshComponents();
                 AssignMaterials();
                 CreateRoadMesh();
+                _road.gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
             }
         }
 
