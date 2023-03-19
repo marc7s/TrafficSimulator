@@ -190,13 +190,14 @@ public class TimeManager : MonoBehaviour
     }
 
     // Calculates the priority of an event based on the given time values
-    private int CalculatePriority(int day, int hour, int minute, int second)
+    private int CalculatePriority(int year, int day, int hour, int minute, int second)
     {
         int priority = 0;
         priority += second;
         priority += minute * 60;
         priority += hour * 60 * 60;
         priority += day * 60 * 60 * 24;
+        priority += year * 60 * 60 * 24 * 365;
         return priority;
     }
 
@@ -204,7 +205,7 @@ public class TimeManager : MonoBehaviour
     private void AddEvent(int year, int month, int day, int hour, int minute, int second)
     {
         string timeStamp = GetTimeStamp(year, month, day, hour, minute, second);
-        int priority = CalculatePriority(day, hour, minute, second);
+        int priority = CalculatePriority(year, day, hour, minute, second);
 
         _calendar[month].Enqueue(new TimeManagerEvent(priority, timeStamp));
     }
