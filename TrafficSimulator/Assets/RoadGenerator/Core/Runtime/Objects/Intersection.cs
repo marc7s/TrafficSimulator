@@ -54,7 +54,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _guideLaneNodePrefab;
 
         [Header("Intersection settings")]
-        [SerializeField][Range(0, 0.8f)] float _stretchFactor = 0;
+        [SerializeField][Range(0, 0.8f)] private float _stretchFactor = 0;
         [SerializeField] private FlowType _flowType = FlowType.TrafficLights;
 
         [Header ("Material settings")]
