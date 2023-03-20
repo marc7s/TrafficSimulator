@@ -6,12 +6,13 @@ namespace RoadGenerator
     /// <summary>Represents a single node in a lane</summary>
     public class LaneNode : Node<LaneNode>
     {
-        private RoadNode _roadNode;
-        private LaneSide _laneSide;
-        private Vehicle _vehicle;
+        protected RoadNode _roadNode;
+        protected LaneSide _laneSide;
+        protected Vehicle _vehicle;
+        protected int _laneIndex;
 
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
-        public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, roadNode, null, null, distanceToPrevNode){}
+        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, laneIndex, roadNode, null, null, distanceToPrevNode){}
         
         /// <summary>Creates a new lane node</summary>
         /// <param name="position">The position of the node</param>
@@ -20,10 +21,11 @@ namespace RoadGenerator
         /// <param name="prev">The previous lane node. Pass `null` if there is no previous</param>
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
         /// <param name="distanceToPrevNode">The distance to the previous (current end node)</param>
-        public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode)
+        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode)
         {
             _position = position;
             _laneSide = laneSide;
+            _laneIndex = laneIndex;
             _roadNode = roadNode;
             _prev = prev;
             _next = next;
@@ -96,7 +98,7 @@ namespace RoadGenerator
                 curr = curr.Prev;
             }
             
-            // The target was not found, so set the distance to -1 and return false
+            // The target was not found, so set the distance to 0 and return false
             distance = 0;
             return false;
         }
@@ -106,8 +108,17 @@ namespace RoadGenerator
         {
             return _laneSide == LaneSide.Primary ? _roadNode.PrimaryNavigationNodeEdge : _roadNode.SecondaryNavigationNodeEdge;
         }
+        public int Index
+        {
+            get => _laneIndex;
+        }
+
+        public LaneSide LaneSide
+        {
+            get => _laneSide;
+        }
         
-        public RoadNode RoadNode
+        public virtual RoadNode RoadNode
         {
             get => _roadNode;
         }
@@ -115,17 +126,17 @@ namespace RoadGenerator
         {
             get => _roadNode.Type;
         }
-        public Vehicle Vehicle
+        public virtual Vehicle Vehicle
         {
             get => _vehicle;
         }
         public override LaneNode Copy()
         {
-            return new LaneNode(_position, _laneSide, _roadNode, _prev, _next, _distanceToPrevNode);
+            return new LaneNode(_position, _laneSide, _laneIndex, _roadNode, _prev, _next, _distanceToPrevNode);
         }
         
         /// <summary>Tries to assign a vehicle to this node. Returns `true` if it succeded, `false` if there is already a vehicle assigned</summary>
-        public bool SetVehicle(Vehicle vehicle)
+        public virtual bool SetVehicle(Vehicle vehicle)
         {
             if(_vehicle == null)
             {
@@ -136,7 +147,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Tries to unset a vehicle from this node. Returns `true` if it succeded, `false` if either no vehicle is assigned, or a different vehicle is assigned</summary>
-        public bool UnsetVehicle(Vehicle vehicle)
+        public virtual bool UnsetVehicle(Vehicle vehicle)
         {
             if(_vehicle == vehicle)
             {

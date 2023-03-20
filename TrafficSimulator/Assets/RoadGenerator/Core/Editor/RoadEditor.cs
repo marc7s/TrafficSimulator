@@ -18,6 +18,9 @@ namespace RoadEditor
             private SerializedProperty _drawRoadNodes;
             private SerializedProperty _drawLaneNodes;
             private SerializedProperty _drawLaneNodePointers;
+            private SerializedProperty _generateSpeedSigns;
+            private SerializedProperty _speedLimit;
+            private SerializedProperty _speedSignDistanceFromIntersectionEdge;
         #endregion
 
         private void OnEnable()
@@ -32,12 +35,14 @@ namespace RoadEditor
             _drawRoadNodes = serializedObject.FindProperty("DrawRoadNodes");
             _drawLaneNodes = serializedObject.FindProperty("DrawLaneNodes");
             _drawLaneNodePointers = serializedObject.FindProperty("DrawLaneNodePointers");
+            _generateSpeedSigns = serializedObject.FindProperty("GenerateSpeedSigns");
+            _speedLimit = serializedObject.FindProperty("SpeedLimit");
+            _speedSignDistanceFromIntersectionEdge = serializedObject.FindProperty("SpeedSignDistanceFromIntersectionEdge");
         }
         public override void OnInspectorGUI()
         {
             // Uncomment this to change connections
             //DrawDefaultInspector();
-            
             
             serializedObject.Update();
             Road road = (Road)target;
@@ -49,9 +54,13 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_maxAngleError);
             EditorGUILayout.PropertyField(_minVertexDistance);
             EditorGUILayout.PropertyField(_maxRoadNodeDistance);
+            EditorGUILayout.PropertyField(_generateSpeedSigns);
+            EditorGUILayout.PropertyField(_speedLimit);
+            EditorGUILayout.PropertyField(_speedSignDistanceFromIntersectionEdge);
             EditorGUILayout.PropertyField(_drawLanes);
             EditorGUILayout.PropertyField(_drawRoadNodes);
             EditorGUILayout.PropertyField(_drawLaneNodes);
+
             
             // Only show the Draw Lane Pointers option if we are drawing lane nodes
             if(_drawLaneNodes.boolValue)
@@ -104,6 +113,21 @@ namespace RoadEditor
             {
                 changed = true;
                 road.DrawRoadNodes = _drawRoadNodes.boolValue;
+            }
+            if (_generateSpeedSigns.boolValue != road.GenerateSpeedSigns)
+            {
+                changed = true;
+                road.GenerateSpeedSigns = _generateSpeedSigns.boolValue;
+            }
+            if (_speedLimit.intValue != (int)road.SpeedLimit)
+            {
+                changed = true;
+                road.SpeedLimit = (SpeedLimit)_speedLimit.intValue;
+            }
+            if (_speedSignDistanceFromIntersectionEdge.floatValue != road.SpeedSignDistanceFromIntersectionEdge)
+            {
+                changed = true;
+                road.SpeedSignDistanceFromIntersectionEdge = _speedSignDistanceFromIntersectionEdge.floatValue;
             }
 
             if(_drawLaneNodes.boolValue != road.DrawLaneNodes)
