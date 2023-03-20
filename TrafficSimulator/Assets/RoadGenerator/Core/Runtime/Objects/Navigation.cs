@@ -141,6 +141,7 @@ namespace RoadGenerator
             lineRenderer.startWidth = 1f;
             lineRenderer.endWidth = 1f;
             List<Vector3> positions = new List<Vector3>();
+            
             // Go through the path according to the road logic and add the positions to the list
             while (current != null)
             {
