@@ -99,15 +99,13 @@ namespace Simulation
         {
             // Check if there are any events scheduled for the current time
             PriorityQueue<TimeManagerEvent> currentMonth = _calendar[Month];
-            if(currentMonth.Count > 0)
+            
+            // Dequeue all events that should execute at the current time
+            while(currentMonth.Count > 0 && currentMonth.Peek().IsOnOrBefore(_dateTime))
             {
-                // Dequeue all events that should execute at the current time
-                while(currentMonth.Peek().IsOnOrBefore(_dateTime))
-                {
-                    TimeManagerEvent currentEvent = currentMonth.Dequeue();
-                    currentEvent.OnEvent?.Invoke();
-                    Debug.Log("Event triggered: " + currentEvent.TimeStamp);
-                }
+                TimeManagerEvent currentEvent = currentMonth.Dequeue();
+                currentEvent.OnEvent?.Invoke();
+                Debug.Log("Event triggered: " + currentEvent.TimeStamp);
             }
         }
 
