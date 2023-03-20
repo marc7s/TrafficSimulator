@@ -113,6 +113,7 @@ namespace RoadGenerator
 
         public void UpdateMesh()
         {
+            Debug.Log("Updating intersection mesh");
             // Set the thickness of the intersection
             _thickness = Road1.Thickness;
             
