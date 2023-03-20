@@ -60,6 +60,20 @@ namespace RoadGenerator
         public RoadSystem RoadSystem;
         public GameObject RoadNodePrefab;
         public GameObject LaneNodePrefab;
+        [SerializeField] private GameObject _trafficSignContainer;
+        [SerializeField] private GameObject _speedSignTenKPH;
+        [SerializeField] private GameObject _speedSignTwentyKPH;
+        [SerializeField] private GameObject _speedSignThirtyKPH;
+        [SerializeField] private GameObject _speedSignFortyKPH;
+        [SerializeField] private GameObject _speedSignFiftyKPH;
+        [SerializeField] private GameObject _speedSignSixtyKPH;
+        [SerializeField] private GameObject _speedSignSeventyKPH;
+        [SerializeField] private GameObject _speedSignEightyKPH;
+        [SerializeField] private GameObject _speedSignNinetyKPH;
+        [SerializeField] private GameObject _speedSignOneHundredKPH;
+        [SerializeField] private GameObject _speedSignOneHundredTenKPH;
+        [SerializeField] private GameObject _speedSignOneHundredTwentyKPH;
+        [SerializeField] private GameObject _speedSignOneHundredThirtyKPH;
         
 
         [Header ("Road settings")]
@@ -69,6 +83,9 @@ namespace RoadGenerator
         [Range(0.1f, 5f)] public float MaxAngleError = 2f;
         [Range(0, 5f)] public float MinVertexDistance = 0;
         [Range(1f, 20f)] public float MaxRoadNodeDistance = 5f;
+        public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
+        public bool GenerateSpeedSigns = true;
+        public float SpeedSignDistanceFromIntersectionEdge = 5f;
         
 
         [Header ("Debug settings")]
@@ -90,10 +107,11 @@ namespace RoadGenerator
         
         private const string LANE_NAME = "Lane";
         private const string LANE_CONTAINER_NAME = "Lanes";
-        private const string ROAD_NODE_CONTAINER_NAME = "Road nodes";
+        private const string ROAD_NODE_CONTAINER_NAME = "Road Nodes";
         private const string LANE_NODE_NAME = "LaneNode";
-        private const string LANE_NODE_CONTAINER_NAME = "Lane nodes";
-        private const string LANE_NODE_POINTER_NAME = "Lane node pointer";
+        private const string LANE_NODE_CONTAINER_NAME = "Lane Nodes";
+        private const string LANE_NODE_POINTER_NAME = "Lane Node Pointer";
+        private const string TRAFFIC_SIGN_CONTAINER_NAME = "Traffic Sign Container";
 
 
         public Intersection[] GetIntersections()
@@ -138,7 +156,7 @@ namespace RoadGenerator
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
             if(roadMeshCreator != null)
                 roadMeshCreator.UpdateMesh();
-
+            PlaceTrafficSigns();
             // There might have been changes to the RoadNodes and therefore LaneNodes, so we need to update the visual representations
             ShowRoadNodes();
             ShowLaneNodes();
@@ -156,6 +174,7 @@ namespace RoadGenerator
                 foreach(Intersection intersection in Intersections)
                     intersection.UpdateMesh();
                 RoadSystem.UpdateRoadSystemGraph();
+                PlaceTrafficSigns();
                 ShowLanes();
                 ShowRoadNodes();
                 ShowLaneNodes();
@@ -170,22 +189,8 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
+                PlaceTrafficSigns();
             } 
-        }
-
-        private void AddIntersectionNode(ref RoadNode curr, Vector3 position, RoadNodeType type)
-        {
-            RoadNode next = curr.Next == null ? null : curr.Next.Next;
-
-            float time = next == null ? curr.Time : (next.Time + curr.Time) / 2;
-
-            // Add the intersection node
-            curr.Next = new RoadNode(position, curr.Tangent, curr.Normal, type, curr, next, Vector3.Distance(curr.Position, position), time);
-            curr = curr.Next;
-
-            // If the road does not end at the intersection, update the distance on the following node as well
-            if(curr != null)
-                curr.DistanceToPrevNode = Vector3.Distance(position, curr.Position);
         }
 
         private (Vector3, Vector3, float, float) GetPositionsAndDistancesInOrder(Vector3 position1, Vector3 position2, VertexPath path)
@@ -284,71 +289,18 @@ namespace RoadGenerator
             BezierPath path = RoadObject.GetComponent<PathCreator>().bezierPath;
             _path = new VertexPath(path, transform, MaxAngleError, MinVertexDistance);
             
-            this._length = _path.length;
+            _length = _path.length;
 
             // Set the end of path instruction depending on if the path is closed or not
-            this._endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
+            _endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
             // Create the start node for the road. The start node must be an end node
-            this._start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, 0);
+            _start = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), RoadNodeType.End, 0, 0);
             
             // Create a new node builder starting at the start node
             NodeBuilder roadBuilder = new NodeBuilder(null, _start, 0);
 
-            // Calculating the path distance for each intersection on the road
-            PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
-            foreach(Intersection intersection in Intersections)
-            {
-                if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
-                { 
-                    if(intersection.Road1 == this)
-                    {
-                        // This is Road1, so the intersection is somewhere in the middle of this road
-                        Vector3 anchor1 = intersection.Road1AnchorPoint1;
-                        Vector3 anchor2 = intersection.Road1AnchorPoint2;
-                        float firstDistance = _path.GetClosestDistanceAlongPath(anchor1);
-                        float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
-                        float secondDistance = _path.GetClosestDistanceAlongPath(anchor2);
-
-                        (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
-                    }
-                    else
-                    {
-                        // This is Road2, so the intersection is at the start or end of this road
-                        // The first anchor is AnchorPoint1 of Road2, however the second anchor is the intersection position since it starts or ends there
-                        Vector3 anchor1 = intersection.Road2AnchorPoint1;
-                        Vector3 anchor2 = intersection.IntersectionPosition;
-
-                        bool isStart = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
-
-                        // Force the intersection distance to be either the the minimum or maximum since the road either starts or ends at the intersection
-                        float intersectionDistance = isStart ? 0 : _path.length;
-                        
-                        float junctionDistance = _path.GetClosestDistanceAlongPath(anchor1);
-
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart, intersection));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart, intersection));
-
-                        if(!isStart)
-                            queuedNodes.Enqueue(new QueuedNode(RoadNodeType.End, intersectionDistance, intersection.IntersectionPosition, false, intersection));
-                    }
-                }
-                else if(intersection.Type == IntersectionType.FourWayIntersection)
-                {
-                    Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
-                    Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
-                    float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
-
-
-                    (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
-                }
-            }
+            PriorityQueue<QueuedNode> queuedNodes = QueueIntersectionNodes();
 
             // A dictionary to keep track of the intersections. If it is empty then we are currently not inside an intersection
             Dictionary<string, int> insideIntersections = new Dictionary<string, int>();
@@ -374,7 +326,7 @@ namespace RoadGenerator
                         // There might be multiple queued nodes to be added between these vertex points, so we continue adding until there are no more nodes left to add, or the next one should be added later
                         while(queuedNodes.Count > 0 && (i == _path.NumPoints - 1 || queuedNodes.Peek().Distance <= _path.cumulativeLengthAtEachVertex[i + 1]))
                         {
-                            QueuedNode nextNode = (QueuedNode)queuedNodes.Peek();
+                            QueuedNode nextNode = queuedNodes.Peek();
 
                             // At this point we know that we have a queued node to be added this iteration. However, it might be too far away, so if we are not yet
                             // in the intersection we need to bridge the gap and add intermediate RoadNodes up to the junction edge
@@ -420,11 +372,9 @@ namespace RoadGenerator
             _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
             _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
         
-            RoadNode current = _start;
             // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
                 _start.UpdateIntersectionJunctionEdgeNavigation(this);
-            
         }
 
         /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
@@ -437,9 +387,9 @@ namespace RoadGenerator
             previous = current;
 
             // Calculate the position of the new node
-            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
+            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth * (0.5f + current.Index);
             // Create the new node
-            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, current.Index, roadNode, previous, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
@@ -470,11 +420,14 @@ namespace RoadGenerator
             for(int i = 0; i < laneCount; i++)
             {
                 // Primary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Primary, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth * (0.5f + i), LaneSide.Primary, i, currRoadNode, 0)));
 
                 // Secondary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Secondary, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth * (0.5f + i), LaneSide.Secondary, i, currRoadNode, 0)));
             }
+
+            // The lane nodes for the first road node has already been added, so we skip that one
+            currRoadNode = currRoadNode.Next;
             
             // Go through all road nodes and add the corresponding lane nodes
             while(currRoadNode != null)
@@ -510,8 +463,180 @@ namespace RoadGenerator
                 _lanes.Add(secondaryLane);
             }
         }
+        private PriorityQueue<QueuedNode> QueueIntersectionNodes()
+        {
+            // Calculating the path distance for each intersection on the road
+            PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
+            foreach(Intersection intersection in Intersections)
+            {
+                if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
+                { 
+                    if(intersection.Road1 == this)
+                    {
+                        // This is Road1, so the intersection is somewhere in the middle of this road
+                        Vector3 anchor1 = intersection.Road1AnchorPoint1;
+                        Vector3 anchor2 = intersection.Road1AnchorPoint2;
+                        float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
 
-        /// <summary>Draws the lanes as coloured lines</summary>
+                        (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
+                    }
+                    else
+                    {
+                        // This is Road2, so the intersection is at the start or end of this road
+                        // The first anchor is AnchorPoint1 of Road2, however the second anchor is the intersection position since it starts or ends there
+                        Vector3 anchor1 = intersection.Road2AnchorPoint1;
+
+                        bool isStart = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
+
+                        // Force the intersection distance to be either the the minimum or maximum since the road either starts or ends at the intersection
+                        float intersectionDistance = isStart ? 0 : _path.length;
+                        
+                        float junctionDistance = _path.GetClosestDistanceAlongPath(anchor1);
+
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart, intersection));
+
+                        if(!isStart)
+                            queuedNodes.Enqueue(new QueuedNode(RoadNodeType.End, intersectionDistance, intersection.IntersectionPosition, false, intersection));
+                    }
+                }
+                else if(intersection.Type == IntersectionType.FourWayIntersection)
+                {
+                    Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
+                    Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
+                    float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
+
+
+                    (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
+                }
+            } 
+            return queuedNodes;
+        }
+        // Procedurally places the traffic signs along the road
+        private void PlaceTrafficSigns()
+        {
+            RoadNode startNode = _start;
+            // Destroy the old container and create a new one
+            if (_trafficSignContainer != null)
+                DestroyImmediate(_trafficSignContainer);
+            _trafficSignContainer = new GameObject(TRAFFIC_SIGN_CONTAINER_NAME);
+            _trafficSignContainer.transform.parent = transform;
+            // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
+            bool intersectionFound = _start.Next.Intersection != null && _start.Position == _start.Next.Position;
+
+            if (GenerateSpeedSigns && !IsClosed())
+            {
+                // Place a speed sign at the start and end of the road
+                PlaceTrafficSignAtDistance(startNode, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), true);
+                PlaceTrafficSignAtDistance(startNode.Last, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), false);
+            }
+
+            RoadNode current = startNode;
+            while (current != null)
+            {
+                // Place a speed sign after every junction edge
+                if (current.Type == RoadNodeType.JunctionEdge)
+                {
+                    if (GenerateSpeedSigns && !IsClosed())
+                    {
+                        PlaceTrafficSignAtDistance(current, intersectionFound ? SpeedSignDistanceFromIntersectionEdge : -SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), intersectionFound);
+                        intersectionFound = !intersectionFound;
+                    }
+                }
+                current = current.Next;
+            }
+        }
+        /// <summary> Places a traffic sign at a specified distance from the road node </summary>
+        private void PlaceTrafficSignAtDistance(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool isForward)
+        {
+            // Rotate the traffic sign so that it faces the road for the current driving side
+            Quaternion rotation = roadNode.Rotation * (isForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
+            if (distanceFromRoadNode == 0)
+            {
+                roadNode.TrafficSignType = trafficSignType;
+                SpawnSpeedLimitSign(roadNode.Position, rotation);
+                return;
+            }
+
+            RoadNode current = isForward ? roadNode.Next : roadNode.Prev;
+            float currentDistance = 0;
+            while (current != null)
+            {
+                // Since we do not want to place a traffic sign at an intersection, we break when one is found
+                if (current.Type == RoadNodeType.JunctionEdge || current.IsIntersection())
+                    break;
+                currentDistance += Vector3.Distance(current.Position, isForward ? current.Prev.Position : current.Next.Position);
+                if (currentDistance >= Mathf.Abs(distanceFromRoadNode))
+                {
+                    current.TrafficSignType = trafficSignType;
+                    SpawnSpeedLimitSign(current.Position, rotation);
+                    break;
+                }
+                current = isForward ? current.Next : current.Prev;
+            }
+        }
+        /// <summary> Spawns the traffic signs along the road </summary>
+        private void SpawnSpeedLimitSign(Vector3 position, Quaternion rotation)
+        {
+            GameObject trafficSign = Instantiate(GetSpeedSignPrefab(), position, rotation);
+            bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
+            trafficSign.transform.position += LaneCount / 2 * trafficSign.transform.right * LaneWidth * (isDrivingRight ? -1 : 1);
+            trafficSign.transform.parent = _trafficSignContainer.transform;
+        }
+        /// <summary> Returns the speed sign type for the current speed limit </summary>
+        private TrafficSignType GetSpeedSignType()
+        {
+            switch (SpeedLimit)
+            {
+                case SpeedLimit.TenKPH: return TrafficSignType.SpeedSignTenKPH;
+                case SpeedLimit.TwentyKPH: return TrafficSignType.SpeedSignTwentyKPH;
+                case SpeedLimit.ThirtyKPH: return TrafficSignType.SpeedSignThirtyKPH;
+                case SpeedLimit.FortyKPH: return TrafficSignType.SpeedSignFortyKPH;
+                case SpeedLimit.FiftyKPH: return TrafficSignType.SpeedSignFiftyKPH;
+                case SpeedLimit.SixtyKPH: return TrafficSignType.SpeedSignSixtyKPH;
+                case SpeedLimit.SeventyKPH: return TrafficSignType.SpeedSignSeventyKPH;
+                case SpeedLimit.EightyKPH: return TrafficSignType.SpeedSignEightyKPH;
+                case SpeedLimit.NinetyKPH: return TrafficSignType.SpeedSignNinetyKPH;
+                case SpeedLimit.OneHundredKPH: return TrafficSignType.SpeedSignOneHundredKPH;
+                case SpeedLimit.OneHundredTenKPH: return TrafficSignType.SpeedSignOneHundredTenKPH;
+                case SpeedLimit.OneHundredTwentyKPH: return TrafficSignType.SpeedSignOneHundredTwentyKPH;
+                case SpeedLimit.OneHundredThirtyKPH: return TrafficSignType.SpeedSignOneHundredThirtyKPH;
+                default:
+                    Debug.LogError("Speed sign type mapping for speed limit " + SpeedLimit + " not found");
+                    return TrafficSignType.SpeedSignFiftyKPH;
+            }
+        }
+        /// <summary> Returns the speed sign prefab for the current speed limit </summary>
+        private GameObject GetSpeedSignPrefab()
+        {
+            switch (SpeedLimit)
+            {
+                case SpeedLimit.TenKPH: return _speedSignTenKPH;
+                case SpeedLimit.TwentyKPH: return _speedSignTwentyKPH;
+                case SpeedLimit.ThirtyKPH: return _speedSignThirtyKPH;
+                case SpeedLimit.FortyKPH: return _speedSignFortyKPH;
+                case SpeedLimit.FiftyKPH: return _speedSignFiftyKPH;
+                case SpeedLimit.SixtyKPH: return _speedSignSixtyKPH;
+                case SpeedLimit.SeventyKPH: return _speedSignSeventyKPH;
+                case SpeedLimit.EightyKPH: return _speedSignEightyKPH;
+                case SpeedLimit.NinetyKPH: return _speedSignNinetyKPH;
+                case SpeedLimit.OneHundredKPH: return _speedSignOneHundredKPH;
+                case SpeedLimit.OneHundredTenKPH: return _speedSignOneHundredTenKPH;
+                case SpeedLimit.OneHundredTwentyKPH: return _speedSignOneHundredTwentyKPH;
+                case SpeedLimit.OneHundredThirtyKPH: return _speedSignOneHundredThirtyKPH;
+                default:
+                    Debug.LogError("Speed sign prefab mapping for speed limit " + SpeedLimit + " not found");
+                    return null;
+            }
+        }
+        
+        /// <summary>Draws the lanes as coloured lines </summary>
         public void ShowLanes()
         {
             if(_laneContainer == null)
@@ -761,6 +886,8 @@ namespace RoadGenerator
         {
             RoadSystem.RemoveRoad(this);
             int count = Intersections.Count;
+            if (_trafficSignContainer != null)
+                DestroyImmediate(_trafficSignContainer);
             for (var i = 0; i < count; i++)
             {
                 Intersection intersection = Intersections[0];

@@ -14,7 +14,8 @@ GameObject:
   - component: {fileID: 4211003387211000974}
   - component: {fileID: -7222773781664253429}
   - component: {fileID: -8363121987229429450}
-  m_Layer: 0
+  - component: {fileID: 2968229505203983963}
+  m_Layer: 6
   m_Name: Road
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -52,12 +53,29 @@ MonoBehaviour:
   RoadSystem: {fileID: 0}
   RoadNodePrefab: {fileID: 6519265059532225654, guid: 475d564915891b049a02741f23b64141, type: 3}
   LaneNodePrefab: {fileID: 6519265059532225654, guid: 0113fddae2267ef4db5a0e673398c274, type: 3}
+  _trafficSignContainer: {fileID: 0}
+  _speedSignTenKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
+  _speedSignTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
+  _speedSignThirtyKPH: {fileID: 9128038793144409781, guid: da6e69a00cc9afc488d2ce695ed080ed, type: 3}
+  _speedSignFortyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
+  _speedSignFiftyKPH: {fileID: 4806586974050988964, guid: 4b0c67bae07a7434e91369b588c4eddd, type: 3}
+  _speedSignSixtyKPH: {fileID: 750919069984896652, guid: 0b4cf44acce72804c9c0d87de0d882d8, type: 3}
+  _speedSignSeventyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
+  _speedSignEightyKPH: {fileID: 3134552911339788983, guid: d9a0725c897bdbf4ebeda97c241bb6f1, type: 3}
+  _speedSignNinetyKPH: {fileID: 780460582617803713, guid: ec67f80790b665446bddcc5ce72277b6, type: 3}
+  _speedSignOneHundredKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
+  _speedSignOneHundredTenKPH: {fileID: 3565943573657930188, guid: e425ff3970112b540a6b32321e7dafd7, type: 3}
+  _speedSignOneHundredTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
+  _speedSignOneHundredThirtyKPH: {fileID: 1378736042997771929, guid: aa0d07a1b4228624287023f0703d50be, type: 3}
   LaneAmount: 1
   LaneWidth: 4
   Thickness: 0.15
   MaxAngleError: 2
   MinVertexDistance: 0
   MaxRoadNodeDistance: 5
+  SpeedLimit: 50
+  GenerateSpeedSigns: 1
+  SpeedSignDistanceFromIntersectionEdge: 5
   DrawLanes: 0
   DrawRoadNodes: 0
   DrawLaneNodes: 0
@@ -86,6 +104,7 @@ MonoBehaviour:
   _laneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
   _textureTilingScale: 100
+  _mesh: {fileID: 0}
   _meshHolder: {fileID: 3821395399200801449}
 --- !u!114 &4211003387211000974
 MonoBehaviour:
@@ -193,3 +212,17 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &2968229505203983963
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}

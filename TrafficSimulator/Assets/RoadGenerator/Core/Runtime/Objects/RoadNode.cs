@@ -10,12 +10,14 @@ namespace RoadGenerator
         FourWayIntersection,
         Roundabout,
         JunctionEdge,
+        IntersectionGuide,
         End
     }
 
     /// <summary>Represents a single node in a road</summary>
 	public class RoadNode : Node<RoadNode>
 	{
+        public TrafficSignType? TrafficSignType;
         public Intersection Intersection;
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
         public NavigationNodeEdge SecondaryNavigationNodeEdge;
@@ -32,8 +34,8 @@ namespace RoadGenerator
         public RoadNode(Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type, RoadNode prev, RoadNode next, float distanceToPrevNode, float time, Intersection intersection = null)
         {
             _position = position;
-            _tangent = tangent;
-            _normal = normal;
+            _tangent = tangent.normalized;
+            _normal = normal.normalized;
             _type = type;
             _prev = prev;
             _next = next;
