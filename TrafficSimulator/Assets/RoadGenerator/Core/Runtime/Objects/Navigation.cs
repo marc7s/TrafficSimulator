@@ -146,10 +146,8 @@ namespace RoadGenerator
             {
                 positions.Add(current.Position);
                 if (current.RoadNode == nodeToFind.RoadNode)
-                 {
                     break;
-                 }   
-
+                // If the stack is empty, keep going on the same lane
                 if (clonedStack.Count == 0)
                 {
                     current = current.Next;
@@ -164,12 +162,10 @@ namespace RoadGenerator
                 }
                 if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
                 {
-
                     (_, _, current) = current.RoadNode.Intersection.GetNewLaneNode(clonedStack.Pop(), current);
                     prevIntersectionPosition = current.RoadNode.Intersection.IntersectionPosition;
                     continue;
                 }
-
                 current = current.Next;
             }
             _navigationPath = positions;
@@ -182,18 +178,16 @@ namespace RoadGenerator
                 Object.Destroy(child.gameObject);
             }
             Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
-            GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
+            GameObject marker = Object.Instantiate(targetMarker, position, Quaternion.identity);
             marker.transform.parent = container.transform;
         }
 
-        public static void DrawPathRemoveOldestPoint(GameObject container, Material pathMaterial, LaneNode currentNode)
+        public static void DrawPathRemoveOldestPoint(GameObject container)
         {
             if (_navigationPath.Count == 0)
                 return;
 
             _navigationPath.RemoveAt(0);
-
-            
             LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
             lineRenderer.positionCount = _navigationPath.Count;
             lineRenderer.SetPositions(_navigationPath.ToArray());
