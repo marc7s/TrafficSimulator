@@ -49,6 +49,7 @@ namespace Car {
         [SerializeField][HideInInspector] private NavigationMode _navigationMode = NavigationMode.Disabled;
         [SerializeField] private NavigationMode _originalNavigationMode = NavigationMode.Disabled;
         [SerializeField] private bool _logRepositioningInformation = true;
+        [SerializeField] [Tooltip("This constant determines the offset to extend the bounds the vehicle uses to occupy nodes")] private float _vehicleOccupancyOffset = 3f;
 
         [Header("Quality mode settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -72,9 +73,6 @@ namespace Car {
         private Vehicle _vehicle;
         private float _vehicleLength;
         private Bounds _vehicleBounds;
-        
-        private float _brakeDistance = 0;
-        
         private float _originalMaxSpeed;
         private Vector3? _prevIntersectionPosition;
         private Dictionary<string, LaneNode> _currentNodeTransitions = new Dictionary<string, LaneNode>();
@@ -648,6 +646,7 @@ namespace Car {
             {
                 _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, _speed, 0.07f);
             }
+        }
         private bool P_HasReachedTarget()
         {
             // Since the target position will be lifted in performance mode, we need to compare the XZ coordinates

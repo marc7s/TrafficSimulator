@@ -1858,9 +1858,10 @@ MonoBehaviour:
   _roadEndBehaviour: 1
   ShowNavigationPath: 0
   _navigationMode: 0
-  _vehicleOccupancyOffset: 1
   _originalNavigationMode: 0
-  _showTargetLines: 0
+  _logRepositioningInformation: 0
+  _vehicleOccupancyOffset: 1
+  _showTargetLines: 5
   _brakeOffset: 5
   _maxRepositioningSpeed: 5
   _maxReverseDistance: 20
