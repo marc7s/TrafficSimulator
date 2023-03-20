@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using Simulation;
 
 public class OverlayController : MonoBehaviour
 {
@@ -36,7 +37,7 @@ public class OverlayController : MonoBehaviour
 
         // Labels
         _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
-        _clockLabel.text = "00:00";
+        _clockLabel.text = "0000:00:00:00:00:00";
 
         // Buttons
         _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
@@ -71,6 +72,7 @@ public class OverlayController : MonoBehaviour
 
         _doc.rootVisualElement.visible = false;
         
+        TimeManager timeManager = TimeManager.Instance;
     }
 
     private void MenuButtonOnClicked()
@@ -111,22 +113,22 @@ public class OverlayController : MonoBehaviour
 
     private void RewindButtonOnClicked()
     {
-        Debug.Log("Rewind");
+        TimeManager.SetModeRewind();
     }
 
     private void PauseButtonOnClicked()
     {
-        Debug.Log("Pause");
+        TimeManager.SetModePause();
     }
 
     private void FastForwardButtonOnClicked()
     {
-        Debug.Log("Fastforward");
+        TimeManager.SetModeFastForward();
     }
 
     void Update()
     {
-        _clockLabel.text = System.DateTime.Now.ToString("HH:mm");
+        _clockLabel.text = TimeManager.Timestamp;
     }
 
     public void Enable()
