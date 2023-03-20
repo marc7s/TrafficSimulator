@@ -119,6 +119,8 @@ namespace RoadGenerator
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge, targetNode);
                 if (path == null)
                     continue;
+                if (targetNode.RoadNode.IsIntersection())
+                    continue;
                 // Trying to find a path that is not too short
                 if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
                     return path;
@@ -127,7 +129,7 @@ namespace RoadGenerator
             return new Stack<NavigationNodeEdge>();
         }
         
-        public static void DrawNavigationPath(NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, Material pathMaterial, Vector3? prevIntersectionPosition)
+        public static void DrawNavigationPath(NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, Material pathMaterial, Vector3? prevIntersectionPosition, GameObject targetMarker)
         {
             if(nodeToFind == null)
                 return;
@@ -174,13 +176,24 @@ namespace RoadGenerator
             lineRenderer.material = pathMaterial;
             lineRenderer.positionCount = positions.Count;
             lineRenderer.SetPositions(positions.ToArray());
+
+            foreach (Transform child in container.transform)
+            {
+                Object.Destroy(child.gameObject);
+            }
+            Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
+            GameObject marker = GameObject.Instantiate(targetMarker, position, Quaternion.identity);
+            marker.transform.parent = container.transform;
         }
 
-        public static void DrawPathRemoveOldestPoint(GameObject container, Material pathMaterial)
+        public static void DrawPathRemoveOldestPoint(GameObject container, Material pathMaterial, LaneNode currentNode)
         {
             if (_navigationPath.Count == 0)
                 return;
+
             _navigationPath.RemoveAt(0);
+
+            
             LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
             lineRenderer.positionCount = _navigationPath.Count;
             lineRenderer.SetPositions(_navigationPath.ToArray());
