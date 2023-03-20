@@ -389,9 +389,9 @@ namespace RoadGenerator
             previous = current;
 
             // Calculate the position of the new node
-            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
+            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth * (0.5f + current.Index);
             // Create the new node
-            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, current.Index, roadNode, previous, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
@@ -422,10 +422,10 @@ namespace RoadGenerator
             for(int i = 0; i < laneCount; i++)
             {
                 // Primary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Primary, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth * (0.5f + i), LaneSide.Primary, i, currRoadNode, 0)));
 
                 // Secondary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Secondary, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth * (0.5f + i), LaneSide.Secondary, i, currRoadNode, 0)));
             }
 
             // The lane nodes for the first road node has already been added, so we skip that one
