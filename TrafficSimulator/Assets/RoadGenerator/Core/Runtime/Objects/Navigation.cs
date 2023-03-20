@@ -161,6 +161,7 @@ namespace RoadGenerator
                     clonedPath.Pop();
                     prevIntersectionPosition = Vector3.zero; 
                 }
+                
                 // When the current node is a new intersection
                 if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
                 {
