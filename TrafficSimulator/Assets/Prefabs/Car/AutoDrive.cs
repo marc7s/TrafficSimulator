@@ -637,9 +637,7 @@ namespace Car {
                 _prevIntersectionPosition = Vector3.zero; 
             }
             if (_navigationPathEndNode != null && _navigationPathEndNode.RoadNode == _target.RoadNode && _navigationPath.Count == 0)
-            {
                 UpdateRandomPath();
-            }
             
             if (_target.Type == RoadNodeType.JunctionEdge && currentTargetNodeNotChecked)
             {

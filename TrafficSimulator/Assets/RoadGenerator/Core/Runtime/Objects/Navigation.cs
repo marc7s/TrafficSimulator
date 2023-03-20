@@ -134,7 +134,7 @@ namespace RoadGenerator
             if(nodeToFind == null)
                 return;
             LaneNode current = startNode;
-            var clonedStack = new Stack<NavigationNodeEdge>(new Stack<NavigationNodeEdge>(path));
+            Stack<NavigationNodeEdge> clonedPath = new Stack<NavigationNodeEdge>(new Stack<NavigationNodeEdge>(path));
             if (container.GetComponent<LineRenderer>() == null)
                 container.AddComponent<LineRenderer>();
             LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
@@ -148,21 +148,23 @@ namespace RoadGenerator
                 if (current.RoadNode == nodeToFind.RoadNode)
                     break;
                 // If the stack is empty, keep going on the same lane
-                if (clonedStack.Count == 0)
+                if (clonedPath.Count == 0)
                 {
                     current = current.Next;
                     continue;
                 }
 
                 bool isNonIntersectionNavigationNode = current.RoadNode.IsNavigationNode && !current.IsIntersection() && current.Type != RoadNodeType.JunctionEdge;
-                if (isNonIntersectionNavigationNode && clonedStack.Count != 0)
+                // When the current node is a non intersection navigation node, pop the stack
+                if (isNonIntersectionNavigationNode && clonedPath.Count != 0)
                 {
-                    clonedStack.Pop();
+                    clonedPath.Pop();
                     prevIntersectionPosition = Vector3.zero; 
                 }
+                // When the current node is a new intersection
                 if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
                 {
-                    (_, _, current) = current.RoadNode.Intersection.GetNewLaneNode(clonedStack.Pop(), current);
+                    (_, _, current) = current.RoadNode.Intersection.GetNewLaneNode(clonedPath.Pop(), current);
                     prevIntersectionPosition = current.RoadNode.Intersection.IntersectionPosition;
                     continue;
                 }
