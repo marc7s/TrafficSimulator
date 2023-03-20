@@ -17,7 +17,7 @@ namespace Simulation
         {
             
             _dateTime = TimeManager.FormatDateTime(dateTime);
-            _timeStamp = _dateTime.ToString("YYYY-MM-DD HH:mm:ss");
+            _timeStamp = _dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
         public string TimeStamp
