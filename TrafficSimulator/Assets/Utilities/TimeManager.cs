@@ -98,7 +98,7 @@ namespace Simulation
         private static void CheckSchedule()
         {
             // Check if there are any events scheduled for the current time
-            PriorityQueue<TimeManagerEvent> currentMonth = _calendar[Month];
+            PriorityQueue<TimeManagerEvent> currentMonth = _calendar[Month - 1];
             
             // Dequeue all events that should execute at the current time
             while(currentMonth.Count > 0 && currentMonth.Peek().IsOnOrBefore(_dateTime))
