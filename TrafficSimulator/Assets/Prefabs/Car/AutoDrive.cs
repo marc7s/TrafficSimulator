@@ -567,6 +567,11 @@ namespace Car {
             // Move to the first position of the lane
             transform.position = _currentNode.Position;
             transform.rotation = _currentNode.Rotation;
+            _navigationMode = _originalNavigationMode;
+            if (_navigationMode == NavigationMode.RandomNavigationPath)
+                UpdateRandomPath();
+            
+            SetInitialPrevIntersection();
             P_MoveToTargetNode();
         }
 
@@ -587,7 +592,7 @@ namespace Car {
             bool trafficLightIsRed = _target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
             if (_target.Type == RoadNodeType.JunctionEdge)
             {
-                Debug.Log(_target.RoadNode.TrafficLight?.GetState() + "gdfsljkhdlfgsjkh");
+//                Debug.Log(_target.RoadNode.TrafficLight?.GetState() + "gdfsljkhdlfgsjkh");
             }
             if (!trafficLightIsRed)
                 UpdateTargetFromNavigation();
@@ -633,9 +638,6 @@ namespace Car {
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = _speed;
             }
-
-            trafficLightIsRed = _target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
-           // if (!trafficLightIsRed)
                 
 
             // Move the vehicle to the target node
@@ -677,6 +679,7 @@ namespace Car {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
+                        Debug.Log("gdfsljkhdlfgsjkh");
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (_mode == DrivingMode.Performance)
                             Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
