@@ -1,28 +1,51 @@
+using System;
+
 namespace Simulation
 {
-    public class TimeManagerEvent : System.IComparable<TimeManagerEvent>, System.IEquatable<TimeManagerEvent>
+    public class TimeManagerEvent : System.IComparable<TimeManagerEvent>, System.IComparable<DateTime>, System.IEquatable<TimeManagerEvent>
     {
-        private TimeManagerEvent _prev;
-        private TimeManagerEvent _next;
-        public string TimeStamp;
-        private int _priority;
+        private string _timeStamp;
+        private DateTime _dateTime;
+        public Action OnEvent;
 
-        public TimeManagerEvent(int priority, string timeStamp) : this(priority, null, null, timeStamp){}
-        public TimeManagerEvent(int priority, TimeManagerEvent prev, TimeManagerEvent next, string timeStamp)
+        public DateTime DateTime
         {
-            _priority = priority;
-            _prev = prev;
-            _next = next;
-            TimeStamp = timeStamp;
-        } 
-
-        public int CompareTo(TimeManagerEvent other)
-        {
-            return _priority.CompareTo(other._priority);
+            get => _dateTime;
         }
 
-        public bool Equals(TimeManagerEvent other) {
-            return TimeStamp.ToString() == other.TimeStamp.ToString();
+        public TimeManagerEvent(DateTime dateTime)
+        {
+            
+            _dateTime = TimeManager.FormatDateTime(dateTime);
+            _timeStamp = _dateTime.ToString("YYYY-MM-DD HH:mm:ss");
+        }
+
+        public string TimeStamp
+        {
+            get => _timeStamp;
+        }
+
+        public bool IsOnOrBefore(DateTime dateTime)
+        {
+            return _dateTime <= dateTime;
+        }
+
+        /// <summary> TimeManagerEvents are compared by their timestamps </summary>
+        public int CompareTo(TimeManagerEvent other)
+        {
+            return _dateTime.CompareTo(other._dateTime);
+        }
+
+        /// <summary> Compare TimeManagerEvents to DateTimes by the timestamps </summary>
+        public int CompareTo(DateTime other)
+        {
+            return _dateTime.CompareTo(other);
+        }
+
+        /// <summary> TimeManagerEvents are compared by their timestamps </summary>
+        public bool Equals(TimeManagerEvent other)
+        {
+            return _dateTime.Equals(other._dateTime);
         }
     }
 }

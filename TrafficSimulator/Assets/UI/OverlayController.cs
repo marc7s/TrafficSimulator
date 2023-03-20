@@ -112,17 +112,17 @@ public class OverlayController : MonoBehaviour
 
     private void RewindButtonOnClicked()
     {
-        TimeManager.Rewind();
+        TimeManager.SetModeRewind();
     }
 
     private void PauseButtonOnClicked()
     {
-        TimeManager.Pause();
+        TimeManager.SetModePause();
     }
 
     private void FastForwardButtonOnClicked()
     {
-        TimeManager.FastForward();
+        TimeManager.SetModeFastForward();
     }
 
     void Update()
