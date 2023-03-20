@@ -36,7 +36,7 @@ namespace RoadGenerator
         /// <summary> Calculates the distance from one node to another. 
         /// Returns true if the node is found, the distance is passed to the out parameter and is 0 if the node is not found 
         /// The sign of the distance is along the node path, so a positive distance means the target is ahead of the current node </summary>
-        public bool DistanceToNode(LaneNode targetNode, out float distance, bool onlyLookAhead = false)
+        public bool DistanceToNode(LaneNode targetNode, out float distance, bool loop, bool onlyLookAhead = false)
         {
             // Return if the target node is the current node
             if(targetNode == this)
@@ -53,13 +53,31 @@ namespace RoadGenerator
             {
                 dst += curr.DistanceToPrevNode;
                 
-                if(curr == targetNode)
+                if(curr.ID == targetNode.ID)
                 {
                     distance = dst;
                     return true;
                 }
 
                 curr = curr.Next;
+            }
+            curr = this;
+            // If RoadEndBehaviour is set to loop, then go to the start of the lane and look forwards again
+            if(loop)
+            {
+                curr = curr.First.Next;
+                while (curr != this)
+                {
+                    dst += curr.DistanceToPrevNode;
+                    
+                    if(curr.ID == targetNode.ID)
+                    {
+                        distance = dst;
+                        return true;
+                    }
+
+                    curr = curr.Next;
+                }
             }
 
             // Reset the current node and distance before looking for the target node backwards
@@ -70,12 +88,12 @@ namespace RoadGenerator
             while (!onlyLookAhead && curr != null)
             {
                 dst -= curr.DistanceToPrevNode;
-                curr = curr.Prev;
-                if(curr == targetNode)
+                if(curr.ID == targetNode.ID)
                 {
                     distance = dst;
                     return true;
                 }
+                curr = curr.Prev;
             }
             
             // The target was not found, so set the distance to -1 and return false
