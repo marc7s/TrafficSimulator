@@ -751,15 +751,15 @@ namespace RoadGenerator
 
                     // If the node is an anchor point, we map the edge going out of the intersection to the node
                     if (currentNode.RoadNode.Position == Road1AnchorPoint1)
-                        AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint1NavigationEdge, currentNode);//_laneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint1NavigationEdge.ID, currentNode);
+                        AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint1NavigationEdge, currentNode);
                     if (currentNode.RoadNode.Position == Road1AnchorPoint2)
-                        AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint2NavigationEdge, currentNode);//_laneNodeFromNavigationNodeEdge.Add(Road1AnchorPoint2NavigationEdge.ID, currentNode);
+                        AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint2NavigationEdge, currentNode);
                     if (currentNode.RoadNode.Position == Road2AnchorPoint1)
-                        AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint1NavigationEdge, currentNode);//_laneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint1NavigationEdge.ID, currentNode);
+                        AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint1NavigationEdge, currentNode);
                     
                     // If the intersection is a three way intersection, the second anchor point does not exist
                     if (!IsThreeWayIntersection() && currentNode.RoadNode.Position == Road2AnchorPoint2)
-                        AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint2NavigationEdge, currentNode);//_laneNodeFromNavigationNodeEdge.Add(Road2AnchorPoint2NavigationEdge.ID, currentNode);
+                        AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint2NavigationEdge, currentNode);
 
                     currentNode = currentNode.Next;
                 }
@@ -859,6 +859,7 @@ namespace RoadGenerator
             return curr?.First;
         }
 
+        /// <summary> Returns the lane node out of a list that has the closest lane index. This maps entry and exit nodes of lanes with differing lane counts </summary>
         private LaneNode GetClosestIndexExitNode(List<LaneNode> exitNodes, int index)
         {
             int closestLaneIndex = exitNodes.Aggregate((x, y) => Math.Abs(x.Index - index) < Math.Abs(y.Index - index) ? x : y).Index;
