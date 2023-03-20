@@ -9,9 +9,10 @@ namespace RoadGenerator
         protected RoadNode _roadNode;
         protected LaneSide _laneSide;
         protected Vehicle _vehicle;
+        protected int _laneIndex;
 
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
-        public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, roadNode, null, null, distanceToPrevNode){}
+        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, laneIndex, roadNode, null, null, distanceToPrevNode){}
         
         /// <summary>Creates a new lane node</summary>
         /// <param name="position">The position of the node</param>
@@ -20,10 +21,11 @@ namespace RoadGenerator
         /// <param name="prev">The previous lane node. Pass `null` if there is no previous</param>
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
         /// <param name="distanceToPrevNode">The distance to the previous (current end node)</param>
-        public LaneNode(Vector3 position, LaneSide laneSide, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode)
+        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode)
         {
             _position = position;
             _laneSide = laneSide;
+            _laneIndex = laneIndex;
             _roadNode = roadNode;
             _prev = prev;
             _next = next;
@@ -88,6 +90,10 @@ namespace RoadGenerator
         {
             return _laneSide == LaneSide.Primary ? _roadNode.PrimaryNavigationNodeEdge : _roadNode.SecondaryNavigationNodeEdge;
         }
+        public int Index
+        {
+            get => _laneIndex;
+        }
 
         public LaneSide LaneSide
         {
@@ -108,7 +114,7 @@ namespace RoadGenerator
         }
         public override LaneNode Copy()
         {
-            return new LaneNode(_position, _laneSide, _roadNode, _prev, _next, _distanceToPrevNode);
+            return new LaneNode(_position, _laneSide, _laneIndex, _roadNode, _prev, _next, _distanceToPrevNode);
         }
         
         /// <summary>Tries to assign a vehicle to this node. Returns `true` if it succeded, `false` if there is already a vehicle assigned</summary>
