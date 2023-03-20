@@ -22,13 +22,8 @@ namespace Simulation
         public static Action OnYearChanged;
 
         public static TimeMode Mode { get; private set; }
+        public static DateTime _dateTime;
 
-        public static int Second { get; private set; }
-        public static int Minute { get; private set; }
-        public static int Hour { get; private set; }
-        public static int Day { get; private set; }
-        public static int Month { get; private set; }
-        public static int Year { get; private set; }
 
         // Ratio between ingame time and real world time. Ex. 1f is 1:1 ratio, 5f is 5:1 ratio.
         public float SecondToRealTime = 1f;
@@ -37,12 +32,25 @@ namespace Simulation
         private float _timer;
 
         // Calendar for each month. 0 = January, 11 = December
-        List<PriorityQueue<TimeManagerEvent>> _calendar = new List<PriorityQueue<TimeManagerEvent>>();
+        private static List<PriorityQueue<TimeManagerEvent>> _calendar = new List<PriorityQueue<TimeManagerEvent>>();
+
+        public static int Second { get => _dateTime.Second; }
+        public static int Minute { get => _dateTime.Minute; }
+        public static int Hour { get => _dateTime.Hour; }
+        public static int Day { get => _dateTime.Day; }
+        public static int Month { get => _dateTime.Month; }
+        public static int Year { get => _dateTime.Year; }
+
+        /// </summary> Returns a formatted string of the current timestamp </summary>
+        public string TimeStamp
+        {
+            get => _dateTime.ToString("YYYY-MM-DD HH:mm:ss");
+        }
 
         void Start()
         {
             // Set start time
-            SetTime(2023, 3, 19, 13, 0, 0);
+            SetTime(DateTime.Now);
 
             // Initialize calendar
             InitCalendar();
@@ -62,7 +70,7 @@ namespace Simulation
                 _timer -= Time.deltaTime;
                 if(_timer <= 0)
                 {
-                    RunTime();
+                    UpdateSimulationTime();
                     _timer = SecondToRealTime;
                 }
                 SecondToRealTime = _targetSecondToRealTime;
@@ -72,95 +80,54 @@ namespace Simulation
         }
 
         /// <summary> Looks if the next scheduled event should execute at the current time </summary>
-        private void CheckSchedule()
+        private static void CheckSchedule()
         {
             // Check if there are any events scheduled for the current time
             PriorityQueue<TimeManagerEvent> currentMonth = _calendar[Month];
             if(currentMonth.Count > 0)
             {
-                TimeManagerEvent currentEvent = currentMonth.Peek();
-                if(currentEvent.TimeStamp == $"{Year:0000}:{Month:00}:{Day:00}:{Hour:00}:{Minute:00}:{Second:00}")
+                // Dequeue all events that should execute at the current time
+                while(currentMonth.Peek().IsOnOrBefore(_dateTime))
                 {
+                    TimeManagerEvent currentEvent = currentMonth.Dequeue();
+                    currentEvent.OnEvent?.Invoke();
                     Debug.Log("Event triggered: " + currentEvent.TimeStamp);
-                    // Remove event from queue
-                    currentMonth.Dequeue();
                 }
             }
         }
 
-        /// <summary> Determines if time should move forwards or backwards depending on current mode </summary>
-        private void RunTime()
+        /// </summary> Sets the current simulation time </summary>
+        private static void SetTime(DateTime dateTime)
         {
-            if(Mode != TimeMode.Rewind)
-            {
-                Second++;
-                OnSecondChanged?.Invoke();
-                OnMinuteChanged?.Invoke();
-                OnHourChanged?.Invoke();
-                OnDayChanged?.Invoke();
-                OnMonthChanged?.Invoke();
-                OnYearChanged?.Invoke();
-                if(Second >= 60)
-                {
-                    Minute++;
-                    if(Minute >= 60)
-                    {
-                        Hour++;
-                        if(Hour >= 24)
-                        {
-                            Day++;
-                            if(Day >= 31)
-                            {
-                                Month++;
-                                if(Month >= 12)
-                                {
-                                    Year++;
-                                    Month = 1;
-                                }
-                                Day = 1;
-                            }
-                            Hour = 0;
-                        }
-                        Minute = 0;
-                    }
-                    Second = 0;
-                }
+            DateTime prevTime = _dateTime;
+            _dateTime = FormatDateTime(dateTime);
 
-            } else if(Mode == TimeMode.Rewind)
-            {
-                Second--;
-                OnSecondChanged?.Invoke();
-                OnMinuteChanged?.Invoke();
-                OnHourChanged?.Invoke();
-                OnDayChanged?.Invoke();
-                OnMonthChanged?.Invoke();
+            if(prevTime == null)
+                return;
+
+            if(prevTime.Year != _dateTime.Year)
                 OnYearChanged?.Invoke();
-                if(Second < 0)
-                {
-                    Minute--;
-                    if(Minute < 0)
-                    {
-                        Hour--;
-                        if(Hour < 0)
-                        {
-                            Day--;
-                            if(Day < 0)
-                            {
-                                Month--;
-                                if(Month < 0)
-                                {
-                                    Year--;
-                                    Month = 12;
-                                }
-                                Day = 31;
-                            }
-                            Hour = 23;
-                        }
-                        Minute = 59;
-                    }
-                    Second = 59;
-                }
-            }
+
+            if(prevTime.Month != _dateTime.Month)
+                OnMonthChanged?.Invoke();
+
+            if(prevTime.Day != _dateTime.Day)
+                OnDayChanged?.Invoke();
+            
+            if(prevTime.Hour != _dateTime.Hour)
+                OnHourChanged?.Invoke();
+            
+            if(prevTime.Minute != _dateTime.Minute)
+                OnMinuteChanged?.Invoke();
+
+            if(prevTime.Second != _dateTime.Second)
+                OnSecondChanged?.Invoke();
+        }
+
+        /// <summary> Updates the current simulation time, moves it forward or backward depending on the mode </summary>
+        private static void UpdateSimulationTime()
+        {
+            SetTime(_dateTime.AddSeconds(Mode == TimeMode.Rewind ? -1 : 1));
         }
 
 
@@ -171,61 +138,35 @@ namespace Simulation
                 _calendar.Add(new PriorityQueue<TimeManagerEvent>());
         }
 
-        /// </summary> Sets the current time to the given values </summary>
-        private void SetTime(int year, int month, int day, int hour, int minute, int second)
-        {
-            Year = year;
-            Month = month;
-            Day = day;
-            Hour = hour;
-            Minute = minute;
-            Second = second;
-        }
-
-        /// </summary> Returns a string with the given time values in the format "yyyy:MM:dd:HH:mm:ss" </summary>
-        private string GetTimeStamp(int year, int month, int day, int hour, int minute, int second)
-        {
-            string timeStamp = $"{year:0000}:{month:00}:{day:00}:{hour:00}:{minute:00}:{second:00}";
-            return timeStamp;
-        }
-
-        /// </summary> Calculates the priority of an event based on the given time values </summary>
-        private int CalculatePriority(int year, int day, int hour, int minute, int second)
-        {
-            int priority = 0;
-            priority += second;
-            priority += minute * 60;
-            priority += hour * 60 * 60;
-            priority += day * 60 * 60 * 24;
-            priority += year * 60 * 60 * 24 * 365;
-            return priority;
-        }
-
         /// </summary> Adds an event to the calendar </summary>
-        private void AddEvent(int year, int month, int day, int hour, int minute, int second)
+        private void AddEvent(TimeManagerEvent evt)
         {
-            string timeStamp = GetTimeStamp(year, month, day, hour, minute, second);
-            int priority = CalculatePriority(year, day, hour, minute, second);
-
-            _calendar[month].Enqueue(new TimeManagerEvent(priority, timeStamp));
+            _calendar[evt.DateTime.Month].Enqueue(evt);
         }
 
         /// </summary> Sets current mode to fast forward </summary>
-        public static void FastForward()
+        public static void SetModeFastForward()
         {
             Mode = Mode != TimeMode.Fast ? TimeMode.Fast : TimeMode.Running;
         }
 
         /// </summary> Sets current mode to rewind </summary>
-        public static void Rewind()
+        public static void SetModeRewind()
         {
             Mode = Mode != TimeMode.Rewind ? TimeMode.Rewind : TimeMode.Running;
         }
 
         /// </summary> Sets current mode to paused </summary>
-        public static void Pause()
+        public static void SetModePause()
         {
             Mode = Mode != TimeMode.Paused ? TimeMode.Paused : TimeMode.Running;
+        }
+
+        /// </summary> Formats a date time to the correct resolution </summary>
+        public static DateTime FormatDateTime(DateTime dateTime)
+        {
+            // Recreate the date time to force resolution to seconds
+            return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second, DateTimeKind.Local);
         }
     }
 }
