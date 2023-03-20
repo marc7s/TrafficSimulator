@@ -81,7 +81,6 @@ namespace Car {
         private Vector3? _prevIntersectionPosition;
         private Dictionary<string, LaneNode> _currentNodeTransitions = new Dictionary<string, LaneNode>();
         private NavigationNode _navigationPathEndNode;
-        private NavigationNode _navigationPathEndNodeOld;
         private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
         private List<LaneNode> _occupiedNodes = new List<LaneNode>();
         private float _lerpSpeed;
@@ -163,10 +162,9 @@ namespace Car {
             if (_navigationMode == NavigationMode.RandomNavigationPath)
             {
                 UpdateRandomPath();
-                _navigationPathEndNodeOld = _navigationPathEndNode;
                 SetInitialPrevIntersection();
                 if(ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _target, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition);
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             }
             _navigationMode = _originalNavigationMode;
         }
@@ -207,10 +205,13 @@ namespace Car {
 
             Q_TeleportToLane();
             _navigationMode = _originalNavigationMode;
+
             if (_navigationMode == NavigationMode.RandomNavigationPath)
             {
                 UpdateRandomPath();
                 SetInitialPrevIntersection();
+                if (ShowNavigationPath)
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             }
         }
 
@@ -447,6 +448,8 @@ namespace Car {
                 
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _currentNode = nextNode;
+                if (ShowNavigationPath)
+                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer, NavigationPathMaterial, _currentNode);
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
                 reachedEnd = reachedEnd || (!_isEnteringNetwork && _currentNode.Type == RoadNodeType.End);
@@ -543,7 +546,7 @@ namespace Car {
 
             // If the starting node is a junction edge, the previous intersection is set
             if (_target.RoadNode.Prev != null && _target.RoadNode.Prev.Intersection != null && _target.RoadNode.Position == _target.RoadNode.Prev.Position)
-                _prevIntersectionPosition = _target.RoadNode.Prev.Intersection.IntersectionPosition;           
+                _prevIntersectionPosition = _target.RoadNode.Prev.Intersection.IntersectionPosition;
         }
 
         private void P_TeleportToFirstPosition()
@@ -551,10 +554,9 @@ namespace Car {
             if (_navigationMode == NavigationMode.RandomNavigationPath)
             {
                 UpdateRandomPath();
-                _navigationPathEndNodeOld = _navigationPathEndNode;
                 SetInitialPrevIntersection();
                 if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _target, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition);
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             }
 
             // Move to the first position of the lane
@@ -607,6 +609,8 @@ namespace Car {
             else if (P_HasReachedTarget())
             {
                 _currentNode = _target;
+                if (ShowNavigationPath)
+                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer, NavigationPathMaterial, _currentNode);
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = _speed;
@@ -631,30 +635,20 @@ namespace Car {
                 return;
             
             bool isNonIntersectionNavigationNode = _target.RoadNode.IsNavigationNode && !_target.IsIntersection();
-            bool currentNodeNotChecked = _previousTarget != null && _target.RoadNode.ID != _previousTarget.RoadNode.ID;
-            if (isNonIntersectionNavigationNode &&_navigationPath.Count != 0 && currentNodeNotChecked)
+            bool currentTargetNodeNotChecked = _previousTarget != null && _target.RoadNode.ID != _previousTarget.RoadNode.ID;
+            if (isNonIntersectionNavigationNode &&_navigationPath.Count != 0 && currentTargetNodeNotChecked)
             {
                 _navigationPath.Pop();
                 _prevIntersectionPosition = Vector3.zero; 
             }
-            if (currentNodeNotChecked)
-                Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer, NavigationPathMaterial);
-            // If Navigation mode is RandomPath and navigation path is empty, get a new one
-            if (_navigationPath.Count == 0 && _navigationMode == NavigationMode.RandomNavigationPath)
+            if (_navigationPathEndNode != null && _navigationPathEndNode.RoadNode == _target.RoadNode && _navigationPath.Count == 0)
             {
-                bool updateOnIntersectionExit = _target.Type == RoadNodeType.JunctionEdge && _target.RoadNode.Intersection.IntersectionPosition == _prevIntersectionPosition;
-                bool updateOnNonIntersectionGuideNode = _target.Type != RoadNodeType.IntersectionGuide;
-                
-                if(updateOnIntersectionExit || updateOnNonIntersectionGuideNode)
-                {
-                    UpdateRandomPath();
-                }
-                    
+                UpdateRandomPath();    
+                if (ShowNavigationPath)
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             }
-            bool test = _target.Type == RoadNodeType.JunctionEdge && currentNodeNotChecked && _target.RoadNode.Intersection.IntersectionPosition == _navigationPathEndNodeOld.RoadNode.Position;
-            bool test2 = _target.RoadNode == _navigationPathEndNodeOld.RoadNode && currentNodeNotChecked;
             
-            if (_target.Type == RoadNodeType.JunctionEdge && currentNodeNotChecked)
+            if (_target.Type == RoadNodeType.JunctionEdge && currentTargetNodeNotChecked)
             {
                 LaneNode entryNode = _target;
                 // Only check the intersection if the vehicle hasn't already just checked it
@@ -664,7 +658,8 @@ namespace Car {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
-
+                        if (_mode == DrivingMode.Performance)
+                            Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer, NavigationPathMaterial, _currentNode);
                         // If the intersection does not have a lane node that matches the navigation path, unexpected behaviour has occurred, switch to random navigation
                         if (_target == null)
                             _navigationMode = NavigationMode.Random;
@@ -681,14 +676,6 @@ namespace Car {
                     _brakeTarget = _target;
                     _prevIntersectionPosition = _target.RoadNode.Intersection.IntersectionPosition;
                 }
-            }
-            if (test2 || test)
-            {
-               _navigationPathEndNodeOld = _navigationPathEndNode;
-                Debug.Log("Reached end of navigation path");
-                if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNodeOld, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition);
-
             }
             _previousTarget = _target;
         }
