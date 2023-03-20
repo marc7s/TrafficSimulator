@@ -1858,12 +1858,12 @@ MonoBehaviour:
   _roadEndBehaviour: 1
   ShowNavigationPath: 0
   _navigationMode: 0
-  _showTargetLines: 5
+  _vehicleOccupancyOffset: 1
+  _showTargetLines: 0
   _brakeOffset: 5
   _maxRepositioningSpeed: 5
   _baseTLD: 10
   _TLDSpeedDivider: 20
-  _vehicleOccupancyOffset: 1
   _speed: 20
   _rotationSpeed: 5
   _totalDistance: 0
