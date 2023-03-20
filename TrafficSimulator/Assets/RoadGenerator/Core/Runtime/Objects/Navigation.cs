@@ -43,6 +43,7 @@ namespace RoadGenerator
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
         public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNodeEdge startNode, NavigationNode endNode)
         {
+            Debug.Log("Finding path from " + startNode.EndNavigationNode == null);
             AStarNode start = new AStarNode(startNode.EndNavigationNode, null, null, 0, 0);
             AStarNode target = new AStarNode(endNode, null, null, 0, 0);
             

@@ -43,10 +43,10 @@ namespace Car {
         [SerializeField] private GameObject _mesh;
 
         [Header("Settings")]
-        [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
+        [SerializeField] public DrivingMode _mode = DrivingMode.Quality;
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
-        [SerializeField][HideInInspector] private NavigationMode _navigationMode = NavigationMode.Disabled;
+        [SerializeField][HideInInspector] public NavigationMode _navigationMode = NavigationMode.Disabled;
         [SerializeField] private NavigationMode _originalNavigationMode = NavigationMode.Disabled;
         [SerializeField] private bool _logRepositioningInformation = true;
 
@@ -560,11 +560,6 @@ namespace Car {
 
         private void P_TeleportToFirstPosition()
         {
-            if (_navigationMode == NavigationMode.RandomNavigationPath)
-            {
-                UpdateRandomPath();
-                SetInitialPrevIntersection();
-            }
 
             // Move to the first position of the lane
             transform.position = _currentNode.Position;
@@ -586,10 +581,17 @@ namespace Car {
 
         private void P_UpdateTargetAndCurrent()
         {
+            bool trafficLightIsRed = _target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+            if (_target.Type == RoadNodeType.JunctionEdge)
+            {
+                Debug.Log(_target.RoadNode.TrafficLight?.GetState() + "gdfsljkhdlfgsjkh");
+            }
+            if (!trafficLightIsRed)
+                UpdateTargetFromNavigation();
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
             bool nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
             bool nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
-
+           
             // If the next target is an end node and the road end behaviour is stop, decelerate and update current node
             if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Stop)
             {
@@ -612,6 +614,11 @@ namespace Car {
                 _navigationMode = _originalNavigationMode;
                 P_TeleportToFirstPosition();
             }
+            else if (trafficLightIsRed)
+            {
+                _currentNode = _target;
+                _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, _lerpSpeed > 10f ? 0.1f : 0.01f);
+            }
             // If the car is at the target, set the target to the next node and update current node
             else if (P_HasReachedTarget())
             {
@@ -621,9 +628,13 @@ namespace Car {
                 _lerpSpeed = _speed;
             }
 
+            trafficLightIsRed = _target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+           // if (!trafficLightIsRed)
+                
+
             // Move the vehicle to the target node
             P_MoveToTargetNode();
-            UpdateTargetFromNavigation();
+
         }
 
         private bool P_HasReachedTarget()
