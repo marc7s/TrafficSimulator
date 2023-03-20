@@ -15,15 +15,15 @@ namespace RoadGenerator
         /// <param name="prev">The previous lane node. Pass `null` if there is no previous</param>
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
         /// <param name="distanceToPrevNode">The distance to the previous node</param>
-        public GuideNode(Vector3 position, LaneNode reference, LaneSide laneSide, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode) : 
-            base(position, laneSide, roadNode, prev, next, distanceToPrevNode) 
+        public GuideNode(Vector3 position, LaneNode reference, LaneSide laneSide, int laneIndex, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode) : 
+            base(position, laneSide, laneIndex, roadNode, prev, next, distanceToPrevNode) 
             {
                 _laneNode = reference;
             }
 
         public override LaneNode Copy()
         {
-            return new GuideNode(_position, _laneNode, _laneSide, _roadNode, _prev, _next, _distanceToPrevNode);
+            return new GuideNode(_position, _laneNode, _laneSide, _laneIndex, _roadNode, _prev, _next, _distanceToPrevNode);
         }
 
         public override RoadNode RoadNode
