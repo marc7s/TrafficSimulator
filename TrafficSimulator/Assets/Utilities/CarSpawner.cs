@@ -116,7 +116,6 @@ namespace RoadGenerator
             // Loop through all roads
             foreach (Road road in _roadSystem.Roads)
             {
-                //road.OnChange();
                 laneIndex = 0;
 
                 // Loop through all lanes
