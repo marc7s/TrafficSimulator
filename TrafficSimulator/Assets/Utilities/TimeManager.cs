@@ -156,7 +156,8 @@ namespace Simulation
         /// </summary> Adds an event to the calendar </summary>
         private static void AddEvent(TimeManagerEvent evt)
         {
-            _calendar[evt.DateTime.Month].Enqueue(evt);
+            // DateTime.Month is 1-12, but the calendar is 0-11
+            _calendar[evt.DateTime.Month - 1].Enqueue(evt);
         }
 
         /// </summary> Sets current mode to fast forward </summary>
