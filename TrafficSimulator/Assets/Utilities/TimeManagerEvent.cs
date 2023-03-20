@@ -6,18 +6,18 @@ namespace Simulation
     {
         private string _timeStamp;
         private DateTime _dateTime;
+
         public Action OnEvent;
+
+        public TimeManagerEvent(DateTime dateTime)
+        {
+            _dateTime = TimeManager.FormatDateTime(dateTime);
+            _timeStamp = _dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+        }
 
         public DateTime DateTime
         {
             get => _dateTime;
-        }
-
-        public TimeManagerEvent(DateTime dateTime)
-        {
-            
-            _dateTime = TimeManager.FormatDateTime(dateTime);
-            _timeStamp = _dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
         public string TimeStamp

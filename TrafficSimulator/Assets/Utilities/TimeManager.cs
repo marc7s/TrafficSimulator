@@ -143,7 +143,6 @@ namespace Simulation
             SetTime(_dateTime.AddSeconds(Mode == TimeMode.Rewind ? -1 : 1));
         }
 
-
         /// </summary> Initializes calendar with an empty priority queue for each month </summary>
         private static void InitCalendar()
         {
