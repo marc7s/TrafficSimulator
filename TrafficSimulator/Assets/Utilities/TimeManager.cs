@@ -12,8 +12,9 @@ namespace Simulation
         Paused
     }
 
-    public class TimeManager : MonoBehaviour
+    public sealed class TimeManager : MonoBehaviour
     {
+        private static TimeManager _instance;
         public static Action OnSecondChanged;
         public static Action OnMinuteChanged;
         public static Action OnHourChanged;
@@ -24,12 +25,11 @@ namespace Simulation
         public static TimeMode Mode { get; private set; }
         public static DateTime _dateTime;
 
-
         // Ratio between ingame time and real world time. Ex. 1f is 1:1 ratio, 5f is 5:1 ratio.
-        public float SecondToRealTime = 1f;
+        public static float SecondToRealTime = 1f;
 
-        private float _targetSecondToRealTime;
-        private float _timer;
+        private static float _targetSecondToRealTime;
+        private static float _timer;
 
         // Calendar for each month. 0 = January, 11 = December
         private static List<PriorityQueue<TimeManagerEvent>> _calendar = new List<PriorityQueue<TimeManagerEvent>>();
@@ -41,10 +41,25 @@ namespace Simulation
         public static int Month { get => _dateTime.Month; }
         public static int Year { get => _dateTime.Year; }
 
-        /// </summary> Returns a formatted string of the current timestamp </summary>
-        public string TimeStamp
+        public static TimeManager Instance
         {
-            get => _dateTime.ToString("YYYY-MM-DD HH:mm:ss");
+            get {
+                if(!_instance)
+                {
+                    _instance = new GameObject("TimeManager").AddComponent<TimeManager>();
+                    
+                    // Do not destroy this object when loading a new scene
+                    DontDestroyOnLoad(_instance.gameObject);
+                }
+                    
+                return _instance;
+            }
+        }
+
+        /// </summary> Returns a formatted string of the current timestamp </summary>
+        public static string Timestamp
+        {
+            get => _dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
         void Start()
@@ -132,14 +147,14 @@ namespace Simulation
 
 
         /// </summary> Initializes calendar with an empty priority queue for each month </summary>
-        private void InitCalendar()
+        private static void InitCalendar()
         {
             for(int i = 0; i < 12; i++)
                 _calendar.Add(new PriorityQueue<TimeManagerEvent>());
         }
 
         /// </summary> Adds an event to the calendar </summary>
-        private void AddEvent(TimeManagerEvent evt)
+        private static void AddEvent(TimeManagerEvent evt)
         {
             _calendar[evt.DateTime.Month].Enqueue(evt);
         }

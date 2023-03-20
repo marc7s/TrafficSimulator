@@ -72,6 +72,7 @@ public class OverlayController : MonoBehaviour
 
         _doc.rootVisualElement.visible = false;
         
+        TimeManager timeManager = TimeManager.Instance;
     }
 
     private void MenuButtonOnClicked()
@@ -127,7 +128,7 @@ public class OverlayController : MonoBehaviour
 
     void Update()
     {
-        _clockLabel.text = $"{TimeManager.Year:0000}:{TimeManager.Month:00}:{TimeManager.Day:00}:{TimeManager.Hour:00}:{TimeManager.Minute:00}:{TimeManager.Second:00}";
+        _clockLabel.text = TimeManager.Timestamp;
     }
 
     public void Enable()
