@@ -203,10 +203,9 @@ namespace Car {
             Q_TeleportToLane();
             _navigationMode = _originalNavigationMode;
             if (_navigationMode == NavigationMode.RandomNavigationPath)
-            {
                 UpdateRandomPath();
-                SetInitialPrevIntersection();
-            }
+            
+            SetInitialPrevIntersection();
         }
 
         // Update the list of nodes that the vehicle is currently occupying
@@ -657,7 +656,7 @@ namespace Car {
                     }
                     else if (_navigationMode == NavigationMode.Random)
                     {
-                        (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetRandomLaneNode();
+                        (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetRandomLaneNode(_target);
                     }
                     
                     if(_currentNodeTransitions.ContainsKey(entryNode.ID))
