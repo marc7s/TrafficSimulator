@@ -530,7 +530,14 @@ namespace RoadGenerator
             _trafficSignContainer = new GameObject(TRAFFIC_SIGN_CONTAINER_NAME);
             _trafficSignContainer.transform.parent = transform;
             // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
-            bool intersectionFound = _start.Next.Intersection != null && _start.Position == _start.Next.Position;
+            bool intersectionFound = _start.Next.IsIntersection() && _start.Position == _start.Next.Position;
+            if (intersectionFound)
+            {
+                if (this == _start.Next.Intersection.Road1)
+                    _start.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup1 = new List<TrafficLight>();
+                else
+                    _start.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup2 = new List<TrafficLight>();
+            }
 
             if (GenerateSpeedSigns && !IsClosed())
             {
