@@ -554,7 +554,7 @@ namespace RoadGenerator
                             else
                                 current.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup2 = new List<TrafficLight>();
                         }
-                        SpawnTrafficLight(current, 0, TrafficSignType.TrafficLight, intersectionFound, RoadSystem.DefaultTrafficLightPrefab);
+                        SpawnTrafficLight(current, 0, TrafficSignType.TrafficLight, !intersectionFound, RoadSystem.DefaultTrafficLightPrefab);
                             
                     }
                     if (GenerateSpeedSigns && !IsClosed())
