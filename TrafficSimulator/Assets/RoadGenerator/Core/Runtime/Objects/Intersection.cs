@@ -47,6 +47,7 @@ namespace RoadGenerator
         [HideInInspector] private Dictionary<string, LaneNode> _intersectionExitNodes = new Dictionary<string, LaneNode>();
         [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths = new Dictionary<(string, string), GuideNode>();
         [HideInInspector] public IntersectionType Type;
+        [HideInInspector] public TrafficLightController TrafficLightController;
         [ReadOnly] public string ID;
 
         [Header("Connections")]
@@ -55,7 +56,7 @@ namespace RoadGenerator
 
         [Header("Intersection settings")]
         [SerializeField][Range(0, 0.8f)] private float _stretchFactor = 0;
-        [SerializeField] private FlowType _flowType = FlowType.TrafficLights;
+        [SerializeField] public FlowType FlowType = FlowType.TrafficLights;
 
         [Header ("Material settings")]
         [SerializeField] private Material _material;
@@ -109,6 +110,7 @@ namespace RoadGenerator
         {
             IntersectionObject = gameObject;
             _flowContainer = IntersectionObject.transform.Find("FlowContainer")?.gameObject;
+            TrafficLightController = gameObject.GetComponent<TrafficLightController>();
         }
 
         public void UpdateMesh()
@@ -120,21 +122,7 @@ namespace RoadGenerator
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
-            // If intersection doesn't have a container, create one
-            if(_flowContainer != null)
-                DestroyImmediate(_flowContainer);
-            CreateIntersectionContainer();
-            if (_flowType == FlowType.TrafficLights)
-            {
-                CreateTrafficLightController();
-                AssignTrafficLights();
-            }
-            else if (_flowType == FlowType.StopSigns)
-            {
-                CreateStopSignController();
-                AssignStopSigns();
-            }
-            OffsetSigns();
+           
             ShowGuideNodes();
 
             gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
@@ -289,14 +277,14 @@ namespace RoadGenerator
 
         private void OffsetSigns()
         {
-            if(_flowType == FlowType.TrafficLights)
+            if(FlowType == FlowType.TrafficLights)
             {
                 foreach (Transform child in _trafficLightController.transform)
                 {
                     child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
                 }
             }
-            else if(_flowType == FlowType.StopSigns)
+            else if(FlowType == FlowType.StopSigns)
             {
                 foreach (Transform child in _stopSignController.transform)
                 {
@@ -307,10 +295,13 @@ namespace RoadGenerator
 
         private void CreateIntersectionMesh()
         {
+            
             Road1.UpdateRoadNodes();
             Road1.UpdateLanes();
+            Road1.PlaceTrafficSigns();
             Road2.UpdateRoadNodes();
             Road2.UpdateLanes();
+            Road2.PlaceTrafficSigns();
 
 #if DEBUG_INTERSECTION            
             Debug.Log("----------- Road 1 nodes -----------");
