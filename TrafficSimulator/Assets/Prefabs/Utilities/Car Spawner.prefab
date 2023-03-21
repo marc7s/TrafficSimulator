@@ -45,9 +45,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _carPrefab: {fileID: 1577973480899275759, guid: fe053947ba87ff247978453be24b8da2, type: 3}
+  _mesh: {fileID: 100000, guid: 55fcadb7aec577541a68acb962b05a10, type: 3}
   _roadSystemObject: {fileID: 0}
   _mode: 0
   TotalCars: 5
   LaneCarRatio: 0.5
   CarLength: 4
-  SpawnDelay: 3
+  SpawnDelay: 1

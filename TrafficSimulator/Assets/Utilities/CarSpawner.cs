@@ -15,6 +15,7 @@ namespace RoadGenerator
     {
         [Header("Connections")]
         [SerializeField] private GameObject _carPrefab;
+        [SerializeField] private GameObject _mesh;
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
@@ -51,6 +52,7 @@ namespace RoadGenerator
             _roadSystem.Setup();
 
             _roads = _roadSystem.Roads;
+            CarLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
 
             AddLanesToList();
             CalculateLaneLengths();
