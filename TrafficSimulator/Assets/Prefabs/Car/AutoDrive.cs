@@ -20,11 +20,6 @@ namespace Car {
         Performance,
         Quality
     }
-    public enum RoadEndBehaviour 
-    {
-        Loop,
-        Stop
-    }
     public enum ShowTargetLines 
     {
         None,
@@ -362,7 +357,7 @@ namespace Car {
         private void Q_Brake()
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
             distanceToBrakeTarget += Vector3.Distance(_currentNode.Position, transform.position);
             
             // If the brake target is not found or the vehicle is further away from the target than the brake distance, accelerate
@@ -406,7 +401,7 @@ namespace Car {
         private bool Q_ShouldAdvanceBrakeTarget()
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
             
             // Return if the brake target was not found
             if(!brakeTargetFound)
@@ -583,7 +578,7 @@ namespace Car {
             LaneNode nextTarget = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
             // If the car is at the target, set the target to the next node and update current node
             float distanceToBrakeTarget;
-            bool brakeTargetFound = nextTarget.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
+            bool brakeTargetFound = nextTarget.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
             
             if (transform.position == _target.Position && distanceToBrakeTarget > _vehicleLength / 2)
             {
@@ -603,7 +598,7 @@ namespace Car {
         private bool P_ShouldAdvanceBrakeTarget(LaneNode tempBrakeTarget)
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(tempBrakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
+            bool brakeTargetFound = _currentNode.DistanceToNode(tempBrakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
             
             // Return if the brake target was not found
             if(!brakeTargetFound)
@@ -625,7 +620,7 @@ namespace Car {
         private void P_Brake()
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
 
             if(!brakeTargetFound)
                 return;

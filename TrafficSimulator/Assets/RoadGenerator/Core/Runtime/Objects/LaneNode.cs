@@ -37,8 +37,9 @@ namespace RoadGenerator
 
         /// <summary> Calculates the distance from one node to another. 
         /// Returns true if the node is found, the distance is passed to the out parameter and is 0 if the node is not found 
-        /// The sign of the distance is along the node path, so a positive distance means the target is ahead of the current node </summary>
-        public bool DistanceToNode(LaneNode targetNode, out float distance, bool loop, bool onlyLookAhead = false)
+        /// The sign of the distance is along the node path, so a positive distance means the target is ahead of the current node.
+        /// With `roadEndBehaviour` set to Loop, the distance will always be positive if found since all nodes will be checked in the forward direction with looping activated </summary>
+        public bool DistanceToNode(LaneNode targetNode, out float distance, RoadEndBehaviour roadEndBehaviour = RoadEndBehaviour.Stop, bool onlyLookAhead = false)
         {
             // Return if the target node is the current node
             if(targetNode == this)
@@ -46,12 +47,12 @@ namespace RoadGenerator
                 distance = 0;
                 return true;
             }
-            
+
             float dst = 0;
             LaneNode curr = this.Next;
 
             // Look forwards
-            while (curr != null)
+            while (curr != null && curr != this)
             {
                 dst += curr.DistanceToPrevNode;
                 
@@ -62,32 +63,17 @@ namespace RoadGenerator
                 }
 
                 curr = curr.Next;
-            }
-            curr = this;
-            // If RoadEndBehaviour is set to loop, then go to the start of the lane and look forwards again
-            if(loop)
-            {
-                curr = curr.First.Next;
-                while (curr != null && curr != this)
-                {
-                    dst += curr.DistanceToPrevNode;
-                    
-                    if(curr == targetNode)
-                    {
-                        distance = dst;
-                        return true;
-                    }
 
-                    curr = curr.Next;
-                }
+                if(curr == null && roadEndBehaviour == RoadEndBehaviour.Loop)
+                    curr = First;
             }
 
             // Reset the current node and distance before looking for the target node backwards
             curr = this;
             dst = 0;
             
-            // Look backwards
-            while (!onlyLookAhead && curr != null)
+            // Look backwards if we have not already checked all nodes with the loop behaviour
+            while (roadEndBehaviour != RoadEndBehaviour.Loop && !onlyLookAhead && curr != null)
             {
                 // We need to change the pointer first, otherwise we will count the distance to the node after the target
                 curr = curr.Prev;
