@@ -133,7 +133,7 @@ namespace Car {
             _startNode = lane.StartNode;
             _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = _currentNode;
-
+            _navigationMode = _originalNavigationMode;
             // Setup target line renderer
             float targetLineWidth = 0.3f;
             _targetLineRenderer = GetComponent<LineRenderer>();
@@ -160,13 +160,8 @@ namespace Car {
                 rigidbody.useGravity = false;
                 P_TeleportToFirstPosition();
             }
-            
-            if (_navigationMode == NavigationMode.RandomNavigationPath)
-            {
-                UpdateRandomPath();
-                SetInitialPrevIntersection();
-            }
-            _navigationMode = _originalNavigationMode;
+
+
         }
 
         void Update()
@@ -563,6 +558,11 @@ namespace Car {
 
         private void P_TeleportToFirstPosition()
         {
+            if (_navigationMode == NavigationMode.RandomNavigationPath)
+            {
+                SetInitialPrevIntersection();
+                UpdateRandomPath();
+            }
 
             // Move to the first position of the lane
             transform.position = _currentNode.Position;
