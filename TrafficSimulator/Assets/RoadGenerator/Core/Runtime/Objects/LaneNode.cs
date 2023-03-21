@@ -55,7 +55,7 @@ namespace RoadGenerator
             {
                 dst += curr.DistanceToPrevNode;
                 
-                if(curr.ID == targetNode.ID)
+                if(curr == targetNode)
                 {
                     distance = dst;
                     return true;
@@ -68,11 +68,11 @@ namespace RoadGenerator
             if(loop)
             {
                 curr = curr.First.Next;
-                while (curr != this)
+                while (curr != null && curr != this)
                 {
                     dst += curr.DistanceToPrevNode;
                     
-                    if(curr.ID == targetNode.ID)
+                    if(curr == targetNode)
                     {
                         distance = dst;
                         return true;
@@ -89,13 +89,15 @@ namespace RoadGenerator
             // Look backwards
             while (!onlyLookAhead && curr != null)
             {
+                // We need to change the pointer first, otherwise we will count the distance to the node after the target
+                curr = curr.Prev;
+                
                 dst -= curr.DistanceToPrevNode;
-                if(curr.ID == targetNode.ID)
+                if(curr == targetNode)
                 {
                     distance = dst;
                     return true;
                 }
-                curr = curr.Prev;
             }
             
             // The target was not found, so set the distance to 0 and return false

@@ -362,7 +362,7 @@ namespace Car {
         private void Q_Brake()
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop);
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
             distanceToBrakeTarget += Vector3.Distance(_currentNode.Position, transform.position);
             
             // If the brake target is not found or the vehicle is further away from the target than the brake distance, accelerate
@@ -386,40 +386,35 @@ namespace Car {
             // Set the brake target point to the point closest to the target that is at least _brakeDistance points away
             // If the road end behaviour is set to stop and the brake target is the end node, do not update the brake target
             // If the next node has a vehicle, do not update the brake target
-            if (_mode == DrivingMode.Quality && Q_ShouldAdvanceBrakeTarget())
+            if (_mode == DrivingMode.Quality)
             {
-                _brakeTarget = GetNextLaneNode(_brakeTarget, 0, true);
+                while(Q_ShouldAdvanceBrakeTarget())
+                    _brakeTarget = GetNextLaneNode(_brakeTarget, 0, true);
             }
             // Performance mode is
             else if (_mode == DrivingMode.Performance)
             {
-                LaneNode temp = _currentNode;
-                while (P_ShouldAdvanceBrakeTarget(temp))
+                LaneNode nextBrakeTarget = _currentNode;
+                while (P_ShouldAdvanceBrakeTarget(nextBrakeTarget))
                 {
-                    temp = GetNextLaneNode(temp, 0, true);
+                    nextBrakeTarget = GetNextLaneNode(nextBrakeTarget, 0, true);
                 }
-                _brakeTarget = temp;
+                _brakeTarget = nextBrakeTarget;
             }
         }
 
         private bool Q_ShouldAdvanceBrakeTarget()
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop);
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
             
             // Return if the brake target was not found
             if(!brakeTargetFound)
-            {
-                print("Brake target not found");
                 return false;
-            }
             
             Vehicle nextNodeVehicle = GetNextLaneNode(_brakeTarget, 0, true).Vehicle;
             bool _nextNodeHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
-            // TODO: Curretly we use position to check if the node is the end node (not startNode), but this should be Id
-            //       This is because the NodeList has a bug where we get duplicate nodes with the same position and type
-            //       but different Ids
-            bool _brakeTargetIsEndNode = _brakeTarget.Type == RoadNodeType.End && _brakeTarget.Position != _startNode.Position;
+            bool _brakeTargetIsEndNode = _brakeTarget.Type == RoadNodeType.End && _brakeTarget != _startNode;
             bool _brakeTargetIsEndNodeAndLoop = _brakeTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop;
             bool _brakeDistanceIsGreaterThanBrakeTargetDistance = distanceToBrakeTarget < _brakeDistance;
             
@@ -435,8 +430,8 @@ namespace Car {
             }
             else if (_mode == DrivingMode.Performance)
             {
-                // Set the distance to the brake offset + the speed divided by 10
-                _brakeDistance = _brakeOffset + _speed/5;
+                // Set the distance to the brake offset + the speed divided by 5
+                _brakeDistance = _brakeOffset + _speed / 5f;
             }
             
         }
@@ -576,7 +571,7 @@ namespace Car {
         // Move the vehicle to the target node
         private void P_MoveToTargetNode()
         {
-            Vector3 targetPosition = P_GetLerpPosition(_target.Position, _lerpSpeed);
+            Vector3 targetPosition = P_GetLerpPosition(_target.Position);
             Quaternion targetRotation = P_GetLerpQuaternion(_target.Rotation);
 
             transform.position = targetPosition;
@@ -588,13 +583,15 @@ namespace Car {
             LaneNode nextTarget = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
             // If the car is at the target, set the target to the next node and update current node
             float distanceToBrakeTarget;
-            bool brakeTargetFound = nextTarget.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop);
-            if (transform.position == _target.Position && distanceToBrakeTarget > _vehicleLength/2)
+            bool brakeTargetFound = nextTarget.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
+            
+            if (transform.position == _target.Position && distanceToBrakeTarget > _vehicleLength / 2)
             {
                 _currentNode = _target;
                 // When the currentNode is changed, the navigation path needs to be updated
                 if (ShowNavigationPath)
                     Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
             }
@@ -606,22 +603,19 @@ namespace Car {
         private bool P_ShouldAdvanceBrakeTarget(LaneNode tempBrakeTarget)
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(tempBrakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop);
+            bool brakeTargetFound = _currentNode.DistanceToNode(tempBrakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
             
             // Return if the brake target was not found
             if(!brakeTargetFound)
             {
-                print("Brake target not found");
+                Debug.Log("Brake target not found");
                 return false;
             }
             
             Vehicle nextNodeVehicle = GetNextLaneNode(tempBrakeTarget, 0, true).Vehicle;
             bool _nextNodeHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
             
-            // TODO: Curretly we use position to check if the node is the end node (not startNode), but this should be Id
-            //       This is because the NodeList has a bug where we get duplicate nodes with the same position and type
-            //       but different Ids
-            bool _brakeTargetIsEndNode = tempBrakeTarget.Type == RoadNodeType.End && tempBrakeTarget.ID == _endNode.ID;
+            bool _brakeTargetIsEndNode = tempBrakeTarget.Type == RoadNodeType.End && tempBrakeTarget == _endNode;
             bool _brakeTargetIsEndNodeAndLoop = _brakeTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop;
             bool _brakeDistanceIsGreaterThanBrakeTargetDistance = distanceToBrakeTarget < _brakeDistance;
             
@@ -631,28 +625,33 @@ namespace Car {
         private void P_Brake()
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop);
+            bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour == RoadEndBehaviour.Loop, true);
 
-            Vector3 directionToCurrentNode = (_currentNode.Position - transform.position);
-            if (Vector3.Angle(transform.forward, directionToCurrentNode.normalized) < 90)
-            {
-                distanceToBrakeTarget += directionToCurrentNode.magnitude;
-            }
-            else
-            {
-                distanceToBrakeTarget -= directionToCurrentNode.magnitude;
-            }
+            if(!brakeTargetFound)
+                return;
+            
+            float distanceToCurrentNode = Vector3.Distance(transform.position, _currentNode.Position);
+            
+            // Determine the distance from the transform to the current node, along the current direction
+            Vector3 currentDirection = _currentNode.Rotation * Vector3.forward;
+            Vector3 transformToCurrentNode = _currentNode.Position - transform.position;
+            Vector3 transformAlongDirection = Vector3.Project(transformToCurrentNode, currentDirection);
+            
+            // Add the distance along the path from the transform to the current node to the brake target
+            distanceToBrakeTarget += transformAlongDirection.magnitude;
+
+            float maxDelta = Time.deltaTime * 0.07f;
             
             // If the vehicle is closer to the target than the brake distance, start decelerating
             if (distanceToBrakeTarget <= _brakeDistance)
             {
                 _currentNode = _target;
-                _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, 3, 0.07f);
+                float minLerpSpeed = 3f;
+                _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, minLerpSpeed, maxDelta);
             }
+            
             if (distanceToBrakeTarget > _brakeDistance)
-            {
-                _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, _speed, 0.07f);
-            }
+                _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, _speed, maxDelta);
         }
         private bool P_HasReachedTarget()
         {
@@ -669,7 +668,7 @@ namespace Car {
                 return;
             
             bool isNonIntersectionNavigationNode = _target.RoadNode.IsNavigationNode && !_target.IsIntersection();
-            bool currentTargetNodeNotChecked = _previousTarget != null && _target.RoadNode.ID != _previousTarget.RoadNode.ID;
+            bool currentTargetNodeNotChecked = _previousTarget != null && _target.RoadNode != _previousTarget.RoadNode;
             if (isNonIntersectionNavigationNode &&_navigationPath.Count != 0 && currentTargetNodeNotChecked)
             {
                 _navigationPath.Pop();
@@ -723,9 +722,9 @@ namespace Car {
             }
         }
 
-        private Vector3 P_GetLerpPosition(Vector3 target, float lerpSpeed)
+        private Vector3 P_GetLerpPosition(Vector3 target)
         {
-            return Vector3.MoveTowards(transform.position, target, lerpSpeed * Time.deltaTime);
+            return Vector3.MoveTowards(transform.position, target, _lerpSpeed * Time.deltaTime);
         }
         private Quaternion P_GetLerpQuaternion(Quaternion target)
         {
