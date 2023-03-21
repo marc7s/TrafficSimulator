@@ -75,10 +75,12 @@ namespace RoadGenerator
             // Look backwards if we have not already checked all nodes with the loop behaviour
             while (roadEndBehaviour != RoadEndBehaviour.Loop && !onlyLookAhead && curr != null)
             {
-                // We need to change the pointer first, otherwise we will count the distance to the node after the target
+                // Add the distance from the current node to the previous node before changing the current pointer
+                dst -= curr.DistanceToPrevNode;
+                
+                // We need to change the current node before checking if it is the target, otherwise it will overshoot and we will count the distance to the node after the target
                 curr = curr.Prev;
                 
-                dst -= curr.DistanceToPrevNode;
                 if(curr == targetNode)
                 {
                     distance = dst;
