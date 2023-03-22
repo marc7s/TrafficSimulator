@@ -103,8 +103,6 @@ namespace Car {
         private LaneNode _repositioningTarget;
         private VehicleController _vehicleController;
         
-        private TrafficLight _currentTrafficLight = null;
-        
         void Start()
         {
             Road.RoadSystem.Setup();
@@ -350,8 +348,9 @@ namespace Car {
             // If the vehicle is driving and the target is in front of us and we are close enough
             else if (_status == Status.Driving && dot > 0 && direction.magnitude <= _targetLookaheadDistance)
             {
-                bool trafficLightIsRed = _brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
-                if (trafficLightIsRed && _target == _brakeTarget)
+                bool trafficLightShouldStop = _brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+                // when the target is the brake target and the traffic light is red, do not change the target
+                if (trafficLightShouldStop && _target == _brakeTarget)
                     return;
                 _vehicleController.maxSpeedForward = _target.RoadNode.Intersection != null ? _intersectionMaxSpeed : _originalMaxSpeed;
                 // Set the target to the next point in the lane
@@ -375,7 +374,7 @@ namespace Car {
             // If the vehicle is closer to the target than the brake distance, brake
             else if (distanceToBrakeTarget <= _brakeDistance)
             {
-                _vehicleController.brakeInput = 1f;
+                _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
                 _vehicleController.throttleInput = 0f;
             }
             if(!(_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red))
@@ -396,11 +395,10 @@ namespace Car {
 
         private bool ShouldAdvanceBrakeTarget()
         {
+            // If the traffic light is red and the vehicle isn't currently inside the intersection, do not advance the brake target
             if (_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition)
             {
-
-                return false;    
-                
+                return false;      
             }
                 
             float distanceToBrakeTarget;
@@ -555,7 +553,6 @@ namespace Car {
 
         private void P_TeleportToFirstPosition()
         {
-
             // Move to the first position of the lane
             transform.position = _currentNode.Position;
             transform.rotation = _currentNode.Rotation;
@@ -563,8 +560,6 @@ namespace Car {
             SetInitialPrevIntersection();
             if (_navigationMode == NavigationMode.RandomNavigationPath)
                 UpdateRandomPath();
-            
-
             P_MoveToTargetNode();
         }
 
@@ -583,10 +578,6 @@ namespace Car {
         private void P_UpdateTargetAndCurrent()
         {
             bool trafficLightIsRed = _target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
-            if (_target.Type == RoadNodeType.JunctionEdge)
-            {
-//                Debug.Log(_target.RoadNode.TrafficLight?.GetState() + "gdfsljkhdlfgsjkh");
-            }
             if (!trafficLightIsRed)
                 UpdateTargetFromNavigation();
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
@@ -630,12 +621,9 @@ namespace Car {
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = _speed;
-            }
-                
-
+            }   
             // Move the vehicle to the target node
             P_MoveToTargetNode();
-
         }
 
         private bool P_HasReachedTarget()
@@ -656,7 +644,6 @@ namespace Car {
             bool currentTargetNodeNotChecked = _previousTarget != null && _target.RoadNode.ID != _previousTarget.RoadNode.ID;
             if (isNonIntersectionNavigationNode &&_navigationPath.Count != 0 && currentTargetNodeNotChecked)
             {
-                Debug.Log("Popping path");
                 _navigationPath.Pop();
                 _prevIntersectionPosition = Vector3.zero; 
             }
@@ -673,8 +660,6 @@ namespace Car {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
-                        Debug.Log(_navigationPath.Count);
-                         Debug.Log("Popping path");
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (_mode == DrivingMode.Performance)
                             Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);

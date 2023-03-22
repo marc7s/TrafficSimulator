@@ -69,13 +69,6 @@ namespace RoadGenerator
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
 
-        private GameObject _trafficLightController;
-        private GameObject _stopSignController;
-        private GameObject _flowContainer;
-
-        private List<RoadNode> _twoJunctionNodeRoad = new List<RoadNode>();
-        private List<RoadNode> _oneJunctionNodeRoad = new List<RoadNode>();
-
         private Mesh _mesh;
         [SerializeField][HideInInspector] private GameObject _guideNodeContainer;
         [HideInInspector] public const float IntersectionLength = 20f;
@@ -109,22 +102,17 @@ namespace RoadGenerator
         void Awake()
         {
             IntersectionObject = gameObject;
-            //_flowContainer = IntersectionObject.transform.Find("FlowContainer")?.gameObject;
             TrafficLightController = gameObject.GetComponent<TrafficLightController>();
         }
 
         public void UpdateMesh()
         {
-            Debug.Log("Updating intersection mesh");
             // Set the thickness of the intersection
             _thickness = Road1.Thickness;
-            
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
-           
             ShowGuideNodes();
-
             gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
         }
 
@@ -144,11 +132,8 @@ namespace RoadGenerator
             return junctionNodes;
         }
 
-        // Finds intersections junction nodes and assigns traffic lights to them
-
         private void CreateIntersectionMesh()
         {
-            
             Road1.UpdateRoadNodes();
             Road1.UpdateLanes();
             Road1.PlaceTrafficSigns();
@@ -808,12 +793,10 @@ namespace RoadGenerator
             Road2PathCreator.bezierPath.RemoveAnchors(new List<Vector3>{ Road2AnchorPoint1, Road2AnchorPoint2 });
             
             // Remove reference to intersection in the roads
-            
             if (Road1?.HasIntersection(this) == true)
                 Road1.RemoveIntersection(this);
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
-                
         }
     }
 }
