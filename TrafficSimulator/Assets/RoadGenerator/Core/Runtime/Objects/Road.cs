@@ -617,6 +617,7 @@ namespace RoadGenerator
         {
             GameObject trafficLightObject = PlaceTrafficSignAtDistance(roadNode, distanceFromRoadNode, trafficSignType, isForward, prefab);
             TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
+            
             // Add the traffic light to the correct traffic light group, Road1 gets added to trafficLightGroup1 and Road2 gets added to trafficLightGroup2
             if (this == roadNode.Intersection.Road1)
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup1.Add(trafficLight);
