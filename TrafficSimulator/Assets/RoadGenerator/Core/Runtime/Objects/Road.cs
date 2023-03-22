@@ -131,7 +131,7 @@ namespace RoadGenerator
         public bool RemoveIntersection(Intersection intersection)
         {
             Intersections.Remove(intersection);
-            UpdateRoad();
+           // UpdateRoad();
             return true;
         }
 
@@ -621,7 +621,6 @@ namespace RoadGenerator
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup1.Add(trafficLight);
             else if (this == roadNode.Intersection.Road2)
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup2.Add(trafficLight);
-            Debug.Log(roadNode.Position);
             roadNode.TrafficLight = trafficLight;
 
         }
@@ -741,7 +740,7 @@ namespace RoadGenerator
                     while(curr != null)
                     {
                         GameObject laneNodeObject = Instantiate(LaneNodePrefab, curr.Position, curr.Rotation, _laneNodeContainer.transform);
-                        laneNodeObject.name = LANE_NODE_NAME + i;
+                        laneNodeObject.name = "" + curr.DistanceToPrevNode;
 
                         curr = curr.Next;
                         i++;
@@ -922,8 +921,6 @@ namespace RoadGenerator
         {
             RoadSystem.RemoveRoad(this);
             int count = Intersections.Count;
-            if (_trafficSignContainer != null)
-                DestroyImmediate(_trafficSignContainer);
             for (var i = 0; i < count; i++)
             {
                 Intersection intersection = Intersections[0];
