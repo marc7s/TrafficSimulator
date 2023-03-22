@@ -348,7 +348,7 @@ namespace Car {
             // If the vehicle is driving and the target is in front of us and we are close enough
             else if (_status == Status.Driving && dot > 0 && direction.magnitude <= _targetLookaheadDistance)
             {
-                bool trafficLightShouldStop = _brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+                bool trafficLightShouldStop = _brakeTarget.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
                 // when the target is the brake target and the traffic light is red, do not change the target
                 if (trafficLightShouldStop && _target == _brakeTarget)
                     return;
@@ -377,7 +377,7 @@ namespace Car {
                 _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
                 _vehicleController.throttleInput = 0f;
             }
-            if(!(_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red))
+            if(!(_brakeTarget.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red))
                 UpdateTargetFromNavigation();
         }
 
@@ -395,7 +395,7 @@ namespace Car {
         private bool ShouldAdvanceBrakeTarget()
         {
             // If the traffic light is red and the vehicle isn't currently inside the intersection, do not advance the brake target
-            if (_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition)
+            if (_brakeTarget.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition)
                 return false;      
                 
             float distanceToBrakeTarget;
@@ -574,7 +574,7 @@ namespace Car {
 
         private void P_UpdateTargetAndCurrent()
         {
-            bool trafficLightIsRed = _target.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+            bool trafficLightIsRed = _target.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
             if (!trafficLightIsRed)
                 UpdateTargetFromNavigation();
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;

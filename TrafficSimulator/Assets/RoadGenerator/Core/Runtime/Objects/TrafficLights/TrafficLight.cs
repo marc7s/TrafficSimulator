@@ -64,12 +64,10 @@ namespace RoadGenerator
             _currentState = newState;
             UpdateLightColor();
         }
-
-        public TrafficLightState GetState()
+        public TrafficLightState CurrentState
         {
-            return _currentState;
+            get { return _currentState; }
         }
-
         // Change the light color
         private void UpdateLightColor()
         {
