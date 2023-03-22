@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace RoadGenerator
 {
-    public enum TrafficLightState{Red, ToGo, ToStop, Green};
+    public enum TrafficLightState{ Red, ToGo, ToStop, Green };
 
     public class TrafficLight : MonoBehaviour
     {

@@ -622,8 +622,8 @@ namespace RoadGenerator
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup1.Add(trafficLight);
             else if (this == roadNode.Intersection.Road2)
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup2.Add(trafficLight);
-            roadNode.TrafficLight = trafficLight;
 
+            roadNode.TrafficLight = trafficLight;
         }
         /// <summary> Returns the speed sign type for the current speed limit </summary>
         private TrafficSignType GetSpeedSignType()

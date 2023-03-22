@@ -574,11 +574,14 @@ namespace Car {
         private void P_UpdateTargetAndCurrent()
         {
             bool trafficLightIsRed = _target.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+
             if (!trafficLightIsRed)
                 UpdateTargetFromNavigation();
+
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
             bool nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
             bool nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
+
             // If the next target is an end node and the road end behaviour is stop, decelerate and update current node
             if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Stop)
             {
