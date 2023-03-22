@@ -369,7 +369,6 @@ namespace Car {
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 1f;
-
             }
             // If the vehicle is closer to the target than the brake distance, brake
             else if (distanceToBrakeTarget <= _brakeDistance)
