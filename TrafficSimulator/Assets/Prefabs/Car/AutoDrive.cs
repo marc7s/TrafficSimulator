@@ -44,10 +44,10 @@ namespace Car {
         [SerializeField] private GameObject _mesh;
 
         [Header("Settings")]
-        [SerializeField] public DrivingMode _mode = DrivingMode.Quality;
+        [SerializeField] private DrivingMode _mode = DrivingMode.Quality;
         [SerializeField] private RoadEndBehaviour _roadEndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
-        [SerializeField][HideInInspector] public NavigationMode _navigationMode = NavigationMode.Disabled;
+        [SerializeField][HideInInspector] private NavigationMode _navigationMode = NavigationMode.Disabled;
         [SerializeField] private NavigationMode _originalNavigationMode = NavigationMode.Disabled;
         [SerializeField] private bool _logRepositioningInformation = true;
 
@@ -379,7 +379,6 @@ namespace Car {
             }
             if(!(_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red))
                 UpdateTargetFromNavigation();
-                
         }
 
         private void Q_UpdateBrakeTarget()
@@ -397,9 +396,7 @@ namespace Car {
         {
             // If the traffic light is red and the vehicle isn't currently inside the intersection, do not advance the brake target
             if (_brakeTarget.RoadNode.TrafficLight?.GetState() == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition)
-            {
                 return false;      
-            }
                 
             float distanceToBrakeTarget;
             bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, true);
@@ -583,7 +580,6 @@ namespace Car {
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
             bool nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
             bool nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
-           
             // If the next target is an end node and the road end behaviour is stop, decelerate and update current node
             if (nextTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Stop)
             {
@@ -621,7 +617,7 @@ namespace Car {
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = _speed;
-            }   
+            }
             // Move the vehicle to the target node
             P_MoveToTargetNode();
         }

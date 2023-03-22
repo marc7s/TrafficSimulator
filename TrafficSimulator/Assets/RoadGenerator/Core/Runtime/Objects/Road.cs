@@ -583,7 +583,6 @@ namespace RoadGenerator
             if (distanceFromRoadNode == 0)
             {
                 roadNode.TrafficSignType = trafficSignType;
-                // Spawn the speed limit sign
                 return SpawnTrafficSign(roadNode.Position, rotation, prefab);
             }
 
@@ -599,7 +598,6 @@ namespace RoadGenerator
                 {
                     current.TrafficSignType = trafficSignType;
                     return SpawnTrafficSign(current.Position, rotation, prefab);
-                    
                 }
                 current = isForward ? current.Next : current.Prev;
             }
