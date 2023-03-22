@@ -145,7 +145,7 @@ namespace Car {
             if (_mode == DrivingMode.Quality)
             {
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                Q_TeleportToLane();
+                Q_ResetToNode(_startNode);
                 
                 _brakeTarget = _currentNode;
                 _repositioningTarget = _currentNode;
@@ -200,10 +200,9 @@ namespace Car {
 
             Q_TeleportToLane();
             _navigationMode = _originalNavigationMode;
+            SetInitialPrevIntersection();
             if (_navigationMode == NavigationMode.RandomNavigationPath)
                 UpdateRandomPath();
-            
-            SetInitialPrevIntersection();
         }
 
         // Update the list of nodes that the vehicle is currently occupying
@@ -376,8 +375,6 @@ namespace Car {
             // If the vehicle is closer to the target than the brake distance, brake
             else if (distanceToBrakeTarget <= _brakeDistance)
             {
-                Debug.Log("Braking");
-                Debug.Log(_brakeDistance);
                 _vehicleController.brakeInput = 1f;
                 _vehicleController.throttleInput = 0f;
             }
@@ -558,20 +555,16 @@ namespace Car {
 
         private void P_TeleportToFirstPosition()
         {
-            if (_navigationMode == NavigationMode.RandomNavigationPath)
-            {
-                SetInitialPrevIntersection();
-                UpdateRandomPath();
-            }
 
             // Move to the first position of the lane
             transform.position = _currentNode.Position;
             transform.rotation = _currentNode.Rotation;
             _navigationMode = _originalNavigationMode;
+            SetInitialPrevIntersection();
             if (_navigationMode == NavigationMode.RandomNavigationPath)
                 UpdateRandomPath();
             
-            SetInitialPrevIntersection();
+
             P_MoveToTargetNode();
         }
 
@@ -663,6 +656,7 @@ namespace Car {
             bool currentTargetNodeNotChecked = _previousTarget != null && _target.RoadNode.ID != _previousTarget.RoadNode.ID;
             if (isNonIntersectionNavigationNode &&_navigationPath.Count != 0 && currentTargetNodeNotChecked)
             {
+                Debug.Log("Popping path");
                 _navigationPath.Pop();
                 _prevIntersectionPosition = Vector3.zero; 
             }
@@ -679,7 +673,8 @@ namespace Car {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
-                        Debug.Log("gdfsljkhdlfgsjkh");
+                        Debug.Log(_navigationPath.Count);
+                         Debug.Log("Popping path");
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (_mode == DrivingMode.Performance)
                             Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
