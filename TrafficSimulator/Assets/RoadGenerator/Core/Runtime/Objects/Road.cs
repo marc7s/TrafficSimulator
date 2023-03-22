@@ -131,7 +131,6 @@ namespace RoadGenerator
         public bool RemoveIntersection(Intersection intersection)
         {
             Intersections.Remove(intersection);
-           // UpdateRoad();
             return true;
         }
 
@@ -561,8 +560,11 @@ namespace RoadGenerator
                             else
                                 current.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup2 = new List<TrafficLight>();
                         }
-                        SpawnTrafficLight(current, 0, TrafficSignType.TrafficLight, !intersectionFound, RoadSystem.DefaultTrafficLightPrefab);
-                            
+                        SpawnFlowController(current, 0, TrafficSignType.TrafficLight, !intersectionFound, RoadSystem.DefaultTrafficLightPrefab);
+                    }
+                    else if (current.Intersection.FlowType == FlowType.StopSigns)
+                    {
+                        SpawnFlowController(current, 0, TrafficSignType.StopSign, !intersectionFound, RoadSystem.DefaultStopSignPrefab);
                     }
                     if (GenerateSpeedSigns && !IsClosed())
                     {
@@ -613,10 +615,11 @@ namespace RoadGenerator
             return trafficSign;
         }
 
-        private void SpawnTrafficLight(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool isForward, GameObject prefab)
+        private void SpawnFlowController(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool isForward, GameObject prefab)
         {
-            GameObject trafficLightObject = PlaceTrafficSignAtDistance(roadNode, 0, trafficSignType, isForward, prefab);
+            GameObject trafficLightObject = PlaceTrafficSignAtDistance(roadNode, distanceFromRoadNode, trafficSignType, isForward, prefab);
             TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
+            // Add the traffic light to the correct traffic light group, Road1 gets added to trafficLightGroup1 and Road2 gets added to trafficLightGroup2
             if (this == roadNode.Intersection.Road1)
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup1.Add(trafficLight);
             else if (this == roadNode.Intersection.Road2)
@@ -740,7 +743,7 @@ namespace RoadGenerator
                     while(curr != null)
                     {
                         GameObject laneNodeObject = Instantiate(LaneNodePrefab, curr.Position, curr.Rotation, _laneNodeContainer.transform);
-                        laneNodeObject.name = "" + curr.DistanceToPrevNode;
+                        laneNodeObject.name = LANE_NODE_NAME + i;
 
                         curr = curr.Next;
                         i++;
