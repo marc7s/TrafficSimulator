@@ -83,6 +83,7 @@ namespace Car {
         private NavigationNode _navigationPathEndNode;
         private Stack<NavigationNodeEdge> _navigationPath = new Stack<NavigationNodeEdge>();
         private List<LaneNode> _occupiedNodes = new List<LaneNode>();
+        private List<Vector3> _navigationPathPositions = new List<Vector3>();
         private float _lerpSpeed;
         private GameObject _navigationPathContainer;
         private bool _isEnteringNetwork = true;
@@ -395,7 +396,7 @@ namespace Car {
         {
             // If the traffic light is red and the vehicle isn't currently inside the intersection, do not advance the brake target
             if (_brakeTarget.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition)
-                return false;      
+                return false;
                 
             float distanceToBrakeTarget;
             bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, true);
@@ -447,7 +448,7 @@ namespace Car {
                 _currentNode = nextNode;
                 // When the current node is updated, it needs to redraw the navigation path
                 if (ShowNavigationPath)
-                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                    Navigation.DrawPathRemoveOldestPoint(_navigationPathPositions, out _navigationPathPositions, _navigationPathContainer);
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
                 reachedEnd = reachedEnd || (!_isEnteringNetwork && _currentNode.Type == RoadNodeType.End);
@@ -615,7 +616,7 @@ namespace Car {
                 _currentNode = _target;
                 // When the currentNode is changed, the navigation path needs to be updated
                 if (ShowNavigationPath)
-                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                    Navigation.DrawPathRemoveOldestPoint(_navigationPathPositions, out _navigationPathPositions, _navigationPathContainer);
                 _totalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = _speed;
@@ -660,7 +661,7 @@ namespace Car {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (_mode == DrivingMode.Performance)
-                            Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                            Navigation.DrawPathRemoveOldestPoint(_navigationPathPositions, out _navigationPathPositions, _navigationPathContainer);
                         // If the intersection does not have a lane node that matches the navigation path, unexpected behaviour has occurred, switch to random navigation
                         if (_target == null)
                             _navigationMode = NavigationMode.Random;
@@ -685,7 +686,7 @@ namespace Car {
             // Get a random path from the navigation graph
             _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEndNode);
             if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
+                    Navigation.DrawNavigationPath(out _navigationPathPositions, _navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             if (_navigationPath.Count == 0)
             {
                 _navigationMode = NavigationMode.Random;
