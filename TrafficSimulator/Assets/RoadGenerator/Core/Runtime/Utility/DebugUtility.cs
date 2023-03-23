@@ -16,9 +16,9 @@ namespace RoadGenerator
         [SerializeField] private static GameObject _markerPrefab;
         private static Vector3 _markerPrefabScale = new Vector3(1.5f, 1f, 1f);
         private static Vector3 _endPointPrefabScale = Vector3.one * 1.3f;
-        private static Dictionary<string, (Vector3[], Quaternion[])> _groups = new Dictionary<string, (Vector3[], Quaternion[])>();
+        private static Dictionary<string, (Vector3[], Quaternion[], Vector3[])> _groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
         private static bool _nextGroupPressed = false;
-        private static int _currentGroup = 0;
+        private static int _currentGroup = -1;
         private static bool _isSetup = false;
         private const string _debugUtilityContainer = "Debug Utility";
         private const string _positionContainerName = "Markers";
@@ -109,30 +109,40 @@ namespace RoadGenerator
         }
 
         /// <summary> Mark all nodes in a linked list of nodes </summary>
-        public static void MarkPositions<T>(T nodes, float size = 1f) where T : Node<T>
+        public static void MarkPositions<T>(T nodes, bool colorEndPositions = true, Color? color = null, float size = 1f, bool clearMarkers = true) where T : Node<T>
         {
             Vector3[] positions = nodes.GetPositions();
             Quaternion[] rotations = nodes.GetRotations();
-            MarkPositions(positions, rotations, size);
+            MarkPositions(positions, rotations, colorEndPositions, color, size, clearMarkers);
         }
         
         /// <summary> Mark all positions in a list </summary>
-        public static void MarkPositions(Vector3[] positions, Quaternion[] rotations = null, float size = 1f)
+        public static void MarkPositions(Vector3[] positions, Quaternion[] rotations = null, bool colorEndPositions = true, Color? color = null, float size = 1f, bool clearMarkers = true)
         {
-            ClearMarkers();
+            if(clearMarkers)
+                ClearMarkers();
 
             if(!_isSetup)
                 Setup();
             
             for (int i = 0; i < positions.Length; i++)
             {
+                Color? currColor = null;
+                
+                if(colorEndPositions && i == 0)
+                    currColor = Color.green;
+                else if(colorEndPositions && i == positions.Length - 1)
+                    currColor = Color.red;
+                else
+                    currColor = color;
+                
                 Quaternion? rot = rotations == null ? null : rotations[i];
-                DebugUtility.MarkPosition(positions[i], rot, size, false);
+                DebugUtility.MarkPosition(positions[i], rot, currColor, size, false);
             }
         }
 
         /// <summary> Mark a single position </summary>
-        public static void MarkPosition(Vector3 position, Quaternion? rotation = null, float size = 1f, bool clearMarkers = true)
+        public static void MarkPosition(Vector3 position, Quaternion? rotation = null, Color? color = null, float size = 1f, bool clearMarkers = true)
         {
             if(!_isSetup)
                 Setup();
@@ -141,8 +151,12 @@ namespace RoadGenerator
                 ClearMarkers();
 
             // If rotation was passed, rotate the marker and make it longer in the rotation direction. Otherwise, make it a cube
-            _markerPrefab.transform.localScale = rotation == null ? Vector3.one : _markerPrefabScale * size;
+            _markerPrefab.transform.localScale = (rotation == null ? Vector3.one : _markerPrefabScale) * size;
             GameObject marker = GameObject.Instantiate(_markerPrefab, position, rotation ?? Quaternion.identity);
+            
+            if(color != null)
+                marker.GetComponent<Renderer>().material.SetColor("_Color", (Color)color);
+            
             marker.name = "Marker";
             marker.transform.parent = _positionContainer.transform;
         }
@@ -151,26 +165,52 @@ namespace RoadGenerator
         /// Adds several groups of positions to display at separate times. Press the `N` key to cycle through the groups. 
         /// Only the positions for the current group is displayed. The key press is only detected in Play mode, in the Game view
         /// For the easiest use, split the Game and Scene view so both are visible at the same time, and press the `N` key in the Game view window
-        /// and the markers will be visible in both views
+        /// and the markers will be visible in both views. There is also support for some helper points to give additional context to the group.
+        /// The format for each group is (Vector3[] listOfGroupPositions, Quaternion[] listOfGroupRotations, Vector3[] listOfHelperPoints)
         /// </summary>
-        public static void AddMarkGroups(Dictionary<string, (Vector3[], Quaternion[])> groups)
-        {          
-            _groups = groups;
+        public static void AddMarkGroups(Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groupsWithHelpers)
+        {
+            _groups = groupsWithHelpers;
             EditorApplication.update += UpdateDisplayedMarkGroups;
+            Debug.Log($"Added a mark group of {_groups.Count} groups");
         }
 
+        /// <summary> Add mark groups without helpers </summary>
+        public static void AddMarkGroups(Dictionary<string, (Vector3[], Quaternion[])> groups)
+        {
+            Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groupsWithHelpers = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
+
+            foreach (KeyValuePair<string, (Vector3[], Quaternion[])> group in groups)
+            {
+                (Vector3[] positions, Quaternion[] rotations) = group.Value;
+                groupsWithHelpers.Add(group.Key, (positions, rotations, new Vector3[]{}));
+            }
+
+            AddMarkGroups(groupsWithHelpers);
+        }
+
+        /// <summary> Add mark groups as a list of nodes </summary>
         public static void AddMarkGroups<T>(List<T> nodes, Func<T, string> name) where T : Node<T>
         {
-            _groups.Clear();
+            Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
             
             foreach (T node in nodes)
-            {
-                _groups.Add(name(node), (node.GetPositions(), node.GetRotations()));
-            }
+                groups.Add(name(node), (node.GetPositions(), node.GetRotations(), new Vector3[]{}));
             
-            EditorApplication.update += UpdateDisplayedMarkGroups;
+            AddMarkGroups(groups);
         }
 
+        /// <summary> Add mark groups as a list of nodes with helper points for each group </summary>
+        public static void AddMarkGroups<T>(List<(T, List<Vector3>)> nodes, Func<T, string> name) where T : Node<T>
+        {
+            Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
+            
+            foreach ((T node, List<Vector3> helperPositions) in nodes)
+                groups.Add(name(node), (node.GetPositions(), node.GetRotations(), helperPositions.ToArray()));
+            
+            AddMarkGroups(groups);
+        }
+        
         public static void RemoveMarkGroups()
         {          
             _groups.Clear();
@@ -202,9 +242,12 @@ namespace RoadGenerator
                 string group = _groups.Keys.ToList()[_currentGroup];
                 
                 // Log the new group being displayed and mark all its positions
-                (Vector3[] positions, Quaternion[] rotations) = _groups[group];
-                Debug.Log($"[Group {_currentGroup}, {positions.Length} positions]: {group}");
-                MarkPositions(positions,  rotations);
+                (Vector3[] positions, Quaternion[] rotations, Vector3[] helperPoints) = _groups[group];
+                Debug.Log($"[Group {_currentGroup}, {positions.Length} positions, {helperPoints.Length} helper points]: {group}");
+                
+                ClearMarkers();
+                MarkPositions(positions,  rotations, true, null, 1f, false);
+                MarkPositions(helperPoints, null, false, Color.cyan, 2f, false);
             }
         }
 
