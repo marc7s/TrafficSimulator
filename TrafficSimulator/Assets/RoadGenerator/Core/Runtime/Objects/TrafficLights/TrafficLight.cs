@@ -3,7 +3,7 @@ using UnityEngine;
 namespace RoadGenerator
 {
     public enum TrafficLightState{ Red, ToGo, ToStop, Green };
-
+    [ExecuteInEditMode()]
     public class TrafficLight : MonoBehaviour
     {
         public GameObject RedLight;
@@ -16,6 +16,7 @@ namespace RoadGenerator
 
         private TrafficLightState _currentState = TrafficLightState.Red;
         private TrafficLightState _lastState = TrafficLightState.Red;
+        public TrafficLightController trafficLightController;
 
         void Update()
         {
@@ -94,6 +95,11 @@ namespace RoadGenerator
                     GreenLight.GetComponent<Light>().enabled = true;
                     break;
             }
+        }
+        public void OnDestroy()
+        {
+            trafficLightController.TrafficLightsGroup1.Remove(this);
+            trafficLightController.TrafficLightsGroup2.Remove(this);
         }
     }
 }
