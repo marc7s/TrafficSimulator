@@ -726,7 +726,7 @@ namespace RoadGenerator
             // Add all guide paths that start at the current lane node to the list
             foreach((string entryID, string exitID) in _intersectionGuidePaths.Keys)
             {
-                if (entryID == entry.ID)
+                if (entryID == entry.ID && _intersectionExitNodes[exitID].Last.RoadNode != _intersectionEntryNodes[entryID].RoadNode)
                     guidePaths.Add((entryID, exitID, _intersectionGuidePaths[(entryID, exitID)]));
             }
 
