@@ -131,7 +131,7 @@ namespace Car {
             _startNode = lane.StartNode;
             _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = _currentNode;
-            _navigationMode = _originalNavigationMode;
+            _navigationMode = OriginalNavigationMode;
             // Setup target line renderer
             float targetLineWidth = 0.3f;
             _targetLineRenderer = GetComponent<LineRenderer>();
@@ -197,7 +197,7 @@ namespace Car {
             _isEnteringNetwork = true;
 
             Q_TeleportToLane();
-            _navigationMode = _originalNavigationMode;
+            _navigationMode = OriginalNavigationMode;
             SetInitialPrevIntersection();
             if (_navigationMode == NavigationMode.RandomNavigationPath)
                 UpdateRandomPath();
@@ -446,8 +446,7 @@ namespace Car {
                 TotalDistance += _currentNode.DistanceToPrevNode;
                 _currentNode = nextNode;
                 // When the current node is updated, it needs to redraw the navigation path
-                if (ShowNavigationPath)
-                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
                 reachedEnd = reachedEnd || (!_isEnteringNetwork && _currentNode.Type == RoadNodeType.End);
@@ -552,7 +551,7 @@ namespace Car {
             // Move to the first position of the lane
             transform.position = _currentNode.Position;
             transform.rotation = _currentNode.Rotation;
-            _navigationMode = _originalNavigationMode;
+            _navigationMode = OriginalNavigationMode;
             SetInitialPrevIntersection();
             if (_navigationMode == NavigationMode.RandomNavigationPath)
                 UpdateRandomPath();
@@ -614,8 +613,7 @@ namespace Car {
             {
                 _currentNode = _target;
                 // When the currentNode is changed, the navigation path needs to be updated
-                if (ShowNavigationPath)
-                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
                 TotalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, RoadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = Speed;
@@ -684,13 +682,28 @@ namespace Car {
         {
             // Get a random path from the navigation graph
             _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEndNode);
-            if (ShowNavigationPath)
-                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
+            Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             if (_navigationPath.Count == 0)
             {
                 _navigationMode = NavigationMode.Random;
             }
         }
+
+        public void HideNavigationPath()
+        {
+            if (_navigationPathContainer != null)
+            {
+                if(_navigationPathContainer.GetComponent<LineRenderer>().enabled)
+                {
+                    _navigationPathContainer.transform.GetChild(0).gameObject.SetActive(false);
+                    _navigationPathContainer.GetComponent<LineRenderer>().enabled = false;
+                } else
+                {
+                    _navigationPathContainer.transform.GetChild(0).gameObject.SetActive(true);
+                    _navigationPathContainer.GetComponent<LineRenderer>().enabled = true;
+                }
+            }
+        }  
 
         private Vector3 P_GetLerpPosition(Vector3 target)
         {
