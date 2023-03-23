@@ -446,7 +446,8 @@ namespace Car {
                 TotalDistance += _currentNode.DistanceToPrevNode;
                 _currentNode = nextNode;
                 // When the current node is updated, it needs to redraw the navigation path
-                Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                if(ShowNavigationPath)
+                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
                 reachedEnd = reachedEnd || (!_isEnteringNetwork && _currentNode.Type == RoadNodeType.End);
@@ -613,7 +614,8 @@ namespace Car {
             {
                 _currentNode = _target;
                 // When the currentNode is changed, the navigation path needs to be updated
-                Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
+                if(ShowNavigationPath)
+                    Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
                 TotalDistance += _currentNode.DistanceToPrevNode;
                 _target = GetNextLaneNode(_target, 0, RoadEndBehaviour == RoadEndBehaviour.Loop);
                 _lerpSpeed = Speed;
@@ -682,7 +684,8 @@ namespace Car {
         {
             // Get a random path from the navigation graph
             _navigationPath = Navigation.GetRandomPath(Road.RoadSystem, _target.GetNavigationEdge(), out _navigationPathEndNode);
-            Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
+            if(ShowNavigationPath)
+                Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             if (_navigationPath.Count == 0)
             {
                 _navigationMode = NavigationMode.Random;
@@ -695,6 +698,8 @@ namespace Car {
             {
                 _navigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
                 _navigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
+                if(visible)
+                    Navigation.DrawNavigationPath(_navigationPathEndNode, _navigationPath, _currentNode, _navigationPathContainer, NavigationPathMaterial, _prevIntersectionPosition, NavigationTargetMarker);
             }
         }
 
