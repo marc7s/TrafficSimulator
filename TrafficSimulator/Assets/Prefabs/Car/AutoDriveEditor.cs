@@ -90,17 +90,12 @@ namespace CarGenerator
 
             if(_showNavigationPath.boolValue != autoDrive.ShowNavigationPath)
             {
-                changed = true;
                 autoDrive.ShowNavigationPath = _showNavigationPath.boolValue;
             }
 
             serializedObject.ApplyModifiedProperties();
 
-            if(changed)
-            {
-                autoDrive.HideNavigationPath();
-            }
-
+            autoDrive.SetNavigationPathVisibilty(_showNavigationPath.boolValue);
         }
     }
 }

@@ -689,21 +689,14 @@ namespace Car {
             }
         }
 
-        public void HideNavigationPath()
+        public void SetNavigationPathVisibilty(bool visible)
         {
             if (_navigationPathContainer != null)
             {
-                if(_navigationPathContainer.GetComponent<LineRenderer>().enabled)
-                {
-                    _navigationPathContainer.transform.GetChild(0).gameObject.SetActive(false);
-                    _navigationPathContainer.GetComponent<LineRenderer>().enabled = false;
-                } else
-                {
-                    _navigationPathContainer.transform.GetChild(0).gameObject.SetActive(true);
-                    _navigationPathContainer.GetComponent<LineRenderer>().enabled = true;
-                }
+                _navigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
+                _navigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
             }
-        }  
+        }
 
         private Vector3 P_GetLerpPosition(Vector3 target)
         {
