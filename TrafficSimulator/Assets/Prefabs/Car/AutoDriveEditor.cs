@@ -59,8 +59,6 @@ namespace CarGenerator
             
             AutoDrive autoDrive = (AutoDrive)target;
             
-            bool changed = false;
-
             if(!Application.isPlaying)
             {
                 EditorGUILayout.PropertyField(_road);
