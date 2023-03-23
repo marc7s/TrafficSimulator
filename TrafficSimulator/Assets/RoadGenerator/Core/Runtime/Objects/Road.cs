@@ -619,11 +619,16 @@ namespace RoadGenerator
             TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
             
             // Add the traffic light to the correct traffic light group, Road1 gets added to trafficLightGroup1 and Road2 gets added to trafficLightGroup2
+            if (trafficSignType == TrafficSignType.TrafficLight)
+            {
             if (this == roadNode.Intersection.Road1)
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup1.Add(trafficLight);
             else if (this == roadNode.Intersection.Road2)
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup2.Add(trafficLight);
 
+            trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
+            }
+            
             roadNode.TrafficLight = trafficLight;
         }
         /// <summary> Returns the speed sign type for the current speed limit </summary>
