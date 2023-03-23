@@ -706,11 +706,11 @@ namespace RoadGenerator
         {
             List<GuideNode> guidePaths = new List<GuideNode>();
             // Add all guide paths that start at the current lane node to the list
-            foreach((string entry, string exit) in _intersectionGuidePaths.Keys)
+            foreach((string entryID, string exitID) in _intersectionGuidePaths.Keys)
             {
                 // Check if the entry node is the current node and avoid adding u turn path to the list that will be randomized
-                if (entry == current.ID && _intersectionExitNodes[exit].Last.RoadNode != _intersectionEntryNodes[entry].RoadNode)
-                    guidePaths.Add(_intersectionGuidePaths[(entry, exit)]);
+                if (entryID == current.ID && _intersectionExitNodes[exitID].Last.RoadNode != _intersectionEntryNodes[entryID].RoadNode)
+                    guidePaths.Add(_intersectionGuidePaths[(entryID, exitID)]);
             }
             
             // Pick a random guide path
