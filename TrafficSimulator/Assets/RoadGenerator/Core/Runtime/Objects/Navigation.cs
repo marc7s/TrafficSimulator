@@ -119,7 +119,9 @@ namespace RoadGenerator
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge, targetNode);
                 if (path == null)
                     continue;
-                if (targetNode.RoadNode.IsIntersection())
+                // To avoid getting an intersection as the target node we check if the target node is an intersection.
+                // To check for three way intersections we need to check the next and previous nodes as well
+                if (targetNode.RoadNode.IsIntersection() || targetNode.RoadNode.Next?.IsIntersection() == true || targetNode.RoadNode.Prev?.IsIntersection() == true)
                     continue;
                 // Trying to find a path that is not too short
                 if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
