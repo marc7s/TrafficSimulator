@@ -61,108 +61,36 @@ namespace CarGenerator
             
             bool changed = false;
 
-            EditorGUILayout.PropertyField(_road);
-            EditorGUILayout.PropertyField(_laneIndex);
-            EditorGUILayout.PropertyField(_mode);
-            EditorGUILayout.PropertyField(_roadEndBehaviour);
+            if(!Application.isPlaying)
+            {
+                EditorGUILayout.PropertyField(_road);
+                EditorGUILayout.PropertyField(_laneIndex);
+                EditorGUILayout.PropertyField(_mode);
+                EditorGUILayout.PropertyField(_roadEndBehaviour);
+            }
+
             EditorGUILayout.PropertyField(_showNavigationPath);
-            EditorGUILayout.PropertyField(_originalNavigationMode);
-            EditorGUILayout.PropertyField(_logRepositioningInformation);
-            EditorGUILayout.PropertyField(_showTargetLines);
-            EditorGUILayout.PropertyField(_brakeOffset);
-            EditorGUILayout.PropertyField(_maxRepositioningSpeed);
-            EditorGUILayout.PropertyField(_maxReverseDistance);
-            EditorGUILayout.PropertyField(_baseTLD);
-            EditorGUILayout.PropertyField(_TLDSpeedDivider);
-            EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
-            EditorGUILayout.PropertyField(_speed);
-            EditorGUILayout.PropertyField(_rotationSpeed);
-            EditorGUILayout.PropertyField(_totalDistance);
 
-            if(_road.objectReferenceValue != autoDrive.Road)
+            if(!Application.isPlaying)
             {
-                autoDrive.Road = (Road)_road.objectReferenceValue;
-            }
-
-            if(_laneIndex.intValue != autoDrive.LaneIndex)
-            {
-                autoDrive.LaneIndex = _laneIndex.intValue;
-            }
-
-            if(_mode.intValue != (int)autoDrive.Mode)
-            {
-                autoDrive.Mode = (DrivingMode)_mode.intValue;
-            }
-
-            if(_roadEndBehaviour.intValue != (int)autoDrive.RoadEndBehaviour)
-            {
-                autoDrive.RoadEndBehaviour = (RoadEndBehaviour)_roadEndBehaviour.intValue;
+                EditorGUILayout.PropertyField(_originalNavigationMode);
+                EditorGUILayout.PropertyField(_logRepositioningInformation);
+                EditorGUILayout.PropertyField(_showTargetLines);
+                EditorGUILayout.PropertyField(_brakeOffset);
+                EditorGUILayout.PropertyField(_maxRepositioningSpeed);
+                EditorGUILayout.PropertyField(_maxReverseDistance);
+                EditorGUILayout.PropertyField(_baseTLD);
+                EditorGUILayout.PropertyField(_TLDSpeedDivider);
+                EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
+                EditorGUILayout.PropertyField(_speed);
+                EditorGUILayout.PropertyField(_rotationSpeed);
+                EditorGUILayout.PropertyField(_totalDistance);
             }
 
             if(_showNavigationPath.boolValue != autoDrive.ShowNavigationPath)
             {
                 changed = true;
                 autoDrive.ShowNavigationPath = _showNavigationPath.boolValue;
-            }
-
-            if(_originalNavigationMode.intValue != (int)autoDrive.OriginalNavigationMode)
-            {
-                autoDrive.OriginalNavigationMode = (NavigationMode)_originalNavigationMode.intValue;
-            }
-
-            if(_logRepositioningInformation.boolValue != autoDrive.LogRepositioningInformation)
-            {
-                autoDrive.LogRepositioningInformation = _logRepositioningInformation.boolValue;
-            }
-
-            if(_showTargetLines.intValue != (int)autoDrive.ShowTargetLines)
-            {
-                autoDrive.ShowTargetLines = (ShowTargetLines)_showTargetLines.intValue;
-            }
-
-            if(_brakeOffset.floatValue != autoDrive.BrakeOffset)
-            {
-                autoDrive.BrakeOffset = _brakeOffset.floatValue;
-            }
-
-            if(_maxRepositioningSpeed.floatValue != autoDrive.MaxRepositioningSpeed)
-            {
-                autoDrive.MaxRepositioningSpeed = _maxRepositioningSpeed.floatValue;
-            }
-
-            if(_maxReverseDistance.floatValue != autoDrive.MaxReverseDistance)
-            {
-                autoDrive.MaxReverseDistance = _maxReverseDistance.floatValue;
-            }
-
-            if(_baseTLD.floatValue != autoDrive.BaseTLD)
-            {
-                autoDrive.BaseTLD = _baseTLD.floatValue;
-            }
-
-            if(_TLDSpeedDivider.intValue != autoDrive.TLDSpeedDivider)
-            {
-                autoDrive.TLDSpeedDivider = _TLDSpeedDivider.intValue;
-            }
-
-            if(_vehicleOccupancyOffset.floatValue != autoDrive.VehicleOccupancyOffset)
-            {
-                autoDrive.VehicleOccupancyOffset = _vehicleOccupancyOffset.floatValue;
-            }
-
-            if(_speed.floatValue != autoDrive.Speed)
-            {
-                autoDrive.Speed = _speed.floatValue;
-            }
-
-            if(_rotationSpeed.floatValue != autoDrive.RotationSpeed)
-            {
-                autoDrive.RotationSpeed = _rotationSpeed.floatValue;
-            }
-
-            if(_totalDistance.floatValue != autoDrive.TotalDistance)
-            {
-                autoDrive.TotalDistance = _totalDistance.floatValue;
             }
 
             serializedObject.ApplyModifiedProperties();
