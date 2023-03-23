@@ -84,8 +84,9 @@ namespace CarGenerator
                 EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
                 EditorGUILayout.PropertyField(_speed);
                 EditorGUILayout.PropertyField(_rotationSpeed);
-                EditorGUILayout.PropertyField(_totalDistance);
             }
+
+            EditorGUILayout.PropertyField(_totalDistance);
 
             if(_showNavigationPath.boolValue != autoDrive.ShowNavigationPath)
             {
