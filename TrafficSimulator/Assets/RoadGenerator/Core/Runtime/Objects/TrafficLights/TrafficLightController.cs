@@ -26,7 +26,8 @@ namespace RoadGenerator
                     SwitchToTransitionalMode();
                     _lastSwitchTime = Time.time;
                 }
-            } else
+            } 
+            else
             {
                 if (Time.time - _lastSwitchTime > TransitionDelay)
                 {
