@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5387963023345359458}
   - component: {fileID: 1131470622488222073}
   - component: {fileID: 6349525408430712732}
+  - component: {fileID: 2980669288167571831}
   m_Layer: 6
   m_Name: Intersection
   m_TagString: Untagged
@@ -59,11 +60,12 @@ MonoBehaviour:
   Road2AnchorPoint1: {x: 0, y: 0, z: 0}
   Road2AnchorPoint2: {x: 0, y: 0, z: 0}
   Type: 0
+  TrafficLightController: {fileID: 0}
   ID: 
   _guideRoadNodePrefab: {fileID: 6519265059532225654, guid: 05acad94cfea5be4d9c4ae2b9e81982a, type: 3}
   _guideLaneNodePrefab: {fileID: 6519265059532225654, guid: cd0b879c858f97b499405ab9f1cfcb01, type: 3}
   _stretchFactor: 0
-  _flowType: 0
+  FlowType: 0
   _material: {fileID: 2100000, guid: 95fd35d811c46354da85037da76c5774, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: ac13cd34ea241854f9dc39260c81716b, type: 2}
   _drawGuideNodes: 0
@@ -132,3 +134,19 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &2980669288167571831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5761927508822258430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74db488e55dbffc4a966b46c6868d7cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TrafficLightsGroup1: []
+  TrafficLightsGroup2: []
+  Delay: 10
+  TransitionDelay: 2

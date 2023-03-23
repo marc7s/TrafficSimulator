@@ -97,11 +97,11 @@ namespace Car {
         private Status _status = Status.Driving;
         private float _targetLookaheadDistance = 0;
         private const float _intersectionLookaheadDistance = 5f;
+        private const float _intersectionMaxSpeed = 5f;
         private LaneNode _previousTarget;
         private LaneNode _brakeTarget;
         private LaneNode _repositioningTarget;
         private VehicleController _vehicleController;
-        
         
         void Start()
         {
@@ -131,7 +131,7 @@ namespace Car {
             _startNode = lane.StartNode;
             _currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = _currentNode;
-
+            _navigationMode = _originalNavigationMode;
             // Setup target line renderer
             float targetLineWidth = 0.3f;
             _targetLineRenderer = GetComponent<LineRenderer>();
@@ -143,7 +143,7 @@ namespace Car {
             if (Mode == DrivingMode.Quality)
             {
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                Q_TeleportToLane();
+                Q_ResetToNode(_startNode);
                 
                 _brakeTarget = _currentNode;
                 _repositioningTarget = _currentNode;
@@ -158,13 +158,8 @@ namespace Car {
                 rigidbody.useGravity = false;
                 P_TeleportToFirstPosition();
             }
-            
-            if (_navigationMode == NavigationMode.RandomNavigationPath)
-            {
-                UpdateRandomPath();
-                SetInitialPrevIntersection();
-            }
-            _navigationMode = OriginalNavigationMode;
+
+
         }
 
         void Update()
@@ -202,11 +197,10 @@ namespace Car {
             _isEnteringNetwork = true;
 
             Q_TeleportToLane();
-            _navigationMode = OriginalNavigationMode;
+            _navigationMode = _originalNavigationMode;
+            SetInitialPrevIntersection();
             if (_navigationMode == NavigationMode.RandomNavigationPath)
                 UpdateRandomPath();
-            
-            SetInitialPrevIntersection();
         }
 
         // Update the list of nodes that the vehicle is currently occupying
@@ -354,6 +348,11 @@ namespace Car {
             // If the vehicle is driving and the target is in front of us and we are close enough
             else if (_status == Status.Driving && dot > 0 && direction.magnitude <= _targetLookaheadDistance)
             {
+                bool trafficLightShouldStop = _brakeTarget.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+                // when the target is the brake target and the traffic light is red, do not change the target
+                if (trafficLightShouldStop && _target == _brakeTarget)
+                    return;
+                _vehicleController.maxSpeedForward = _target.RoadNode.Intersection != null ? _intersectionMaxSpeed : _originalMaxSpeed;
                 // Set the target to the next point in the lane
                 _target = GetNextLaneNode(_target, 0, false);
             }
@@ -377,8 +376,8 @@ namespace Car {
                 _vehicleController.brakeInput = Mathf.Lerp(_vehicleController.brakeInput, 1f, Time.deltaTime * 1.5f);
                 _vehicleController.throttleInput = 0f;
             }
-            
-           UpdateTargetFromNavigation();
+            if(!(_brakeTarget.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red))
+                UpdateTargetFromNavigation();
         }
 
         private void Q_UpdateBrakeTarget()
@@ -394,6 +393,10 @@ namespace Car {
 
         private bool ShouldAdvanceBrakeTarget()
         {
+            // If the traffic light is red and the vehicle isn't currently inside the intersection, do not advance the brake target
+            if (_brakeTarget.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _brakeTarget.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition)
+                return false;      
+                
             float distanceToBrakeTarget;
             bool brakeTargetFound = _currentNode.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, true);
             
@@ -546,15 +549,13 @@ namespace Car {
 
         private void P_TeleportToFirstPosition()
         {
-            if (_navigationMode == NavigationMode.RandomNavigationPath)
-            {
-                UpdateRandomPath();
-                SetInitialPrevIntersection();
-            }
-
             // Move to the first position of the lane
             transform.position = _currentNode.Position;
             transform.rotation = _currentNode.Rotation;
+            _navigationMode = _originalNavigationMode;
+            SetInitialPrevIntersection();
+            if (_navigationMode == NavigationMode.RandomNavigationPath)
+                UpdateRandomPath();
             P_MoveToTargetNode();
         }
 
@@ -572,6 +573,11 @@ namespace Car {
 
         private void P_UpdateTargetAndCurrent()
         {
+            bool trafficLightIsRed = _target.RoadNode.TrafficLight?.CurrentState == TrafficLightState.Red && _target.RoadNode.Intersection.IntersectionPosition != _prevIntersectionPosition;
+
+            if (!trafficLightIsRed)
+                UpdateTargetFromNavigation();
+
             Vehicle nextNodeVehicle = GetNextLaneNode(_target.Next, 0, true).Vehicle;
             bool nextTargetHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _currentNode.Vehicle;
             bool nextTargetIsEndNode = _target.Next.Type == RoadNodeType.End && _target.Next.Position != _startNode.Position;
@@ -598,6 +604,11 @@ namespace Car {
                 _navigationMode = OriginalNavigationMode;
                 P_TeleportToFirstPosition();
             }
+            else if (trafficLightIsRed)
+            {
+                _currentNode = _target;
+                _lerpSpeed = Mathf.Lerp(_lerpSpeed, 1f, _lerpSpeed > 10f ? 0.1f : 0.01f);
+            }
             // If the car is at the target, set the target to the next node and update current node
             else if (P_HasReachedTarget())
             {
@@ -611,7 +622,6 @@ namespace Car {
             }
             // Move the vehicle to the target node
             P_MoveToTargetNode();
-            UpdateTargetFromNavigation();
         }
 
         private bool P_HasReachedTarget()
