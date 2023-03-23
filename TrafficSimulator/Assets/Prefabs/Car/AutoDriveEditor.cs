@@ -169,7 +169,7 @@ namespace CarGenerator
 
             if(changed)
             {
-                //roadSystem.UpdateRoadSystemGraph();
+                autoDrive.HideNavigationPath();
             }
 
         }
