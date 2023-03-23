@@ -723,12 +723,5 @@ namespace Car {
         {
             get => _vehicleLength;
         }
-
-        /*
-        public double TotalDistance
-        {
-            get => TotalDistance;
-        }
-        */
     }
 }
