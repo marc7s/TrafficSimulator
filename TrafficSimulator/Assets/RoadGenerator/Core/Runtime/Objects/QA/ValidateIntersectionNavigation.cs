@@ -31,7 +31,6 @@ namespace RoadGenerator
             {
                 foreach(Lane lane in road.Lanes)
                 {
-                    
                     LaneNode curr = lane.StartNode;
                     while(curr != null)
                     {
