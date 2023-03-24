@@ -77,7 +77,8 @@ namespace Car {
         
         private float _brakeDistance = 0;
         
-        private float _originalMaxSpeed;
+        private float _originalMaxSpeedForward;
+        private float _originalMaxSpeedReverse;
         private Vector3? _prevIntersectionPosition;
         private Dictionary<string, LaneNode> _currentNodeTransitions = new Dictionary<string, LaneNode>();
         private NavigationNode _navigationPathEndNode;
@@ -97,11 +98,12 @@ namespace Car {
         private const int _repositioningOffset = 1;
         private Status _status = Status.Driving;
         private float _targetLookaheadDistance = 0;
-        private const float _intersectionLookaheadDistance = 5f;
+        private const float _intersectionLookaheadDistance = 6f;
         private const float _intersectionMaxSpeed = 5f;
         private LaneNode _previousTarget;
         private LaneNode _brakeTarget;
         private LaneNode _repositioningTarget;
+        private LaneNode _lastIntersectionEntry = null;
         private VehicleController _vehicleController;
         
         void Start()
@@ -114,7 +116,8 @@ namespace Car {
             // TODO - use this to decide whether a node is occupied or not
             //_vehicleBounds = _mesh.GetComponent<MeshRenderer>().bounds;
             _vehicle = GetComponent<Vehicle>();
-            _originalMaxSpeed = _vehicleController.maxSpeedForward;
+            _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
+            _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
             
             // If the road has not updated yet there will be no lanes, so update them first
             if(Road.Lanes.Count == 0)
@@ -159,8 +162,6 @@ namespace Car {
                 rigidbody.useGravity = false;
                 P_TeleportToFirstPosition();
             }
-
-
         }
 
         void Update()
@@ -200,6 +201,7 @@ namespace Car {
             Q_TeleportToLane();
             _navigationMode = _originalNavigationMode;
             SetInitialPrevIntersection();
+            
             if (_navigationMode == NavigationMode.RandomNavigationPath)
                 UpdateRandomPath();
         }
@@ -208,23 +210,39 @@ namespace Car {
         private void UpdateOccupiedNodes()
         {
             foreach (LaneNode node in _occupiedNodes)
-            {
                 node.UnsetVehicle(_vehicle);
-            }
-            List<LaneNode> spanNodes = GetVehicleSpanNodes();
+
+            (List<LaneNode> forwardSpanNodes, List<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
             _occupiedNodes.Clear();
+            
+            // Start adding the nodes behind the car
+             AddSpanNodes(backwardSpanNodes);
+            
+            // Since we want them in order and the backward nodes are added from the car outwards, reverse the list
+            _occupiedNodes.Reverse();
+
+            // Add the nodes in front of the car
+            AddSpanNodes(forwardSpanNodes);
+        }
+
+        private void AddSpanNodes(List<LaneNode> spanNodes)
+        {
             foreach (LaneNode node in spanNodes)
             {
-                // Only add the span nodes we successfully acquire to the list of occupied nodes
+                // Add the span nodes we successfully acquire to the list of occupied nodes until we fail to acquire one, then break
+                // This avoids the vehicle from occupying nodes with gaps between them, which could cause a lockup if the vehicle has acquired nodes in front of and behind another vehicle
                 if(node.SetVehicle(_vehicle))
                     _occupiedNodes.Add(node);
+                else
+                    break;
             }
         }
 
         // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
-        private List<LaneNode> GetVehicleSpanNodes()
+        private (List<LaneNode>, List<LaneNode>) GetVehicleSpanNodes()
         {
-            List<LaneNode> nodes = new List<LaneNode>(){ _currentNode };
+            List<LaneNode> forwardNodes = new List<LaneNode>(){ _currentNode };
+            List<LaneNode> backwardNodes = new List<LaneNode>();
             LaneNode node = _currentNode.Prev;
 
             float nodeDistance = _currentNode.DistanceToPrevNode;
@@ -232,9 +250,13 @@ namespace Car {
             // Add all occupied nodes prior to and including the current node
             while (node != null && nodeDistance <= _vehicleLength / 2 + _vehicleOccupancyOffset)
             {
-                nodes.Add(node);
+                backwardNodes.Add(node);
                 nodeDistance += node.DistanceToPrevNode;
-                node = node.Prev;
+                
+                if(node.Prev == null && node.Type != RoadNodeType.End)
+                    node = _lastIntersectionEntry;
+                else
+                    node = node.Prev;
             }
             
             nodeDistance = 0;
@@ -242,11 +264,11 @@ namespace Car {
             node = _currentNode.Next;
             while (node != null && nodeDistance <= _vehicleLength / 2 + _vehicleOccupancyOffset)
             {
-                nodes.Add(node);
+                forwardNodes.Add(node);
                 nodeDistance += node.DistanceToPrevNode;
                 node = node.Next;
             }
-            return nodes;
+            return (forwardNodes, backwardNodes);
         }
 
         private void Q_TeleportToLane()
@@ -308,6 +330,7 @@ namespace Car {
                 // Slow down and limit the max speed to the repositioning speed or the max speed, whichever is lower
                 _vehicleController.brakeInput = 1f;
                 _vehicleController.maxSpeedForward = Math.Min(_vehicleController.maxSpeedForward, _maxRepositioningSpeed);
+                _vehicleController.maxSpeedReverse = Math.Min(_vehicleController.maxSpeedReverse, _maxRepositioningSpeed);
             }
             // If the vehicle has started repositioning and slowed down enough
             else if (_status == Status.RepositioningInitiated && _vehicleController.speed <= _vehicleController.maxSpeedForward)
@@ -322,7 +345,7 @@ namespace Car {
             else if (_status == Status.Repositioning) 
             {
                 // Allow the vehicle to accelerate and reverse. It will only reverse if the target is behind it, and within reversing distance
-                _vehicleController.throttleInput = Vector3.Distance(transform.position, Q_GetTarget().Position) < _maxReverseDistance && dot < 0 ? -1 : 1;
+                _vehicleController.throttleInput = Vector3.Distance(transform.position, target.Position) < _maxReverseDistance && dot < 0 ? -1 : 1;
                 
                 // If the target is in front of us and we are close enough we have successfully repositioned
                 if (dot > 0 && direction.magnitude <= _targetLookaheadDistance - 1f) 
@@ -341,7 +364,8 @@ namespace Car {
                     _target = GetNextLaneNode(_repositioningTarget, _repositioningOffset, false);
                     
                     // Reset the max speed to the original, and set the acceleration to the max again
-                    _vehicleController.maxSpeedForward = _originalMaxSpeed;
+                    _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
+                    _vehicleController.maxSpeedReverse = _originalMaxSpeedReverse;
                     _vehicleController.throttleInput = 1f;
                     _vehicleController.brakeInput = 0f;
                 }
@@ -353,7 +377,7 @@ namespace Car {
                 // when the target is the brake target and the traffic light is red, do not change the target
                 if (trafficLightShouldStop && _target == _brakeTarget)
                     return;
-                _vehicleController.maxSpeedForward = _target.RoadNode.Intersection != null ? _intersectionMaxSpeed : _originalMaxSpeed;
+                _vehicleController.maxSpeedForward = _target.RoadNode.Intersection != null ? _intersectionMaxSpeed : _originalMaxSpeedForward;
                 // Set the target to the next point in the lane
                 _target = GetNextLaneNode(_target, 0, false);
             }
@@ -509,11 +533,10 @@ namespace Car {
                     _targetLineRenderer.SetPositions(new Vector3[]{ _brakeTarget.Position, transform.position });
                     break;
                 case ShowTargetLines.CurrentPosition:
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _currentNode.Position, transform.position });
                     _targetLineRenderer.positionCount = 2;
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _currentNode.Position, transform.position });
                     break;
                 case ShowTargetLines.OccupiedNodes:
-                    _targetLineRenderer.SetPositions(_occupiedNodes.Select(x => x.Position).ToArray());
                     _targetLineRenderer.positionCount = _occupiedNodes.Count;
                     _targetLineRenderer.SetPositions(_occupiedNodes.Select(x => x.Position).ToArray());
                     break;
@@ -658,6 +681,9 @@ namespace Car {
                 {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
+                        // Update the last intersection entry node
+                        _lastIntersectionEntry = _target;
+
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (_mode == DrivingMode.Performance)
@@ -668,6 +694,9 @@ namespace Car {
                     }
                     else if (_navigationMode == NavigationMode.Random)
                     {
+                        // Update the last intersection entry node
+                        _lastIntersectionEntry = _target;
+                        
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetRandomLaneNode(_target);
                     }
                     
