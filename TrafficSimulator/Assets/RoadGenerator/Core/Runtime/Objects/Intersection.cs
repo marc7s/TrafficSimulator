@@ -704,14 +704,7 @@ namespace RoadGenerator
         /// <summary> Get a random lane node that leads out of the intersection. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
         public (LaneNode, LaneNode, LaneNode) GetRandomLaneNode(LaneNode current)
         {
-            List<GuideNode> guidePaths = new List<GuideNode>();
-            // Add all guide paths that start at the current lane node to the list
-            foreach((string entryID, string exitID) in _intersectionGuidePaths.Keys)
-            {
-                // Check if the entry node is the current node and avoid adding u turn path to the list that will be randomized
-                if (entryID == current.ID && _intersectionExitNodes[exitID].Last.RoadNode != _intersectionEntryNodes[entryID].RoadNode)
-                    guidePaths.Add(_intersectionGuidePaths[(entryID, exitID)]);
-            }
+            List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
             
             // Pick a random guide path
             System.Random random = new System.Random();
@@ -721,6 +714,25 @@ namespace RoadGenerator
 
             return (finalNode.First, finalNode.Last, guidePath);
         }
+
+        /// <summary> 
+        /// Get all guide paths starting at the given entry node.
+        /// The return format for each element is (string entryID, string exitID, GuideNode guidePath)
+        /// </summary>
+        public List<(string, string, GuideNode)> GetGuidePaths(LaneNode entry)
+        {
+            List<(string, string, GuideNode)> guidePaths = new List<(string, string, GuideNode)>();
+            
+            // Add all guide paths that start at the current lane node to the list
+            foreach((string entryID, string exitID) in _intersectionGuidePaths.Keys)
+            {
+                if (entryID == entry.ID && _intersectionExitNodes[exitID].Last.RoadNode != _intersectionEntryNodes[entryID].RoadNode)
+                    guidePaths.Add((entryID, exitID, _intersectionGuidePaths[(entryID, exitID)]));
+            }
+
+            return guidePaths;
+        }
+        
         /// <summary> Get the new start node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
         public (LaneNode, LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current)
         {
@@ -768,10 +780,11 @@ namespace RoadGenerator
                 if(prev != null)
                     prev.Next = curr;
                 prev = curr;
-                currLaneNode = currLaneNode.Next;
 
                 if(currLaneNode == entryLast)
                     currLaneNode = exitSection;
+                else
+                    currLaneNode = currLaneNode.Next;
             }
             
             curr.Next = end;
