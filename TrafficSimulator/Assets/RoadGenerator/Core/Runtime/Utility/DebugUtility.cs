@@ -14,7 +14,7 @@ namespace RoadGenerator
         [SerializeField] private static LineRenderer _lineRenderer;
         [SerializeField] private static GameObject _endPointPrefab;
         [SerializeField] private static GameObject _markerPrefab;
-        private static Vector3 _markerPrefabScale = new Vector3(1.5f, 1f, 1f);
+        private static Vector3 _markerPrefabScale = new Vector3(1f, 1f, 1.5f);
         private static Vector3 _endPointPrefabScale = Vector3.one * 1.3f;
         private static Dictionary<string, (Vector3[], Quaternion[], Vector3[])> _groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
         private static bool _nextGroupPressed = false;
@@ -40,6 +40,14 @@ namespace RoadGenerator
             _markerPrefab.GetComponent<BoxCollider>().enabled = false;
             _markerPrefab.transform.localScale = _markerPrefabScale;
             _markerPrefab.transform.position = farAway;
+
+            // Add a pointer to the marker to see which direction it is facing
+            GameObject markerPointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            markerPointer.transform.parent = _markerPrefab.transform;
+            markerPointer.transform.localPosition = new Vector3(0, 0, _markerPrefabScale.z / 4);
+            markerPointer.transform.localScale = new Vector3(0.7f, 0.99f, 0.7f);
+            markerPointer.transform.localRotation = Quaternion.Euler(0, 45, 0);
+            markerPointer.GetComponent<BoxCollider>().enabled = false;
 
             // Create an empty container for all debug utility objects
             _container = new GameObject(_debugUtilityContainer);
