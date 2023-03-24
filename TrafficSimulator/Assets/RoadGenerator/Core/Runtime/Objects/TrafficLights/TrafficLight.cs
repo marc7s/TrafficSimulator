@@ -1,3 +1,4 @@
+//#define TRAFFIC_LIGHTS_DISABLED
 using UnityEngine;
 
 namespace RoadGenerator
@@ -26,10 +27,10 @@ namespace RoadGenerator
                 switch (_currentState)
                 {
                     case TrafficLightState.ToGo:
-                        setState(TrafficLightState.Green);
+                        SetState(TrafficLightState.Green);
                         break;
                     case TrafficLightState.ToStop:
-                        setState(TrafficLightState.Red);
+                        SetState(TrafficLightState.Red);
                         break;
                 }
             }
@@ -41,7 +42,7 @@ namespace RoadGenerator
             {
                 case TrafficLightState.Red:
                 case TrafficLightState.ToStop:
-                    setState(TrafficLightState.ToGo);
+                    SetState(TrafficLightState.ToGo);
                     break;
             }
         }
@@ -52,13 +53,13 @@ namespace RoadGenerator
             {
                 case TrafficLightState.Green:
                 case TrafficLightState.ToGo:
-                    setState(TrafficLightState.ToStop);
+                    SetState(TrafficLightState.ToStop);
                     break;
             }
         }
 
         // Change the state
-        private void setState(TrafficLightState newState)
+        private void SetState(TrafficLightState newState)
         {
             _lastSwitchTime = Time.time;
             _lastState = _currentState;
@@ -67,7 +68,11 @@ namespace RoadGenerator
         }
         public TrafficLightState CurrentState
         {
-            get { return _currentState; }
+#if TRAFFIC_LIGHTS_DISABLED
+            get => TrafficLightState.Green;
+#else
+            get => _currentState;
+#endif
         }
         // Change the light color
         private void UpdateLightColor()
