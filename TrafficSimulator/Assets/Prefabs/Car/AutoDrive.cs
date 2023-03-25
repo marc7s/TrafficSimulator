@@ -547,6 +547,29 @@ namespace Car {
                 _prevIntersectionPosition = _target.RoadNode.Prev.Intersection.IntersectionPosition;
         }
 
+        private bool IntersectionDistanceToNode(LaneNode node, LaneNode target, out float distance)
+        {
+            // Return if the target node is the current node
+            if(node.ID == target.ID)
+            {
+                Debug.Log("Target node is the current node");
+                distance = 0;
+                return true;
+            }
+
+            float dst = 0;
+
+            if (node != null && target != null)
+            {
+                dst += Vector3.Distance(node.Position, target.Position);
+                distance = dst;
+                return true;
+            }
+            // The target was not found, so set the distance to 0 and return false
+            distance = 0;
+            return false;
+        }
+
         private void P_TeleportToFirstPosition()
         {
             if (_navigationMode == NavigationMode.RandomNavigationPath)
@@ -578,7 +601,24 @@ namespace Car {
             LaneNode nextTarget = GetNextLaneNode(_target, 0, _roadEndBehaviour == RoadEndBehaviour.Loop);
             // If the car is at the target, set the target to the next node and update current node
             float distanceToBrakeTarget;
-            bool brakeTargetFound = nextTarget.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
+            bool brakeTargetFound;
+            if (nextTarget.Type != RoadNodeType.IntersectionGuide)
+            {
+                Debug.Log("Not intersection guide");
+                Debug.Log("Brake target: " + _brakeTarget.ID);
+                brakeTargetFound = nextTarget.DistanceToNode(_brakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
+            } 
+            else
+            {
+                Debug.Log("Intersection guide");
+                brakeTargetFound = IntersectionDistanceToNode(nextTarget, _brakeTarget, out distanceToBrakeTarget);
+            }
+            
+            //Debug.Log(nextTarget.Position + "  " + distanceToBrakeTarget + "  " + _brakeTarget.Position);
+            if (!brakeTargetFound)
+                Debug.Log("Brake target not found");
+            //Debug.Log("At target: " + (transform.position == _target.Position));
+            //Debug.Log("Too close to brake target: " + !(distanceToBrakeTarget > _vehicleLength / 2));
             
             if (transform.position == _target.Position && distanceToBrakeTarget > _vehicleLength / 2)
             {
@@ -598,7 +638,29 @@ namespace Car {
         private bool P_ShouldAdvanceBrakeTarget(LaneNode tempBrakeTarget)
         {
             float distanceToBrakeTarget;
-            bool brakeTargetFound = _currentNode.DistanceToNode(tempBrakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
+            bool brakeTargetFound;
+            if (tempBrakeTarget.Type == RoadNodeType.IntersectionGuide || _currentNode.Type == RoadNodeType.IntersectionGuide)
+            {
+                Debug.Log("Intersection guide");
+                brakeTargetFound = IntersectionDistanceToNode(_currentNode, tempBrakeTarget, out distanceToBrakeTarget);
+            } 
+            else
+            {
+                Debug.Log("Not intersection guide");
+                brakeTargetFound = _currentNode.DistanceToNode(tempBrakeTarget, out distanceToBrakeTarget, _roadEndBehaviour, true);
+            }
+
+            Vector3 directionToCurrentNode = (_currentNode.Position - transform.position);
+            if (Vector3.Angle(transform.forward, directionToCurrentNode.normalized) < 90)
+            {
+                distanceToBrakeTarget += directionToCurrentNode.magnitude;
+            }
+            else
+            {
+                distanceToBrakeTarget -= directionToCurrentNode.magnitude;
+            }
+
+            Debug.Log(_currentNode.Position + " " + distanceToBrakeTarget + " " + tempBrakeTarget.Position);
             
             // Return if the brake target was not found
             if(!brakeTargetFound)
@@ -614,6 +676,9 @@ namespace Car {
             bool _brakeTargetIsEndNodeAndLoop = _brakeTargetIsEndNode && _roadEndBehaviour == RoadEndBehaviour.Loop;
             bool _brakeDistanceIsGreaterThanBrakeTargetDistance = distanceToBrakeTarget < _brakeDistance;
             
+            //Debug.Log("Brake dst is gr8: " + _brakeDistanceIsGreaterThanBrakeTargetDistance + "Next node is free :" + !_nextNodeHasVehicle + "Brake target is end node: " + (!_brakeTargetIsEndNode || _brakeTargetIsEndNodeAndLoop));
+            Debug.Log("Dst to Braketarget: " + distanceToBrakeTarget + "Brake dist: " + _brakeDistance);
+            
             return _brakeDistanceIsGreaterThanBrakeTargetDistance && !_nextNodeHasVehicle && (!_brakeTargetIsEndNode || _brakeTargetIsEndNodeAndLoop);
         }
 
@@ -625,15 +690,15 @@ namespace Car {
             if(!brakeTargetFound)
                 return;
             
-            float distanceToCurrentNode = Vector3.Distance(transform.position, _currentNode.Position);
-            
-            // Determine the distance from the transform to the current node, along the current direction
-            Vector3 currentDirection = _currentNode.Rotation * Vector3.forward;
-            Vector3 transformToCurrentNode = _currentNode.Position - transform.position;
-            Vector3 transformAlongDirection = Vector3.Project(transformToCurrentNode, currentDirection);
-            
-            // Add the distance along the path from the transform to the current node to the brake target
-            distanceToBrakeTarget += transformAlongDirection.magnitude;
+            Vector3 directionToCurrentNode = (_currentNode.Position - transform.position);
+            if (Vector3.Angle(transform.forward, directionToCurrentNode.normalized) < 90)
+            {
+                distanceToBrakeTarget += directionToCurrentNode.magnitude;
+            }
+            else
+            {
+                distanceToBrakeTarget -= directionToCurrentNode.magnitude;
+            }
 
             float maxDelta = Time.deltaTime * 0.07f;
             
@@ -682,6 +747,7 @@ namespace Car {
                     if (_navigationMode == NavigationMode.RandomNavigationPath)
                     {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetNewLaneNode(_navigationPath.Pop(), _target);
+                        //_currentNode = _target;
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (_mode == DrivingMode.Performance)
                             Navigation.DrawPathRemoveOldestPoint(_navigationPathContainer);
@@ -692,6 +758,7 @@ namespace Car {
                     else if (_navigationMode == NavigationMode.Random)
                     {
                         (_startNode, _endNode, _target) = _target.RoadNode.Intersection.GetRandomLaneNode(_target);
+                        //_currentNode = _target;
                     }
                     
                     if(_currentNodeTransitions.ContainsKey(entryNode.ID))

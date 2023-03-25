@@ -1,5 +1,6 @@
 using UnityEngine;
 using DataModel;
+using System.Collections.Generic;
 
 namespace RoadGenerator 
 {
@@ -41,10 +42,21 @@ namespace RoadGenerator
         /// With `roadEndBehaviour` set to Loop, the distance will always be positive if found since all nodes will be checked in the forward direction with looping activated </summary>
         public bool DistanceToNode(LaneNode targetNode, out float distance, RoadEndBehaviour roadEndBehaviour = RoadEndBehaviour.Stop, bool onlyLookAhead = false)
         {
+            Debug.Log("Target node: " + targetNode.ID);
+            List<Vector3> nodes = new List<Vector3>();
             // Return if the target node is the current node
             if(targetNode == this)
             {
                 distance = 0;
+                if (nodes.Count > 0)
+                    DebugUtility.MarkPositions(nodes.ToArray());
+                return true;
+            }
+            if(targetNode == this.Next)
+            {
+                distance = this.Next.DistanceToPrevNode;
+                if (nodes.Count > 0)
+                    DebugUtility.MarkPositions(nodes.ToArray());
                 return true;
             }
 
@@ -54,18 +66,28 @@ namespace RoadGenerator
             // Look forwards
             while (curr != null && curr != this)
             {
+                Debug.Log(curr.Position);
+                nodes.Add(curr.Position);
+                Debug.LogError(nodes.Count);
                 dst += curr.DistanceToPrevNode;
                 
                 if(curr == targetNode)
                 {
+                    Debug.Log("Found ID: " + curr.ID);
                     distance = dst;
+                    if (nodes.Count > 0)
+                        DebugUtility.MarkPositions(nodes.ToArray());
                     return true;
                 }
 
                 curr = curr.Next;
 
                 if(curr == null && roadEndBehaviour == RoadEndBehaviour.Loop)
-                    curr = First;
+                {
+                    Debug.Log("looping");
+                    curr = this.First;
+                }
+                    
             }
 
             // Reset the current node and distance before looking for the target node backwards
@@ -75,6 +97,7 @@ namespace RoadGenerator
             // Look backwards if we have not already checked all nodes with the loop behaviour
             while (roadEndBehaviour != RoadEndBehaviour.Loop && !onlyLookAhead && curr != null)
             {
+                nodes.Add(curr.Position);
                 // Add the distance from the current node to the previous node before changing the current pointer
                 dst -= curr.DistanceToPrevNode;
                 
@@ -84,12 +107,17 @@ namespace RoadGenerator
                 if(curr == targetNode)
                 {
                     distance = dst;
+                    if (nodes.Count > 0)
+                        DebugUtility.MarkPositions(nodes.ToArray());
                     return true;
                 }
             }
             
             // The target was not found, so set the distance to 0 and return false
             distance = 0;
+            Debug.LogError(nodes.Count);
+            if (nodes.Count > 0)
+                DebugUtility.MarkPositions(nodes.ToArray());
             return false;
         }
         public bool IsIntersection() => _roadNode.IsIntersection();
