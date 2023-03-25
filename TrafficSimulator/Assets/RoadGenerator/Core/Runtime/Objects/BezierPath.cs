@@ -349,14 +349,17 @@ namespace RoadGenerator
 			points.Reverse();
 			perAnchorNormalsAngle.Reverse();
 			// Reverse control points so that they stay in the same place relative to their anchor
+			
 			for (int i = 1; i < points.Count; i += 3)
 			{
 				Vector3 tmp = points[i];
 				points[i] = points[i + 1];
 				points[i + 1] = tmp;
 			}
+			
 			NotifyPathModified();
 		}
+
 		/// <summary>Insert new anchor point at given position. Automatically place control points around it so as to keep shape of curve the same</summary>
 		public void SplitSegment(Vector3 anchorPos, int segmentIndex, float splitTime)
 		{
