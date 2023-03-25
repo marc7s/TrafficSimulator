@@ -615,7 +615,7 @@ namespace RoadGenerator
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(start.RoadNode, intersectionNode.RoadNode);
 
-            LaneNode entry = CreateLaneNodes(start, generatedRoadNodes, true);
+            LaneNode entry = CreateLaneNodes(start, generatedRoadNodes, LaneSide.Primary);
             
             _intersectionEntryNodes.Add(start.ID, entry);
         }
@@ -624,16 +624,15 @@ namespace RoadGenerator
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(node.RoadNode, intersectionNode.RoadNode);
             
-            LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, false);
+            LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, LaneSide.Secondary);
             
-            _intersectionExitNodes.Add(node.ID, exit.Reverse());
+            _intersectionExitNodes.Add(node.ID, exit);
         }
 
-        private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, bool isPrimary)
+        private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, LaneSide laneSide)
         {
             float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
-            int laneNodeDirection = isPrimary ? 1 : -1;
-            LaneSide laneSide = start.LaneSide;
+            int laneNodeDirection = laneSide == LaneSide.Primary ? 1 : -1;
             // Important: In order to get the correct direction of the lane nodes, we need to reverse the road nodes if the lane is secondary
             // Since reverse creates copies of the nodes, this means that logic that relies on the road nodes being the same instance between entry and exit will not work
             RoadNode currRoadNode = roadNode;
