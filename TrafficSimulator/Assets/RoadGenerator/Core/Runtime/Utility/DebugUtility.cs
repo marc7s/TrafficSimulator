@@ -14,7 +14,8 @@ namespace RoadGenerator
         [SerializeField] private static LineRenderer _lineRenderer;
         [SerializeField] private static GameObject _endPointPrefab;
         [SerializeField] private static GameObject _markerPrefab;
-        private static Vector3 _markerPrefabScale = new Vector3(1.5f, 1f, 1f);
+        [SerializeField] private static GameObject _markerPrefabNoRotation;
+        private static Vector3 _markerPrefabScale = new Vector3(1f, 1f, 1.5f);
         private static Vector3 _endPointPrefabScale = Vector3.one * 1.3f;
         private static Dictionary<string, (Vector3[], Quaternion[], Vector3[])> _groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
         private static bool _nextGroupPressed = false;
@@ -40,6 +41,18 @@ namespace RoadGenerator
             _markerPrefab.GetComponent<BoxCollider>().enabled = false;
             _markerPrefab.transform.localScale = _markerPrefabScale;
             _markerPrefab.transform.position = farAway;
+
+            // Copy the marker prefab to the no rotation version
+            _markerPrefabNoRotation = GameObject.Instantiate(_markerPrefab);
+            _markerPrefabNoRotation.transform.localScale = Vector3.one * 1.2f;
+
+            // Add a pointer to the marker to see which direction it is facing
+            GameObject markerPointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            markerPointer.transform.parent = _markerPrefab.transform;
+            markerPointer.transform.localPosition = new Vector3(0, 0, _markerPrefabScale.z / 4);
+            markerPointer.transform.localScale = new Vector3(0.7f, 0.99f, 0.7f);
+            markerPointer.transform.localRotation = Quaternion.Euler(0, 45, 0);
+            markerPointer.GetComponent<BoxCollider>().enabled = false;
 
             // Create an empty container for all debug utility objects
             _container = new GameObject(_debugUtilityContainer);
@@ -150,9 +163,12 @@ namespace RoadGenerator
             if(clearMarkers)
                 ClearMarkers();
 
+            // Get the correct marker prefab
+            GameObject markerPrefab = rotation == null ? _markerPrefabNoRotation : _markerPrefab;
+
             // If rotation was passed, rotate the marker and make it longer in the rotation direction. Otherwise, make it a cube
-            _markerPrefab.transform.localScale = (rotation == null ? Vector3.one : _markerPrefabScale) * size;
-            GameObject marker = GameObject.Instantiate(_markerPrefab, position, rotation ?? Quaternion.identity);
+            GameObject marker = GameObject.Instantiate(markerPrefab, position, rotation ?? Quaternion.identity);
+            marker.transform.localScale *= size;
             
             if(color != null)
                 marker.GetComponent<Renderer>().material.SetColor("_Color", (Color)color);
@@ -247,7 +263,7 @@ namespace RoadGenerator
                 
                 ClearMarkers();
                 MarkPositions(positions,  rotations, true, null, 1f, false);
-                MarkPositions(helperPoints, null, false, Color.cyan, 2f, false);
+                MarkPositions(helperPoints, null, false, Color.cyan, 1f, false);
             }
         }
 
