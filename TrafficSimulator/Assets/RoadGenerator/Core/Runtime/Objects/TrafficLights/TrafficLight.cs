@@ -1,9 +1,10 @@
+//#define TRAFFIC_LIGHTS_DISABLED
 using UnityEngine;
 
 namespace RoadGenerator
 {
-    enum State{RED, TOGO, TOSTOP, GREEN};
-
+    public enum TrafficLightState{ Red, ToGo, ToStop, Green };
+    [ExecuteInEditMode()]
     public class TrafficLight : MonoBehaviour
     {
         public GameObject RedLight;
@@ -12,9 +13,11 @@ namespace RoadGenerator
 
         private float _lastSwitchTime;
         public float SwitchTime = 2f;
+        public RoadNode RoadNode;
 
-        private State _currentState = State.RED;
-        private State _lastState = State.RED;
+        private TrafficLightState _currentState = TrafficLightState.Red;
+        private TrafficLightState _lastState = TrafficLightState.Red;
+        public TrafficLightController trafficLightController;
 
         void Update()
         {
@@ -23,11 +26,11 @@ namespace RoadGenerator
             {
                 switch (_currentState)
                 {
-                    case State.TOGO:
-                        setState(State.GREEN);
+                    case TrafficLightState.ToGo:
+                        SetState(TrafficLightState.Green);
                         break;
-                    case State.TOSTOP:
-                        setState(State.RED);
+                    case TrafficLightState.ToStop:
+                        SetState(TrafficLightState.Red);
                         break;
                 }
             }
@@ -37,9 +40,9 @@ namespace RoadGenerator
         public void Go() {
             switch (_currentState)
             {
-                case State.RED:
-                case State.TOSTOP:
-                    setState(State.TOGO);
+                case TrafficLightState.Red:
+                case TrafficLightState.ToStop:
+                    SetState(TrafficLightState.ToGo);
                     break;
             }
         }
@@ -48,48 +51,60 @@ namespace RoadGenerator
         public void Stop() {
             switch (_currentState)
             {
-                case State.GREEN:
-                case State.TOGO:
-                    setState(State.TOSTOP);
+                case TrafficLightState.Green:
+                case TrafficLightState.ToGo:
+                    SetState(TrafficLightState.ToStop);
                     break;
             }
         }
 
         // Change the state
-        private void setState(State newState)
+        private void SetState(TrafficLightState newState)
         {
             _lastSwitchTime = Time.time;
             _lastState = _currentState;
             _currentState = newState;
             UpdateLightColor();
         }
-
+        public TrafficLightState CurrentState
+        {
+#if TRAFFIC_LIGHTS_DISABLED
+            get => TrafficLightState.Green;
+#else
+            get => _currentState;
+#endif
+        }
         // Change the light color
         private void UpdateLightColor()
         {
             switch (_currentState)
             {
-                case State.RED:
+                case TrafficLightState.Red:
                     RedLight.GetComponent<Light>().enabled = true;
                     YellowLight.GetComponent<Light>().enabled = false;
                     GreenLight.GetComponent<Light>().enabled = false;
                     break;
-                case State.TOSTOP:
+                case TrafficLightState.ToStop:
                     RedLight.GetComponent<Light>().enabled = false;
                     YellowLight.GetComponent<Light>().enabled = true;
                     GreenLight.GetComponent<Light>().enabled = false;
                     break;
-                case State.TOGO:
+                case TrafficLightState.ToGo:
                     RedLight.GetComponent<Light>().enabled = true;
                     YellowLight.GetComponent<Light>().enabled = true;
                     GreenLight.GetComponent<Light>().enabled = false;
                     break;
-                case State.GREEN:
+                case TrafficLightState.Green:
                     RedLight.GetComponent<Light>().enabled = false;
                     YellowLight.GetComponent<Light>().enabled = false;
                     GreenLight.GetComponent<Light>().enabled = true;
                     break;
             }
+        }
+        public void OnDestroy()
+        {
+            trafficLightController.TrafficLightsGroup1.Remove(this);
+            trafficLightController.TrafficLightsGroup2.Remove(this);
         }
     }
 }

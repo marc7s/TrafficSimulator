@@ -18,6 +18,7 @@ namespace RoadGenerator
 	public class RoadNode : Node<RoadNode>
 	{
         public TrafficSignType? TrafficSignType;
+        public TrafficLight TrafficLight;
         public Intersection Intersection;
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
         public NavigationNodeEdge SecondaryNavigationNodeEdge;

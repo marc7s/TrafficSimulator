@@ -47,6 +47,7 @@ namespace RoadGenerator
         [HideInInspector] private Dictionary<string, LaneNode> _intersectionExitNodes = new Dictionary<string, LaneNode>();
         [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths = new Dictionary<(string, string), GuideNode>();
         [HideInInspector] public IntersectionType Type;
+        [HideInInspector] public TrafficLightController TrafficLightController;
         [ReadOnly] public string ID;
 
         [Header("Connections")]
@@ -55,7 +56,7 @@ namespace RoadGenerator
 
         [Header("Intersection settings")]
         [SerializeField][Range(0, 0.8f)] private float _stretchFactor = 0;
-        [SerializeField] private FlowType _flowType = FlowType.TrafficLights;
+        [SerializeField] public FlowType FlowType = FlowType.TrafficLights;
 
         [Header ("Material settings")]
         [SerializeField] private Material _material;
@@ -67,13 +68,6 @@ namespace RoadGenerator
         private float _thickness;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
-
-        private GameObject _trafficLightController;
-        private GameObject _stopSignController;
-        private GameObject _flowContainer;
-
-        private List<RoadNode> _twoJunctionNodeRoad = new List<RoadNode>();
-        private List<RoadNode> _oneJunctionNodeRoad = new List<RoadNode>();
 
         private Mesh _mesh;
         [SerializeField][HideInInspector] private GameObject _guideNodeContainer;
@@ -108,34 +102,17 @@ namespace RoadGenerator
         void Awake()
         {
             IntersectionObject = gameObject;
-            _flowContainer = IntersectionObject.transform.Find("FlowContainer")?.gameObject;
+            TrafficLightController = gameObject.GetComponent<TrafficLightController>();
         }
 
         public void UpdateMesh()
         {
             // Set the thickness of the intersection
             _thickness = Road1.Thickness;
-            
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
-            // If intersection doesn't have a container, create one
-            if(_flowContainer != null)
-                DestroyImmediate(_flowContainer);
-            CreateIntersectionContainer();
-            if (_flowType == FlowType.TrafficLights)
-            {
-                CreateTrafficLightController();
-                AssignTrafficLights();
-            }
-            else if (_flowType == FlowType.StopSigns)
-            {
-                CreateStopSignController();
-                AssignStopSigns();
-            }
-            OffsetSigns();
             ShowGuideNodes();
-
             gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
         }
 
@@ -155,156 +132,14 @@ namespace RoadGenerator
             return junctionNodes;
         }
 
-        // Creates a gameobject container for the intersection to keep track of all assets in the intersection
-        private void CreateIntersectionContainer()
-        {
-            _flowContainer = new GameObject("FlowContainer");
-            _flowContainer.transform.parent = IntersectionObject.transform;
-        }
-
-        // Creates a gameobject container to control the intersections traffic lights
-        private void CreateTrafficLightController()
-        {
-            _trafficLightController = Instantiate(RoadSystem.DefaultTrafficLightControllerPrefab, Vector3.zero, Quaternion.identity);
-            _trafficLightController.transform.parent = _flowContainer.transform;
-        }
-
-        private void CreateStopSignController()
-        {
-            _stopSignController = new GameObject("StopSignController");
-            _stopSignController.transform.parent = _flowContainer.transform;
-        }
-
-        private TrafficLight SpawnTrafficLight(Vector3 position, Quaternion rotation)
-        {
-            GameObject trafficLight = Instantiate(RoadSystem.DefaultTrafficLightPrefab, position, rotation);
-            trafficLight.transform.parent = _trafficLightController.transform;
-            return trafficLight.GetComponent<TrafficLight>();
-        }
-
-        private void SpawnStopSign(Vector3 position, Quaternion rotation)
-        {
-            GameObject stopSign = Instantiate(RoadSystem.DefaultStopSignPrefab, position, rotation);
-            stopSign.transform.parent = _stopSignController.transform;
-        }
-
-        private void GetIntersectionNodes()
-        {
-            List<RoadNode> road1IntersectionNodes = new List<RoadNode>();
-            List<RoadNode> road2IntersectionNodes = new List<RoadNode>();
-
-            RoadNode road1Node = Road1.StartNode;
-            RoadNode road2Node = Road2.StartNode;
-
-            //Find the edge nodes of the roads
-            while (road1Node != null)
-            {
-                if (road1Node.Type == RoadNodeType.JunctionEdge && (road1Node.Position == Road1AnchorPoint1 || road1Node.Position == Road1AnchorPoint2))
-                    road1IntersectionNodes.Add(road1Node);
-                road1Node = road1Node.Next;
-            }
-            while (road2Node != null)
-            {
-                if (road2Node.Type == RoadNodeType.JunctionEdge && (road2Node.Position == Road2AnchorPoint1 || road2Node.Position == Road2AnchorPoint2))
-                    road2IntersectionNodes.Add(road2Node);
-                road2Node = road2Node.Next;
-            }
-
-            if (road1IntersectionNodes.Count > road2IntersectionNodes.Count)
-            {
-                _twoJunctionNodeRoad = road1IntersectionNodes;
-                _oneJunctionNodeRoad = road2IntersectionNodes;
-            } else
-            {
-                _twoJunctionNodeRoad = road2IntersectionNodes;
-                _oneJunctionNodeRoad = road1IntersectionNodes;
-            }
-        }
-
-        private void AssignStopSigns()
-        {
-            GetIntersectionNodes();
-
-            if (Type == IntersectionType.ThreeWayIntersectionAtStart)
-            {
-                SpawnStopSign(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
-
-                SpawnStopSign(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation * Quaternion.Euler(0, 180, 0));
-            }
-            else if (Type == IntersectionType.ThreeWayIntersectionAtEnd)
-            {
-                SpawnStopSign(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
-
-                SpawnStopSign(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation);
-            }
-            else if (Type == IntersectionType.FourWayIntersection)
-            {
-                SpawnStopSign(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
-
-                SpawnStopSign(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation);
-                SpawnStopSign(_oneJunctionNodeRoad[1].Position, _oneJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0));
-            }
-        }
-
-        // Finds intersections junction nodes and assigns traffic lights to them
-        private void AssignTrafficLights()
-        {
-            GetIntersectionNodes();
-
-            List<TrafficLight> trafficLightsGroup1 = _trafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup1;
-            List<TrafficLight> trafficLightsGroup2 = _trafficLightController.GetComponent<TrafficLightController>().TrafficLightsGroup2;
-
-            if (Type == IntersectionType.ThreeWayIntersectionAtStart)
-            {
-                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
-
-                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation * Quaternion.Euler(0, 180, 0)));
-            }
-            else if (Type == IntersectionType.ThreeWayIntersectionAtEnd)
-            {
-                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
-
-                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation));
-            }
-
-            // If its a 4-way intersection, spawn a traffic light at each junction node
-            else if (Type == IntersectionType.FourWayIntersection)
-            {
-                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[0].Position, _twoJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup1.Add(SpawnTrafficLight(_twoJunctionNodeRoad[1].Position, _twoJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
-
-                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[0].Position, _oneJunctionNodeRoad[0].Rotation));
-                trafficLightsGroup2.Add(SpawnTrafficLight(_oneJunctionNodeRoad[1].Position, _oneJunctionNodeRoad[1].Rotation * Quaternion.Euler(0, 180, 0)));
-            }
-        }
-
-        private void OffsetSigns()
-        {
-            if(_flowType == FlowType.TrafficLights)
-            {
-                foreach (Transform child in _trafficLightController.transform)
-                {
-                    child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
-                }
-            }
-            else if(_flowType == FlowType.StopSigns)
-            {
-                foreach (Transform child in _stopSignController.transform)
-                {
-                    child.position += (Road1.LaneCount / 2) * child.right * Road1.LaneWidth;
-                }
-            }
-        }
-
         private void CreateIntersectionMesh()
         {
             Road1.UpdateRoadNodes();
+            Road1.UpdateLanes();
+            Road1.PlaceTrafficSigns();
             Road2.UpdateRoadNodes();
+            Road2.UpdateLanes();
+            Road2.PlaceTrafficSigns();
 
 #if DEBUG_INTERSECTION            
             Debug.Log("----------- Road 1 nodes -----------");
@@ -780,7 +615,7 @@ namespace RoadGenerator
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(start.RoadNode, intersectionNode.RoadNode);
 
-            LaneNode entry = CreateLaneNodes(start, generatedRoadNodes, true);
+            LaneNode entry = CreateLaneNodes(start, generatedRoadNodes, LaneSide.Primary);
             
             _intersectionEntryNodes.Add(start.ID, entry);
         }
@@ -789,16 +624,15 @@ namespace RoadGenerator
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(node.RoadNode, intersectionNode.RoadNode);
             
-            LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, false);
+            LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, LaneSide.Secondary);
             
-            _intersectionExitNodes.Add(node.ID, exit.Reverse());
+            _intersectionExitNodes.Add(node.ID, exit);
         }
 
-        private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, bool isPrimary)
+        private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, LaneSide laneSide)
         {
             float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
-            int laneNodeDirection = isPrimary ? 1 : -1;
-            LaneSide laneSide = start.LaneSide;
+            int laneNodeDirection = laneSide == LaneSide.Primary ? 1 : -1;
             // Important: In order to get the correct direction of the lane nodes, we need to reverse the road nodes if the lane is secondary
             // Since reverse creates copies of the nodes, this means that logic that relies on the road nodes being the same instance between entry and exit will not work
             RoadNode currRoadNode = roadNode;
@@ -869,13 +703,7 @@ namespace RoadGenerator
         /// <summary> Get a random lane node that leads out of the intersection. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
         public (LaneNode, LaneNode, LaneNode) GetRandomLaneNode(LaneNode current)
         {
-            List<GuideNode> guidePaths = new List<GuideNode>();
-            // Add all guide paths that start at the current lane node to the list
-            foreach((string entry, string exit) in _intersectionGuidePaths.Keys)
-            {
-                if (entry == current.ID)
-                    guidePaths.Add(_intersectionGuidePaths[(entry, exit)]);
-            }
+            List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
             
             // Pick a random guide path
             System.Random random = new System.Random();
@@ -885,6 +713,25 @@ namespace RoadGenerator
 
             return (finalNode.First, finalNode.Last, guidePath);
         }
+
+        /// <summary> 
+        /// Get all guide paths starting at the given entry node.
+        /// The return format for each element is (string entryID, string exitID, GuideNode guidePath)
+        /// </summary>
+        public List<(string, string, GuideNode)> GetGuidePaths(LaneNode entry)
+        {
+            List<(string, string, GuideNode)> guidePaths = new List<(string, string, GuideNode)>();
+            
+            // Add all guide paths that start at the current lane node to the list
+            foreach((string entryID, string exitID) in _intersectionGuidePaths.Keys)
+            {
+                if (entryID == entry.ID && _intersectionExitNodes[exitID].Last.RoadNode != _intersectionEntryNodes[entryID].RoadNode)
+                    guidePaths.Add((entryID, exitID, _intersectionGuidePaths[(entryID, exitID)]));
+            }
+
+            return guidePaths;
+        }
+        
         /// <summary> Get the new start node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
         public (LaneNode, LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current)
         {
@@ -932,10 +779,11 @@ namespace RoadGenerator
                 if(prev != null)
                     prev.Next = curr;
                 prev = curr;
-                currLaneNode = currLaneNode.Next;
 
                 if(currLaneNode == entryLast)
                     currLaneNode = exitSection;
+                else
+                    currLaneNode = currLaneNode.Next;
             }
             
             curr.Next = end;
@@ -962,6 +810,9 @@ namespace RoadGenerator
                 Road1.RemoveIntersection(this);
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
+            
+            Road1.UpdateMesh();
+            Road2.UpdateMesh();
         }
     }
 }
