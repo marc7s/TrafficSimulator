@@ -88,7 +88,7 @@ namespace RoadGenerator
             // Loop through all lanes
             foreach (Lane lane in _lanes)
             {
-                _lengths.Add(lane.Length);
+                _lengths.Add(lane.GetLaneLengthNoIntersections());
             }
         }
 
@@ -159,9 +159,15 @@ namespace RoadGenerator
                         return;
 
                     // Spawn individual car at current node
-                    SpawnCar(i);
-
-                    _carCounter++;
+                    if(!_laneNodeCurrent.RoadNode.IsIntersection() && !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge))
+                    {
+                        SpawnCar(i);
+                        _carCounter++;
+                    } else
+                    {
+                        carsToSpawn++;
+                    }
+                
                     _offset += _lanes[i].Length / carsToSpawn;
                     _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
                 }

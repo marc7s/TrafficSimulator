@@ -147,7 +147,7 @@ namespace Car {
             if (Mode == DrivingMode.Quality)
             {
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                Q_ResetToNode(_startNode);
+                Q_ResetToNode(_currentNode);
                 
                 _brakeTarget = _currentNode;
                 _repositioningTarget = _currentNode;
