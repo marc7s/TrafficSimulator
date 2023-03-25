@@ -74,5 +74,18 @@ namespace RoadGenerator
             }
             return length;
         }
+
+        public float GetLaneLengthNoIntersections()
+        {
+            float length = 0;
+            LaneNode curr = _start;
+            while(curr != null)
+            {
+                if(!curr.RoadNode.IsIntersection() && !(curr.RoadNode.Type == RoadNodeType.JunctionEdge))
+                    length += curr.DistanceToPrevNode;
+                curr = curr.Next;
+            }
+            return length;
+        }
     }
 }
