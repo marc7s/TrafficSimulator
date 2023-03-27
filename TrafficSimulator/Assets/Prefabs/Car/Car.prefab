@@ -1114,6 +1114,7 @@ GameObject:
   - component: {fileID: 1577973480896072227}
   - component: {fileID: 1577973480897211921}
   - component: {fileID: 1577973480888219269}
+  - component: {fileID: 4724201228226253195}
   m_Layer: 0
   m_Name: sportCoupe
   m_TagString: Untagged
@@ -1212,6 +1213,24 @@ Animation:
   m_PlayAutomatically: 1
   m_AnimatePhysics: 0
   m_CullingType: 0
+--- !u!114 &4724201228226253195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577973480899245783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 0.9313489, b: 0, a: 1}
+  outlineWidth: 4
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
 --- !u!1 &1577973480899251781
 GameObject:
   m_ObjectHideFlags: 0
@@ -1800,6 +1819,7 @@ GameObject:
   - component: {fileID: 1577973480145491502}
   - component: {fileID: 1577973480894095029}
   - component: {fileID: 1577973480888145871}
+  - component: {fileID: 6524544095477396543}
   - component: {fileID: 1577973480888144765}
   - component: {fileID: 1577973480887968703}
   - component: {fileID: 1577973480887984383}
@@ -1852,23 +1872,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Road: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
+  NavigationPathMaterial: {fileID: 0}
   LaneIndex: 0
   _mesh: {fileID: 1577973480899245783}
-  _mode: 1
-  _roadEndBehaviour: 1
+  Mode: 1
+  RoadEndBehaviour: 0
   ShowNavigationPath: 0
   _navigationMode: 0
-  _originalNavigationMode: 0
-  _showTargetLines: 0
-  _brakeOffset: 5
-  _maxRepositioningSpeed: 5
-  _maxReverseDistance: 20
-  _baseTLD: 10
-  _TLDSpeedDivider: 20
-  _vehicleOccupancyOffset: 3
-  _speed: 20
-  _rotationSpeed: 5
-  _totalDistance: 0
+  OriginalNavigationMode: 0
+  LogRepositioningInformation: 1
+  ShowTargetLines: 0
+  BrakeOffset: 5
+  MaxRepositioningSpeed: 5
+  MaxReverseDistance: 20
+  BaseTLD: 10
+  TLDSpeedDivider: 20
+  VehicleOccupancyOffset: 3
+  Speed: 20
+  RotationSpeed: 5
+  TotalDistance: 0
 --- !u!54 &1577973480894095029
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1975,6 +1997,19 @@ MonoBehaviour:
   disallowRuntimeChanges: 0
   disableSteerAngleCorrection: 0
   showCollisionGizmos: 0
+--- !u!114 &6524544095477396543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577973480899275759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 041e74d744444ca288dff463716afbbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _firstPersonPivot: {fileID: 0}
 --- !u!114 &1577973480888144765
 MonoBehaviour:
   m_ObjectHideFlags: 0
