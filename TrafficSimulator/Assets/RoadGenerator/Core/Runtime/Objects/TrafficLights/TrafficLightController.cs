@@ -8,8 +8,8 @@ namespace RoadGenerator
 
     public class TrafficLightController : MonoBehaviour
     {
-        [SerializeField] public List<TrafficLight> TrafficLightsGroup1; // Starts green
-        [SerializeField] public List<TrafficLight> TrafficLightsGroup2; // Starts red
+        [SerializeField] public List<TrafficLight> TrafficLightsGroup1 = new List<TrafficLight>(); // Starts green
+        [SerializeField] public List<TrafficLight> TrafficLightsGroup2 = new List<TrafficLight>(); // Starts red
 
         public float Delay = 10f;
         public float TransitionDelay = 2f;
@@ -26,7 +26,8 @@ namespace RoadGenerator
                     SwitchToTransitionalMode();
                     _lastSwitchTime = Time.time;
                 }
-            } else
+            } 
+            else
             {
                 if (Time.time - _lastSwitchTime > TransitionDelay)
                 {

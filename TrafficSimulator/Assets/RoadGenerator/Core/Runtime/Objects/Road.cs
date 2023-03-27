@@ -153,7 +153,6 @@ namespace RoadGenerator
         public bool RemoveIntersection(Intersection intersection)
         {
             Intersections.Remove(intersection);
-            UpdateRoad();
             return true;
         }
 
@@ -508,6 +507,8 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 roadMeshCreator.UpdateMesh();
+                foreach(Intersection intersection in Intersections)
+                    intersection.UpdateMesh();
                 PlaceTrafficSigns();
             } 
         }
@@ -774,9 +775,9 @@ namespace RoadGenerator
             previous = current;
 
             // Calculate the position of the new node
-            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth / 2;
+            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth * (0.5f + current.Index);
             // Create the new node
-            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, current.Index, roadNode, previous, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
@@ -788,7 +789,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Updates the lanes</summary>
-        private void UpdateLanes()
+        public void UpdateLanes()
         {
             // Get the lane count
             int laneCount = (int)LaneAmount;
@@ -810,10 +811,10 @@ namespace RoadGenerator
             for(int i = 0; i < laneCount; i++)
             {
                 // Primary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Primary, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position - currRoadNode.Normal * drivingSide * LaneWidth * (0.5f + i), LaneSide.Primary, i, currRoadNode, 0)));
 
                 // Secondary lane node
-                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth / 2, LaneSide.Secondary, currRoadNode, 0)));
+                laneNodes.Add((null, new LaneNode(currRoadNode.Position + currRoadNode.Normal * drivingSide * LaneWidth * (0.5f + i), LaneSide.Secondary, i, currRoadNode, 0)));
             }
 
             // The lane nodes for the first road node has already been added, so we skip that one
@@ -913,7 +914,7 @@ namespace RoadGenerator
             return queuedNodes;
         }
         // Procedurally places the traffic signs along the road
-        private void PlaceTrafficSigns()
+        public void PlaceTrafficSigns()
         {
             return;
             RoadNode startNode = StartRoadNode;
@@ -924,12 +925,19 @@ namespace RoadGenerator
             _trafficSignContainer.transform.parent = transform;
             // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
             bool intersectionFound = StartRoadNode.Next.Intersection != null && StartRoadNode.Position == StartRoadNode.Next.Position;
+            if (intersectionFound)
+            {
+                if (this == _start.Next.Intersection.Road1)
+                    _start.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup1 = new List<TrafficLight>();
+                else
+                    _start.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup2 = new List<TrafficLight>();
+            }
 
             if (GenerateSpeedSigns && !IsClosed())
             {
                 // Place a speed sign at the start and end of the road
-                PlaceTrafficSignAtDistance(startNode, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), true);
-                PlaceTrafficSignAtDistance(startNode.Last, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), false);
+                PlaceTrafficSignAtDistance(startNode, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), true, GetSpeedSignPrefab());
+                PlaceTrafficSignAtDistance(startNode.Last, SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), false, GetSpeedSignPrefab());
             }
 
             RoadNode current = startNode;
@@ -938,25 +946,39 @@ namespace RoadGenerator
                 // Place a speed sign after every junction edge
                 if (current.Type == RoadNodeType.JunctionEdge)
                 {
+                    if(current.Intersection.FlowType == FlowType.TrafficLights)
+                    {
+                        if (!intersectionFound)
+                        {
+                            if (this == current.Intersection.Road1)
+                                current.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup1 = new List<TrafficLight>();
+                            else
+                                current.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup2 = new List<TrafficLight>();
+                        }
+                        SpawnFlowController(current, 0, TrafficSignType.TrafficLight, !intersectionFound, RoadSystem.DefaultTrafficLightPrefab);
+                    }
+                    else if (current.Intersection.FlowType == FlowType.StopSigns)
+                    {
+                        SpawnFlowController(current, 0, TrafficSignType.StopSign, !intersectionFound, RoadSystem.DefaultStopSignPrefab);
+                    }
                     if (GenerateSpeedSigns && !IsClosed())
                     {
-                        PlaceTrafficSignAtDistance(current, intersectionFound ? SpeedSignDistanceFromIntersectionEdge : -SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), intersectionFound);
-                        intersectionFound = !intersectionFound;
+                        PlaceTrafficSignAtDistance(current, intersectionFound ? SpeedSignDistanceFromIntersectionEdge : -SpeedSignDistanceFromIntersectionEdge, GetSpeedSignType(), intersectionFound, GetSpeedSignPrefab()); 
                     }
+                    intersectionFound = !intersectionFound;
                 }
                 current = current.Next;
             }
         }
         /// <summary> Places a traffic sign at a specified distance from the road node </summary>
-        private void PlaceTrafficSignAtDistance(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool isForward)
+        private GameObject PlaceTrafficSignAtDistance(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool isForward, GameObject prefab)
         {
             // Rotate the traffic sign so that it faces the road for the current driving side
             Quaternion rotation = roadNode.Rotation * (isForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
             if (distanceFromRoadNode == 0)
             {
                 roadNode.TrafficSignType = trafficSignType;
-                SpawnSpeedLimitSign(roadNode.Position, rotation);
-                return;
+                return SpawnTrafficSign(roadNode.Position, rotation, prefab);
             }
 
             RoadNode current = isForward ? roadNode.Next : roadNode.Prev;
@@ -970,19 +992,39 @@ namespace RoadGenerator
                 if (currentDistance >= Mathf.Abs(distanceFromRoadNode))
                 {
                     current.TrafficSignType = trafficSignType;
-                    SpawnSpeedLimitSign(current.Position, rotation);
-                    break;
+                    return SpawnTrafficSign(current.Position, rotation, prefab);
                 }
                 current = isForward ? current.Next : current.Prev;
             }
+            return null;
         }
         /// <summary> Spawns the traffic signs along the road </summary>
-        private void SpawnSpeedLimitSign(Vector3 position, Quaternion rotation)
+        private GameObject SpawnTrafficSign(Vector3 position, Quaternion rotation, GameObject prefab)
         {
-            GameObject trafficSign = Instantiate(GetSpeedSignPrefab(), position, rotation);
+            GameObject trafficSign = Instantiate(prefab, position, rotation);
             bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
             trafficSign.transform.position += LaneCount / 2 * trafficSign.transform.right * LaneWidth * (isDrivingRight ? -1 : 1);
             trafficSign.transform.parent = _trafficSignContainer.transform;
+            return trafficSign;
+        }
+
+        private void SpawnFlowController(RoadNode roadNode, float distanceFromRoadNode, TrafficSignType trafficSignType, bool isForward, GameObject prefab)
+        {
+            GameObject trafficLightObject = PlaceTrafficSignAtDistance(roadNode, distanceFromRoadNode, trafficSignType, isForward, prefab);
+            TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
+            
+            // Add the traffic light to the correct traffic light group, Road1 gets added to trafficLightGroup1 and Road2 gets added to trafficLightGroup2
+            if (trafficSignType == TrafficSignType.TrafficLight)
+            {
+                if (this == roadNode.Intersection.Road1)
+                    roadNode.Intersection.TrafficLightController.TrafficLightsGroup1.Add(trafficLight);
+                else if (this == roadNode.Intersection.Road2)
+                    roadNode.Intersection.TrafficLightController.TrafficLightsGroup2.Add(trafficLight);
+
+                trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
+            }
+            
+            roadNode.TrafficLight = trafficLight;
         }
         /// <summary> Returns the speed sign type for the current speed limit </summary>
         private TrafficSignType GetSpeedSignType()
@@ -1295,8 +1337,6 @@ namespace RoadGenerator
             }
 
             int count = Intersections.Count;
-            if (_trafficSignContainer != null)
-                DestroyImmediate(_trafficSignContainer);
             for (var i = 0; i < count; i++)
             {
                 Intersection intersection = Intersections[0];
