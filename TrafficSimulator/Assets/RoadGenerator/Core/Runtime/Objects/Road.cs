@@ -540,7 +540,7 @@ namespace RoadGenerator
             RoadNodeType type2 = type == RoadNodeType.End ? ConnectedToAtEnd == null ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
             // Add the new node to the end
             builder.Curr = new RoadNode(position, tangent, normal, type2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
-            
+            builder.Curr.Road = this;
             // Update the previous node's next pointer
             builder.Prev.Next = builder.Curr;
 
@@ -621,6 +621,7 @@ namespace RoadGenerator
             RoadNodeType startType = ConnectedToAtStart == null ? RoadNodeType.End : RoadNodeType.RoadConnection;
             // Create the start node for the road. The start node must be an end node
             StartRoadNode = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
+            StartRoadNode.Road = this;
             
             // Create a new node builder starting at the start node
             NodeBuilder roadBuilder = new NodeBuilder(null, StartRoadNode, 0);
@@ -717,8 +718,8 @@ namespace RoadGenerator
                     road.EndRoadNode.Next = StartRoadNode;
                     for (var i = 0; i < _lanes.Count; i++)
                     {
-                        LaneNode otherRoadLaneNode = road._lanes[i].StartNode.GetNextConnectingNode();
-                        LaneNode thisRoadLaneNode = _lanes[i].StartNode.GetNextConnectingNode();
+                        LaneNode otherRoadLaneNode = road._lanes[i].StartNode.GetLastLaneNodeInRoad();
+                        LaneNode thisRoadLaneNode = _lanes[i].StartNode.GetLastLaneNodeInRoad();
                         if (otherRoadLaneNode == null)
                             continue;
                         if (_lanes[i].Type.Side == LaneSide.Primary)
@@ -728,8 +729,8 @@ namespace RoadGenerator
                         }
                         else
                         {
-                          //  thisRoadLaneNode.Next = road._lanes[i].StartNode;
-                          //  road._lanes[i].StartNode.Prev = thisRoadLaneNode;
+                          thisRoadLaneNode.Next = road._lanes[i].StartNode;
+                          road._lanes[i].StartNode.Prev = thisRoadLaneNode;
                         }
                     }
                 }
@@ -744,8 +745,8 @@ namespace RoadGenerator
                 
                     for (var i = 0; i < _lanes.Count; i++)
                     {
-                        LaneNode thisRoadLaneNode = _lanes[i].StartNode.GetNextConnectingNode();
-                        LaneNode otherRoadLaneNode = road._lanes[i].StartNode.GetNextConnectingNode();
+                        LaneNode thisRoadLaneNode = _lanes[i].StartNode.GetLastLaneNodeInRoad();
+                        LaneNode otherRoadLaneNode = road._lanes[i].StartNode.GetLastLaneNodeInRoad();
                         if (thisRoadLaneNode == null)
                             continue;
                         if (_lanes[i].Type.Side == LaneSide.Primary)
@@ -755,8 +756,8 @@ namespace RoadGenerator
                         }
                         else
                         {
-                           // _lanes[i].StartNode.Prev = otherRoadLaneNode;
-                            //otherRoadLaneNode.Next = _lanes[i].StartNode;
+                            _lanes[i].StartNode.Prev = otherRoadLaneNode;
+                            otherRoadLaneNode.Next = _lanes[i].StartNode;
                         }
                     }
                 }

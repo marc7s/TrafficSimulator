@@ -18,6 +18,7 @@ namespace RoadGenerator
     /// <summary>Represents a single node in a road</summary>
 	public class RoadNode : Node<RoadNode>
 	{
+        public Road Road;
         public TrafficSignType? TrafficSignType;
         public Intersection Intersection;
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
@@ -51,7 +52,8 @@ namespace RoadGenerator
             return new RoadNode(_position, _tangent, _normal, _type, _prev, _next, _distanceToPrevNode, _time)
             {
                 PrimaryNavigationNodeEdge = PrimaryNavigationNodeEdge,
-                Intersection = Intersection
+                Intersection = Intersection,
+                Road = Road
             };
         }
 
