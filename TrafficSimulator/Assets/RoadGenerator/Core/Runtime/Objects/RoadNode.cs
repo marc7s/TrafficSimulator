@@ -20,6 +20,7 @@ namespace RoadGenerator
 	{
         public Road Road;
         public TrafficSignType? TrafficSignType;
+        public TrafficLight TrafficLight;
         public Intersection Intersection;
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
         public NavigationNodeEdge SecondaryNavigationNodeEdge;

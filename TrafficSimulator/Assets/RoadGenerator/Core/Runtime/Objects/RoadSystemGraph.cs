@@ -7,8 +7,8 @@ namespace RoadGenerator
 {
     public class NavigationNodeEdge
     {
-        public NavigationNode EndNavigationNode;
         public NavigationNode StartNavigationNode;
+        public NavigationNode EndNavigationNode;
         private string _id;
         public double Cost;
         public NavigationNodeEdge(NavigationNode endNode, NavigationNode startNode, double cost)
