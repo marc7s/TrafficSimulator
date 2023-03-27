@@ -22,7 +22,6 @@ namespace RoadGenerator
 
         public int TotalCars = 5; // Total number of cars to spawn in mode Total
         [Range(0, 1)] public float LaneCarRatio = 0.5f; // Percentage of cars to spawn per lane in mode LaneRatio
-        public float CarLength = 5f; // Not exact value. Should get imported from car prefab somehow.
         public float SpawnDelay = 3f; // Delay before spawning cars
 
         private RoadSystem _roadSystem;
@@ -39,14 +38,17 @@ namespace RoadGenerator
 
         private GameObject _currentCar;
 
-        private float _offset = 0; // Offset for the lane index
         private int _carCounter = 0;
+        private float _offset = 0; // Offset for the lane index
+        private float _carLength;
 
         private bool _spawned = false;
 
         
         private void Start()
         {
+            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z;
+
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
 
@@ -77,9 +79,7 @@ namespace RoadGenerator
             {
                 // Loop through all lanes
                 for (int j = 0; j < _roads[i].LaneCount; j++)
-                {
                     _lanes.Add(_roads[i].Lanes[j]);
-                }
             }
         }
 
@@ -87,9 +87,7 @@ namespace RoadGenerator
         {
             // Loop through all lanes
             foreach (Lane lane in _lanes)
-            {
                 _lengths.Add(lane.GetLaneLengthNoIntersections());
-            }
         }
 
         private void CalculateLaneRatios()
@@ -98,15 +96,11 @@ namespace RoadGenerator
 
             // Loop through all lane lengths
             foreach (float length in _lengths)
-            {
                 totalLength += length;
-            }
 
             // Loop through all lane lengths
             for (int i = 0; i < _lengths.Count; i++)
-            {
                 _ratios.Add(_lengths[i] / totalLength);
-            }
         }
 
         private List<float> CalculateSectionRatios(List<float> sections)
@@ -115,14 +109,10 @@ namespace RoadGenerator
             List<float> ratios = new List<float>();
 
             foreach (float length in sections)
-            {
                 totalLength += length;
-            }
 
             for (int i = 0; i < sections.Count; i++)
-            {
                 ratios.Add(sections[i] / totalLength);
-            }
             return ratios;
         }
 
@@ -144,14 +134,11 @@ namespace RoadGenerator
             }
         }
 
+        // Calculate the max capacity of cars for a lane
         private void CalculateMaxCarsForLanes()
         {
-            // Loop through all lanes
             for (int j = 0; j < _lanes.Count; j++)
-            {
-                // Calculate the max cars for the lane
-                _maxCarsPerLane.Add(Mathf.FloorToInt(_lengths[j] / CarLength));
-            }
+                _maxCarsPerLane.Add(Mathf.FloorToInt(_lengths[j] / _carLength)); 
         }
 
         private void SpawnCars()
@@ -214,9 +201,7 @@ namespace RoadGenerator
                     Debug.Log("Section length: " + sectionLength);
                     sectionLength = 0;
                     while(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge))
-                    {
                         curr = curr.Next;
-                    }
                 }
                 curr = curr.Next;
                 if(curr != null)
