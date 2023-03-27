@@ -22,7 +22,7 @@ namespace User
 
         private static UserSelectManager _instance;
 
-        [HideInInspector] public bool CanSelectNewObject = true;
+        [HideInInspector] public bool CanSelectNewObject;
 
         private Camera _mainCamera;
         private InputAction _clickInput;
@@ -62,6 +62,7 @@ namespace User
         {
             InitializeSingletonInstance();
             _mainCamera = Camera.main;
+            CanSelectNewObject = true;
         }
 
         private void Start()
@@ -131,13 +132,14 @@ namespace User
         public event SelectedGameObjectChangedHandler OnSelectedGameObject;
 
         // Common method for handling click and double-click inputs
-        private void OnClickInput(InputAction.CallbackContext obj, SelectedGameObjectChangedHandler eventToInvoke)
+        private void OnClickInput(InputAction.CallbackContext ctx, SelectedGameObjectChangedHandler eventToInvoke)
         {
             var ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
-
-            if (Physics.Raycast(ray, out var hitInfo))
-                if (CanSelectNewObject)
-                    SelectObjectFromClick(eventToInvoke, hitInfo);
+            
+            if (Physics.Raycast(ray, out var hitInfo) && CanSelectNewObject)
+            {
+                SelectObjectFromClick(eventToInvoke, hitInfo);
+            }
         }
 
         // Select the object based on the click event and invoke the corresponding event
@@ -152,7 +154,10 @@ namespace User
                     return;
                 }
 
-                if (_hasSelectedGameObject) SelectedGameObject.Deselect();
+                if (_hasSelectedGameObject)
+                {
+                    SelectedGameObject.Deselect();
+                }
 
                 hitSelectable.Select();
                 SelectedGameObject = hitSelectable;
