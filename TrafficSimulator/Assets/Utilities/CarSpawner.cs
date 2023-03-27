@@ -83,13 +83,14 @@ namespace RoadGenerator
             }
         }
 
+        // Calculate lane lengths without intersections for each lane
         private void CalculateLaneLengths()
         {
-            // Loop through all lanes
             foreach (Lane lane in _lanes)
                 _lengths.Add(lane.GetLaneLengthNoIntersections());
         }
 
+        // Calculate all lanes corresponding number of cars to spawn
         private void CalculateLaneRatios()
         {
             float totalLength = 0;
@@ -103,6 +104,7 @@ namespace RoadGenerator
                 _ratios.Add(_lengths[i] / totalLength);
         }
 
+        // Calculate a lane sections corresponding number of cars to spawn
         private List<float> CalculateSectionRatios(List<float> sections)
         {
             float totalLength = 0;
@@ -116,6 +118,7 @@ namespace RoadGenerator
             return ratios;
         }
 
+        // Save the index of each lane in a list
         private void CalculateLaneIndexes()
         {
             int laneIndex;
