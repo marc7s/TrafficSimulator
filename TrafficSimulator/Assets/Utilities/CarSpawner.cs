@@ -150,7 +150,7 @@ namespace RoadGenerator
             for (int j = 0; j < _lanes.Count; j++)
             {
                 // Calculate the max cars for the lane
-                _maxCarsPerLane.Add(Mathf.FloorToInt(_lengths[j] / (CarLength*2)));
+                _maxCarsPerLane.Add(Mathf.FloorToInt(_lengths[j] / CarLength));
             }
         }
 
@@ -173,10 +173,6 @@ namespace RoadGenerator
                 // Spawn cars
                 for (int j = 0; j < sections.Count; j++)
                 {
-                    // Check if max cars have been spawned
-                    if (_mode == SpawnMode.Total && _carCounter >= TotalCars)
-                        return;
-
                     // Calculate the number of cars to spawn
                     int carsToSpawnSection = Mathf.CeilToInt(carsToSpawn * ratios[j]);
                     for (int k = 0; k < carsToSpawnSection; k++)
@@ -186,7 +182,7 @@ namespace RoadGenerator
                             return;
 
                         // Spawn car
-                        if(!_laneNodeCurrent.RoadNode.IsIntersection() || !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge) || !(_laneNodeCurrent == null))
+                        if(!_laneNodeCurrent.RoadNode.IsIntersection() && !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge) && !(_laneNodeCurrent == null))
                         {
                             SpawnCar(i);
                             _carCounter++;
@@ -195,6 +191,7 @@ namespace RoadGenerator
                         _offset += sections[j] / (carsToSpawnSection);
                         _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
                     }
+                    // CHANGE THIS
                     _offset += (_lanes[i].Length - _lanes[i].GetLaneLengthNoIntersections()) / sections.Count;
                 }
                 _offset = 0;
@@ -207,15 +204,8 @@ namespace RoadGenerator
             LaneNode curr = lane.StartNode;
             Debug.Log("Start node: " + curr.DistanceToPrevNode);
             List<float> sections = new List<float>();
-            float sectionLength = 0;
+            float sectionLength = curr.DistanceToPrevNode == 0 ? curr.Next.DistanceToPrevNode : 0;
 
-            if(curr.DistanceToPrevNode == 0)
-            {
-                sectionLength = curr.Next.DistanceToPrevNode;
-            } else
-            {
-                sectionLength = 0;
-            }
             while (curr != null)
             {
                 if(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge) || curr.Next == null)
@@ -233,7 +223,6 @@ namespace RoadGenerator
                     sectionLength += curr.DistanceToPrevNode;
             }
             Debug.Log("Lane Length without intersections: " + lane.GetLaneLengthNoIntersections());
-            Debug.Log("Lane Length with intersections: " + lane.Length);
             return sections;
         }
 
