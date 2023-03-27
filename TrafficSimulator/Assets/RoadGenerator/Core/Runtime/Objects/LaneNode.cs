@@ -139,7 +139,7 @@ namespace RoadGenerator
             return _vehicle != null;
         }
 
-        public LaneNode GetNextConnectingNode()
+        public LaneNode GetLastLaneNodeInRoad()
         {
             LaneNode curr = this.Next;
             while(curr != null)
@@ -149,7 +149,7 @@ namespace RoadGenerator
                     return curr;
                 }
                 if (curr.RoadNode.Type == RoadNodeType.End)
-                    return null;
+                    return curr;
                 curr = curr.Next;
             }
             return null;
