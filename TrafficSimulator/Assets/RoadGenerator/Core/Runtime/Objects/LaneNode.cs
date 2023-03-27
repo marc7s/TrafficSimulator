@@ -138,5 +138,21 @@ namespace RoadGenerator
         {
             return _vehicle != null;
         }
+
+        public LaneNode GetNextConnectingNode()
+        {
+            LaneNode curr = this.Next;
+            while(curr != null)
+            {
+                if(curr.RoadNode.Type == RoadNodeType.RoadConnection)
+                {
+                    return curr;
+                }
+                if (curr.RoadNode.Type == RoadNodeType.End)
+                    return null;
+                curr = curr.Next;
+            }
+            return null;
+        }
     }
 }

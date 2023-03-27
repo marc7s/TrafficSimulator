@@ -21,6 +21,7 @@ namespace RoadGenerator
     public class Lane
 	{
         private LaneNode _start;
+        public LaneNode EndNode;
         private Road _road;
         private LaneType _type;
         private float _length;
