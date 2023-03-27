@@ -157,14 +157,13 @@ namespace RoadGenerator
                 // Calculate the offset
                 _laneNodeCurrent = _lanes[i].StartNode;
                 Debug.Log("Lane " + i);
-                List<float> sections = DivideLaneToSections(_lanes[i]);
-                List<float> ratios = CalculateSectionRatios(sections);
 
-                // Spawn cars
+                List<float> sections = DivideLaneToSections(_lanes[i]);
+                List<float> sectionRatios = CalculateSectionRatios(sections);
                 for (int j = 0; j < sections.Count; j++)
                 {
                     // Calculate the number of cars to spawn
-                    int carsToSpawnSection = Mathf.CeilToInt(carsToSpawn * ratios[j]);
+                    int carsToSpawnSection = Mathf.CeilToInt(carsToSpawn * sectionRatios[j]);
                     for (int k = 0; k < carsToSpawnSection; k++)
                     {
                         // Check if max cars have been spawned
@@ -178,6 +177,7 @@ namespace RoadGenerator
                             _carCounter++;
                         }
 
+                        // Calculate the next spawn node in the section based on distance
                         _offset += sections[j] / (carsToSpawnSection);
                         _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
                     }
@@ -192,9 +192,11 @@ namespace RoadGenerator
         private List<float> DivideLaneToSections(Lane lane)
         {
             LaneNode curr = lane.StartNode;
+            LaneNode prev = lane.StartNode;
             Debug.Log("Start node: " + curr.DistanceToPrevNode);
             List<float> sections = new List<float>();
             float sectionLength = curr.DistanceToPrevNode == 0 ? curr.Next.DistanceToPrevNode : 0;
+            int direction = curr.DistanceToPrevNode == 0 ? 1 : -1;
 
             while (curr != null)
             {
@@ -202,13 +204,14 @@ namespace RoadGenerator
                 {
                     sections.Add(sectionLength);
                     Debug.Log("Section length: " + sectionLength);
-                    sectionLength = 0;
+                    sectionLength = direction == 1 ? (curr.DistanceToPrevNode * 2) : 0;
                     while(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge))
                         curr = curr.Next;
                 }
+                prev = curr;
                 curr = curr.Next;
                 if(curr != null)
-                    sectionLength += curr.DistanceToPrevNode;
+                    sectionLength += Vector3.Distance(curr.Position, prev.Position);
             }
             Debug.Log("Lane Length without intersections: " + lane.GetLaneLengthNoIntersections());
             return sections;
@@ -230,10 +233,12 @@ namespace RoadGenerator
         private LaneNode CalculateSpawnNode(float targetLength, Lane lane)
         {
             LaneNode curr = lane.StartNode;
+            LaneNode prev = lane.StartNode;
             float currentLength = 0;
             while(curr != null && currentLength < targetLength)
             {
-                currentLength += curr.DistanceToPrevNode;
+                currentLength += Vector3.Distance(curr.Position, prev.Position);
+                prev = curr;
                 curr = curr.Next;
             }
             return curr;
