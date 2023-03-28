@@ -541,6 +541,11 @@ namespace RoadGenerator
             RoadNodeType type2 = type == RoadNodeType.End ? ConnectedToAtEnd == null ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
             // Add the new node to the end
             builder.Curr = new RoadNode(position, tangent, normal, type2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
+            if (type2 == RoadNodeType.RoadConnection)
+            {
+                builder.Curr.IsNavigationNode = true;
+            }
+
             builder.Curr.Road = this;
             // Update the previous node's next pointer
             builder.Prev.Next = builder.Curr;
@@ -557,8 +562,7 @@ namespace RoadGenerator
             // If the distance is less than the max distance, no intermediate nodes need to be added
             if(distanceToBridge <= MaxRoadNodeDistance)
             {
-                RoadNodeType endType = ConnectedToAtEnd == null ? RoadNodeType.End : RoadNodeType.RoadConnection;
-                return endIsLastNode ? AppendNode(builder, end, tangent, normal, endType) : builder;
+                return endIsLastNode ? AppendNode(builder, end, tangent, normal, RoadNodeType.End) : builder;
             }
 
             
@@ -696,7 +700,7 @@ namespace RoadGenerator
                 roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i), i == _path.NumPoints - 1);
             }
             EndRoadNode = StartRoadNode.Last;
-            //ConnectRoadNodesForConnectedRoads();
+            ConnectRoadNodesForConnectedRoads();
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(StartRoadNode, path.IsClosed);
             StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
@@ -708,7 +712,6 @@ namespace RoadGenerator
 
         private void ConnectRoadNodesForConnectedRoads()
         {
-            
             if (ConnectedToAtStart != null)
             {
                 Road road = ConnectedToAtStart?.Road;
@@ -821,7 +824,7 @@ namespace RoadGenerator
             currRoadNode = currRoadNode.Next;
             
             // Go through all road nodes and add the corresponding lane nodes
-            while(currRoadNode != null && currRoadNode.Next?.Type != RoadNodeType.JunctionEdge)
+            while(currRoadNode != null)
             {
                 // For every road node, add a pair of lane nodes for each lane. If the road has three lanes, each iteration will add two lane nodes and in total after
                 // the execution of this for loop there will have been 6 lane nodes added
@@ -927,10 +930,10 @@ namespace RoadGenerator
             bool intersectionFound = StartRoadNode.Next.Intersection != null && StartRoadNode.Position == StartRoadNode.Next.Position;
             if (intersectionFound)
             {
-                if (this == _start.Next.Intersection.Road1)
-                    _start.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup1 = new List<TrafficLight>();
+                if (this == StartRoadNode.Next.Intersection.Road1)
+                    StartRoadNode.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup1 = new List<TrafficLight>();
                 else
-                    _start.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup2 = new List<TrafficLight>();
+                    StartRoadNode.Next.Intersection.gameObject.GetComponent<TrafficLightController>().TrafficLightsGroup2 = new List<TrafficLight>();
             }
 
             if (GenerateSpeedSigns && !IsClosed())

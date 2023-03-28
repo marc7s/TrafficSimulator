@@ -123,6 +123,9 @@ namespace RoadGenerator
                 // To check for three way intersections we need to check the next and previous nodes as well
                 if (targetNode.RoadNode.IsIntersection() || targetNode.RoadNode.Next?.IsIntersection() == true || targetNode.RoadNode.Prev?.IsIntersection() == true)
                     continue;
+                // Avoid getting navigation nodes as the target node
+                if (targetNode.RoadNode.IsNavigationNode)
+                    continue;
                 // Trying to find a path that is not too short
                 if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
                     return path;
