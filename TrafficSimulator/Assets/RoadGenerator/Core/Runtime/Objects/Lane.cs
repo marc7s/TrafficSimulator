@@ -63,6 +63,7 @@ namespace RoadGenerator
             get => _length;
         }
 
+        /// <summary>Get the length of the lane</summary>
         private float GetLaneLength()
         {
             float length = 0;
@@ -75,6 +76,7 @@ namespace RoadGenerator
             return length;
         }
 
+        /// <summary>Get the length of the lane without intersections</summary>
         public float GetLaneLengthNoIntersections()
         {
             float length = 0;
