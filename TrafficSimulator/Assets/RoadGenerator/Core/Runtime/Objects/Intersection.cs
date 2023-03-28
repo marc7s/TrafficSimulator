@@ -548,7 +548,7 @@ namespace RoadGenerator
             foreach (Lane lane in lanes)
             {
                 LaneNode currentNode = lane.StartNode;
-                while(currentNode != null && (currentNode.Type != RoadNodeType.RoadConnection && currentNode.Next?.Type != RoadNodeType.JunctionEdge))
+                while(currentNode != null)
                 {
                     if (currentNode.Type != RoadNodeType.JunctionEdge)
                     {

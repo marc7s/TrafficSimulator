@@ -65,7 +65,7 @@ namespace RoadGenerator
                 int count = 1;
                 RoadNode curr = this;
                 
-                while(curr.Next != null)
+                while(curr.Next != null && curr.Next.Road == this.Road)
                 {
                     if(!curr.IsIntersection())
                         count++;

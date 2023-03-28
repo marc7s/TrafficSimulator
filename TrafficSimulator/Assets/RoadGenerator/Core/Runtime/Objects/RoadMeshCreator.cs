@@ -59,6 +59,7 @@ namespace RoadGenerator
 
         private void CreateRoadMesh()
         {
+
             // The number of vertices required per component of the road
             int edgeVertsPerPoint = 2;
             int laneVertsPerPoint = 2 * _laneCount - 1;
@@ -68,6 +69,7 @@ namespace RoadGenerator
             // Create the arrays for the vertices, uvs and normals
             int numPoints = _road.StartNode.CountNonIntersections;
             int vertsLength = numPoints * (edgeVertsPerPoint + laneVertsPerPoint + bottomVertsPerPoint + sideVertsPerPoint);
+
             List<Vector3> verts = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();
@@ -190,9 +192,16 @@ namespace RoadGenerator
 
             bool usePathNormals = !(path.space == PathSpace.xyz && _flattenSurface);
             RoadNode curr = _road.StartNode;
-            
+            int count = 0;
+
             while(curr != null)
             {
+                count ++;
+                if (count == 1000)
+                {
+                    Debug.Log("Infinite loop detected");
+                    break;
+                }
                 if (curr.Road != _road)
                 {
                     Debug.Log("Road connection found");

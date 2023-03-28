@@ -666,7 +666,7 @@ namespace Car {
             
             bool isNonIntersectionNavigationNode = _target.RoadNode.IsNavigationNode && !_target.IsIntersection();
             bool currentTargetNodeNotChecked = _previousTarget != null && _target.RoadNode.ID != _previousTarget.RoadNode.ID;
-            if (isNonIntersectionNavigationNode &&_navigationPath.Count != 0 && currentTargetNodeNotChecked)
+            if (isNonIntersectionNavigationNode &&_navigationPath.Count != 0 && currentTargetNodeNotChecked && _target.Prev.RoadNode.IsNavigationNode == false)
             {
                 _navigationPath.Pop();
                 _prevIntersectionPosition = Vector3.zero; 
@@ -730,7 +730,7 @@ namespace Car {
         {
             if (_navigationPathContainer != null)
             {
-                _navigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
+                _navigationPathContainer.transform.GetChild(0)?.gameObject.SetActive(visible);
                 _navigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
                 
                 if(visible)
