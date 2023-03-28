@@ -181,8 +181,6 @@ namespace RoadGenerator
                         _offset += sections[j] / (carsToSpawnSection);
                         _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
                     }
-                    // CHANGE THIS
-                    _offset += (_lanes[i].Length - _lanes[i].GetLaneLengthNoIntersections()) / sections.Count;
                 }
                 _offset = 0;
             }
