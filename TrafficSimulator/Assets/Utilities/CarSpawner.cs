@@ -34,7 +34,6 @@ namespace RoadGenerator
         private List<int> _maxCarsPerLane = new List<int>(); // List of all max cars per lane
 
         private LaneNode _laneNodeCurrent;
-        private LaneNode _laneNodeNext;
 
         private GameObject _currentCar;
 
@@ -83,14 +82,14 @@ namespace RoadGenerator
             }
         }
 
-        // Calculate lane lengths without intersections for each lane
+        /// <summary>Calculates lane lengths without intersections for each lane</summary>
         private void CalculateLaneLengths()
         {
             foreach (Lane lane in _lanes)
                 _lengths.Add(lane.GetLaneLengthNoIntersections());
         }
 
-        // Calculate all lanes corresponding number of cars to spawn
+        /// <summary>Calculates all lanes corresponding number of cars to spawn</summary>
         private void CalculateLaneRatios()
         {
             float totalLength = 0;
@@ -104,7 +103,7 @@ namespace RoadGenerator
                 _ratios.Add(_lengths[i] / totalLength);
         }
 
-        // Calculate a lane sections corresponding number of cars to spawn
+        /// <summary>Calculates a lane sections corresponding number of cars to spawn</summary>
         private List<float> CalculateSectionRatios(List<float> sections)
         {
             float totalLength = 0;
@@ -118,7 +117,7 @@ namespace RoadGenerator
             return ratios;
         }
 
-        // Save the index of each lane in a list
+        /// <summary>Saves the index of each lane in a list</summary>
         private void CalculateLaneIndexes()
         {
             int laneIndex;
@@ -137,7 +136,7 @@ namespace RoadGenerator
             }
         }
 
-        // Calculate the max capacity of cars for a lane
+        /// <summary>Calculates the max capacity of cars for a lane</summary>
         private void CalculateMaxCarsForLanes()
         {
             for (int j = 0; j < _lanes.Count; j++)
@@ -186,7 +185,7 @@ namespace RoadGenerator
             }
         }
 
-        // Divides a lane into sections based on intersections
+        /// <summary>Divides a lane into sections based on intersections</summary>
         private List<float> DivideLaneToSections(Lane lane)
         {
             LaneNode curr = lane.StartNode;
@@ -210,7 +209,7 @@ namespace RoadGenerator
 
                     // Determine the start section length based on direction
                     sectionLength = direction == 1 ? (curr.DistanceToPrevNode * 2) : 0;
-                    
+
                     // While the node is an intersection, skip it
                     while(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge))
                         curr = curr.Next;
@@ -226,6 +225,7 @@ namespace RoadGenerator
             return sections;
         }
 
+        /// <summary>Spawns a car at the current lane node</summary>
         private void SpawnCar(int index)
         {
             _currentCar = Instantiate(_carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
@@ -238,7 +238,7 @@ namespace RoadGenerator
             _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next != null ? _laneNodeCurrent.Next : _laneNodeCurrent;
         }
 
-        // Finds next LaneNode in lane after a certain distance
+        /// <summary>Finds next LaneNode in lane after a certain distance</summary>
         private LaneNode CalculateSpawnNode(float targetLength, Lane lane)
         {
             LaneNode curr = lane.StartNode;
