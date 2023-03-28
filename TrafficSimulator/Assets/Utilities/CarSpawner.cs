@@ -47,7 +47,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z;
+            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z * 3f;
 
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
@@ -193,21 +193,32 @@ namespace RoadGenerator
             LaneNode prev = lane.StartNode;
             Debug.Log("Start node: " + curr.DistanceToPrevNode);
             List<float> sections = new List<float>();
-            float sectionLength = curr.DistanceToPrevNode == 0 ? curr.Next.DistanceToPrevNode : 0;
+
+            // Determine the direction of the lane
             int direction = curr.DistanceToPrevNode == 0 ? 1 : -1;
+
+            // Determine the start section length based on direction
+            float sectionLength = direction == 1 ? curr.Next.DistanceToPrevNode : 0;
 
             while (curr != null)
             {
+                // Check if the current node is an intersection or if the next node is null to determine the end of a section
                 if(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge) || curr.Next == null)
                 {
                     sections.Add(sectionLength);
                     Debug.Log("Section length: " + sectionLength);
+
+                    // Determine the start section length based on direction
                     sectionLength = direction == 1 ? (curr.DistanceToPrevNode * 2) : 0;
+                    
+                    // While the node is an intersection, skip it
                     while(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge))
                         curr = curr.Next;
                 }
                 prev = curr;
                 curr = curr.Next;
+
+                // Add the distance between the current and previous node to the section length
                 if(curr != null)
                     sectionLength += Vector3.Distance(curr.Position, prev.Position);
             }
