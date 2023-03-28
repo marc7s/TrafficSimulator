@@ -86,6 +86,9 @@ namespace RoadGenerator
                 
                 while(curr.Next != null)
                 {
+                    // If the linked list is closed, return the node before this one
+                    if (curr.Next == (T)this)
+                        return curr;
                     curr = curr.Next;
                 }
                 return curr;

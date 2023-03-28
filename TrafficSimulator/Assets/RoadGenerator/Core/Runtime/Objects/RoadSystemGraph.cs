@@ -70,6 +70,9 @@ namespace RoadGenerator
             
             while (curr != null)
             {
+                // If the current node is not part of the same road, we stop
+                if (curr.Road != roadNode.Road)
+                    break;
                 // Increase the current cost if the current node is not the starting node
                 if (curr.Prev != null)
                     _currentCost += CalculateCost(curr.DistanceToPrevNode);

@@ -83,6 +83,9 @@ namespace RoadGenerator
             // Changing the prev and next navigation node to always be the nodes closest to the current node in each direction
             while(curr != null) 
             {
+                // If the current node is not on the same road as the start node, then we have reached the end of the road
+                if (curr.Road != this.Road)
+                    break;
                 if (curr.IsIntersection())
                 {
                     // We do not want to skip the first node of the road
@@ -130,7 +133,7 @@ namespace RoadGenerator
         public void UpdateIntersectionJunctionEdgeNavigation(Road road)
         {
             RoadNode curr = this;
-            while(curr != null)
+            while(curr != null && curr.Road == road)
             {
                 if (curr.Type != RoadNodeType.JunctionEdge)
                 {

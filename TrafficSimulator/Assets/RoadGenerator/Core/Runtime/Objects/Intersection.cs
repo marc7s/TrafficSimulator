@@ -122,7 +122,7 @@ namespace RoadGenerator
             RoadNode curr = road.StartNode;
             List<RoadNode> junctionNodes = new List<RoadNode>();
             
-            while(curr != null)
+            while(curr != null && curr.Road == road)
             {
                 if(curr.Type == RoadNodeType.JunctionEdge || curr.IsIntersection())
                     junctionNodes.Add(curr);
