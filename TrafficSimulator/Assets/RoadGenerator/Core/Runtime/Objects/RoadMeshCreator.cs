@@ -59,7 +59,6 @@ namespace RoadGenerator
 
         private void CreateRoadMesh()
         {
-
             // The number of vertices required per component of the road
             int edgeVertsPerPoint = 2;
             int laneVertsPerPoint = 2 * _laneCount - 1;

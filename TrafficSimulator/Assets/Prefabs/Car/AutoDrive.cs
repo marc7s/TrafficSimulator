@@ -129,7 +129,7 @@ namespace Car {
                 Debug.LogError("Lane index out of range");
                 return;
             }
-            
+
             Lane lane = Road.Lanes[LaneIndex];
             _endNode = lane.StartNode.Last;
             _startNode = lane.StartNode;
@@ -143,7 +143,6 @@ namespace Car {
             _targetLineRenderer.sharedMaterial.SetColor("_Color", Color.green);
             _targetLineRenderer.startWidth = targetLineWidth;
             _targetLineRenderer.endWidth = targetLineWidth;
-            
             if (Mode == DrivingMode.Quality)
             {
                 // Teleport the vehicle to the start of the lane and set the acceleration to the max
