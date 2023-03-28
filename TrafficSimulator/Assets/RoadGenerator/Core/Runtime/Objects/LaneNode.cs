@@ -42,7 +42,6 @@ namespace RoadGenerator
         /// With `roadEndBehaviour` set to Loop, the distance will always be positive if found since all nodes will be checked in the forward direction with looping activated </summary>
         public bool DistanceToNode(LaneNode targetNode, out float distance, RoadEndBehaviour roadEndBehaviour = RoadEndBehaviour.Stop, bool onlyLookAhead = false)
         {
-            Debug.Log("Target node: " + targetNode.ID);
             List<Vector3> nodes = new List<Vector3>();
             // Return if the target node is the current node
             if(targetNode == this)
@@ -66,14 +65,11 @@ namespace RoadGenerator
             // Look forwards
             while (curr != null && curr != this)
             {
-                Debug.Log(curr.Position);
                 nodes.Add(curr.Position);
-                Debug.LogError(nodes.Count);
                 dst += curr.DistanceToPrevNode;
                 
                 if(curr == targetNode)
                 {
-                    Debug.Log("Found ID: " + curr.ID);
                     distance = dst;
                     if (nodes.Count > 0)
                         DebugUtility.MarkPositions(nodes.ToArray());
@@ -143,6 +139,15 @@ namespace RoadGenerator
         public RoadNodeType Type
         {
             get => _roadNode.Type;
+        }
+        public TrafficLight TrafficLight
+        {
+            get => _roadNode.TrafficLight;
+        }
+
+        public Intersection Intersection
+        {
+            get => _roadNode.Intersection;
         }
         public virtual Vehicle Vehicle
         {

@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEditor;
 using Car;
-using RoadGenerator;
 
 namespace CarGenerator
 {
