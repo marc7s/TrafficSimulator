@@ -627,7 +627,7 @@ namespace RoadGenerator
             
             LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, LaneSide.Secondary);
             
-            _intersectionExitNodes.Add(node.ID, exit);
+            _intersectionExitNodes.Add(node.ID, exit.Reverse());
         }
 
         private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, LaneSide laneSide)
