@@ -38,11 +38,12 @@ namespace Car
         {
             float speed = setting.Mode == DrivingMode.Quality ? setting.VehicleController.speed : setting.Speed;
             const float g = 9.82f;
+            const float qualityBuffer = 3f;
             switch(setting.Mode)
             {
                 case DrivingMode.Quality:
                     // Calculate the distance it will take to stop
-                    return setting.BrakeOffset + speed / 2 + speed * speed / (setting.VehicleController.tireFriction * g);
+                    return qualityBuffer + setting.BrakeOffset + speed / 2 + speed / (setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
                     /* 
