@@ -17,7 +17,7 @@ namespace Car
         
         protected bool ShouldActAtNode(ref AutoDriveAgent agent, LaneNode node)
         {
-            // Check all brake events
+            // Check all events and return true if any of them returns true
             foreach(T type in Enum.GetValues(typeof(T)))
             {
                 if(EventAssesser(ref agent, type)(node))
