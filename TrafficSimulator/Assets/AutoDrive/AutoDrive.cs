@@ -58,6 +58,7 @@ namespace Car {
 
         [Header("Performance mode settings")]
         [Range(0, 100f)] public float Speed = 20f;
+        [Range(1f, 10f)] public float Acceleration = 7f;
         [Range(2f, 20f)] public float RotationSpeed = 5f;
 
         [Header("Statistics")]
@@ -122,7 +123,7 @@ namespace Car {
             _targetLineRenderer.endWidth = targetLineWidth;
 
             _agent = new AutoDriveAgent(
-                new AutoDriveSetting(GetComponent<Vehicle>(), Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, NavigationTargetMarker, NavigationPathMaterial),
+                new AutoDriveSetting(GetComponent<Vehicle>(), Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
                 new AutoDriveContext(Road, currentNode, transform.position, OriginalNavigationMode)
             );
 
@@ -548,16 +549,14 @@ namespace Car {
 
         private void P_UpdateTargetAndCurrent()
         {
-            // Update the current node if we have reached it
-            if(P_HasReachedTarget())
+            _lerpSpeed = P_GetLerpSpeed(_brakeController.ShouldAct(ref _agent) ? 0f : Speed);
+            
+            // Update the target if we have reached the current target, and we do not need to brake
+            if (P_HasReachedTarget(_target))
             {
                 TotalDistance += _target.DistanceToPrevNode;
                 _agent.Context.CurrentNode = _target;
-            }
-            
-            // Update the target if we have reached the current target, and we do not need to brake
-            if (P_HasReachedTarget() && !_brakeController.ShouldAct(ref _agent))
-            {
+
                 if(_target == _agent.Context.EndNode)
                 {
                     ResetToNode(_agent.Context.StartNode);
@@ -573,14 +572,14 @@ namespace Car {
             
                 _target = GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop);
             }
-            
+
             P_MoveTowardsTargetNode();
         }
 
-        private bool P_HasReachedTarget()
+        private bool P_HasReachedTarget(LaneNode target)
         {
             // Since the target position will be lifted in performance mode, we need to compare the XZ coordinates
-            Vector3 targetPosition = _target.Position;
+            Vector3 targetPosition = target.Position;
             targetPosition.y = transform.position.y;
             
             return transform.position == targetPosition;
@@ -603,6 +602,10 @@ namespace Car {
             }
         }
 
+        private float P_GetLerpSpeed(float target)
+        {
+            return Mathf.MoveTowards(_lerpSpeed, target, Acceleration * Time.deltaTime);
+        }
         private Vector3 P_GetLerpPosition(Vector3 target)
         {
             return Vector3.MoveTowards(transform.position, P_Lift(target), _lerpSpeed * Time.deltaTime);
