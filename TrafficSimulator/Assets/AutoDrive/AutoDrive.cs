@@ -422,8 +422,14 @@ namespace Car {
             // Move the current node forward while we are closer to the next node than the current. Also check the node after the next as the next may be further away in intersections where the current road is switched
             // Note: only updates while driving. During repositioning the vehicle will be closer to the next node (the repositioning target) halfway through the repositioning
             // This would cause our current position to skip ahead so repositioning is handled separately
-            while(!reachedEnd && _status == Status.Driving && (Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position) || Vector3.Distance(transform.position, nextNextNode.Position) <= Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position)))
+            
+            while(!reachedEnd && _status == Status.Driving)
             {
+                bool isCloserToNextThanCurrentNode = Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
+                bool isCloserToNextNextThanCurrentNode = Vector3.Distance(transform.position, nextNextNode.Position) <= Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
+                // If the next or next next node is further away than our current position, we should not update the current node
+                if(!(isCloserToNextThanCurrentNode || isCloserToNextNextThanCurrentNode))
+                    break;
 
                 _agent.UnsetIntersectionTransition(_agent.Context.CurrentNode.Intersection);
                 

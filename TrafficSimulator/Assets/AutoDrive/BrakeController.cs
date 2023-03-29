@@ -37,21 +37,22 @@ namespace Car
         private static float GetBrakeDistance(AutoDriveSetting setting)
         {
             float speed = setting.Mode == DrivingMode.Quality ? setting.VehicleController.speed : setting.Speed;
+            const float g = 9.82f;
             switch(setting.Mode)
             {
                 case DrivingMode.Quality:
                     // Calculate the distance it will take to stop
-                    return setting.BrakeOffset + (speed / 2) + speed * speed / (setting.VehicleController.tireFriction * 9.81f);
+                    return setting.BrakeOffset + speed / 2 + speed * speed / (setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
-                    // Set the distance to the brake offset + the speed divided by 5
-                    return setting.BrakeOffset + speed / 5f;
+                    // Set the distance to the brake offset
+                    return setting.BrakeOffset;
 
                 default:
                     return 0;
             }
         }
-        public override Func<LaneNode, bool> EventAssesser(ref AutoDriveAgent agent, BrakeEventType type)
+        public override Func<LaneNode, bool> EventAssessor(ref AutoDriveAgent agent, BrakeEventType type)
         {
             Vehicle vehicle = agent.Setting.Vehicle;
             RoadEndBehaviour endBehaviour = agent.Setting.EndBehaviour;
