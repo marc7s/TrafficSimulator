@@ -38,11 +38,6 @@ namespace Car
             _intersectionNodeTransitions.Clear();
         }
 
-        public bool HasIntersectionNavigation(Intersection intersection, LaneNode entry)
-        {
-            return intersection != null && _intersectionNodeTransitions.ContainsKey(intersection.ID) && _intersectionNodeTransitions[intersection.ID].Item1 == entry;
-        }
-
         private LaneNode UpdateAndGetGuideNode(LaneNode node, bool showNavigationPath)
         {
             if (Context.NavigationMode == NavigationMode.Disabled)

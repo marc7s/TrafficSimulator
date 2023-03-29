@@ -20,7 +20,7 @@ namespace Car
             return false;
         }
 
-        public override Func<LaneNode, bool> EventAssesser(ref AutoDriveAgent agent, NavigationEventType type)
+        public override Func<LaneNode, bool> EventAssessor(ref AutoDriveAgent agent, NavigationEventType type)
         {
             switch(type)
             {
