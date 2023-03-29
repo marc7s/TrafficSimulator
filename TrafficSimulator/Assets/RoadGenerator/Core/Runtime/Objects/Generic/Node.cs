@@ -140,11 +140,19 @@ namespace RoadGenerator
             while(curr != null)
             {
                 next = curr.Next?.Copy();
+                
+                // Recalculate the distance to the previous node
+                if(next != null)
+                    curr._distanceToPrevNode = Vector3.Distance(next.Position, curr.Position);
+                
                 curr.Next = prev;
                 curr.Prev = next;
                 prev = curr;
                 curr = next;
             }
+            // This will be the first node so reset the distance to previous node
+            prev._distanceToPrevNode = 0;
+            
             return prev;
         }
 

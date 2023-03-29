@@ -1145,6 +1145,10 @@ namespace RoadGenerator
                     while(curr != null)
                     {
                         GameObject laneNodeObject = Instantiate(LaneNodePrefab, curr.Position, curr.Rotation, _laneNodeContainer.transform);
+                        LaneNodeInfo laneNodeInfo = laneNodeObject.GetComponent<LaneNodeInfo>();
+                        if(laneNodeInfo != null)
+                            laneNodeInfo.SetReference(curr);
+                        
                         laneNodeObject.name = LANE_NODE_NAME + i;
 
                         curr = curr.Next;
@@ -1192,6 +1196,10 @@ namespace RoadGenerator
                 while(curr != null)
                 {
                     GameObject roadNodeObject = Instantiate(RoadNodePrefab, curr.Position, curr.Rotation, _roadNodeContainer.transform);
+                    RoadNodeInfo roadNodeInfo = roadNodeObject.GetComponent<RoadNodeInfo>();
+                    if(roadNodeInfo != null)
+                        roadNodeInfo.SetReference(curr);
+                    
                     roadNodeObject.name = i + " " + curr.Type;
 
                     if ((curr.Type == RoadNodeType.RoadConnection && i != 0) || (curr.Type == RoadNodeType.End && i != 0))

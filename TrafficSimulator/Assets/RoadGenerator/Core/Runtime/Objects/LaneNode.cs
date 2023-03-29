@@ -35,55 +35,6 @@ namespace RoadGenerator
             _rotation = laneSide == LaneSide.Primary ? roadNode.Rotation : roadNode.Rotation * Quaternion.Euler(0, 180f, 0);
         }
 
-        /// <summary> Calculates the distance from one node to another. 
-        /// Returns true if the node is found, the distance is passed to the out parameter and is 0 if the node is not found 
-        /// The sign of the distance is along the node path, so a positive distance means the target is ahead of the current node </summary>
-        public bool DistanceToNode(LaneNode targetNode, out float distance, bool onlyLookAhead = false)
-        {
-            // Return if the target node is the current node
-            if(targetNode == this)
-            {
-                distance = 0;
-                return true;
-            }
-            
-            float dst = 0;
-            LaneNode curr = this.Next;
-
-            // Look forwards
-            while (curr != null)
-            {
-                dst += curr.DistanceToPrevNode;
-                
-                if(curr == targetNode)
-                {
-                    distance = dst;
-                    return true;
-                }
-
-                curr = curr.Next;
-            }
-
-            // Reset the current node and distance before looking for the target node backwards
-            curr = this;
-            dst = 0;
-            
-            // Look backwards
-            while (!onlyLookAhead && curr != null)
-            {
-                dst -= curr.DistanceToPrevNode;
-                curr = curr.Prev;
-                if(curr == targetNode)
-                {
-                    distance = dst;
-                    return true;
-                }
-            }
-            
-            // The target was not found, so set the distance to 0 and return false
-            distance = 0;
-            return false;
-        }
         public bool IsIntersection() => _roadNode.IsIntersection();
 
         public NavigationNodeEdge GetNavigationEdge()
@@ -107,6 +58,15 @@ namespace RoadGenerator
         public RoadNodeType Type
         {
             get => _roadNode.Type;
+        }
+        public TrafficLight TrafficLight
+        {
+            get => _roadNode.TrafficLight;
+        }
+
+        public Intersection Intersection
+        {
+            get => _roadNode.Intersection;
         }
         public virtual Vehicle Vehicle
         {
