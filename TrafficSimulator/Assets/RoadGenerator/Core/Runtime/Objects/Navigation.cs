@@ -131,7 +131,7 @@ namespace RoadGenerator
             return new Stack<NavigationNodeEdge>();
         }
         
-        public static void DrawNavigationPath(out List<Vector3> navigationPath, NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, Material pathMaterial, Vector3? prevIntersectionPosition, GameObject targetMarker)
+        public static void DrawNavigationPath(out List<Vector3> navigationPath, NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, Material pathMaterial, Intersection prevIntersection, GameObject targetMarker)
         {
             navigationPath = new List<Vector3>();
             if(nodeToFind == null)
@@ -164,14 +164,14 @@ namespace RoadGenerator
                 if (isNonIntersectionNavigationNode && clonedPath.Count != 0)
                 {
                     clonedPath.Pop();
-                    prevIntersectionPosition = Vector3.zero; 
+                    prevIntersection = null; 
                 }
                 
                 // When the current node is a new intersection
-                if (current.Type == RoadNodeType.JunctionEdge && prevIntersectionPosition != current.RoadNode.Intersection.IntersectionPosition)
+                if (current.Type == RoadNodeType.JunctionEdge && prevIntersection?.ID != current.Intersection.ID)
                 {
                     (_, _, current) = current.RoadNode.Intersection.GetNewLaneNode(clonedPath.Pop(), current);
-                    prevIntersectionPosition = current.RoadNode.Intersection.IntersectionPosition;
+                    prevIntersection = current.Intersection;
                     continue;
                 }
                 current = current.Next;
@@ -190,18 +190,15 @@ namespace RoadGenerator
             marker.transform.parent = container.transform;
         }
 
-        public static void DrawPathRemoveOldestPoint(List<Vector3> currentNavigationPath, out List<Vector3> navigationPath, GameObject container)
+        public static void DrawPathRemoveOldestPoint(ref List<Vector3> navigationPath, GameObject container)
         {
-            navigationPath = currentNavigationPath;
-            if (currentNavigationPath.Count == 0)
+            if (navigationPath.Count == 0)
                 return;
 
-            currentNavigationPath.RemoveAt(0);
+            navigationPath.RemoveAt(0);
             LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
-            lineRenderer.positionCount = currentNavigationPath.Count;
-            lineRenderer.SetPositions(currentNavigationPath.ToArray());
-
-            navigationPath = currentNavigationPath;
+            lineRenderer.positionCount = navigationPath.Count;
+            lineRenderer.SetPositions(navigationPath.ToArray());
         }
     }
 }
