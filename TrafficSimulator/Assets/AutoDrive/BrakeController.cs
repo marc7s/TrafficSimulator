@@ -67,7 +67,7 @@ namespace Car
                 case BrakeEventType.TrafficLight:
                     return (LaneNode node) => node.TrafficLight != null && node.TrafficLight.CurrentState != TrafficLightState.Green && node.Intersection?.ID != prevIntersectionID;
                 default:
-                    return (LaneNode node) => false;
+                    return (LaneNode _) => false;
             }
         }
     }
