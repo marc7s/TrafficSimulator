@@ -123,7 +123,7 @@ namespace Car {
 
             _agent = new AutoDriveAgent(
                 new AutoDriveSetting(GetComponent<Vehicle>(), Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, NavigationTargetMarker, NavigationPathMaterial),
-                new AutoDriveContext(Road, currentNode, lane.StartNode, lane.StartNode.Last, transform.position, true, null, null, OriginalNavigationMode, null, null, new Stack<NavigationNodeEdge>(), new GameObject("Navigation Path"), new List<Vector3>())
+                new AutoDriveContext(Road, currentNode, transform.position, OriginalNavigationMode)
             );
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
@@ -163,7 +163,6 @@ namespace Car {
             if (Mode == DrivingMode.Quality)
             {
                 Q_Brake();
-                // Steer towards the target and update to next target
                 Q_SteerTowardsTarget();
                 Q_UpdateTarget();
                 Q_UpdateCurrent();
@@ -173,6 +172,7 @@ namespace Car {
                 // Brake if needed
                 P_UpdateTargetAndCurrent();
             }
+            
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
         }
@@ -272,6 +272,7 @@ namespace Car {
                 nodeDistance += node.DistanceToPrevNode;
                 node = _agent.Next(node);
             }
+            
             return (forwardNodes, backwardNodes);
         }
 
@@ -381,7 +382,9 @@ namespace Car {
                 // when the target is the brake target and the traffic light is red, do not change the target
                 if (trafficLightShouldStop && _target == _agent.Context.BrakeTarget)
                     return;
+                
                 _vehicleController.maxSpeedForward = _target.RoadNode.Intersection != null ? _intersectionMaxSpeed : _originalMaxSpeedForward;
+                
                 // Set the target to the next point in the lane
                 _target = GetNextLaneNode(_target, 0, false);
             }
@@ -426,6 +429,7 @@ namespace Car {
                 
                 TotalDistance += _agent.Context.CurrentNode.DistanceToPrevNode;
                 _agent.Context.CurrentNode = nextNode;
+                
                 // All logic for the navigation controller is handled through the actions, so we ignore the return value
                 _navigationController.ShouldAct(ref _agent);
                 
@@ -440,9 +444,7 @@ namespace Car {
 
             // If the road ended but we are looping, teleport to the first position
             if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop)
-            {
                 ResetToNode(_agent.Context.StartNode);
-            }
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)
@@ -501,16 +503,19 @@ namespace Car {
         private void SetInitialPrevIntersection()
         {
             _agent.Context.PrevIntersection = null;
+            
             // If the starting node is an intersection, the previous intersection is set 
             if (_target.Intersection != null)
                 _agent.Context.PrevIntersection = _target.Intersection;
                 
             LaneNode nextNode = _agent.Next(_target);
+            
             // If the starting node is at a three way intersection, the target will be an EndNode but the next will be an intersection node, so we need to set the previous intersection
             if (nextNode != null && nextNode.Intersection != null && _target.RoadNode.Position == nextNode.Position)
                 _agent.Context.PrevIntersection = nextNode.Intersection;
 
             LaneNode prevNode = _agent.Prev(_target);
+            
             // If the starting node is a junction edge, the previous intersection is set
             if (prevNode != null && prevNode.Intersection != null && _target.RoadNode.Position == prevNode.RoadNode.Position)
                 _agent.Context.PrevIntersection = prevNode.Intersection;

@@ -193,23 +193,23 @@ namespace Car
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
         
-        public AutoDriveContext(Road currentRoad, LaneNode current, LaneNode start, LaneNode end, Vector3 vehiclePosition, bool isEnteringNetwork, Intersection prevIntersection, LaneNode prevTarget, NavigationMode navigationMode, LaneNode brakeTarget, NavigationNode navigationPathEndNode, Stack<NavigationNodeEdge> navigationPath, GameObject navigationPathContainer, List<Vector3> navigationPathPositions)
+        public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
         {
             CurrentRoad = currentRoad;
-            CurrentNode = current;
-            StartNode = start;
-            EndNode = end;
+            CurrentNode = initialNode;
+            StartNode = initialNode.First;
+            EndNode = initialNode.Last;
             VehiclePosition = vehiclePosition;
 
-            IsEnteringNetwork = isEnteringNetwork;
-            PrevIntersection = prevIntersection;
-            PrevTarget = prevTarget;
+            IsEnteringNetwork = true;
+            PrevIntersection = null;
+            PrevTarget = null;
             NavigationMode = navigationMode;
-            BrakeTarget = brakeTarget;
-            NavigationPathEndNode = navigationPathEndNode;
-            NavigationPath = navigationPath;
-            NavigationPathContainer = navigationPathContainer;
-            NavigationPathPositions = navigationPathPositions;
+            BrakeTarget = null;
+            NavigationPathEndNode = null;
+            NavigationPath = new Stack<NavigationNodeEdge>();
+            NavigationPathContainer = new GameObject("Navigation Path");
+            NavigationPathPositions = new List<Vector3>();
         }
     }
 }
