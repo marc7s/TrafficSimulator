@@ -45,8 +45,26 @@ namespace Car
                     return setting.BrakeOffset + speed / 2 + speed * speed / (setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
-                    // Set the distance to the brake offset
-                    return setting.BrakeOffset;
+                    /* 
+                        Formula explanation: Since we are working with a constant acceleration in the performance mode, two formulas will hold:
+                        
+                        (1) v = a * t
+                        (2) s = v * t
+                        
+                        Due to the constant acceleration, the distance travelled will be the same as if it travelled with a constant speed equal
+                        to the average of the speeds. During braking, it will go from v to 0 so the delta will be v.
+                        Therefore:
+                        
+                        v = a * t = (v - 0) / 2 = v / 2
+                        
+                        Since a is known, we can calculate t:
+                        
+                        a * t = v / 2 => t = v / 2a
+                        
+                        Going back to (2), this gives us the final formula:
+                        s = v * v / 2a
+                    */
+                    return setting.BrakeOffset + speed * speed / (setting.Acceleration * 2f);
 
                 default:
                     return 0;
