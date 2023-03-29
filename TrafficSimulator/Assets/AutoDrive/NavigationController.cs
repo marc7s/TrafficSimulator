@@ -1,7 +1,5 @@
-using UnityEngine;
 using RoadGenerator;
 using System;
-using DataModel;
 
 namespace Car
 {
@@ -29,7 +27,7 @@ namespace Car
                 case NavigationEventType.IntersectionEntry:
                     return (LaneNode node) =>
                         { 
-                            if(node.Type == RoadNodeType.JunctionEdge && node.Prev?.IsIntersection() == false)
+                            if(node.Type == RoadNodeType.JunctionEdge && node.Next?.IsIntersection() == true)
                                 OnIntersectionEntry?.Invoke(node.Intersection);
                             return false;
                         };
