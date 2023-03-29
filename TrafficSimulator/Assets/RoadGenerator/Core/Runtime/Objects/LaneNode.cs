@@ -1,6 +1,5 @@
 using UnityEngine;
 using DataModel;
-using System.Collections.Generic;
 
 namespace RoadGenerator 
 {
@@ -36,86 +35,6 @@ namespace RoadGenerator
             _rotation = laneSide == LaneSide.Primary ? roadNode.Rotation : roadNode.Rotation * Quaternion.Euler(0, 180f, 0);
         }
 
-        /// <summary> Calculates the distance from one node to another. 
-        /// Returns true if the node is found, the distance is passed to the out parameter and is 0 if the node is not found 
-        /// The sign of the distance is along the node path, so a positive distance means the target is ahead of the current node.
-        /// With `roadEndBehaviour` set to Loop, the distance will always be positive if found since all nodes will be checked in the forward direction with looping activated </summary>
-        public bool DistanceToNode(LaneNode targetNode, out float distance, RoadEndBehaviour roadEndBehaviour = RoadEndBehaviour.Stop, bool onlyLookAhead = false)
-        {
-            List<Vector3> nodes = new List<Vector3>();
-            // Return if the target node is the current node
-            if(targetNode == this)
-            {
-                distance = 0;
-                if (nodes.Count > 0)
-                    DebugUtility.MarkPositions(nodes.ToArray());
-                return true;
-            }
-            if(targetNode == this.Next)
-            {
-                distance = this.Next.DistanceToPrevNode;
-                if (nodes.Count > 0)
-                    DebugUtility.MarkPositions(nodes.ToArray());
-                return true;
-            }
-
-            float dst = 0;
-            LaneNode curr = this.Next;
-
-            // Look forwards
-            while (curr != null && curr != this)
-            {
-                nodes.Add(curr.Position);
-                dst += curr.DistanceToPrevNode;
-                
-                if(curr == targetNode)
-                {
-                    distance = dst;
-                    if (nodes.Count > 0)
-                        DebugUtility.MarkPositions(nodes.ToArray());
-                    return true;
-                }
-
-                curr = curr.Next;
-
-                if(curr == null && roadEndBehaviour == RoadEndBehaviour.Loop)
-                {
-                    Debug.Log("looping");
-                    curr = this.First;
-                }
-                    
-            }
-
-            // Reset the current node and distance before looking for the target node backwards
-            curr = this;
-            dst = 0;
-            
-            // Look backwards if we have not already checked all nodes with the loop behaviour
-            while (roadEndBehaviour != RoadEndBehaviour.Loop && !onlyLookAhead && curr != null)
-            {
-                nodes.Add(curr.Position);
-                // Add the distance from the current node to the previous node before changing the current pointer
-                dst -= curr.DistanceToPrevNode;
-                
-                // We need to change the current node before checking if it is the target, otherwise it will overshoot and we will count the distance to the node after the target
-                curr = curr.Prev;
-                
-                if(curr == targetNode)
-                {
-                    distance = dst;
-                    if (nodes.Count > 0)
-                        DebugUtility.MarkPositions(nodes.ToArray());
-                    return true;
-                }
-            }
-            
-            // The target was not found, so set the distance to 0 and return false
-            distance = 0;
-            Debug.LogError(nodes.Count);
-            if (nodes.Count > 0)
-                DebugUtility.MarkPositions(nodes.ToArray());
-            return false;
-        }
         public bool IsIntersection() => _roadNode.IsIntersection();
 
         public NavigationNodeEdge GetNavigationEdge()

@@ -73,8 +73,6 @@ namespace Car {
         private BrakeController _brakeController;
         private NavigationController _navigationController;
         
-        private float _brakeDistance = 0;
-        
         private float _originalMaxSpeedForward;
         private float _originalMaxSpeedReverse;
         private List<LaneNode> _occupiedNodes = new List<LaneNode>();
@@ -129,12 +127,12 @@ namespace Car {
             );
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
+
+            // Teleport the vehicle to the start of the lane
+            ResetToNode(_agent.Context.CurrentNode);
             
             if (Mode == DrivingMode.Quality)
             {
-                // Teleport the vehicle to the start of the lane and set the acceleration to the max
-                Q_ResetToNode(_agent.Context.CurrentNode);
-                
                 _repositioningTarget = _agent.Context.CurrentNode;
                 _vehicleController.throttleInput = 1f;
             }
@@ -142,11 +140,10 @@ namespace Car {
             {
                 // In performance mode the vehicle should not be affected by physics or gravity
                 Rigidbody rigidbody = GetComponent<Rigidbody>();
-                rigidbody.isKinematic = true;
+                rigidbody.isKinematic = false;
                 rigidbody.useGravity = false;
                 _target = _agent.Context.CurrentNode;
                 _lerpSpeed = Speed;
-                P_TeleportToFirstPosition();
             }
 
             // Setup the controller that handles the braking
@@ -162,10 +159,10 @@ namespace Car {
         {
             UpdateOccupiedNodes();
             UpdateContext();
-            Brake();
-
+           
             if (Mode == DrivingMode.Quality)
             {
+                Q_Brake();
                 // Steer towards the target and update to next target
                 Q_SteerTowardsTarget();
                 Q_UpdateTarget();
@@ -174,7 +171,6 @@ namespace Car {
             else if (Mode == DrivingMode.Performance)
             {
                 // Brake if needed
-                //P_Brake();
                 P_UpdateTargetAndCurrent();
             }
             if (ShowTargetLines != ShowTargetLines.None)
@@ -196,7 +192,7 @@ namespace Car {
             _agent.UnsetIntersectionTransition(intersection);
         }
 
-        private void Q_ResetToNode(LaneNode node)
+        private void ResetToNode(LaneNode node)
         {
             _agent.Context.CurrentNode = node;
             _target = node;
@@ -204,7 +200,11 @@ namespace Car {
             _repositioningTarget = node;
             _agent.Context.IsEnteringNetwork = true;
 
-            Q_TeleportToLane();
+            if(_agent.Setting.Mode == DrivingMode.Quality)
+                Q_TeleportToLane();
+            else
+                P_TeleportToLane();
+
             _agent.Context.NavigationMode = OriginalNavigationMode;
             SetInitialPrevIntersection();
 
@@ -387,17 +387,21 @@ namespace Car {
             }
         }
 
-        private void Brake()
+        private void Q_Brake()
         {
-            if(_brakeController.ShouldAct(ref _agent))
+            bool q_shouldBrake = _brakeController.ShouldAct(ref _agent);
+            if(_agent.Setting.Mode == DrivingMode.Quality)
             {
-                _vehicleController.brakeInput = 1f;
-                _vehicleController.throttleInput = 0f;
-            }
-            else
-            {
-                _vehicleController.brakeInput = 0f;
-                _vehicleController.throttleInput = 1f;
+                if(q_shouldBrake)
+                {
+                    _vehicleController.brakeInput = 1f;
+                    _vehicleController.throttleInput = 0f;
+                }
+                else
+                {
+                    _vehicleController.brakeInput = 0f;
+                    _vehicleController.throttleInput = 1f;
+                }
             }
         }
 
@@ -437,7 +441,7 @@ namespace Car {
             // If the road ended but we are looping, teleport to the first position
             if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop)
             {
-                Q_ResetToNode(_agent.Context.StartNode);
+                ResetToNode(_agent.Context.StartNode);
             }
 
             // After the first increment of the current node, we are no longer entering the network
@@ -512,45 +516,17 @@ namespace Car {
                 _agent.Context.PrevIntersection = prevNode.Intersection;
         }
 
-        private bool IntersectionDistanceToNode(LaneNode node, LaneNode target, out float distance)
-        {
-            // Return if the target node is the current node
-            if(node.ID == target.ID)
-            {
-                Debug.Log("Target node is the current node");
-                distance = 0;
-                return true;
-            }
-
-            float dst = 0;
-
-            if (node != null && target != null)
-            {
-                dst += Vector3.Distance(node.Position, target.Position);
-                distance = dst;
-                return true;
-            }
-            // The target was not found, so set the distance to 0 and return false
-            distance = 0;
-            return false;
-        }
-
-        private void P_TeleportToFirstPosition()
+        private void P_TeleportToLane()
         {
             // Move to the first position of the lane
-            transform.position = _agent.Context.CurrentNode.Position;
+            transform.position = P_Lift(_agent.Context.CurrentNode.Position);
             transform.rotation = _agent.Context.CurrentNode.Rotation;
-            _agent.Context.NavigationMode = OriginalNavigationMode;
-            SetInitialPrevIntersection();
-            if (_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath)
-                _agent.UpdateRandomPath(_target, ShowNavigationPath);
-            P_MoveToTargetNode();
         }
 
         // Performance methods
 
         // Move the vehicle to the target node
-        private void P_MoveToTargetNode()
+        private void P_MoveTowardsTargetNode()
         {
             Vector3 targetPosition = P_GetLerpPosition(_target.Position);
             Quaternion targetRotation = P_GetLerpQuaternion(_target.Rotation);
@@ -561,120 +537,35 @@ namespace Car {
 
         private void P_UpdateTargetAndCurrent()
         {
-            LaneNode nextTarget = GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop);
-            // If the car is at the target, set the target to the next node and update current node
-            float distanceToBrakeTarget;
-            bool brakeTargetFound;
-            if (nextTarget.Type != RoadNodeType.IntersectionGuide)
+            // Update the current node if we have reached it
+            if(P_HasReachedTarget())
             {
-                Debug.Log("Not intersection guide");
-                Debug.Log("Brake target: " + _agent.Context.BrakeTarget.ID);
-                brakeTargetFound = nextTarget.DistanceToNode(_agent.Context.BrakeTarget, out distanceToBrakeTarget, EndBehaviour, true);
-            } 
-            else
-            {
-                Debug.Log("Intersection guide");
-                brakeTargetFound = IntersectionDistanceToNode(nextTarget, _agent.Context.BrakeTarget, out distanceToBrakeTarget);
+                TotalDistance += _target.DistanceToPrevNode;
+                _agent.Context.CurrentNode = _target;
             }
             
-            //Debug.Log(nextTarget.Position + "  " + distanceToBrakeTarget + "  " + _agent.Context.BrakeTarget.Position);
-            if (!brakeTargetFound)
-                Debug.Log("Brake target not found");
-            //Debug.Log("At target: " + (transform.position == _target.Position));
-            //Debug.Log("Too close to brake target: " + !(distanceToBrakeTarget > _vehicleLength / 2));
-            
-            if (transform.position == _target.Position && distanceToBrakeTarget > _vehicleLength / 2)
+            // Update the target if we have reached the current target, and we do not need to brake
+            if (P_HasReachedTarget() && !_brakeController.ShouldAct(ref _agent))
             {
-                _agent.Context.CurrentNode = _target;
+                if(_target == _agent.Context.EndNode)
+                {
+                    ResetToNode(_agent.Context.StartNode);
+                    _target = _agent.Context.StartNode;
+                }
+
+                // All logic for the navigation controller is handled through the actions, so we ignore the return value
+                _navigationController.ShouldAct(ref _agent);
+
                 // When the currentNode is changed, the navigation path needs to be updated
                 if (ShowNavigationPath)
                     Navigation.DrawPathRemoveOldestPoint(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
-                
-                TotalDistance += _agent.Context.CurrentNode.DistanceToPrevNode;
+            
                 _target = GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop);
             }
-            // Move the vehicle to the target node
-            P_MoveToTargetNode();
+            
+            P_MoveTowardsTargetNode();
         }
 
-        private bool P_ShouldAdvanceBrakeTarget(LaneNode tempBrakeTarget)
-        {
-            float distanceToBrakeTarget;
-            bool brakeTargetFound;
-            if (tempBrakeTarget.Type == RoadNodeType.IntersectionGuide || _agent.Context.CurrentNode.Type == RoadNodeType.IntersectionGuide)
-            {
-                Debug.Log("Intersection guide");
-                brakeTargetFound = IntersectionDistanceToNode(_agent.Context.CurrentNode, tempBrakeTarget, out distanceToBrakeTarget);
-            } 
-            else
-            {
-                Debug.Log("Not intersection guide");
-                brakeTargetFound = _agent.Context.CurrentNode.DistanceToNode(tempBrakeTarget, out distanceToBrakeTarget, EndBehaviour, true);
-            }
-
-            Vector3 directionToCurrentNode = (_agent.Context.CurrentNode.Position - transform.position);
-            if (Vector3.Angle(transform.forward, directionToCurrentNode.normalized) < 90)
-            {
-                distanceToBrakeTarget += directionToCurrentNode.magnitude;
-            }
-            else
-            {
-                distanceToBrakeTarget -= directionToCurrentNode.magnitude;
-            }
-
-            Debug.Log(_agent.Context.CurrentNode.Position + " " + distanceToBrakeTarget + " " + tempBrakeTarget.Position);
-            
-            // Return if the brake target was not found
-            if(!brakeTargetFound)
-            {
-                Debug.Log("Brake target not found");
-                return false;
-            }
-            
-            Vehicle nextNodeVehicle = GetNextLaneNode(tempBrakeTarget, 0, true).Vehicle;
-            bool _nextNodeHasVehicle = nextNodeVehicle != null && nextNodeVehicle != _agent.Context.CurrentNode.Vehicle;
-            
-            bool brakeTargetIsEndNode = tempBrakeTarget.Type == RoadNodeType.End && tempBrakeTarget == _agent.Context.EndNode;
-            bool brakeTargetIsEndNodeAndLoop = brakeTargetIsEndNode && EndBehaviour == RoadEndBehaviour.Loop;
-            bool _brakeDistanceIsGreaterThanBrakeTargetDistance = distanceToBrakeTarget < _brakeDistance;
-            
-            //Debug.Log("Brake dst is gr8: " + _brakeDistanceIsGreaterThanBrakeTargetDistance + "Next node is free :" + !_nextNodeHasVehicle + "Brake target is end node: " + (!_agent.Context.BrakeTargetIsEndNode || _agent.Context.BrakeTargetIsEndNodeAndLoop));
-            Debug.Log("Dst to Braketarget: " + distanceToBrakeTarget + "Brake dist: " + _brakeDistance);
-            
-            return _brakeDistanceIsGreaterThanBrakeTargetDistance && !_nextNodeHasVehicle && (!brakeTargetIsEndNode || brakeTargetIsEndNodeAndLoop);
-        }
-
-        private void P_Brake()
-        {
-            float distanceToBrakeTarget;
-            bool brakeTargetFound = _agent.Context.CurrentNode.DistanceToNode(_agent.Context.BrakeTarget, out distanceToBrakeTarget, EndBehaviour, true);
-
-            if(!brakeTargetFound)
-                return;
-            
-            Vector3 directionToCurrentNode = (_agent.Context.CurrentNode.Position - transform.position);
-            if (Vector3.Angle(transform.forward, directionToCurrentNode.normalized) < 90)
-            {
-                distanceToBrakeTarget += directionToCurrentNode.magnitude;
-            }
-            else
-            {
-                distanceToBrakeTarget -= directionToCurrentNode.magnitude;
-            }
-
-            float maxDelta = Time.deltaTime * 0.07f;
-            
-            // If the vehicle is closer to the target than the brake distance, start decelerating
-            if (distanceToBrakeTarget <= _brakeDistance)
-            {
-                _agent.Context.CurrentNode = _target;
-                float minLerpSpeed = 3f;
-                _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, minLerpSpeed, maxDelta);
-            }
-            
-            if (distanceToBrakeTarget > _brakeDistance)
-                _lerpSpeed = Mathf.MoveTowards(_lerpSpeed, Speed, maxDelta);
-        }
         private bool P_HasReachedTarget()
         {
             // Since the target position will be lifted in performance mode, we need to compare the XZ coordinates
@@ -682,6 +573,11 @@ namespace Car {
             targetPosition.y = transform.position.y;
             
             return transform.position == targetPosition;
+        }
+
+        private Vector3 P_Lift(Vector3 position)
+        {
+            return position + Vector3.up * 0.1f;
         }
 
         public void SetNavigationPathVisibilty(bool visible)
@@ -698,7 +594,7 @@ namespace Car {
 
         private Vector3 P_GetLerpPosition(Vector3 target)
         {
-            return Vector3.MoveTowards(transform.position, target, _lerpSpeed * Time.deltaTime);
+            return Vector3.MoveTowards(transform.position, P_Lift(target), _lerpSpeed * Time.deltaTime);
         }
         private Quaternion P_GetLerpQuaternion(Quaternion target)
         {
