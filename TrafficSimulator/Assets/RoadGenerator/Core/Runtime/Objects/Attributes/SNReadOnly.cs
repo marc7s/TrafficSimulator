@@ -1,5 +1,4 @@
 using UnityEngine;
-using RoadGenerator;
 #if UNITY_EDITOR
    using UnityEditor;
 #endif
@@ -23,12 +22,10 @@ namespace CustomProperties
         }
     
         public bool HasValue { get => hasValue; }
-    
-        [SerializeField]
-        private T v;
         
-        [SerializeField]
-        private bool hasValue;
+        [SerializeField] private T v;
+        
+        [SerializeField] private bool hasValue;
         
         public SNReadOnly(bool hasValue, T v)
         {
@@ -70,16 +67,16 @@ namespace CustomProperties
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
         
             // Do not indent child fields
-            var indent = EditorGUI.indentLevel;
+            int indent = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
         
             // Calculate rects
-            var setRect = new Rect(position.x, position.y, 15, position.height);
-            var consumed = setRect.width + 5;
-            var valueRect = new Rect(position.x + consumed, position.y, position.width - consumed, position.height);
+            Rect setRect = new Rect(position.x, position.y, 15, position.height);
+            float consumed = setRect.width + 5;
+            Rect valueRect = new Rect(position.x + consumed, position.y, position.width - consumed, position.height);
         
             // Draw fields - pass GUIContent.none to each so they are drawn without labels
-            var hasValueProp = property.FindPropertyRelative("hasValue");
+            SerializedProperty hasValueProp = property.FindPropertyRelative("hasValue");
             bool guiEnabled = GUI.enabled;
             GUI.enabled = false;
             
