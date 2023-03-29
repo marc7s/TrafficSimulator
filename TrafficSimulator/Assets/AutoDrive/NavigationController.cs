@@ -5,8 +5,8 @@ namespace Car
 {
     public enum NavigationEventType
     { 
-        IntersectionEntry = 0,
-        IntersectionExit = 1
+        IntersectionEntry,
+        IntersectionExit
     }
 
     public class NavigationController : AutoDriveController<NavigationEventType>

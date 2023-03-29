@@ -7,9 +7,9 @@ namespace Car
 {
     public enum BrakeEventType
     { 
-        Vehicle = 0, 
-        RoadEnd = 1, 
-        TrafficLight = 2
+        Vehicle, 
+        RoadEnd, 
+        TrafficLight
     }
 
     public class BrakeController : AutoDriveController<BrakeEventType>

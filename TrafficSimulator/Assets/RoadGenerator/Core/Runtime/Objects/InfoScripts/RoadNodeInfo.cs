@@ -24,7 +24,7 @@ namespace RoadGenerator
             _secondaryNavigationNodeEdge = _roadNode.SecondaryNavigationNodeEdge;
             _isNavigationNode = _roadNode.IsNavigationNode;
             _tangent = _roadNode.Tangent;
-            _normal = null;//_roadNode.Normal;
+            _normal = _roadNode.Normal;
             _type = _roadNode.Type;
             _time = _roadNode.Time;
             _distanceToPrevNode = _roadNode.DistanceToPrevNode;
