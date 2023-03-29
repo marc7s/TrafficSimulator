@@ -1,0 +1,19 @@
+.unity-text-element {
+    font-size: 32px;
+    background-color: rgba(255, 255, 255, 0);
+    -unity-background-image-tint-color: rgba(0, 0, 0, 0);
+    color: rgba(0, 0, 0, 255);
+    -unity-font-style: bold;
+    border-bottom-width: 0;
+    border-bottom-color: rgba(0, 0, 0, 255);
+}
+
+.head-element {
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    margin-left: 20px;
+    border-bottom-width: 3px;
+    border-bottom-color: rgba(0, 0, 0, 255);
+}
