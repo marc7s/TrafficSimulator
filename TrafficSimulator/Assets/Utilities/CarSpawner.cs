@@ -154,7 +154,6 @@ namespace RoadGenerator
 
                 // Calculate the offset
                 _laneNodeCurrent = _lanes[i].StartNode;
-                Debug.Log("Lane " + i);
 
                 List<float> sections = DivideLaneToSections(_lanes[i]);
                 List<float> sectionRatios = CalculateSectionRatios(sections);
@@ -189,7 +188,6 @@ namespace RoadGenerator
         {
             LaneNode curr = lane.StartNode;
             LaneNode prev = lane.StartNode;
-            Debug.Log("Start node: " + curr.DistanceToPrevNode);
             List<float> sections = new List<float>();
 
             // Determine the direction of the lane
@@ -204,7 +202,6 @@ namespace RoadGenerator
                 if(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge) || curr.Next == null)
                 {
                     sections.Add(sectionLength);
-                    Debug.Log("Section length: " + sectionLength);
 
                     // Determine the start section length based on direction
                     sectionLength = direction == 1 ? (curr.DistanceToPrevNode * 2) : 0;
@@ -220,7 +217,6 @@ namespace RoadGenerator
                 if(curr != null)
                     sectionLength += Vector3.Distance(curr.Position, prev.Position);
             }
-            Debug.Log("Lane Length without intersections: " + lane.GetLaneLengthNoIntersections());
             return sections;
         }
 
@@ -234,7 +230,11 @@ namespace RoadGenerator
             // If a custom car is being used as a spawn prefab it should be deactivated to not interfere, so activate this car
             _currentCar.SetActive(true);
 
-            _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent.Next != null ? _laneNodeCurrent.Next : _laneNodeCurrent;
+            _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent;
+            if(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge)
+            {
+                Debug.Log("JunctionEdge");
+            }
         }
 
         /// <summary>Finds next LaneNode in lane after a certain distance</summary>
