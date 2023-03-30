@@ -47,7 +47,7 @@ namespace User
                     _instance = FindObjectOfType<UserSelectManager>();
                     if (_instance == null)
                     {
-                        var obj = new GameObject();
+                        GameObject obj = new GameObject();
                         obj.name = nameof(UserSelectManager);
                         _instance = obj.AddComponent<UserSelectManager>();
                         DontDestroyOnLoad(obj.transform.root);
@@ -134,9 +134,9 @@ namespace User
         // Common method for handling click and double-click inputs
         private void OnClickInput(InputAction.CallbackContext ctx, SelectedGameObjectChangedHandler eventToInvoke)
         {
-            var ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+            Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
-            if (Physics.Raycast(ray, out var hitInfo) && CanSelectNewObject)
+            if (Physics.Raycast(ray, out RaycastHit hitInfo) && CanSelectNewObject)
             {
                 SelectObjectFromClick(eventToInvoke, hitInfo);
             }

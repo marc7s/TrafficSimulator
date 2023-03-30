@@ -8,32 +8,27 @@ namespace User
     public class CarSelectable : Selectable
     {
         private Outline _selectOutline;
-        [SerializeField] private Transform _firstPersonPivot;
+        [field: SerializeField] public Transform FirstPersonPivot { get; private set; }
 
         private void Start()
         {
             _selectOutline = GetComponentInChildren<Outline>();
-            OutlineIsActive(false);
+            SetOutline(false);
         }
 
         public override void Select()
         {
-            OutlineIsActive(true);
+            SetOutline(true);
         }
 
         public override void Deselect()
         {
-            OutlineIsActive(false);
+            SetOutline(false);
         }
 
-        private void OutlineIsActive(bool isActive)
+        private void SetOutline(bool isActive)
         {
             _selectOutline.enabled = isActive;
-        } 
-        
-        public Transform GetFirstPersonPivot()
-        {
-            return _firstPersonPivot;
         }
     }
 }
