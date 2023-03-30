@@ -192,31 +192,23 @@ namespace RoadGenerator
         private List<float> DivideLaneToSections(Lane lane)
         {
             LaneNode curr = lane.StartNode;
-            LaneNode prev;
             List<float> sections = new List<float>();
             float sectionLength = 0;
 
             while (curr != null)
             {
                 // Check if the current node is an intersection or if the next node is null to determine the end of a section
-                if(curr.RoadNode.Type == RoadNodeType.JunctionEdge || curr.Next == null)
+                if(curr.RoadNode.IsIntersection())
                 {
                     sections.Add(sectionLength);
                     sectionLength = 0;
                     curr = curr.Next != null ? curr.Next : curr;
-
-                    // While the node is an intersection, skip it
-                    if(curr.RoadNode.IsIntersection())
-                        curr = curr.Next;
+                } else
+                {
+                    sectionLength += curr.DistanceToPrevNode;
                 }
-                prev = curr;
                 curr = curr.Next;
-
-                // Add the distance between the current and previous node to the section length
-                if(curr != null)
-                    sectionLength += Vector3.Distance(curr.Position, prev.Position);
             }
-            Debug.Log("Lane has " + sections.Count + " sections");
             return sections;
         }
 
