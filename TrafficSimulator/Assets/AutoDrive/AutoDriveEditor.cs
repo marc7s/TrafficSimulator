@@ -92,8 +92,6 @@ namespace CarGenerator
             }
 
             serializedObject.ApplyModifiedProperties();
-
-
         }
     }
 }
