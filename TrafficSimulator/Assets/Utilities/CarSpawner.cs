@@ -200,7 +200,9 @@ namespace RoadGenerator
                 // Check if the current node is an intersection or if the next node is null to determine the end of a section
                 if(curr.RoadNode.IsIntersection())
                 {
-                    sections.Add(sectionLength);
+                    // Three way intersection start case 
+                    if(!(curr.Position == lane.StartNode.Position))
+                        sections.Add(sectionLength);
                     sectionLength = 0;
                     curr = curr.Next;
                 } else
@@ -209,7 +211,8 @@ namespace RoadGenerator
                 }
                 curr = curr.Next;
             }
-            sections.Add(sectionLength);
+            if(!lane.StartNode.Last.Prev.RoadNode.IsIntersection())
+                sections.Add(sectionLength);
             return sections;
         }
 
