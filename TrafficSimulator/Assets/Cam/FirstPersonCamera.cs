@@ -14,84 +14,105 @@ namespace Cam
         [SerializeField]
         private float _mouseSensitivity = 100f;
 
-        // Store the current yaw and pitch values for the camera
         private float _yaw;
         private float _pitch;
 
-        // Update the camera's rotation based on the input look direction
+        private CinemachinePOV _pov;
+
+        private void Awake()
+        {
+            base.Awake();
+            _pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();
+            if (_pov == null)
+            {
+                Debug.LogError("CinemachinePOV component not found on the Virtual Camera");
+            }
+        }
+
         public override void Look(Vector2 lookDirection)
         {
-            /*print("Lookin... looki lookin");
+            UpdateYawAndPitch(lookDirection);
+            ApplyRotationToPOV();
+        }
+
+        private void UpdateYawAndPitch(Vector2 lookDirection)
+        {
             lookDirection *= Time.deltaTime * _mouseSensitivity;
 
             _yaw += lookDirection.x;
             _pitch -= lookDirection.y;
             _pitch = Mathf.Clamp(_pitch, -90f, 90f);
-
-            CinemachinePOV pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();
-            if (pov != null)
-            {
-                pov.m_HorizontalAxis.Value = _yaw;
-                pov.m_VerticalAxis.Value = _pitch;
-            }*/
         }
-        
+
+        private void ApplyRotationToPOV()
+        {
+            if (_pov != null)
+            {
+                _pov.m_HorizontalAxis.Value = _yaw;
+                _pov.m_VerticalAxis.Value = _pitch;
+            }
+        }
+
         public override void SetActive(CameraManager cameraManager)
         {
-            // Reset yaw and pitch values
-            _yaw = 0;
-            _pitch = 0;
+            ResetYawAndPitch();
 
             base.SetActive(cameraManager);
+
             UserSelectManager.Instance.CanSelectNewObject = false;
 
-            // Get the first person pivot transform from the selected game object
-            Transform firstPersonPivot = UserSelectManager.Instance.SelectedGameObject.
-                GetComponent<CarSelectable>().FirstPersonPivot;
+            SetCameraParentToFirstPersonPivot();
 
-            // Set the camera's parent to the first person pivot
+            LockAndHideCursor();
+
+            ResetPOVValues();
+        }
+
+        private void ResetYawAndPitch()
+        {
+            _yaw = 0;
+            _pitch = 0;
+        }
+
+        private void SetCameraParentToFirstPersonPivot()
+        {
+            Transform firstPersonPivot = UserSelectManager.Instance.SelectedGameObject
+                .GetComponent<CarSelectable>().FirstPersonPivot;
+
             transform.SetParent(firstPersonPivot);
             transform.position = firstPersonPivot.position;
+        }
 
-            // Lock the cursor and hide it
+        private void LockAndHideCursor()
+        {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-
-            // Immediately set POV values to 0
-            CinemachinePOV pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();
-            if (pov != null)
-            {
-                pov.m_HorizontalAxis.Value = 0;
-                pov.m_VerticalAxis.Value = 0;
-            }
-
-            // Start the coroutine to ensure POV values are reset at the end of the frame
-            StartCoroutine(ResetPOVValues());
         }
-    
-        // Coroutine to reset POV values at the end of the frame
-        private IEnumerator ResetPOVValues()
+
+        private void ResetPOVValues()
         {
-            yield return new WaitForEndOfFrame();
-
-            CinemachinePOV pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();
-            if (pov != null)
+            if (_pov != null)
             {
-                pov.m_HorizontalAxis.Value = 0;
-                pov.m_VerticalAxis.Value = 0;
+                _pov.m_HorizontalAxis.Value = 0;
+                _pov.m_VerticalAxis.Value = 0;
             }
         }
 
-        // Set this camera as inactive and restore default settings
         public override void SetInactive(CameraManager cameraManager)
         {
             base.SetInactive(cameraManager);
+
             UserSelectManager.Instance.CanSelectNewObject = true;
+
+            UnlockAndShowCursor();
+        }
+
+        private void UnlockAndShowCursor()
+        {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
-        // Handle the escape input to toggle the previous camera
         public override void HandleEscapeInput()
         {
             CameraManager.ToggleThirdPersonCamera();
