@@ -592,9 +592,12 @@ namespace Car {
         {
             if (_agent != null && _agent.Context.NavigationPathContainer != null)
             {
-                _agent.Context.NavigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
-                _agent.Context.NavigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
-                
+                if (_agent.Context.NavigationPathContainer.transform.childCount > 0)
+                {
+                    _agent.Context.NavigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
+                    _agent.Context.NavigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
+                }
+
                 if(visible)
                     Navigation.DrawNavigationPath(out _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathEndNode, _agent.Context.NavigationPath, _agent.Context.CurrentNode, _agent.Context.NavigationPathContainer, _agent.Setting.NavigationPathMaterial, _agent.Context.PrevIntersection, _agent.Setting.NavigationTargetMarker);
             }
