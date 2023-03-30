@@ -83,10 +83,10 @@ namespace RoadGenerator
             LaneNode curr = _start;
             while(curr != null)
             {
-                if(!curr.RoadNode.IsIntersection())
-                    length += curr.DistanceToPrevNode;
                 if(curr.RoadNode.IsIntersection())
                     curr = curr.Next;
+                else
+                    length += curr.DistanceToPrevNode;
                 curr = curr.Next;
             }
             return length;
