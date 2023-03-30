@@ -194,11 +194,7 @@ namespace RoadGenerator
             {
                 // Check if the current node is an intersection or if the next node is null to determine the end of a section
                 if(curr.RoadNode.IsIntersection())
-                {
-                    // Three way intersection start case 
-                    if(curr.Position != lane.StartNode.Position)
-                        sections.Add(sectionLength);
-                    
+                {             
                     sectionLength = 0;
                     curr = curr.Next;
                 } 
@@ -219,7 +215,7 @@ namespace RoadGenerator
         /// <summary>Checks multiple conditions to determine if a car is able to spawn on node</summary>
         private bool IsCarSpawnable(LaneNode node)
         {
-            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle() || node.Next.Position == node.Position);
+            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle());
         }
 
         /// <summary>Spawns a car at the current lane node</summary>
