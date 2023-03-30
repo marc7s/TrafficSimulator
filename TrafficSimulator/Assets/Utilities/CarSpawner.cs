@@ -168,14 +168,10 @@ namespace RoadGenerator
                             return;
 
                         // Spawn car
-                        if(!_laneNodeCurrent.RoadNode.IsIntersection() && !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge) && !(_laneNodeCurrent == null) && !(_laneNodeCurrent.HasVehicle()))
+                        if(!_laneNodeCurrent.RoadNode.IsIntersection() && _laneNodeCurrent.RoadNode.Type != RoadNodeType.JunctionEdge && _laneNodeCurrent != null && !_laneNodeCurrent.HasVehicle() && _laneNodeCurrent.Next != null && _laneNodeCurrent.Next.Position != _laneNodeCurrent.Position)
                         {
-                            if(_laneNodeCurrent.Next != null)
-                                if(!(_laneNodeCurrent.Next.Position == _laneNodeCurrent.Position)) // Check for double nodes that causes vehicles to instantly drive into intersection
-                                {
-                                    SpawnCar(i);
-                                    _carCounter++;
-                                }
+                            SpawnCar(i);
+                            _carCounter++;
                         }
                         // Calculate the next spawn node in the section based on distance
                         _offset += sections[j] / (carsToSpawnSection);
@@ -190,7 +186,7 @@ namespace RoadGenerator
         private List<float> DivideLaneToSections(Lane lane)
         {
             LaneNode curr = lane.StartNode;
-            LaneNode prev = lane.StartNode;
+            LaneNode prev;
             List<float> sections = new List<float>();
             float sectionLength = 0;
 
@@ -201,7 +197,7 @@ namespace RoadGenerator
                 {
                     sections.Add(sectionLength);
 
-                    sectionLength = curr.DistanceToPrevNode * 2;
+                    sectionLength = 0;
 
                     // While the node is an intersection, skip it
                     while(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge))
