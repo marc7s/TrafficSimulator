@@ -194,7 +194,8 @@ namespace RoadGenerator
             {
                 // Check if the current node is an intersection or if the next node is null to determine the end of a section
                 if(curr.RoadNode.IsIntersection())
-                {             
+                {   
+                    sections.Add(sectionLength);
                     sectionLength = 0;
                     curr = curr.Next;
                 } 
