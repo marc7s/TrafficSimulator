@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Cam
+namespace User
 {
     /// <summary>
     /// Singleton user input manager. Every input pooling should be communicated via this class to enable easy transitioning
