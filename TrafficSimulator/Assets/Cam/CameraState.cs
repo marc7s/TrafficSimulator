@@ -21,6 +21,11 @@ namespace Cam
         protected virtual void Awake()
         {
             VirtualCamera = GetComponent<CinemachineVirtualCamera>();
+            // Cinemachine is internally hooked up to the old input system
+            if(VirtualCamera.GetCinemachineComponent<CinemachinePOV>())
+            {
+                DisableInput();
+            }
             VirtualCamera.Priority = IsDefault ? 1 : 0;
         }
 
@@ -58,6 +63,17 @@ namespace Cam
         {
             FollowTransform = followTransform;
         }
+
+        private void DisableInput()
+        {
+            CinemachinePOV pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();
+            if (pov != null)
+            {
+                pov.m_HorizontalAxis.m_MaxSpeed = 0f;
+                pov.m_VerticalAxis.m_MaxSpeed = 0f;
+            }
+        }
+
 
         #region Virtual Input Methods
         public virtual void HandleEscapeInput()
