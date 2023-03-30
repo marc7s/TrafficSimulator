@@ -45,7 +45,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z * 4f;
+            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z;
 
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
@@ -171,13 +171,12 @@ namespace RoadGenerator
                         if(!_laneNodeCurrent.RoadNode.IsIntersection() && !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge) && !(_laneNodeCurrent == null) && !(_laneNodeCurrent.HasVehicle()))
                         {
                             if(_laneNodeCurrent.Next != null)
-                                if(!(_laneNodeCurrent.Next.Position == _laneNodeCurrent.Position))
+                                if(!(_laneNodeCurrent.Next.Position == _laneNodeCurrent.Position)) // Check for double nodes that causes vehicles to instantly drive into intersection
                                 {
                                     SpawnCar(i);
                                     _carCounter++;
                                 }
                         }
-
                         // Calculate the next spawn node in the section based on distance
                         _offset += sections[j] / (carsToSpawnSection);
                         _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
