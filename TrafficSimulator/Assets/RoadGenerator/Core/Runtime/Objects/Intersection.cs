@@ -810,9 +810,6 @@ namespace RoadGenerator
                 Road1.RemoveIntersection(this);
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
-            
-            Road1.UpdateMesh();
-            Road2.UpdateMesh();
         }
     }
 }
