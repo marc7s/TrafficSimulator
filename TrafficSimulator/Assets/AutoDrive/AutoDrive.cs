@@ -89,8 +89,17 @@ namespace Car {
         private const float _intersectionMaxSpeed = 5f;
         private LaneNode _repositioningTarget;
         private VehicleController _vehicleController;
-        
+
+        private bool _isSetup = false;
+
+
         void Start()
+        {
+            if(!_isSetup)
+                Setup();
+        }
+
+        public void Setup()
         {
             Road.RoadSystem.Setup();
 
@@ -154,6 +163,8 @@ namespace Car {
             _navigationController = new NavigationController();
             _navigationController.OnIntersectionEntry += SetPreviousIntersection;
             _navigationController.OnIntersectionExit += ClearIntersectionTransition;
+
+            _isSetup = true;
         }
 
         void Update()
