@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using Car;
@@ -95,3 +96,4 @@ namespace CarGenerator
         }
     }
 }
+#endif
