@@ -9,7 +9,7 @@ namespace Cam
     /// <summary>
     /// This camera state represents a first-person view for a driver in a vehicle.
     /// </summary>
-    public class FirstPersonDriverCamera : CameraState
+    public class FirstPersonCamera : CameraState
     {
         [SerializeField]
         private float _mouseSensitivity = 100f;
