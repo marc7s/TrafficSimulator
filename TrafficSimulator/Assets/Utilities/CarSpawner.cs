@@ -45,7 +45,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z * 3f;
+            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z * 4f;
 
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
@@ -170,8 +170,12 @@ namespace RoadGenerator
                         // Spawn car
                         if(!_laneNodeCurrent.RoadNode.IsIntersection() && !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge) && !(_laneNodeCurrent == null))
                         {
-                            SpawnCar(i);
-                            _carCounter++;
+                            if(_laneNodeCurrent.Next != null)
+                                if(!(_laneNodeCurrent.Next.Position == _laneNodeCurrent.Position))
+                                {
+                                    SpawnCar(i);
+                                    _carCounter++;
+                                }
                         }
 
                         // Calculate the next spawn node in the section based on distance
@@ -231,10 +235,7 @@ namespace RoadGenerator
             _currentCar.SetActive(true);
 
             _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent;
-            if(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge)
-            {
-                Debug.Log("JunctionEdge");
-            }
+            _currentCar.GetComponent<AutoDrive>().Setup();
         }
 
         /// <summary>Finds next LaneNode in lane after a certain distance</summary>
