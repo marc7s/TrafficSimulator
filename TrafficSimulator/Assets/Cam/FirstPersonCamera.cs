@@ -48,9 +48,10 @@ namespace Cam
             // Get the first person pivot transform from the selected game object
             Transform firstPersonPivot = UserSelectManager.Instance.SelectedGameObject.
                 GetComponent<CarSelectable>().FirstPersonPivot;
-            
+
             // Set the camera's parent to the first person pivot
             transform.SetParent(firstPersonPivot);
+            transform.position = firstPersonPivot.position;
 
             // Lock the cursor and hide it
             Cursor.lockState = CursorLockMode.Locked;
