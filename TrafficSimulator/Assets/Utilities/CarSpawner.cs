@@ -168,7 +168,7 @@ namespace RoadGenerator
                             return;
 
                         // Spawn car
-                        if(!_laneNodeCurrent.RoadNode.IsIntersection() && !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge) && !(_laneNodeCurrent == null))
+                        if(!_laneNodeCurrent.RoadNode.IsIntersection() && !(_laneNodeCurrent.RoadNode.Type == RoadNodeType.JunctionEdge) && !(_laneNodeCurrent == null) && !(_laneNodeCurrent.HasVehicle()))
                         {
                             if(_laneNodeCurrent.Next != null)
                                 if(!(_laneNodeCurrent.Next.Position == _laneNodeCurrent.Position))
