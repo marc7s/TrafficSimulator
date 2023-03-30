@@ -369,6 +369,7 @@ namespace RoadGenerator
                 // Bridge the gap between the current node and the current vertex point
                 roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i), i == _path.NumPoints - 1);
             }
+            
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(_start, path.IsClosed);
             _start.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
@@ -471,7 +472,7 @@ namespace RoadGenerator
             foreach(Intersection intersection in Intersections)
             {
                 if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
-                { 
+                {
                     if(intersection.Road1 == this)
                     {
                         // This is Road1, so the intersection is somewhere in the middle of this road
@@ -499,9 +500,6 @@ namespace RoadGenerator
 
                         queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart, intersection));
                         queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart, intersection));
-
-                        if(!isStart)
-                            queuedNodes.Enqueue(new QueuedNode(RoadNodeType.End, intersectionDistance, intersection.IntersectionPosition, false, intersection));
                     }
                 }
                 else if(intersection.Type == IntersectionType.FourWayIntersection)
@@ -526,8 +524,10 @@ namespace RoadGenerator
             // Destroy the old container and create a new one
             if (_trafficSignContainer != null)
                 DestroyImmediate(_trafficSignContainer);
+            
             _trafficSignContainer = new GameObject(TRAFFIC_SIGN_CONTAINER_NAME);
             _trafficSignContainer.transform.parent = transform;
+            
             // If the road starts at an intersection, then the first speed sign should be placed at the end of the road
             bool intersectionFound = _start.Next.IsIntersection() && _start.Position == _start.Next.Position;
             if (intersectionFound)
