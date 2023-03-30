@@ -1,6 +1,5 @@
 using Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Cam
 {
@@ -33,9 +32,12 @@ namespace Cam
         {
             VirtualCamera.Priority = 1;
             CameraManager = cameraManager;
-            FollowTransform = cameraManager.CameraTarget;
+            FollowTransform = cameraManager.CameraTarget.transform;
+            cameraManager.InputHandler.OnEscapePressed += HandleEscapeInput;
+            cameraManager.InputHandler.OnSpacePressed += HandleSpaceInput;
+
         }
-        
+
         /// <summary>
         /// Sets this camera to inactive. Will remain the active camera if no other camera is set to active.
         /// </summary>
@@ -44,6 +46,8 @@ namespace Cam
         {
             VirtualCamera.Priority = 0;
             CameraManager = null;
+            cameraManager.InputHandler.OnEscapePressed -= HandleEscapeInput;
+            cameraManager.InputHandler.OnSpacePressed -= HandleSpaceInput;
         }
         
         /// <summary>
@@ -56,7 +60,7 @@ namespace Cam
         }
 
         #region Virtual Input Methods
-        public virtual void HandleEscapeInput(InputAction.CallbackContext ctx)
+        public virtual void HandleEscapeInput()
         {
             return;
         }
@@ -65,17 +69,7 @@ namespace Cam
         {
             return;
         }
-
-        public virtual void HandleClickInput(InputAction.CallbackContext ctx)
-        {
-            return;
-        }
-
-        public virtual void HandleDoubleClickInput(InputAction.CallbackContext ctx)
-        {
-            return;
-        }
-
+        
         public virtual void Move(Vector3 movement)
         {
             return;
@@ -85,11 +79,21 @@ namespace Cam
         {
             return;
         }
+        
+        public virtual void Look(Vector2 lookDirection)
+        {
+            return;
+        }
 
         public virtual void Zoom(float zoomValue)
         {
             return;
         }
         #endregion
+
+        public virtual void HandleSpaceInput()
+        {
+            return;
+        }
     }
 }

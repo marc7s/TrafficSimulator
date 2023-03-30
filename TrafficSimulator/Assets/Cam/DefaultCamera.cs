@@ -1,6 +1,6 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using User;
 
 namespace Cam
 {
@@ -26,24 +26,49 @@ namespace Cam
         private float _edgeScrollSensitivity = 0.1f;
         private float _targetZoom = 50f;
 
-        private Transform _toggledTransform;
-        private bool _hasToggledTransform;
+        private GameObject _toggledGameObject;
+        private bool _hasToggledGameObject;
         
         private Vector3 _mousePointDirection;
         private bool _isNearScreenBorder;
         
         private bool _isMovingTowardsTarget = false;
         [SerializeField] private float _togglePanSpeed = 0.3f;
-
-        protected override void Awake()
-        {
-            IsDefault = true;
-            base.Awake();
-        }
-    
+        
         private void Update()
         {
-            if (_hasToggledTransform && !_isMovingTowardsTarget) FollowTransform.position = _toggledTransform.transform.position;
+            if (_hasToggledGameObject && !_isMovingTowardsTarget) FollowTransform.position = _toggledGameObject.transform.position;
+        }
+        
+        public override void SetActive(CameraManager cameraManager)
+        {
+            base.SetActive(cameraManager);
+            UserSelectManager.Instance.CanSelectNewObject = true;
+            UserSelectManager.Instance.OnSelectedGameObject += HandleNewGameObjectSelection;
+            UserSelectManager.Instance.OnDoubleClickedSelectedGameObject += HandleGameObjectDoubleClickSelection;
+        }
+
+        public override void SetInactive(CameraManager cameraManager)
+        {
+            base.SetInactive(cameraManager);
+            UserSelectManager.Instance.OnSelectedGameObject -= HandleNewGameObjectSelection;
+            UserSelectManager.Instance.OnDoubleClickedSelectedGameObject -= HandleGameObjectDoubleClickSelection;
+        }
+
+        private void HandleNewGameObjectSelection(Selectable selectable)
+        {
+            if(selectable == null)
+            {
+                SetToggledGameObjectToNull();
+                return;
+            }
+            SetToggledGameObject(selectable.gameObject);
+            StartCoroutine(PanToTarget(selectable.transform));
+        }
+        
+        private void HandleGameObjectDoubleClickSelection(Selectable selectable)
+        {
+            CameraManager.ToggleThirdPersonCamera();
         }
 
         public override void HandlePointInput(Vector2 pointPosition)
@@ -63,37 +88,14 @@ namespace Cam
             _isNearScreenBorder = (horizontal != 0f) || (vertical != 0f);
             _mousePointDirection = new Vector3(horizontal, vertical);
         }
-
-        public override void HandleClickInput(InputAction.CallbackContext ctx)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            // Important that the toggled GameOjbect is tagged with "Vehicle"
-            if (Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.CompareTag("Vehicle"))
-            {
-                SetToggledTransform(hitInfo.collider.transform);
-            }
-            else
-            {
-                if(_hasToggledTransform) SetToggledTransformToNull();
-            }
-        }
-
-        public override void HandleDoubleClickInput(InputAction.CallbackContext ctx)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (Physics.Raycast(ray, out RaycastHit hitInfo) && hitInfo.transform.Equals(_toggledTransform))
-            {
-                CameraManager.CameraTarget = FollowTransform;
-                CameraManager.ToggleThirdPersonCamera();
-            }
-        }
+        
 
         public override void Move(Vector3 direction)
         {
             // Ignore the input argument if the mouse is near the screen border
             if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
 
-            if (direction.sqrMagnitude != 0 && _hasToggledTransform) SetToggledTransformToNull();
+            if (direction.sqrMagnitude != 0 && _hasToggledGameObject) SetToggledGameObjectToNull();
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
             FollowTransform.position += translatedDirection * _movementSpeed * Time.deltaTime;
         }
@@ -111,20 +113,17 @@ namespace Cam
                 _targetZoom, Time.deltaTime * _zoomSpeed);
         }
         
-        private void SetToggledTransformToNull()
+        private void SetToggledGameObjectToNull()
         {
-            _toggledTransform.GetComponent<Outline>().enabled = false;
-            _toggledTransform = null;
-            _hasToggledTransform = false;
+            _toggledGameObject = null;
+            _hasToggledGameObject = false;
         }
 
-        private void SetToggledTransform(Transform toggledTransform)
+        private void SetToggledGameObject(GameObject toggledGameObject)
         {
-            Outline outline = toggledTransform.GetComponent<Outline>();
-            outline.enabled = true;
-            _toggledTransform = toggledTransform;
-            _hasToggledTransform = true;
-            StartCoroutine(PanToTarget(toggledTransform.position));
+            _toggledGameObject = toggledGameObject;
+            _hasToggledGameObject = true;
+            StartCoroutine(PanToTarget(toggledGameObject.transform));
         }
         
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
@@ -132,20 +131,21 @@ namespace Cam
             return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;
         }
 
-        private IEnumerator PanToTarget(Vector3 target)
+        private IEnumerator PanToTarget(Transform target)
         {
             _isMovingTowardsTarget = true;
             float startTime = Time.time;
-            float journeyLength = Vector3.Distance(FollowTransform.position, target);
+            float journeyLength = Vector3.Distance(FollowTransform.position, target.position);
 
-            while (Vector3.Distance(FollowTransform.position, target) > 0.01f && _hasToggledTransform)
+            while (Vector3.Distance(FollowTransform.position, target.position) > 0.01f && _hasToggledGameObject)
             {
                 float distCovered = (Time.time - startTime) * _togglePanSpeed;
                 float fractionOfJourney = distCovered / journeyLength;
-                FollowTransform.position = Vector3.Lerp(FollowTransform.position, target, fractionOfJourney);
+                FollowTransform.position = Vector3.Lerp(FollowTransform.position, target.position, fractionOfJourney);
                 yield return null;
             }
             _isMovingTowardsTarget = false;
         }
+
     }
 }
