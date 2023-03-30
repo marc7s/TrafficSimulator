@@ -161,24 +161,30 @@ namespace RoadGenerator
                 {
                     // Calculate the number of cars to spawn
                     int carsToSpawnSection = Mathf.CeilToInt(carsToSpawn * sectionRatios[j]);
-                    for (int k = 0; k < carsToSpawnSection; k++)
-                    {
-                        // Check if max cars have been spawned
-                        if (_mode == SpawnMode.Total && _carCounter >= TotalCars)
-                            return;
-
-                        // Spawn car
-                        if(!_laneNodeCurrent.RoadNode.IsIntersection() && _laneNodeCurrent.RoadNode.Type != RoadNodeType.JunctionEdge && _laneNodeCurrent != null && !_laneNodeCurrent.HasVehicle() && _laneNodeCurrent.Next != null && _laneNodeCurrent.Next.Position != _laneNodeCurrent.Position)
-                        {
-                            SpawnCar(i);
-                            _carCounter++;
-                        }
-                        // Calculate the next spawn node in the section based on distance
-                        _offset += sections[j] / (carsToSpawnSection);
-                        _laneNodeCurrent = CalculateSpawnNode(_offset, _lanes[i]);
-                    }
+                    spawnCarsInSection(_lanes[i], i, carsToSpawnSection, sections[j]);
                 }
                 _offset = 0;
+            }
+        }
+
+        /// <summary>Spawns cars in a section</summary>
+        private void spawnCarsInSection(Lane lane, int laneIndex, int carsToSpawn, float sectionLength)
+        {
+            for (int i = 0; i < carsToSpawn; i++)
+            {
+                // Check if max cars have been spawned
+                if (_mode == SpawnMode.Total && _carCounter >= TotalCars)
+                    return;
+
+                // Spawn car
+                if (isCarSpawnable(_laneNodeCurrent))
+                {
+                    SpawnCar(laneIndex);
+                    _carCounter++;
+                }
+                // Calculate the next spawn node in the section based on distance
+                _offset += sectionLength / (carsToSpawn);
+                _laneNodeCurrent = CalculateSpawnNode(_offset, lane);
             }
         }
 
@@ -193,14 +199,14 @@ namespace RoadGenerator
             while (curr != null)
             {
                 // Check if the current node is an intersection or if the next node is null to determine the end of a section
-                if(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge) || curr.Next == null)
+                if(curr.RoadNode.Type == RoadNodeType.JunctionEdge || curr.Next == null)
                 {
                     sections.Add(sectionLength);
-
                     sectionLength = 0;
+                    curr = curr.Next != null ? curr.Next : curr;
 
                     // While the node is an intersection, skip it
-                    while(curr.RoadNode.IsIntersection())
+                    if(curr.RoadNode.IsIntersection())
                         curr = curr.Next;
                 }
                 prev = curr;
@@ -210,7 +216,16 @@ namespace RoadGenerator
                 if(curr != null)
                     sectionLength += Vector3.Distance(curr.Position, prev.Position);
             }
+            Debug.Log("Lane has " + sections.Count + " sections");
             return sections;
+        }
+
+        /// <summary>Checks multiple conditions to determine if a car is able to spawn on node</summary>
+        private bool isCarSpawnable(LaneNode node)
+        {
+            if (node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle() || node.Next.Position == node.Position)
+                return false;
+            return true;
         }
 
         /// <summary>Spawns a car at the current lane node</summary>

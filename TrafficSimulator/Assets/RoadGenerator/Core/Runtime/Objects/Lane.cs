@@ -85,12 +85,8 @@ namespace RoadGenerator
             {
                 if(!curr.RoadNode.IsIntersection())
                     length += curr.DistanceToPrevNode;
-                while(curr.RoadNode.IsIntersection())
-                {
+                if(curr.RoadNode.IsIntersection())
                     curr = curr.Next;
-                    if(curr.RoadNode.Type == RoadNodeType.JunctionEdge)
-                        break;
-                }
                 curr = curr.Next;
             }
             return length;
