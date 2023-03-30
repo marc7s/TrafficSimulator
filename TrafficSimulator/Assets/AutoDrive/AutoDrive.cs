@@ -220,7 +220,7 @@ namespace Car {
                 Q_TeleportToLane();
             else
                 P_TeleportToLane();
-
+            transform.rotation = node.Rotation;
             _agent.Context.NavigationMode = OriginalNavigationMode;
             SetInitialPrevIntersection();
 
