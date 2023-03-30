@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using RoadGenerator;
 using System.Collections.Generic;
@@ -34,3 +35,4 @@ namespace Examples
         }
     }
 }
+#endif
