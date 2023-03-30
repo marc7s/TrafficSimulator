@@ -1878,7 +1878,6 @@ MonoBehaviour:
   Mode: 1
   EndBehaviour: 0
   ShowNavigationPath: 0
-  _navigationMode: 0
   OriginalNavigationMode: 0
   LogRepositioningInformation: 1
   ShowTargetLines: 0
@@ -1888,7 +1887,8 @@ MonoBehaviour:
   BaseTLD: 10
   TLDSpeedDivider: 20
   VehicleOccupancyOffset: 3
-  Speed: 20
+  Speed: 10
+  Acceleration: 7
   RotationSpeed: 5
   TotalDistance: 0
 --- !u!54 &1577973480894095029
@@ -2009,7 +2009,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 041e74d744444ca288dff463716afbbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _firstPersonPivot: {fileID: 0}
+  <FirstPersonPivot>k__BackingField: {fileID: 0}
 --- !u!114 &1577973480888144765
 MonoBehaviour:
   m_ObjectHideFlags: 0
