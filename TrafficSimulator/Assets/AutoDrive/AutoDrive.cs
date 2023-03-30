@@ -144,7 +144,6 @@ namespace Car {
             if (Mode == DrivingMode.Quality)
             {
                 _repositioningTarget = _agent.Context.CurrentNode;
-                _vehicleController.throttleInput = 1f;
             }
             else if (Mode == DrivingMode.Performance)
             {
@@ -530,13 +529,13 @@ namespace Car {
             LaneNode nextNode = _agent.Next(_target);
             
             // If the starting node is at a three way intersection, the target will be an EndNode but the next will be an intersection node, so we need to set the previous intersection
-            if (nextNode != null && nextNode.Intersection != null && _target.RoadNode.Position == nextNode.Position)
+            if (nextNode != null && nextNode.Intersection != null && nextNode.IsIntersection())
                 _agent.Context.PrevIntersection = nextNode.Intersection;
 
             LaneNode prevNode = _agent.Prev(_target);
             
             // If the starting node is a junction edge, the previous intersection is set
-            if (prevNode != null && prevNode.Intersection != null && _target.RoadNode.Position == prevNode.RoadNode.Position)
+            if (prevNode != null && prevNode.Intersection != null && prevNode.IsIntersection())
                 _agent.Context.PrevIntersection = prevNode.Intersection;
         }
 
