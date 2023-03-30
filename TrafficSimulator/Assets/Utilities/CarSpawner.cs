@@ -192,12 +192,7 @@ namespace RoadGenerator
             LaneNode curr = lane.StartNode;
             LaneNode prev = lane.StartNode;
             List<float> sections = new List<float>();
-
-            // Determine the direction of the lane
-            int direction = curr.DistanceToPrevNode == 0 ? 1 : -1;
-
-            // Determine the start section length based on direction
-            float sectionLength = direction == 1 ? curr.Next.DistanceToPrevNode : 0;
+            float sectionLength = 0;
 
             while (curr != null)
             {
@@ -206,8 +201,7 @@ namespace RoadGenerator
                 {
                     sections.Add(sectionLength);
 
-                    // Determine the start section length based on direction
-                    sectionLength = direction == 1 ? (curr.DistanceToPrevNode * 2) : 0;
+                    sectionLength = curr.DistanceToPrevNode * 2;
 
                     // While the node is an intersection, skip it
                     while(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge))
