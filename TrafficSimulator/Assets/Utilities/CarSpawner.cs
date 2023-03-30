@@ -200,7 +200,7 @@ namespace RoadGenerator
                     sectionLength = 0;
 
                     // While the node is an intersection, skip it
-                    while(curr.RoadNode.IsIntersection() || (curr.RoadNode.Type == RoadNodeType.JunctionEdge))
+                    while(curr.RoadNode.IsIntersection())
                         curr = curr.Next;
                 }
                 prev = curr;
