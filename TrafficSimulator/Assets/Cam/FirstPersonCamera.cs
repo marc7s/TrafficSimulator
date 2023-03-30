@@ -21,6 +21,7 @@ namespace Cam
         // Update the camera's rotation based on the input look direction
         public override void Look(Vector2 lookDirection)
         {
+            /*print("Lookin... looki lookin");
             lookDirection *= Time.deltaTime * _mouseSensitivity;
 
             _yaw += lookDirection.x;
@@ -32,10 +33,9 @@ namespace Cam
             {
                 pov.m_HorizontalAxis.Value = _yaw;
                 pov.m_VerticalAxis.Value = _pitch;
-            }
+            }*/
         }
-    
-
+        
         public override void SetActive(CameraManager cameraManager)
         {
             // Reset yaw and pitch values
