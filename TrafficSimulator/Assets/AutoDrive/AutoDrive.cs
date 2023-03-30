@@ -161,11 +161,13 @@ namespace Car {
 
             // Setup the controller that handles callbacks for intersection entry and exit
             _navigationController = new NavigationController();
-            
+
             _navigationController.OnIntersectionEntry += IntersectionEntryHandler;
             _navigationController.OnIntersectionExit += IntersectionExitHandler;
 
             _isSetup = true;
+
+            UpdateOccupiedNodes();
         }
 
         void Update()
