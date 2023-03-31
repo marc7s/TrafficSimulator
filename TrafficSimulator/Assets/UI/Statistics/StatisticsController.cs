@@ -1,12 +1,18 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using User;
+using Car;
 
 namespace UI
 {
-        
     public class StatisticsController : MonoBehaviour
     {
         private UIDocument _doc;
+        private UserSelectManager _userSelectManager;
+        private Selectable _selectedCar;
+        [SerializeField] private StatsController _statsController;
+        [SerializeField] private InfoController _infoController;
+        [SerializeField] private SettingsController _settingsController;
 
         private OverlayController _overlayController;
         private enum Tabs
@@ -54,6 +60,11 @@ namespace UI
 
         }
 
+        void Start()
+        {
+            _userSelectManager = UserSelectManager.Instance;
+        }
+
         private void StatsButtonOnClicked()
         {
             _tabs = Tabs.Stats;
@@ -97,6 +108,15 @@ namespace UI
             }
         }
 
+        private void UpdateCarInfo()
+        {
+            // Get the selected car (returns null if no car is selected)
+            _selectedCar = _userSelectManager.SelectedGameObject;
+            AutoDrive car = _selectedCar?.gameObject.GetComponent<AutoDrive>();
+
+            _infoController.UpdateInfo(car);
+        }
+
         // Update is called once per frame
         void Update()
         {
@@ -109,6 +129,7 @@ namespace UI
             }
 
             UpdatePanels();
+            UpdateCarInfo();
         }
     }
 }
