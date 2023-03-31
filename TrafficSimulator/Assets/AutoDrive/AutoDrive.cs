@@ -297,8 +297,9 @@ namespace Car {
             _vehicleController.cachedRigidbody.MoveRotation(_agent.Context.CurrentNode.Rotation);
             
             // Move it to the current position, offset in the opposite direction of the lane
-            _vehicleController.cachedRigidbody.MovePosition(_agent.Context.CurrentNode.Position - (2 * (_agent.Context.CurrentNode.Rotation * Vector3.forward).normalized));
-            
+            _vehicleController.cachedRigidbody.position = _agent.Context.CurrentNode.Position - (2 * (_agent.Context.CurrentNode.Rotation * Vector3.forward).normalized);
+            transform.position = _vehicleController.cachedRigidbody.position;
+
             // Reset velocity and angular velocity
             _vehicleController.cachedRigidbody.velocity = Vector3.zero;
             _vehicleController.cachedRigidbody.angularVelocity = Vector3.zero;
