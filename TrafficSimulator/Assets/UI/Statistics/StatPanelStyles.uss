@@ -2,10 +2,10 @@
     font-size: 32px;
     background-color: rgba(255, 255, 255, 0);
     -unity-background-image-tint-color: rgba(0, 0, 0, 0);
-    color: rgba(0, 0, 0, 255);
+    color: rgb(0, 0, 0);
     -unity-font-style: bold;
     border-bottom-width: 0;
-    border-bottom-color: rgba(0, 0, 0, 255);
+    border-bottom-color: rgb(0, 0, 0);
 }
 
 .head-element {
@@ -15,5 +15,34 @@
     margin-right: 20px;
     margin-left: 20px;
     border-bottom-width: 3px;
-    border-bottom-color: rgba(0, 0, 0, 255);
+    border-bottom-color: rgb(0, 0, 0);
+}
+
+.info-field-text {
+    align-items: flex-start;
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 12px;
+}
+
+.info-field-container {
+    flex-shrink: 0;
+    width: 100%;
+    flex-grow: 0;
+    flex-direction: row;
+    align-items: center;
+    min-width: auto;
+    min-height: auto;
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.info-field-output {
+    margin-left: 5px;
+    margin-right: 5px;
 }

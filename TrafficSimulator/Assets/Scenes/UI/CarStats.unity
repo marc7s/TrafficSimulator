@@ -219,6 +219,7 @@ GameObject:
   - component: {fileID: 518310852}
   - component: {fileID: 518310851}
   - component: {fileID: 518310854}
+  - component: {fileID: 518310855}
   m_Layer: 0
   m_Name: UIOverlay
   m_TagString: Untagged
@@ -238,6 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61b4a5d1b3db54a4995b97a78612657b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _isStatisticsOpen: 0
 --- !u!114 &518310852
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -279,6 +281,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ee50b85e917fdb4cb0779604261246c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _statController: {fileID: 0}
+  _infoController: {fileID: 518310855}
+  _settingsController: {fileID: 0}
+--- !u!114 &518310855
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 518310850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 784ef9470645d014c98d4e468f4df31d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &958154049
