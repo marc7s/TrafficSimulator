@@ -180,7 +180,7 @@ namespace Car {
             _timeManager = TimeManager.Instance;
 
             // Add event to TimeManager to start driving
-            _timeManagerEvent = new TimeManagerEvent(DateTime.Now.AddSeconds(5));
+            _timeManagerEvent = new TimeManagerEvent(DateTime.Now.AddSeconds(1));
             _timeManager.AddEvent(_timeManagerEvent);
 
             _timeManagerEvent.OnEvent += OnTimeEvent;
