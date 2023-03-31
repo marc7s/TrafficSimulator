@@ -64,6 +64,7 @@ namespace RoadGenerator
             get => _length;
         }
 
+        /// <summary>Get the length of the lane</summary>
         private float GetLaneLength()
         {
             float length = 0;
@@ -71,6 +72,21 @@ namespace RoadGenerator
             while(curr != null)
             {
                 length += curr.DistanceToPrevNode;
+                curr = curr.Next;
+            }
+            return length;
+        }
+
+        /// <summary>Get the length of the lane without intersections</summary>
+        public float GetLaneLengthNoIntersections()
+        {
+            float length = 0;
+            LaneNode curr = _start;
+            while(curr != null)
+            {
+                if(!curr.RoadNode.IsIntersection())
+                    length += curr.DistanceToPrevNode;
+                    
                 curr = curr.Next;
             }
             return length;

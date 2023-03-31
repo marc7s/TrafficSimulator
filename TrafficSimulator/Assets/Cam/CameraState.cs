@@ -1,6 +1,5 @@
 using Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Cam
 {
@@ -22,6 +21,11 @@ namespace Cam
         protected virtual void Awake()
         {
             VirtualCamera = GetComponent<CinemachineVirtualCamera>();
+            // Cinemachine is internally hooked up to the old input system
+            if(VirtualCamera.GetCinemachineComponent<CinemachinePOV>())
+            {
+                DisableInput();
+            }
             VirtualCamera.Priority = IsDefault ? 1 : 0;
         }
 
@@ -33,9 +37,12 @@ namespace Cam
         {
             VirtualCamera.Priority = 1;
             CameraManager = cameraManager;
-            FollowTransform = cameraManager.CameraTarget;
+            FollowTransform = cameraManager.CameraTarget.transform;
+            cameraManager.InputHandler.OnEscapePressed += HandleEscapeInput;
+            cameraManager.InputHandler.OnSpacePressed += HandleSpaceInput;
+
         }
-        
+
         /// <summary>
         /// Sets this camera to inactive. Will remain the active camera if no other camera is set to active.
         /// </summary>
@@ -44,6 +51,8 @@ namespace Cam
         {
             VirtualCamera.Priority = 0;
             CameraManager = null;
+            cameraManager.InputHandler.OnEscapePressed -= HandleEscapeInput;
+            cameraManager.InputHandler.OnSpacePressed -= HandleSpaceInput;
         }
         
         /// <summary>
@@ -55,8 +64,19 @@ namespace Cam
             FollowTransform = followTransform;
         }
 
+        private void DisableInput()
+        {
+            CinemachinePOV pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();
+            if (pov != null)
+            {
+                pov.m_HorizontalAxis.m_MaxSpeed = 0f;
+                pov.m_VerticalAxis.m_MaxSpeed = 0f;
+            }
+        }
+
+
         #region Virtual Input Methods
-        public virtual void HandleEscapeInput(InputAction.CallbackContext ctx)
+        public virtual void HandleEscapeInput()
         {
             return;
         }
@@ -65,17 +85,7 @@ namespace Cam
         {
             return;
         }
-
-        public virtual void HandleClickInput(InputAction.CallbackContext ctx)
-        {
-            return;
-        }
-
-        public virtual void HandleDoubleClickInput(InputAction.CallbackContext ctx)
-        {
-            return;
-        }
-
+        
         public virtual void Move(Vector3 movement)
         {
             return;
@@ -85,11 +95,21 @@ namespace Cam
         {
             return;
         }
+        
+        public virtual void Look(Vector2 lookDirection)
+        {
+            return;
+        }
 
         public virtual void Zoom(float zoomValue)
         {
             return;
         }
         #endregion
+
+        public virtual void HandleSpaceInput()
+        {
+            return;
+        }
     }
 }

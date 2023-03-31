@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
 using Car;
@@ -88,11 +89,11 @@ namespace CarGenerator
             if(_showNavigationPath.boolValue != autoDrive.ShowNavigationPath)
             {
                 autoDrive.ShowNavigationPath = _showNavigationPath.boolValue;
+                autoDrive.SetNavigationPathVisibilty(_showNavigationPath.boolValue);
             }
 
             serializedObject.ApplyModifiedProperties();
-
-            autoDrive.SetNavigationPathVisibilty(_showNavigationPath.boolValue);
         }
     }
 }
+#endif

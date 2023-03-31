@@ -85,12 +85,21 @@ namespace Car {
         private const int _repositioningOffset = 1;
         private Status _status = Status.Driving;
         private float _targetLookaheadDistance = 0;
-        private const float _intersectionLookaheadDistance = 6f;
-        private const float _intersectionMaxSpeed = 5f;
+        private const float _intersectionLookaheadDistance = 7f;
+        private const float _intersectionMaxSpeed = 4f;
         private LaneNode _repositioningTarget;
         private VehicleController _vehicleController;
-        
+
+        private bool _isSetup = false;
+
+
         void Start()
+        {
+            if(!_isSetup)
+                Setup();
+        }
+
+        public void Setup()
         {
             Road.RoadSystem.Setup();
 
@@ -135,7 +144,6 @@ namespace Car {
             if (Mode == DrivingMode.Quality)
             {
                 _repositioningTarget = _agent.Context.CurrentNode;
-                _vehicleController.throttleInput = 1f;
             }
             else if (Mode == DrivingMode.Performance)
             {
@@ -152,8 +160,13 @@ namespace Car {
 
             // Setup the controller that handles callbacks for intersection entry and exit
             _navigationController = new NavigationController();
-            _navigationController.OnIntersectionEntry += SetPreviousIntersection;
-            _navigationController.OnIntersectionExit += ClearIntersectionTransition;
+
+            _navigationController.OnIntersectionEntry += IntersectionEntryHandler;
+            _navigationController.OnIntersectionExit += IntersectionExitHandler;
+
+            _isSetup = true;
+
+            UpdateOccupiedNodes();
         }
 
         void Update()
@@ -183,13 +196,14 @@ namespace Car {
             _agent.Context.VehiclePosition = transform.position;
         }
 
-        private void SetPreviousIntersection(Intersection intersection)
+        private void IntersectionEntryHandler(Intersection intersection)
         {
            _agent.Context.PrevIntersection = intersection;
         }
 
-        private void ClearIntersectionTransition(Intersection intersection)
+        private void IntersectionExitHandler(Intersection intersection)
         {
+            _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
             _agent.UnsetIntersectionTransition(intersection);
         }
 
@@ -205,7 +219,7 @@ namespace Car {
                 Q_TeleportToLane();
             else
                 P_TeleportToLane();
-
+            transform.rotation = node.Rotation;
             _agent.Context.NavigationMode = OriginalNavigationMode;
             SetInitialPrevIntersection();
 
@@ -384,8 +398,9 @@ namespace Car {
                 if (trafficLightShouldStop && _target == _agent.Context.BrakeTarget)
                     return;
                 
-                _vehicleController.maxSpeedForward = _target.RoadNode.Intersection != null ? _intersectionMaxSpeed : _originalMaxSpeedForward;
-                
+                if(_target.Intersection != null)
+                    _vehicleController.maxSpeedForward = _intersectionMaxSpeed;
+
                 // Set the target to the next point in the lane
                 _target = GetNextLaneNode(_target, 0, false);
             }
@@ -393,19 +408,15 @@ namespace Car {
 
         private void Q_Brake()
         {
-            bool q_shouldBrake = _brakeController.ShouldAct(ref _agent);
-            if(_agent.Setting.Mode == DrivingMode.Quality)
+            if(_brakeController.ShouldAct(ref _agent))
             {
-                if(q_shouldBrake)
-                {
-                    _vehicleController.brakeInput = 1f;
-                    _vehicleController.throttleInput = 0f;
-                }
-                else
-                {
-                    _vehicleController.brakeInput = 0f;
-                    _vehicleController.throttleInput = 1f;
-                }
+                _vehicleController.brakeInput = 0.2f;
+                _vehicleController.throttleInput = 0f;
+            }
+            else
+            {
+                _vehicleController.brakeInput = 0f;
+                _vehicleController.throttleInput = 0.5f;
             }
         }
 
@@ -518,13 +529,13 @@ namespace Car {
             LaneNode nextNode = _agent.Next(_target);
             
             // If the starting node is at a three way intersection, the target will be an EndNode but the next will be an intersection node, so we need to set the previous intersection
-            if (nextNode != null && nextNode.Intersection != null && _target.RoadNode.Position == nextNode.Position)
+            if (nextNode != null && nextNode.Intersection != null && nextNode.IsIntersection())
                 _agent.Context.PrevIntersection = nextNode.Intersection;
 
             LaneNode prevNode = _agent.Prev(_target);
             
             // If the starting node is a junction edge, the previous intersection is set
-            if (prevNode != null && prevNode.Intersection != null && _target.RoadNode.Position == prevNode.RoadNode.Position)
+            if (prevNode != null && prevNode.Intersection != null && prevNode.IsIntersection())
                 _agent.Context.PrevIntersection = prevNode.Intersection;
         }
 
@@ -594,9 +605,12 @@ namespace Car {
         {
             if (_agent != null && _agent.Context.NavigationPathContainer != null)
             {
-                _agent.Context.NavigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
-                _agent.Context.NavigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
-                
+                if (_agent.Context.NavigationPathContainer.transform.childCount > 0)
+                {
+                    _agent.Context.NavigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
+                    _agent.Context.NavigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
+                }
+
                 if(visible)
                     Navigation.DrawNavigationPath(out _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathEndNode, _agent.Context.NavigationPath, _agent.Context.CurrentNode, _agent.Context.NavigationPathContainer, _agent.Setting.NavigationPathMaterial, _agent.Context.PrevIntersection, _agent.Setting.NavigationTargetMarker);
             }
