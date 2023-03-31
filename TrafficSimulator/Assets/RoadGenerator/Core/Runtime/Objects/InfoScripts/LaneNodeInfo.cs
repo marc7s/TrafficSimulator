@@ -14,6 +14,8 @@ namespace RoadGenerator
 
         [Header("Related Road Node info")]
         [SerializeField] private SNReadOnly<RoadNodeType> _type = null;
+        [SerializeField] [ReadOnly] private Intersection _intersection = null;
+        [SerializeField] [ReadOnly] private TrafficLight _trafficLight = null;
 
         protected override void SetInfoFromReference(LaneNode _laneNode)
         {
@@ -24,6 +26,8 @@ namespace RoadGenerator
             _distanceToPrevNode = _laneNode.DistanceToPrevNode;
 
             _type = _laneNode.Type;
+            _intersection = _roadNode.Intersection;
+            _trafficLight = _roadNode.TrafficLight;
         }
     }
 }
