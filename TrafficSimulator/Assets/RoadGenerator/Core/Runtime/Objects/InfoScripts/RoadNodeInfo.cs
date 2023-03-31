@@ -6,6 +6,7 @@ namespace RoadGenerator
     public class RoadNodeInfo : InfoScript<RoadNode>
     {
         [SerializeField] private SNReadOnly<TrafficSignType> _trafficSignType = null;
+        [SerializeField] [ReadOnly] private TrafficLight _trafficLight = null;
         [SerializeField] [ReadOnly] private Intersection _intersection = null;
         [SerializeField] [ReadOnly] private NavigationNodeEdge _primaryNavigationNodeEdge = null;
         [SerializeField] [ReadOnly] private NavigationNodeEdge _secondaryNavigationNodeEdge = null;
@@ -19,6 +20,7 @@ namespace RoadGenerator
         protected override void SetInfoFromReference(RoadNode _roadNode)
         {
             _trafficSignType = _roadNode.TrafficSignType;
+            _trafficLight = _roadNode.TrafficLight;
             _intersection = _roadNode.Intersection;
             _primaryNavigationNodeEdge = _roadNode.PrimaryNavigationNodeEdge;
             _secondaryNavigationNodeEdge = _roadNode.SecondaryNavigationNodeEdge;
