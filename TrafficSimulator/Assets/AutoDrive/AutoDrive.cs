@@ -6,6 +6,7 @@ using EVP;
 using RoadGenerator;
 using CustomProperties;
 using DataModel;
+using Simulation;
 
 
 namespace Car {
@@ -22,6 +23,11 @@ namespace Car {
         CurrentPosition,
         OccupiedNodes,
         All
+    }
+    public enum Activity 
+    {
+        Driving,
+        Parked
     }
     
     public class AutoDrive : MonoBehaviour
@@ -42,6 +48,7 @@ namespace Car {
 
         [Header("Settings")]
         public DrivingMode Mode = DrivingMode.Quality;
+        public Activity Active = Activity.Parked;
         public RoadEndBehaviour EndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
         public NavigationMode OriginalNavigationMode = NavigationMode.Disabled;
@@ -92,6 +99,8 @@ namespace Car {
 
         private bool _isSetup = false;
 
+        TimeManagerEvent _timeManagerEvent;
+        TimeManager _timeManager;
 
         void Start()
         {
@@ -132,7 +141,7 @@ namespace Car {
             _targetLineRenderer.endWidth = targetLineWidth;
 
             _agent = new AutoDriveAgent(
-                new AutoDriveSetting(GetComponent<Vehicle>(), Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
+                new AutoDriveSetting(GetComponent<Vehicle>(), Mode, Active, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
                 new AutoDriveContext(Road, currentNode, transform.position, OriginalNavigationMode)
             );
 
@@ -167,25 +176,22 @@ namespace Car {
             _isSetup = true;
 
             UpdateOccupiedNodes();
+
+            _timeManager = TimeManager.Instance;
+
+            // Add event to TimeManager to start driving
+            _timeManagerEvent = new TimeManagerEvent(DateTime.Now.AddSeconds(5));
+            _timeManager.AddEvent(_timeManagerEvent);
+
+            _timeManagerEvent.OnEvent += OnTimeEvent;
         }
 
         void Update()
         {
             UpdateOccupiedNodes();
             UpdateContext();
-           
-            if (Mode == DrivingMode.Quality)
-            {
-                Q_Brake();
-                Q_SteerTowardsTarget();
-                Q_UpdateTarget();
-                Q_UpdateCurrent();
-            }
-            else if (Mode == DrivingMode.Performance)
-            {
-                // Brake if needed
-                P_UpdateTargetAndCurrent();
-            }
+
+            SetActivity();
             
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
@@ -205,6 +211,36 @@ namespace Car {
         {
             _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
             _agent.UnsetIntersectionTransition(intersection);
+        }
+
+        protected void OnTimeEvent()
+        {
+            Active = Activity.Driving;
+        }
+
+        private void SetActivity()
+        {
+            switch (Active)
+            {
+                case Activity.Driving:
+                    if (Mode == DrivingMode.Quality)
+                    {
+                        Q_Brake();
+                        Q_SteerTowardsTarget();
+                        Q_UpdateTarget();
+                        Q_UpdateCurrent();
+                    }
+                    else if (Mode == DrivingMode.Performance)
+                    {
+                        // Brake if needed
+                        P_UpdateTargetAndCurrent();
+                    }
+                    break;
+                case Activity.Parked:
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void ResetToNode(LaneNode node)

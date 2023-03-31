@@ -141,6 +141,7 @@ namespace Car
     {
         private Vehicle _vehicle;
         private DrivingMode _mode;
+        private Activity _active;
         private RoadEndBehaviour _endBehaviour;
         private VehicleController _vehicleController;
         private float _brakeOffset;
@@ -151,6 +152,7 @@ namespace Car
         
         public Vehicle Vehicle => _vehicle;
         public DrivingMode Mode => _mode;
+        public Activity Active => _active;
         public RoadEndBehaviour EndBehaviour => _endBehaviour;
         public VehicleController VehicleController => _vehicleController;
         public float BrakeOffset => _brakeOffset;
@@ -159,10 +161,11 @@ namespace Car
         public GameObject NavigationTargetMarker => _navigationTargetMarker;
         public Material NavigationPathMaterial => _navigationPathMaterial;
         
-        public AutoDriveSetting(Vehicle vehicle, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
+        public AutoDriveSetting(Vehicle vehicle, DrivingMode mode, Activity active, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
             _vehicle = vehicle;
             _mode = mode;
+            _active = active;
             _endBehaviour = endBehaviour;
             _vehicleController = vehicleController;
             _brakeOffset = brakeOffset;
