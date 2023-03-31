@@ -626,7 +626,7 @@ namespace RoadGenerator
             
             LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, LaneSide.Secondary);
             
-            _intersectionExitNodes.Add(node.ID, exit);
+            _intersectionExitNodes.Add(node.ID, exit.Reverse());
         }
 
         private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, LaneSide laneSide)
@@ -810,9 +810,6 @@ namespace RoadGenerator
                 Road1.RemoveIntersection(this);
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
-            
-            Road1.UpdateMesh();
-            Road2.UpdateMesh();
         }
     }
 }
