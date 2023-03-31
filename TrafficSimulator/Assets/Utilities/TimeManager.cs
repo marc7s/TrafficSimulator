@@ -57,7 +57,7 @@ namespace Simulation
         }
 
         /// </summary> Returns a formatted string of the current timestamp </summary>
-        public static string Timestamp
+        public string Timestamp
         {
             get => _dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
@@ -95,7 +95,7 @@ namespace Simulation
         }
 
         /// <summary> Looks if the next scheduled event should execute at the current time </summary>
-        private static void CheckSchedule()
+        private void CheckSchedule()
         {
             // Check if there are any events scheduled for the current time
             PriorityQueue<TimeManagerEvent> currentMonth = _calendar[Month - 1];
@@ -110,7 +110,7 @@ namespace Simulation
         }
 
         /// </summary> Sets the current simulation time </summary>
-        private static void SetTime(DateTime dateTime)
+        private void SetTime(DateTime dateTime)
         {
             DateTime prevTime = _dateTime;
             _dateTime = FormatDateTime(dateTime);
@@ -138,13 +138,13 @@ namespace Simulation
         }
 
         /// <summary> Updates the current simulation time, moves it forward or backward depending on the mode </summary>
-        private static void UpdateSimulationTime()
+        private void UpdateSimulationTime()
         {
             SetTime(_dateTime.AddSeconds(Mode == TimeMode.Rewind ? -1 : 1));
         }
 
         /// </summary> Initializes calendar with an empty priority queue for each month </summary>
-        private static void InitCalendar()
+        private void InitCalendar()
         {
             for(int i = 0; i < 12; i++)
                 _calendar.Add(new PriorityQueue<TimeManagerEvent>());
@@ -158,25 +158,25 @@ namespace Simulation
         }
 
         /// </summary> Sets current mode to fast forward </summary>
-        public static void SetModeFastForward()
+        public void SetModeFastForward()
         {
             Mode = Mode != TimeMode.Fast ? TimeMode.Fast : TimeMode.Running;
         }
 
         /// </summary> Sets current mode to rewind </summary>
-        public static void SetModeRewind()
+        public void SetModeRewind()
         {
             Mode = Mode != TimeMode.Rewind ? TimeMode.Rewind : TimeMode.Running;
         }
 
         /// </summary> Sets current mode to paused </summary>
-        public static void SetModePause()
+        public void SetModePause()
         {
             Mode = Mode != TimeMode.Paused ? TimeMode.Paused : TimeMode.Running;
         }
 
         /// </summary> Formats a date time to the correct resolution </summary>
-        public static DateTime FormatDateTime(DateTime dateTime)
+        public DateTime FormatDateTime(DateTime dateTime)
         {
             // Recreate the date time to force resolution to seconds
             return new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second, DateTimeKind.Local);

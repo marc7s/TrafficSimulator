@@ -113,22 +113,22 @@ public class OverlayController : MonoBehaviour
 
     private void RewindButtonOnClicked()
     {
-        TimeManager.SetModeRewind();
+        TimeManager.Instance.SetModeRewind();
     }
 
     private void PauseButtonOnClicked()
     {
-        TimeManager.SetModePause();
+        TimeManager.Instance.SetModePause();
     }
 
     private void FastForwardButtonOnClicked()
     {
-        TimeManager.SetModeFastForward();
+        TimeManager.Instance.SetModeFastForward();
     }
 
     void Update()
     {
-        _clockLabel.text = TimeManager.Timestamp;
+        _clockLabel.text = TimeManager.Instance.Timestamp;
     }
 
     public void Enable()
