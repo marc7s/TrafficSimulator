@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
+using User;
 
 namespace Cam
 {
@@ -16,7 +16,13 @@ namespace Cam
         [SerializeField] private float _zoomSpeed = 1f;
 
         private float _targetZoom = 50f;
-        
+
+        public override void SetActive(CameraManager cameraManager)
+        {
+            base.SetActive(cameraManager);
+            UserSelectManager.Instance.CanSelectNewObject = false;
+        }
+
         public override void RotateHorizontal(float horizontalRotation)
         {
             FollowTransform.rotation *= Quaternion.AngleAxis(horizontalRotation * _rotateSpeed, Vector3.up);
@@ -30,10 +36,18 @@ namespace Cam
                 _targetZoom, Time.deltaTime * _zoomSpeed);
         }
 
-        public override void HandleEscapeInput(InputAction.CallbackContext ctx)
+        public override void HandleEscapeInput()
         {
-            CameraManager.CameraTarget = FollowTransform;
-            CameraManager.TogglePreviousCamera();
+            CameraManager.ToggleDefaultCamera();
+        }
+
+        public override void HandleSpaceInput()
+        {
+            if (UserSelectManager.Instance.SelectedGameObject.GetComponent<CarSelectable>() == null)
+            {
+                return;
+            }
+            CameraManager.ToggleFirstPersonDriverCamera();
         }
     }
 }
