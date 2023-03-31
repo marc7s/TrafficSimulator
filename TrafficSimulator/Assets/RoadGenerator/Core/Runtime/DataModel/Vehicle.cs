@@ -11,7 +11,7 @@ namespace DataModel
             _id = System.Guid.NewGuid().ToString();
         }
 
-        protected string ID
+        public string ID
         {
             get => _id;
         }
