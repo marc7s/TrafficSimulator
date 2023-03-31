@@ -229,14 +229,10 @@ namespace RoadGenerator
         }
         
         /// <summary> Adds intermediate RoadNodes between start and end point to bridge the gap, making sure the MaxRoadNodeDistance invariant is upheld </summary>
-        private NodeBuilder AddIntermediateNodes(NodeBuilder builder, Vector3 start, Vector3 end, Vector3 tangent, Vector3 normal, bool endIsLastNode, RoadNodeType type = RoadNodeType.Default)
+        private NodeBuilder AddIntermediateNodes(NodeBuilder builder, Vector3 start, Vector3 end, Vector3 tangent, Vector3 normal, RoadNodeType type = RoadNodeType.Default)
         {
             // Calculate the total distance that needs to be bridged
             float distanceToBridge = Vector3.Distance(start, end);
-
-            // If the distance is less than the max distance, no intermediate nodes need to be added
-            if(distanceToBridge <= MaxRoadNodeDistance)
-                return endIsLastNode ? AppendNode(builder, end, tangent, normal, RoadNodeType.End) : builder;
             
             // Create a list to hold all intermediate positions that need to be added
             List<Vector3> roadNodePositions = new List<Vector3>();
@@ -320,7 +316,7 @@ namespace RoadGenerator
                             // At this point we know that we have a queued node to be added this iteration. However, it might be too far away, so if we are not yet
                             // in the intersection we need to bridge the gap and add intermediate RoadNodes up to the junction edge
                             if(insideIntersections.Count == 0)
-                                roadBuilder = AddIntermediateNodes(roadBuilder, roadBuilder.Curr.Position, nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), false);
+                                roadBuilder = AddIntermediateNodes(roadBuilder, roadBuilder.Curr.Position, nextNode.Position, _path.GetTangent(i), _path.GetNormal(i));
                             
                             // Append the queued node
                             roadBuilder = AppendNode(roadBuilder, nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType, nextNode.Intersection);
@@ -353,8 +349,10 @@ namespace RoadGenerator
                 }
 
                 // Bridge the gap between the current node and the current vertex point
-                roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i), i == _path.NumPoints - 1);
-                AppendNode(roadBuilder, currPosition, _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.End, null);
+                roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i));
+ 
+                if (i == _path.NumPoints - 1)
+                    roadBuilder = AppendNode(roadBuilder, currPosition, _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.End);
             }
             
             // Create a new navigation graph
