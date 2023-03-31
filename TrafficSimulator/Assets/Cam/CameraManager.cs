@@ -1,7 +1,7 @@
-using System;
+using Cinemachine;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using User;
+using CameraState = Cam.CameraState;
 
 namespace Cam
 {
@@ -16,124 +16,66 @@ namespace Cam
         [SerializeField] private CameraState[] _cameras;
         [SerializeField] private int _currentActiveCameraIndex = 0;
         [SerializeField] private int _previousActiveCameraIndex;
-        [SerializeField] public Transform CameraTarget;
-        private CameraState CurrentActiveCamera => _cameras[_currentActiveCameraIndex];
-        
-        #region User Input
-        private InputAction _movementInput;
-        private InputAction _rotationInput;
-        private InputAction _zoomInput;
-        private InputAction _clickInput;
-        private InputAction _doubleClickInput;
-        private InputAction _pointInput;
-        private InputAction _escapeInput;
-    
-        // Cached input values
-        private Vector2 _movementFromUser;
-        private float _rotationFromUser;
-        private float _zoomFromUser;
+        [SerializeField] public Selectable CameraTarget;
 
-
-        private void SetupInputActions()
-        {
-            _movementInput = UserInputManager.PlayerInputActions.Default.Move;
-            _rotationInput = UserInputManager.PlayerInputActions.Default.Rotate;
-            _zoomInput = UserInputManager.PlayerInputActions.Default.Zoom;
-            _clickInput = UserInputManager.PlayerInputActions.Default.Click;
-            _doubleClickInput = UserInputManager.PlayerInputActions.Default.DoubleClick;
-            _pointInput = UserInputManager.PlayerInputActions.Default.Point;
-            _escapeInput = UserInputManager.PlayerInputActions.Default.Escape;
-        }
-        
-        private void SubscribeToInput()
-        {
-            _movementInput.performed += OnMovementInput;
-            _movementInput.canceled += OnMovementInput;
-            _rotationInput.performed += OnRotationInput;
-            _rotationInput.canceled += OnRotationInput;
-            _zoomInput.performed += OnZoomInput;
-            _zoomInput.canceled += OnZoomInput;
-            
-            _pointInput.performed += OnPointInput;
-            _clickInput.performed += OnClickInput;
-            _doubleClickInput.performed += OnDoubleClickInput;
-            _escapeInput.performed += OnEscapeInput;
-
-        }
-        
-        private void OnMovementInput(InputAction.CallbackContext ctx)
-        {
-            _movementFromUser = ctx.ReadValue<Vector2>();
-        }
-    
-        private void OnRotationInput(InputAction.CallbackContext ctx)
-        {
-            _rotationFromUser = ctx.ReadValue<float>();
-        }
-    
-        private void OnZoomInput(InputAction.CallbackContext ctx)
-        {
-            _zoomFromUser = ctx.ReadValue<float>();
-        }
-    
-        private void OnPointInput(InputAction.CallbackContext ctx)
-        {
-            CurrentActiveCamera.HandlePointInput(ctx.ReadValue<Vector2>());
-        }
-    
-        private void OnClickInput(InputAction.CallbackContext ctx)
-        {
-            CurrentActiveCamera.HandleClickInput(ctx);
-        }
-
-        private void OnDoubleClickInput(InputAction.CallbackContext ctx)
-        {
-            CurrentActiveCamera.HandleDoubleClickInput(ctx);
-        }
-
-        private void OnEscapeInput(InputAction.CallbackContext ctx)
-        {
-            CurrentActiveCamera.HandleEscapeInput(ctx);
-        }
-
-        #endregion
-    
-        private void Update()
-        {
-            CurrentActiveCamera.Move(_movementFromUser);
-            CurrentActiveCamera.RotateHorizontal(_rotationFromUser);
-            CurrentActiveCamera.Zoom(_zoomFromUser);
-        }
-    
-        private void Awake()
-        {
-            _cameras[_currentActiveCameraIndex].GetComponent<CameraState>().SetActive(this);
-        }
-
+        public CameraInputHandler InputHandler { get; private set; }
+        private CinemachineBrain _cmBrain;
         private void Start()
         {
-            SetupInputActions();
-            SubscribeToInput();
+            InputHandler = new CameraInputHandler();
+            _cmBrain = Camera.main.GetComponent<CinemachineBrain>();
+            _cameras[FindDefaultCameraIndex()].SetActive(this);
         }
 
+        private void Update()
+        {
+            if (_cmBrain.IsBlending) return;
+            _cameras[_currentActiveCameraIndex].Look(InputHandler.LookDelta);
+            _cameras[_currentActiveCameraIndex].Move(InputHandler.Movement);
+            _cameras[_currentActiveCameraIndex].RotateHorizontal(InputHandler.Rotation);
+            _cameras[_currentActiveCameraIndex].Zoom(InputHandler.Zoom);
+        }
+
+        private void OnDestroy()
+        {
+            InputHandler.Dispose();
+        }
+        
         public void ToggleThirdPersonCamera()
         {
             SwitchActiveCamera(1);
         }
-    
-        public void TogglePreviousCamera()
-        {
-            SwitchActiveCamera(_previousActiveCameraIndex);
-        }
-    
+
         private void SwitchActiveCamera(int newIndex)
         {
             _previousActiveCameraIndex = _currentActiveCameraIndex;
             _currentActiveCameraIndex = newIndex;
-        
+
             _cameras[_previousActiveCameraIndex].SetInactive(this);
-            _cameras[_currentActiveCameraIndex].SetFollowTransform(CameraTarget);
+            _cameras[_currentActiveCameraIndex].SetFollowTransform(CameraTarget.transform);
             _cameras[_currentActiveCameraIndex].SetActive(this);
+        }
+
+        private int FindDefaultCameraIndex()
+        {
+            for (int i = 0; i < _cameras.Length; i++)
+            {
+                if (_cameras[i].IsDefault) return i;
+            }
+
+            // Set the first camera to default
+            Debug.LogWarning("No default camera has been assigned! Setting the camera with index 0 to default.");
+            return 0;
+        }
+        
+        public void ToggleFirstPersonDriverCamera()
+        {
+            SwitchActiveCamera(2);
+        }
+
+        public void ToggleDefaultCamera()
+        {
+            SwitchActiveCamera(0);
         }
     }
 }
