@@ -243,40 +243,26 @@ namespace RoadGenerator
 
             // Calculate how many intermediate nodes to add
             int positionsToAdd = Mathf.CeilToInt(distanceToBridge / MaxRoadNodeDistance);
-
-            // Calculate the distance between each intermediate node
-            float distanceBetweenPoints = distanceToBridge / positionsToAdd;
             
             // Add the intermediate positions to the list
             for(int posCount = 0; posCount < positionsToAdd; posCount++)
             {
                 // Calculate the percentage of how far along the line from the start to the end node this intermediate node should be
-                float t = (float)(posCount + 1) / (positionsToAdd);
+                float t = (float)(posCount + 1) / (positionsToAdd + 1);
 
                 // Calculate the position of the intermediate node
                 Vector3 pos = Vector3.Lerp(start, end, t);
-
                 // Add the position to the list
                 roadNodePositions.Add(pos);
             }
-            if (!endIsLastNode)
-                roadNodePositions.RemoveAt(roadNodePositions.Count - 1);
-
             // Add all the intermediate nodes
             while(roadNodePositions.Count > 0)
             {
                 // Get the first position to add
                 Vector3 position = roadNodePositions[0];
 
-                // The current node type is assumed to be the desired type
-                RoadNodeType currentType = type;
-                
-                // If the current node is the last node in the path, then the current node type is an end node
-                if(endIsLastNode && roadNodePositions.Count == 1)
-                    currentType = RoadNodeType.End;
-
                 // Add the intermediate node
-                builder = AppendNode(builder, position, tangent, normal, currentType);
+                builder = AppendNode(builder, position, tangent, normal, type);
 
                 // This position has now been added, so remove it from the list
                 roadNodePositions.RemoveAt(0);
@@ -339,14 +325,12 @@ namespace RoadGenerator
                             // Append the queued node
                             roadBuilder = AppendNode(roadBuilder, nextNode.Position, _path.GetTangent(i), _path.GetNormal(i), nextNode.NodeType, nextNode.Intersection);
                             
-
                             // Update the dictionary used to determine if we are inside an intersection
                             // Inside for 4 way intersections meaning between the junction edge, for 3 way meaning between the junction edge and intersection
                             if(nextNode.EndsIntersection)
                                 insideIntersections.Remove(nextNode.Reference);  
                             else
                                 insideIntersections.TryAdd(nextNode.Reference, i);
-                                
 
                             // The queued node has now been added, so dequeue it
                             queuedNodes.Dequeue();
@@ -370,6 +354,7 @@ namespace RoadGenerator
 
                 // Bridge the gap between the current node and the current vertex point
                 roadBuilder = AddIntermediateNodes(roadBuilder, lastPosition, currPosition, _path.GetTangent(i), _path.GetNormal(i), i == _path.NumPoints - 1);
+                AppendNode(roadBuilder, currPosition, _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.End, null);
             }
             
             // Create a new navigation graph
