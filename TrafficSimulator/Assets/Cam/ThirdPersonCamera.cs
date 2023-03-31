@@ -25,7 +25,7 @@ namespace Cam
 
         public override void RotateHorizontal(float horizontalRotation)
         {
-            FollowTransform.rotation *= Quaternion.AngleAxis(horizontalRotation * _rotateSpeed, Vector3.up);
+            FollowTransform.rotation *= Quaternion.AngleAxis(horizontalRotation * _rotateSpeed * Time.deltaTime, Vector3.up);
         }
 
         public override void Zoom(float zoomValue)
