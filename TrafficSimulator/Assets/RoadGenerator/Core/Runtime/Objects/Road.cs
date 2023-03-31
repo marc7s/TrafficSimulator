@@ -277,6 +277,7 @@ namespace RoadGenerator
 
                 // Add the intermediate node
                 builder = AppendNode(builder, position, tangent, normal, currentType);
+
                 // This position has now been added, so remove it from the list
                 roadNodePositions.RemoveAt(0);
             }
