@@ -238,7 +238,7 @@ namespace RoadGenerator
             List<Vector3> roadNodePositions = new List<Vector3>();
 
             // Calculate how many intermediate nodes to add
-            int positionsToAdd = Mathf.CeilToInt(distanceToBridge / MaxRoadNodeDistance);
+            int positionsToAdd = Mathf.CeilToInt(distanceToBridge / MaxRoadNodeDistance) - 1;
             
             // Add the intermediate positions to the list
             for(int posCount = 0; posCount < positionsToAdd; posCount++)
@@ -251,6 +251,7 @@ namespace RoadGenerator
                 // Add the position to the list
                 roadNodePositions.Add(pos);
             }
+
             // Add all the intermediate nodes
             while(roadNodePositions.Count > 0)
             {
