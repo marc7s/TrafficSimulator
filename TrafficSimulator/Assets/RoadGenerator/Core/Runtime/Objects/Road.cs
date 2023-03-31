@@ -259,6 +259,8 @@ namespace RoadGenerator
                 // Add the position to the list
                 roadNodePositions.Add(pos);
             }
+            if (!endIsLastNode)
+                roadNodePositions.RemoveAt(roadNodePositions.Count - 1);
 
             // Add all the intermediate nodes
             while(roadNodePositions.Count > 0)
@@ -275,7 +277,6 @@ namespace RoadGenerator
 
                 // Add the intermediate node
                 builder = AppendNode(builder, position, tangent, normal, currentType);
-
                 // This position has now been added, so remove it from the list
                 roadNodePositions.RemoveAt(0);
             }
