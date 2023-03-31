@@ -28,8 +28,7 @@ public class InfoController : MonoBehaviour
             ResetInfo();
             return;
         }
-        //_totalTimeOnRoad.text = car.
-        _totalDistanceTraveled.text = car.TotalDistance.ToString("0.00");
+        _totalDistanceTraveled.text = car.TotalDistance.ToString("0.00") + " m";
     }
 
     public void ResetInfo()

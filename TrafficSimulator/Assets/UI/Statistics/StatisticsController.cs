@@ -68,17 +68,14 @@ namespace UI
         private void StatsButtonOnClicked()
         {
             _tabs = Tabs.Stats;
-            Debug.Log("Stats");
         }
         private void InfoButtonOnClicked()
         {
             _tabs = Tabs.Info;
-            Debug.Log("Info");
         }
         private void SettingsButtonOnClicked()
         {
             _tabs = Tabs.Settings;
-            Debug.Log("Settings");
         }
 
         private void UpdatePanels()
