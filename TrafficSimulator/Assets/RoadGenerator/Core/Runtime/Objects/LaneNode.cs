@@ -11,7 +11,7 @@ namespace RoadGenerator
         protected LaneSide _laneSide;
         protected Vehicle _vehicle;
         protected int _laneIndex;
-        public List<LaneNode> YieldNodes = new List<LaneNode>();
+        public List<(LaneNode, LaneNode)> YieldNodes = new List<(LaneNode, LaneNode)>();
 
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
         public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, laneIndex, roadNode, null, null, distanceToPrevNode){}
@@ -66,7 +66,7 @@ namespace RoadGenerator
             get => _roadNode.TrafficLight;
         }
 
-        public Intersection Intersection
+        public virtual Intersection Intersection
         {
             get => _roadNode.Intersection;
         }
@@ -82,7 +82,7 @@ namespace RoadGenerator
         /// <summary>Tries to assign a vehicle to this node. Returns `true` if it succeded, `false` if there is already a vehicle assigned</summary>
         public virtual bool SetVehicle(Vehicle vehicle)
         {
-            if(_vehicle == null)
+            if(_vehicle == null || _vehicle == vehicle)
             {
                 _vehicle = vehicle;
                 return true;
@@ -102,9 +102,9 @@ namespace RoadGenerator
             return false;
         }
 
-        public bool HasVehicle()
+        public virtual bool HasVehicle()
         {
-            return _vehicle != null;
+            return Vehicle != null;
         }
     }
 }
