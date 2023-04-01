@@ -119,7 +119,7 @@ namespace RoadGenerator
         [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] private float _length;
-
+        [HideInInspector] public bool FirstRoadInClosedLoop = false;
         [HideInInspector] public ConnectedRoad? ConnectedToAtStart;
         [HideInInspector] public ConnectedRoad? ConnectedToAtEnd;
         float connectionDistanceThreshold = 3f;
@@ -174,16 +174,15 @@ namespace RoadGenerator
             }
 
             // Start the search at an endpoint of the road
-
+            Debug.Log("Connection foundgfdsgfdsgftd" + this);
             Road startRoad = FindStartRoadInConnection();
 
             if (startRoad.ConnectedToAtStart != null)
-            {
+            {   
                 startRoad.Reverse();
             }
 
             ReverseConnectedRoad(startRoad);
-            //GetConnectedRoadsBezierAnchorPoints(startRoad);
             UpdateAllConnectedRoads(GetConnectedRoadsBezierAnchorPoints(startRoad));
         }
         public void MapConnectedRoads()
@@ -218,6 +217,10 @@ namespace RoadGenerator
         {
             (ConnectedToAtEnd, ConnectedToAtStart) = (ConnectedToAtStart, ConnectedToAtEnd);
             PathCreator.bezierPath.Reverse();
+            foreach (Intersection intersection in Intersections)
+            {
+                intersection.Reverse(this);
+            }
             UpdateRoad();
         }
 
@@ -284,6 +287,10 @@ namespace RoadGenerator
                 return endRoadInStartDirection;
             if (endRoadInEndDirection.ConnectedToAtStart == null)
                 return endRoadInEndDirection;
+            // Closed loop
+            Debug.Log("Closed loop" + endRoadInStartDirection);
+            endRoadInStartDirection.FirstRoadInClosedLoop = true;
+
             return endRoadInStartDirection;
         }
         private Road FindEndRoadInConnectedDirection(EndOfRoadType direction)
@@ -296,6 +303,7 @@ namespace RoadGenerator
                 return this;
             while (true)
             {
+                road.FirstRoadInClosedLoop = false;
                 // If the road is closed, return the road
                 if((road.ConnectedToAtStart?.Road == this || road.ConnectedToAtEnd?.Road == this) && ConnectedToAtEnd?.Road == road)
                     return this;
@@ -538,7 +546,7 @@ namespace RoadGenerator
             float dstToPrev = Vector3.Distance(builder.Prev.Position, position);
             builder.CurrLength += dstToPrev;
 
-            RoadNodeType type2 = type == RoadNodeType.End ? ConnectedToAtEnd == null ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
+            RoadNodeType type2 = type == RoadNodeType.End ? (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
             // Add the new node to the end
             builder.Curr = new RoadNode(position, tangent, normal, type2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
             if (type2 == RoadNodeType.RoadConnection)
@@ -605,7 +613,7 @@ namespace RoadGenerator
             // Set the end of path instruction depending on if the path is closed or not
             _endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
-            RoadNodeType startType = ConnectedToAtStart == null ? RoadNodeType.End : RoadNodeType.RoadConnection;
+            RoadNodeType startType = ConnectedToAtStart == null || FirstRoadInClosedLoop ? RoadNodeType.End : RoadNodeType.RoadConnection;
             // Create the start node for the road. The start node must be an end node
             StartRoadNode = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
             StartRoadNode.Road = this;
@@ -699,6 +707,11 @@ namespace RoadGenerator
 
         private void ConnectRoadNodesForConnectedRoads()
         {
+            if (FirstRoadInClosedLoop)
+                return;
+            if (ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true)
+                return;
+
             if (ConnectedToAtStart != null)
             {
                 Road road = ConnectedToAtStart?.Road;
