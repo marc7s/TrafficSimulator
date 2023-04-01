@@ -90,8 +90,17 @@ namespace Car {
         private const float _intersectionMaxSpeed = 4f;
         private LaneNode _repositioningTarget;
         private VehicleController _vehicleController;
-        
+
+        private bool _isSetup = false;
+
+
         void Start()
+        {
+            if(!_isSetup)
+                Setup();
+        }
+
+        public void Setup()
         {
             Road.RoadSystem.Setup();
 
@@ -140,7 +149,6 @@ namespace Car {
             if (Mode == DrivingMode.Quality)
             {
                 _repositioningTarget = _agent.Context.CurrentNode;
-                _vehicleController.throttleInput = 1f;
             }
             else if (Mode == DrivingMode.Performance)
             {
@@ -156,8 +164,13 @@ namespace Car {
 
             // Setup the controller that handles callbacks for intersection entry and exit
             _navigationController = new NavigationController();
+
             _navigationController.OnIntersectionEntry += IntersectionEntryHandler;
             _navigationController.OnIntersectionExit += IntersectionExitHandler;
+
+            _isSetup = true;
+
+            UpdateOccupiedNodes();
         }
 
         void Update()
@@ -293,8 +306,9 @@ namespace Car {
             _vehicleController.cachedRigidbody.MoveRotation(_agent.Context.CurrentNode.Rotation);
             
             // Move it to the current position, offset in the opposite direction of the lane
-            _vehicleController.cachedRigidbody.MovePosition(_agent.Context.CurrentNode.Position - (2 * (_agent.Context.CurrentNode.Rotation * Vector3.forward).normalized));
-            
+            _vehicleController.cachedRigidbody.position = _agent.Context.CurrentNode.Position - (2 * (_agent.Context.CurrentNode.Rotation * Vector3.forward).normalized);
+            transform.position = _vehicleController.cachedRigidbody.position;
+
             // Reset velocity and angular velocity
             _vehicleController.cachedRigidbody.velocity = Vector3.zero;
             _vehicleController.cachedRigidbody.angularVelocity = Vector3.zero;
@@ -525,13 +539,13 @@ namespace Car {
             LaneNode nextNode = _agent.Next(_target);
             
             // If the starting node is at a three way intersection, the target will be an EndNode but the next will be an intersection node, so we need to set the previous intersection
-            if (nextNode != null && nextNode.Intersection != null && _target.RoadNode.Position == nextNode.Position)
+            if (nextNode != null && nextNode.Intersection != null && nextNode.IsIntersection())
                 _agent.Context.PrevIntersection = nextNode.Intersection;
 
             LaneNode prevNode = _agent.Prev(_target);
             
             // If the starting node is a junction edge, the previous intersection is set
-            if (prevNode != null && prevNode.Intersection != null && _target.RoadNode.Position == prevNode.RoadNode.Position)
+            if (prevNode != null && prevNode.Intersection != null && prevNode.IsIntersection())
                 _agent.Context.PrevIntersection = prevNode.Intersection;
         }
 
