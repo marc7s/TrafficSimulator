@@ -1,36 +1,35 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using User;
 using Car;
 
-public class StatsController : MonoBehaviour
+namespace UI
 {
-    private UIDocument _doc;
-
-    // Labels
-    private Label _fuelConsumption;
-    private Label _timeInTraffic;
-
-    private void Awake()
+    public class StatsController : MonoBehaviour
     {
-        _doc = GetComponent<UIDocument>();
+        private UIDocument _doc;
 
+        // Labels
+        private Label _fuelConsumption;
+        private Label _timeInTraffic;
 
-        
-    }
-    
-    public void UpdateInfo(AutoDrive car)
-    {
-        if (car == null)
+        void Awake()
         {
-            ResetInfo();
-            return;
+            _doc = GetComponent<UIDocument>();
+
+        }
+        
+        public void UpdateInfo(AutoDrive car)
+        {
+            if (car == null)
+            {
+                ResetInfo();
+                return;
+            }
         }
 
-    }
+        public void ResetInfo()
+        {
 
-    public void ResetInfo()
-    {
-
+        }
     }
 }

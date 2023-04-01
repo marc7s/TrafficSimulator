@@ -1,34 +1,36 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using User;
 using Car;
 
-public class SettingsController : MonoBehaviour
+namespace UI
 {
-    private UIDocument _doc;
-
-    // Labels
-    private Label _mode;
-    private Label _maxSpeed;
-
-    private void Awake()
+    public class SettingsController : MonoBehaviour
     {
-        _doc = GetComponent<UIDocument>();
-        
-    }
-    
-    public void UpdateInfo(AutoDrive car)
-    {
-        if (car == null)
+        private UIDocument _doc;
+
+        // Labels
+        private Label _mode;
+        private Label _maxSpeed;
+
+        void Awake()
         {
-            ResetInfo();
-            return;
+            _doc = GetComponent<UIDocument>();
+            
+        }
+        
+        public void UpdateInfo(AutoDrive car)
+        {
+            if (car == null)
+            {
+                ResetInfo();
+                return;
+            }
+
         }
 
-    }
+        public void ResetInfo()
+        {
 
-    public void ResetInfo()
-    {
-
+        }
     }
 }

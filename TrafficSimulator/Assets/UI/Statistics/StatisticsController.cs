@@ -7,6 +7,14 @@ namespace UI
 {
     public class StatisticsController : MonoBehaviour
     {
+        private enum Tabs
+        {
+            None,
+            Stats,
+            Info,
+            Settings
+        }
+        
         private UIDocument _doc;
         private UserSelectManager _userSelectManager;
         private Selectable _selectedCar;
@@ -15,13 +23,6 @@ namespace UI
         [SerializeField] private SettingsController _settingsController;
 
         private OverlayController _overlayController;
-        private enum Tabs
-        {
-            None,
-            Stats,
-            Info,
-            Settings
-        }
 
         private Tabs _tabs;
 
@@ -69,10 +70,12 @@ namespace UI
         {
             _tabs = Tabs.Stats;
         }
+
         private void InfoButtonOnClicked()
         {
             _tabs = Tabs.Info;
         }
+        
         private void SettingsButtonOnClicked()
         {
             _tabs = Tabs.Settings;
