@@ -846,7 +846,6 @@ namespace RoadGenerator
                     // Set the current lane node to the exit section
                     currLaneNode = exitSection.Start;
                 }
-                    
                 else
                     currLaneNode = currLaneNode.Next;
             }
