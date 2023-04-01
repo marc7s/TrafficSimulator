@@ -478,6 +478,7 @@ namespace RoadGenerator
 
         public void UpdateMesh()
         {
+
             UpdateRoadNodes();
             UpdateLanes();
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
@@ -491,6 +492,7 @@ namespace RoadGenerator
 
         private void UpdateRoad()
         {
+
             RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
             if(roadMeshCreator != null)
             {
@@ -545,7 +547,10 @@ namespace RoadGenerator
             // Calculate the distance from the new position to the previous node, and update the current length accordingly
             float dstToPrev = Vector3.Distance(builder.Prev.Position, position);
             builder.CurrLength += dstToPrev;
-
+            if(type == RoadNodeType.End)
+            {
+                Debug.Log((ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true) + "" + this);
+            }
             RoadNodeType type2 = type == RoadNodeType.End ? (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
             // Add the new node to the end
             builder.Curr = new RoadNode(position, tangent, normal, type2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
@@ -707,12 +712,7 @@ namespace RoadGenerator
 
         private void ConnectRoadNodesForConnectedRoads()
         {
-            if (FirstRoadInClosedLoop)
-                return;
-            if (ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true)
-                return;
-
-            if (ConnectedToAtStart != null)
+            if (ConnectedToAtStart != null && !FirstRoadInClosedLoop)
             {
                 Road road = ConnectedToAtStart?.Road;
                 if (road.StartRoadNode != null && road._lanes.Count != 0)
@@ -738,7 +738,7 @@ namespace RoadGenerator
                     }
                 }
             }
-            if (ConnectedToAtEnd != null)
+            if (ConnectedToAtEnd != null && ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == false)
             {
                 Road road = ConnectedToAtEnd?.Road;
                 if (road.StartRoadNode != null && road._lanes.Count != 0)
