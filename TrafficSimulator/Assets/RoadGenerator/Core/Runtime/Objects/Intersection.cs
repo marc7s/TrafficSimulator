@@ -548,8 +548,13 @@ namespace RoadGenerator
             foreach (Lane lane in lanes)
             {
                 LaneNode currentNode = lane.StartNode;
+                Road road = currentNode.RoadNode.Road;
                 while(currentNode != null)
                 {
+                    if (currentNode.RoadNode.Road != road)
+                    {
+                        break;
+                    }
                     if (currentNode.Type != RoadNodeType.JunctionEdge)
                     {
                         currentNode = currentNode.Next;
@@ -810,6 +815,17 @@ namespace RoadGenerator
                 Road1.RemoveIntersection(this);
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
+        }
+        public void Reverse(Road road)
+        {
+            if (road == Road1)
+            {
+                (Road1AnchorPoint1, Road1AnchorPoint2) = (Road1AnchorPoint2, Road1AnchorPoint1);
+            }
+            else if (road == Road2)
+            {
+                (Road2AnchorPoint1, Road2AnchorPoint2) = (Road2AnchorPoint2, Road2AnchorPoint1);
+            }
         }
     }
 }
