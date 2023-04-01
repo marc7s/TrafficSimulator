@@ -80,6 +80,7 @@ namespace Car {
         private float _lerpSpeed;
         private LaneNode _target;
         private LineRenderer _targetLineRenderer;
+        private Rigidbody _rigidbody;
 
         // Quality variables
         private const int _repositioningOffset = 1;
@@ -113,6 +114,10 @@ namespace Car {
             Lane lane = Road.Lanes[LaneIndex];
             LaneNode currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = currentNode;
+
+            _rigidbody = GetComponent<Rigidbody>();
+
+            GetComponent<Vehicle>().CurrentSpeedFunction = GetCurrentSpeed;
             
             // Setup target line renderer
             float targetLineWidth = 0.3f;
@@ -140,9 +145,8 @@ namespace Car {
             else if (Mode == DrivingMode.Performance)
             {
                 // In performance mode the vehicle should not be affected by physics or gravity
-                Rigidbody rigidbody = GetComponent<Rigidbody>();
-                rigidbody.isKinematic = false;
-                rigidbody.useGravity = false;
+                _rigidbody.isKinematic = false;
+                _rigidbody.useGravity = false;
                 _target = _agent.Context.CurrentNode;
                 _lerpSpeed = Speed;
             }
@@ -214,6 +218,11 @@ namespace Car {
             
             if (_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath)
                 _agent.UpdateRandomPath(node, ShowNavigationPath);
+        }
+
+        public float GetCurrentSpeed()
+        {
+            return _rigidbody.velocity.magnitude;
         }
 
         // Update the list of nodes that the vehicle is currently occupying

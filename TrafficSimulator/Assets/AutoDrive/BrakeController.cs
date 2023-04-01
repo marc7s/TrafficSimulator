@@ -9,7 +9,8 @@ namespace Car
     { 
         Vehicle, 
         RoadEnd, 
-        TrafficLight
+        TrafficLight,
+        Yield
     }
 
     public class BrakeController : AutoDriveController<BrakeEventType>
@@ -71,12 +72,43 @@ namespace Car
                     return 0;
             }
         }
+        private static bool ShouldYield(AutoDriveAgent agent, LaneNode node)
+        {
+            return node.YieldNodes.Exists(node => ShouldYieldForNode(agent, node));
+        }
+        
+        private static bool ShouldYieldForNode(AutoDriveAgent agent, LaneNode yieldForNode)
+        {
+            LaneNode curr = yieldForNode;
+            float distanceToYieldNode = Vector3.Distance(agent.Context.CurrentNode.Position, yieldForNode.Position);
+            float distance = distanceToYieldNode;
+
+            const float yieldTime = 3f;
+            const float maxSpeed = 20f;
+            const float maxDistance = maxSpeed * yieldTime;
+
+            while(curr != null && distance < maxDistance + distanceToYieldNode)
+            {
+                if(curr.Type == RoadNodeType.End)
+                    return false;
+
+                float maxSpeedOtherVehicle = distance / yieldTime;
+                if(curr.HasVehicle() && curr.Vehicle != agent.Setting.Vehicle && curr.Vehicle.CurrentSpeed >= maxSpeedOtherVehicle)
+                    return true;
+                
+                distance += curr.DistanceToPrevNode;
+                curr = agent.Prev(curr, RoadEndBehaviour.Stop);
+            }
+            return false;
+        }
         public override Func<LaneNode, bool> EventAssessor(ref AutoDriveAgent agent, BrakeEventType type)
         {
             Vehicle vehicle = agent.Setting.Vehicle;
             RoadEndBehaviour endBehaviour = agent.Setting.EndBehaviour;
             bool isEntering = agent.Context.IsEnteringNetwork;
             string prevIntersectionID = agent.Context.PrevIntersection?.ID;
+            AutoDriveAgent agentInstance = agent;
+            LaneNode currentNode = agent.Context.CurrentNode;
             
             switch(type)
             {
@@ -86,6 +118,8 @@ namespace Car
                     return (LaneNode node) => endBehaviour == RoadEndBehaviour.Stop && node.Type == RoadNodeType.End && !(node.First == node && isEntering);
                 case BrakeEventType.TrafficLight:
                     return (LaneNode node) => node.TrafficLight != null && node.TrafficLight.CurrentState != TrafficLightState.Green && node.Intersection?.ID != prevIntersectionID;
+                case BrakeEventType.Yield:
+                    return (LaneNode node) => node != currentNode && ShouldYield(agentInstance, node);
                 default:
                     return (LaneNode _) => false;
             }
