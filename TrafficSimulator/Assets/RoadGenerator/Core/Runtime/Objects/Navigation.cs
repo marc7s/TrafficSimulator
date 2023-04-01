@@ -161,8 +161,8 @@ namespace RoadGenerator
                     continue;
                 }
 
-                bool isNonIntersectionNavigationNode = current.RoadNode.IsNavigationNode && !current.IsIntersection() && current.Type != RoadNodeType.JunctionEdge;
-                
+                bool isNonIntersectionNavigationNode = current.RoadNode.IsNavigationNode && !current.IsIntersection() && current.Type != RoadNodeType.JunctionEdge && current.Prev?.RoadNode.Type != RoadNodeType.RoadConnection;
+
                 // When the current node is a non intersection navigation node, pop the stack
                 if (isNonIntersectionNavigationNode && clonedPath.Count != 0)
                 {

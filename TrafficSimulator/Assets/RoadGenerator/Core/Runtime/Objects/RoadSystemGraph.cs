@@ -54,28 +54,11 @@ namespace RoadGenerator
             if(Nodes.FindAll(x => x.RoadNode.Position == roadNode.Position).Count != 0)
                 return;
 
-            if (roadNode.IsIntersection() || roadNode.Type == RoadNodeType.End)
-            {
-                Debug.Log(roadNode.Road + "Adding one node" + roadNode.Position);
-                NavigationNode node = new NavigationNode(roadNode);
-                Nodes.Add(node);
-                AddEdges(node, cost);
-                PrevPrimaryDirectionNode = node;
-                PrevSecondaryDirectionNode = node;
-            }
-            // When the is twoway road we need to add two navigation nodes, one for each direction
-            else
-            {
-                Debug.Log("Adding two nodes");
-                NavigationNode primaryDirectionNode = new NavigationNode(roadNode);
-                NavigationNode secondaryDirectionNode = new NavigationNode(roadNode);
-                Nodes.Add(primaryDirectionNode);
-                Nodes.Add(secondaryDirectionNode);
-                AddEdge(primaryDirectionNode, true, cost);
-                AddEdge(secondaryDirectionNode, false, cost);
-                PrevPrimaryDirectionNode = primaryDirectionNode;
-                PrevSecondaryDirectionNode = secondaryDirectionNode;
-            }   
+            NavigationNode node = new NavigationNode(roadNode);
+            Nodes.Add(node);
+            AddEdges(node, cost);
+            PrevPrimaryDirectionNode = node;
+            PrevSecondaryDirectionNode = node;
         }
         private void AddEdges(NavigationNode newNode, float cost)
         {
@@ -253,7 +236,9 @@ namespace RoadGenerator
                 foreach (NavigationNodeEdge edge2 in edge1.EndNavigationNode.Edges)
                 {
                     if (edge2.EndNavigationNode.RoadNode.Position == oldNodePosition)
+                    {
                         edge2.EndNavigationNode = newNode;
+                    }
                 }
             }
         }

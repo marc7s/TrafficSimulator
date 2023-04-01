@@ -29,6 +29,7 @@ namespace Car
 
         public void UnsetIntersectionTransition(Intersection intersection)
         {
+            //Debug.Log("AutoDrive: UnsetIntersectionTransition" + intersection.ID);
             if(intersection != null)
                 _intersectionNodeTransitions.Remove(intersection.ID);
         }
@@ -40,17 +41,21 @@ namespace Car
 
         private LaneNode UpdateAndGetGuideNode(LaneNode node, bool showNavigationPath)
         {
+//            Debug.Log("AutoDrive: UpdateAndGetGuideNode" + node.RoadNode.Position);
             if (Context.NavigationMode == NavigationMode.Disabled)
                 return node.Next;
-            
             bool isNonIntersectionNavigationNode = node.RoadNode.IsNavigationNode && !node.IsIntersection();
             bool currentTargetNodeNotChecked = node.RoadNode != Context.PrevTarget?.RoadNode;
-            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count != 0 && currentTargetNodeNotChecked)
+
+            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count != 0 && currentTargetNodeNotChecked && !Context.VisitedNavigationNodes.Contains(node.RoadNode.Position))
             {
+                Debug.Log(Context.PrevTarget?.RoadNode.ID + "h");
+                Debug.Log(node.RoadNode.ID);
+                Debug.Log("AutoDrive: Non-intersection navigation node reached, switching to random navigation path");
+                Context.VisitedNavigationNodes.Add(node.RoadNode.Position);
                 Context.NavigationPath.Pop();
-                Context.PrevIntersection = null;
             }
-            
+
             if (Context.NavigationPathEndNode != null && Context.NavigationPathEndNode.RoadNode == node.RoadNode && Context.NavigationPath.Count == 0)
                 UpdateRandomPath(node, showNavigationPath);
             
@@ -61,9 +66,10 @@ namespace Car
                 // Only check the intersection if the vehicle has not already just checked it
                 bool intersectionNotChecked = node.Intersection?.ID != Context.PrevIntersection?.ID;
                 if (intersectionNotChecked)
-                {
+                {                    
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                     {
+                        Debug.Log("AutoDrive: Intersection reached, switching to navigation path" + node.RoadNode.Position);
                         (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node);
                         
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
@@ -78,19 +84,17 @@ namespace Car
                     {
                         (Context.StartNode, Context.EndNode, node) = node.Intersection.GetRandomLaneNode(node);
                     }
-                    
                     SetIntersectionTransition(entryNode.Intersection, entryNode, node);
-
-                    Context.BrakeTarget = node;
-                    Context.PrevTarget = node;
                 }
             }
-
+            Context.BrakeTarget = node;
+            Context.PrevTarget = node;  
             return node.Next;
         }
 
         public void UpdateRandomPath(LaneNode node, bool showNavigationPath)
         {
+            Context.VisitedNavigationNodes.Clear();
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetRandomPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), out Context.NavigationPathEndNode);
             
@@ -103,6 +107,7 @@ namespace Car
 
         public LaneNode Next(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
         {
+//            Debug.Log("AutoDrive: Next node called" + node.RoadNode.Position);
             RoadEndBehaviour endBehaviour = overrideEndBehaviour ?? _setting.EndBehaviour;
             if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(node.Intersection.ID))
             {
@@ -111,7 +116,7 @@ namespace Car
                     return guideStart;   
             }
  
-            if(node.Type == RoadNodeType.JunctionEdge && node.Intersection != null)
+            if((node.Type == RoadNodeType.JunctionEdge && node.Intersection != null) || node.RoadNode.IsNavigationNode)
                 return UpdateAndGetGuideNode(node, true);
 
             if(node.Next == null)
@@ -190,7 +195,8 @@ namespace Car
         public Stack<NavigationNodeEdge> NavigationPath;
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
-        
+        public List<Vector3> VisitedNavigationNodes;
+
         public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
         {
             CurrentRoad = currentRoad;
@@ -208,6 +214,7 @@ namespace Car
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathContainer = new GameObject("Navigation Path");
             NavigationPathPositions = new List<Vector3>();
+            VisitedNavigationNodes = new List<Vector3>();
         }
     }
 }

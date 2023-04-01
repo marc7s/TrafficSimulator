@@ -16,6 +16,7 @@ namespace RoadGenerator
         [SerializeField] private SNReadOnly<RoadNodeType> _type = null;
         [SerializeField] [ReadOnly] private Intersection _intersection = null;
         [SerializeField] [ReadOnly] private TrafficLight _trafficLight = null;
+        [SerializeField] private SNReadOnly<Vector3> _edgeEndPosition = null;
 
         protected override void SetInfoFromReference(LaneNode _laneNode)
         {
@@ -28,6 +29,7 @@ namespace RoadGenerator
             _type = _laneNode.Type;
             _intersection = _roadNode.Intersection;
             _trafficLight = _roadNode.TrafficLight;
+            _edgeEndPosition = _laneNode.GetNavigationEdge()?.EndNavigationNode.RoadNode.Position;
         }
     }
 }
