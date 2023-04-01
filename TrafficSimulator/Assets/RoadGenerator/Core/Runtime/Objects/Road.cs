@@ -609,6 +609,10 @@ namespace RoadGenerator
             // Create the start node for the road. The start node must be an end node
             StartRoadNode = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
             StartRoadNode.Road = this;
+            if (startType == RoadNodeType.RoadConnection)
+            {
+                StartRoadNode.IsNavigationNode = true;
+            }
             
             // Create a new node builder starting at the start node
             NodeBuilder roadBuilder = new NodeBuilder(null, StartRoadNode, 0);
@@ -700,7 +704,6 @@ namespace RoadGenerator
                 Road road = ConnectedToAtStart?.Road;
                 if (road.StartRoadNode != null && road._lanes.Count != 0)
                 {
-                                Debug.Log("Connecting road nodes for connected roads" + name);
                     StartRoadNode.Prev = road.EndRoadNode;
                     road.EndRoadNode.Next = StartRoadNode;
                     for (var i = 0; i < _lanes.Count; i++)

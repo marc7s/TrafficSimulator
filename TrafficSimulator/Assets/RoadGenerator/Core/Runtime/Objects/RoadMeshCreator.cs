@@ -203,7 +203,6 @@ namespace RoadGenerator
                 }
                 if (curr.Road != _road)
                 {
-                    Debug.Log("Road connection found");
                     break;
                 }
                 vertIndex = verts.Count == 0 ? 0 : verts.Count;
