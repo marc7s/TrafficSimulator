@@ -44,7 +44,7 @@ namespace Car
             {
                 case DrivingMode.Quality:
                     // Calculate the distance it will take to stop
-                    return qualityBuffer + setting.BrakeOffset + speed / 2 + speed / (setting.VehicleController.tireFriction * g);
+                    return qualityBuffer + setting.BrakeOffset + speed / 2 + speed * speed / (setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
                     /* 
@@ -72,15 +72,17 @@ namespace Car
                     return 0;
             }
         }
-        private static bool ShouldYield(AutoDriveAgent agent, LaneNode node)
+        private static bool ShouldYield(AutoDriveAgent agent, ref LaneNode node)
         {
-            return node.YieldNodes.Exists(node => ShouldYieldForNode(agent, node));
+            return node.YieldNodes.Exists(nodePair => ShouldYieldForNode(agent, ref nodePair));
         }
         
-        private static bool ShouldYieldForNode(AutoDriveAgent agent, LaneNode yieldForNode)
+        private static bool ShouldYieldForNode(AutoDriveAgent agent, ref (LaneNode, LaneNode) yieldForNodePair)
         {
-            LaneNode curr = yieldForNode;
-            float distanceToYieldNode = Vector3.Distance(agent.Context.CurrentNode.Position, yieldForNode.Position);
+            (LaneNode yieldStart, LaneNode yieldTransition) = yieldForNodePair;
+            LaneNode curr = yieldStart;
+            LaneNode prev = curr;
+            float distanceToYieldNode = Vector3.Distance(agent.Context.CurrentNode.Position, yieldStart.Position);
             float distance = distanceToYieldNode;
 
             const float yieldTime = 3f;
@@ -95,10 +97,19 @@ namespace Car
                 float maxSpeedOtherVehicle = distance / yieldTime;
                 if(curr.HasVehicle() && curr.Vehicle != agent.Setting.Vehicle && curr.Vehicle.CurrentSpeed >= maxSpeedOtherVehicle)
                     return true;
-                
+
                 distance += curr.DistanceToPrevNode;
+                prev = curr;
                 curr = agent.Prev(curr, RoadEndBehaviour.Stop);
+
+                if(curr == null)
+                {
+                    curr = yieldTransition;
+                    if(prev != null)
+                        distance += Vector3.Distance(prev.Position, curr.Position);
+                }
             }
+
             return false;
         }
         public override Func<LaneNode, bool> EventAssessor(ref AutoDriveAgent agent, BrakeEventType type)
@@ -119,7 +130,7 @@ namespace Car
                 case BrakeEventType.TrafficLight:
                     return (LaneNode node) => node.TrafficLight != null && node.TrafficLight.CurrentState != TrafficLightState.Green && node.Intersection?.ID != prevIntersectionID;
                 case BrakeEventType.Yield:
-                    return (LaneNode node) => node != currentNode && ShouldYield(agentInstance, node);
+                    return (LaneNode node) => node != currentNode && ShouldYield(agentInstance, ref node);
                 default:
                     return (LaneNode _) => false;
             }

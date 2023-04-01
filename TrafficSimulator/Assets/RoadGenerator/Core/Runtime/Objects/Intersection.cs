@@ -568,15 +568,17 @@ namespace RoadGenerator
         {
             // Map the lane node to take in order to get to the navigation node edge
             _laneNodeFromNavigationNodeEdge.Clear();
-            List<Lane> lanes = new List<Lane>();
 
             _intersectionEntrySections.Clear();
             _intersectionExitSections.Clear();
 
             _intersectionGuideRoadNodes.Clear();
+            _intersectionGuidePaths.Clear();
 
+            List<Lane> lanes = new List<Lane>();
             lanes.AddRange(Road1.Lanes);
             lanes.AddRange(Road2.Lanes);
+            
             foreach (Lane lane in lanes)
             {
                 LaneNode currentNode = lane.StartNode;
@@ -621,7 +623,6 @@ namespace RoadGenerator
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
                     if(isEdgePointingToIntersection)
                     {
-                        
                         if(currentNode.Intersection == this)
                             CreateEntryIntersectionLaneNodes(road, currentNode, currentNode.Next);
                     }
@@ -635,8 +636,6 @@ namespace RoadGenerator
                     currentNode = currentNode.Next;
                 }
             }
-
-            Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
 
             // Precompute all the guide paths and store them
             foreach(Section entrySection in _intersectionEntrySections.Values)
@@ -652,9 +651,9 @@ namespace RoadGenerator
         }
 
         /// <summary> Get a list of all nodes a path going between these sections needs to yield to </summary>
-        private List<LaneNode> GetYieldToNodes(Section entrySection, Section exitSection)
+        private List<(LaneNode, LaneNode)> GetYieldToNodes(Section entrySection, Section exitSection)
         {
-            List<LaneNode> yieldNodes = new List<LaneNode>();
+            List<(LaneNode, LaneNode)> yieldNodes = new List<(LaneNode, LaneNode)>();
             
             // Do not yield if you are staying on the same road
             if(entrySection.Road == exitSection.Road)
@@ -666,7 +665,7 @@ namespace RoadGenerator
                 if(section == entrySection)
                     continue;
                 
-                yieldNodes.Add(section.End);
+                yieldNodes.Add((section.End, section.JunctionNode));
             }
 
             return yieldNodes;
@@ -675,21 +674,18 @@ namespace RoadGenerator
         private void CreateEntryIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode);
-            Section laneSection = CreateLaneSection(road, junctionNode, junctionNode, generatedRoadNodes, LaneSide.Primary);
+            Section laneSection = CreateLaneSection(road, junctionNode, junctionNode, generatedRoadNodes, LaneSide.Primary, true);
             _intersectionEntrySections.Add(junctionNode.ID, laneSection);
         }
 
         private void CreateExitIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode);
-            Section laneSection = CreateLaneSection(road, junctionNode, intersectionNode, generatedRoadNodes, LaneSide.Secondary);
-            LaneNode newStart = laneSection.Start.Reverse();
-            laneSection.Start = newStart;
-            laneSection.End = newStart.Last;
+            Section laneSection = CreateLaneSection(road, junctionNode, intersectionNode, generatedRoadNodes, LaneSide.Secondary, false);
             _intersectionExitSections.Add(junctionNode.ID, laneSection);
         }
 
-        private Section CreateLaneSection(Road road, LaneNode junctionNode, LaneNode start, RoadNode roadNode, LaneSide laneSide)
+        private Section CreateLaneSection(Road road, LaneNode junctionNode, LaneNode start, RoadNode roadNode, LaneSide laneSide, bool isEntry)
         {
             float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
             int laneNodeDirection = laneSide == LaneSide.Primary ? 1 : -1;
@@ -711,7 +707,9 @@ namespace RoadGenerator
                 currRoadNode = currRoadNode.Next;
             }
             
-            return new Section(road, junctionNode, curr.First, curr);
+            LaneNode startNode = isEntry ? curr.First : curr.First.Reverse();
+            
+            return new Section(road, junctionNode, startNode, startNode.Last);
         }
 
         private RoadNode FetchOrGenerateRoadNodes(RoadNode start, RoadNode end)
@@ -746,6 +744,9 @@ namespace RoadGenerator
                 
                 curr = curr == null ? new RoadNode(position, tangent, normal, RoadNodeType.IntersectionGuide, 0, 0) : new RoadNode(position, tangent, normal, RoadNodeType.IntersectionGuide, prev, null, 0, distanceToPrev);
                 
+                // Set the intersection for the road node
+                curr.Intersection = this;
+
                 if(prev != null)
                     prev.Next = curr;
                 prev = curr;
@@ -818,20 +819,18 @@ namespace RoadGenerator
             return (finalNode.First, finalNode.Last, guidePath);
         }
 
-        private GuideNode CreateGuidePath(Section entrySection, Section exitSection, List<LaneNode> yieldNodes)
+        private GuideNode CreateGuidePath(Section entrySection, Section exitSection, List<(LaneNode, LaneNode)> yieldNodes)
         {
             LaneNode entryLast = entrySection.End;
 
             LaneNode currLaneNode = entrySection.Start;
             GuideNode curr = null;
             GuideNode prev = null;
+            
             while(currLaneNode != null)
             {
                 Vector3 position = currLaneNode.Position;
                 curr = new GuideNode(position, currLaneNode, currLaneNode.LaneSide, currLaneNode.Index, currLaneNode.RoadNode, prev, null, prev == null ? 0 : Vector3.Distance(prev.Position, position));
-                
-                // Set the intersection for the road node
-                currLaneNode.RoadNode.Intersection = this;
 
                 if(prev != null)
                     prev.Next = curr;
