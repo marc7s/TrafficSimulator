@@ -45,16 +45,13 @@ namespace Car
             
             bool isNonIntersectionNavigationNode = node.RoadNode.IsNavigationNode && !node.IsIntersection();
             bool currentTargetNodeNotChecked = node.RoadNode != Context.PrevTarget?.RoadNode;
-            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count != 0 && currentTargetNodeNotChecked)
-            {
-                Context.NavigationPath.Pop();
+            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count > 0 && currentTargetNodeNotChecked)
                 Context.PrevIntersection = null;
-            }
             
             if (Context.NavigationPathEndNode != null && Context.NavigationPathEndNode.RoadNode == node.RoadNode && Context.NavigationPath.Count == 0)
                 UpdateRandomPath(node, showNavigationPath);
             
-            if (node.Type == RoadNodeType.JunctionEdge && currentTargetNodeNotChecked)
+            if (node.Type == RoadNodeType.JunctionEdge && currentTargetNodeNotChecked && Context.NavigationPath.Count > 0)
             {
                 LaneNode entryNode = node;
                 

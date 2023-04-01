@@ -42,10 +42,11 @@ namespace RoadGenerator
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
         [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
         [HideInInspector] private Dictionary<string, List<LaneNode>> _laneNodeFromNavigationNodeEdge = new Dictionary<string, List<LaneNode>>();
+        [HideInInspector] private Dictionary<string, Section> _intersectionEntrySections = new Dictionary<string, Section>();
+        [HideInInspector] private Dictionary<string, Section> _intersectionExitSections = new Dictionary<string, Section>();
         [HideInInspector] private Dictionary<string, RoadNode> _intersectionGuideRoadNodes = new Dictionary<string, RoadNode>();
-        [HideInInspector] private Dictionary<string, LaneNode> _intersectionEntryNodes = new Dictionary<string, LaneNode>();
-        [HideInInspector] private Dictionary<string, LaneNode> _intersectionExitNodes = new Dictionary<string, LaneNode>();
         [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths = new Dictionary<(string, string), GuideNode>();
+
         [HideInInspector] public IntersectionType Type;
         [HideInInspector] public TrafficLightController TrafficLightController;
         [ReadOnly] public string ID;
@@ -98,6 +99,39 @@ namespace RoadGenerator
                 }
             }
 #endif
+
+        private struct Section : IEquatable<Section>
+        {
+            public Road Road;
+            public LaneNode JunctionNode;
+            public LaneNode Start;
+            public LaneNode End;
+            private string _edgeID;
+            private string _ID;
+            public Section(Road road, LaneNode junctionNode, LaneNode start, LaneNode end)
+            {
+                Road = road;
+                JunctionNode = junctionNode;
+                Start = start;
+                End = end;
+
+                _edgeID = junctionNode.RoadNode.ID;
+                _ID = System.Guid.NewGuid().ToString();
+            }
+
+            // Used to determine if sections belong to the same edge (legs of the intersecton)
+            public string EdgeID => _edgeID;
+
+            public override int GetHashCode() => _ID.GetHashCode();
+
+            public override bool Equals(object other) => other != null && Equals((Section)other);
+
+            public bool Equals(Section other) => other._ID == _ID;
+
+            public static bool operator ==(Section a, Section b) => a.Equals(b);
+
+            public static bool operator !=(Section a, Section b) => !(a == b);
+        }
 
         void Awake()
         {
@@ -485,8 +519,8 @@ namespace RoadGenerator
             if(_drawGuideNodes)
             {
                 List<LaneNode> guideNodes = new List<LaneNode>();
-                guideNodes.AddRange(_intersectionEntryNodes.Values);
-                guideNodes.AddRange(_intersectionExitNodes.Values);
+                guideNodes.AddRange(_intersectionEntrySections.Values.Select(nodes => nodes.Start));
+                guideNodes.AddRange(_intersectionExitSections.Values.Select(nodes => nodes.Start));
 
                 // Draw the lane nodes
                 foreach(LaneNode start in guideNodes)
@@ -535,14 +569,12 @@ namespace RoadGenerator
             // Map the lane node to take in order to get to the navigation node edge
             _laneNodeFromNavigationNodeEdge.Clear();
             List<Lane> lanes = new List<Lane>();
-            
-            List<LaneNode> entryNodes = new List<LaneNode>();
-            List<LaneNode> exitNodes = new List<LaneNode>();
 
-            _intersectionEntryNodes.Clear();
-            _intersectionExitNodes.Clear();
+            _intersectionEntrySections.Clear();
+            _intersectionExitSections.Clear();
+
             _intersectionGuideRoadNodes.Clear();
-            
+
             lanes.AddRange(Road1.Lanes);
             lanes.AddRange(Road2.Lanes);
             foreach (Lane lane in lanes)
@@ -557,79 +589,107 @@ namespace RoadGenerator
                     }
 
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
-                    // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
-                    if (isEdgePointingToIntersection)
-                    {
-                        // Add entry nodes if the current node is related to this intersection
-                        if(currentNode.RoadNode.Intersection == this)
-                        {
-                            // Add the node to the list of entry nodes
-                            entryNodes.Add(currentNode);
-
-                            // Create entry intersection lane nodes for navigation in the intersection
-                            CreateEntryIntersectionLaneNodes(currentNode, currentNode.Next);
-                        }
-                            
-                        currentNode = currentNode.Next;
-                        continue;
-                    }
-
-                    // Add exit nodes if the current node is related to this intersection
-                    if(currentNode.RoadNode.Intersection == this)
-                    {
-                        // Since it was not an entry node, it must be an exit node, so add it to the exit node list
-                        exitNodes.Add(currentNode);
-
-                        // Create exit intersection lane nodes for navigation in the intersection
-                        CreateExitIntersectionLaneNodes(currentNode, currentNode.Prev);
-                    }
-
-                    // If the node is an anchor point, we map the edge going out of the intersection to the node
-                    if (currentNode.RoadNode.Position == Road1AnchorPoint1)
-                        AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint1NavigationEdge, currentNode);
-                    if (currentNode.RoadNode.Position == Road1AnchorPoint2)
-                        AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint2NavigationEdge, currentNode);
-                    if (currentNode.RoadNode.Position == Road2AnchorPoint1)
-                        AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint1NavigationEdge, currentNode);
                     
-                    // If the intersection is a three way intersection, the second anchor point does not exist
-                    if (!IsThreeWayIntersection() && currentNode.RoadNode.Position == Road2AnchorPoint2)
-                        AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint2NavigationEdge, currentNode);
+                    Road road = null;
 
+                    switch(currentNode.RoadNode.Position)
+                    {
+                        case Vector3 p when p == Road1AnchorPoint1:
+                            road = Road1;
+                            if (!isEdgePointingToIntersection)
+                                AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint1NavigationEdge, currentNode);
+                            break;
+                        case Vector3 p when p == Road1AnchorPoint2:
+                            road = Road1;
+                            if (!isEdgePointingToIntersection)
+                                AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint2NavigationEdge, currentNode);
+                            break;
+                        case Vector3 p when p == Road2AnchorPoint1:
+                            road = Road2;
+                            if (!isEdgePointingToIntersection)
+                                AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint1NavigationEdge, currentNode);
+                            break;
+                        case Vector3 p when p == Road2AnchorPoint2:
+                            road = Road2;
+                            if (!isEdgePointingToIntersection && !IsThreeWayIntersection())
+                                AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint2NavigationEdge, currentNode);
+                            break;
+                    }
+
+                        
+                    
+                    // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
+                    if(isEdgePointingToIntersection)
+                    {
+                        
+                        if(currentNode.Intersection == this)
+                            CreateEntryIntersectionLaneNodes(road, currentNode, currentNode.Next);
+                    }
+                    else
+                    {
+                        // Create exit intersection lane nodes for navigation in the intersection if the node is related to this intersection
+                        if(currentNode.Intersection == this)
+                            CreateExitIntersectionLaneNodes(road, currentNode, currentNode.Prev);
+                    }
+                
                     currentNode = currentNode.Next;
                 }
             }
 
+            Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
+
             // Precompute all the guide paths and store them
-            foreach(LaneNode entry in entryNodes)
+            foreach(Section entrySection in _intersectionEntrySections.Values)
             {
-                foreach(LaneNode exit in exitNodes)
+                foreach(Section exitSection in _intersectionExitSections.Values)
                 {
-                    if(_intersectionEntryNodes.ContainsKey(entry.ID) && _intersectionExitNodes.ContainsKey(exit.ID))
-                        _intersectionGuidePaths.Add((entry.ID, exit.ID), GetGuidePath(entry, exit));
+                    // Do not compute guide paths for U turns
+                    if(entrySection.EdgeID == exitSection.EdgeID)
+                        continue;
+                    _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection)));
                 }
             }
         }
+
+        /// <summary> Get a list of all nodes a path going between these sections needs to yield to </summary>
+        private List<LaneNode> GetYieldToNodes(Section entrySection, Section exitSection)
+        {
+            List<LaneNode> yieldNodes = new List<LaneNode>();
+            
+            // Do not yield if you are staying on the same road
+            if(entrySection.Road == exitSection.Road)
+                return yieldNodes;
+
+            foreach(Section section in _intersectionEntrySections.Values)
+            {
+                // Do not yield to vehicles in your own entry section
+                if(section == entrySection)
+                    continue;
+                
+                yieldNodes.Add(section.End);
+            }
+
+            return yieldNodes;
+        }
         
-        private void CreateEntryIntersectionLaneNodes(LaneNode start, LaneNode intersectionNode)
+        private void CreateEntryIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
-            RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(start.RoadNode, intersectionNode.RoadNode);
-
-            LaneNode entry = CreateLaneNodes(start, generatedRoadNodes, LaneSide.Primary);
-            
-            _intersectionEntryNodes.Add(start.ID, entry);
+            RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode);
+            Section laneSection = CreateLaneSection(road, junctionNode, junctionNode, generatedRoadNodes, LaneSide.Primary);
+            _intersectionEntrySections.Add(junctionNode.ID, laneSection);
         }
 
-        private void CreateExitIntersectionLaneNodes(LaneNode node, LaneNode intersectionNode)
+        private void CreateExitIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
-            RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(node.RoadNode, intersectionNode.RoadNode);
-            
-            LaneNode exit = CreateLaneNodes(intersectionNode, generatedRoadNodes, LaneSide.Secondary);
-            
-            _intersectionExitNodes.Add(node.ID, exit.Reverse());
+            RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode);
+            Section laneSection = CreateLaneSection(road, junctionNode, intersectionNode, generatedRoadNodes, LaneSide.Secondary);
+            LaneNode newStart = laneSection.Start.Reverse();
+            laneSection.Start = newStart;
+            laneSection.End = newStart.Last;
+            _intersectionExitSections.Add(junctionNode.ID, laneSection);
         }
 
-        private LaneNode CreateLaneNodes(LaneNode start, RoadNode roadNode, LaneSide laneSide)
+        private Section CreateLaneSection(Road road, LaneNode junctionNode, LaneNode start, RoadNode roadNode, LaneSide laneSide)
         {
             float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
             int laneNodeDirection = laneSide == LaneSide.Primary ? 1 : -1;
@@ -651,7 +711,7 @@ namespace RoadGenerator
                 currRoadNode = currRoadNode.Next;
             }
             
-            return curr.First;
+            return new Section(road, junctionNode, curr.First, curr);
         }
 
         private RoadNode FetchOrGenerateRoadNodes(RoadNode start, RoadNode end)
@@ -725,7 +785,7 @@ namespace RoadGenerator
             // Add all guide paths that start at the current lane node to the list
             foreach((string entryID, string exitID) in _intersectionGuidePaths.Keys)
             {
-                if (entryID == entry.ID && _intersectionExitNodes[exitID].Last.RoadNode != _intersectionEntryNodes[entryID].RoadNode)
+                if (entryID == entry.ID)
                     guidePaths.Add((entryID, exitID, _intersectionGuidePaths[(entryID, exitID)]));
             }
 
@@ -758,14 +818,11 @@ namespace RoadGenerator
             return (finalNode.First, finalNode.Last, guidePath);
         }
 
-        private GuideNode GetGuidePath(LaneNode start, LaneNode end)
+        private GuideNode CreateGuidePath(Section entrySection, Section exitSection, List<LaneNode> yieldNodes)
         {
-            LaneNode entrySection = _intersectionEntryNodes[start.ID];
-            LaneNode exitSection = _intersectionExitNodes[end.ID];
+            LaneNode entryLast = entrySection.End;
 
-            LaneNode entryLast = entrySection.Last;
-
-            LaneNode currLaneNode = entrySection;
+            LaneNode currLaneNode = entrySection.Start;
             GuideNode curr = null;
             GuideNode prev = null;
             while(currLaneNode != null)
@@ -780,13 +837,21 @@ namespace RoadGenerator
                     prev.Next = curr;
                 prev = curr;
 
+                // If we have reached the end of the entry section
                 if(currLaneNode == entryLast)
-                    currLaneNode = exitSection;
+                {
+                    // Set the GuideNode at the end of the entry section to yield to the yield nodes
+                    curr.YieldNodes = yieldNodes;
+
+                    // Set the current lane node to the exit section
+                    currLaneNode = exitSection.Start;
+                }
+                    
                 else
                     currLaneNode = currLaneNode.Next;
             }
             
-            curr.Next = end;
+            curr.Next = exitSection.JunctionNode;
             GuideNode guidePath = (GuideNode)curr.First;
 
             return guidePath;

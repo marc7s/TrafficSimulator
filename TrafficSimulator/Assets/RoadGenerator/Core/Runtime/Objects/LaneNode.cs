@@ -1,5 +1,6 @@
 using UnityEngine;
 using DataModel;
+using System.Collections.Generic;
 
 namespace RoadGenerator 
 {
@@ -10,6 +11,7 @@ namespace RoadGenerator
         protected LaneSide _laneSide;
         protected Vehicle _vehicle;
         protected int _laneIndex;
+        public List<LaneNode> YieldNodes = new List<LaneNode>();
 
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
         public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, laneIndex, roadNode, null, null, distanceToPrevNode){}
