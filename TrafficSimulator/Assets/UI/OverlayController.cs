@@ -109,11 +109,7 @@ namespace UI
         private void StatisticsButtonOnClicked()
         {
             _isStatisticsOpen = !_isStatisticsOpen;
-            if(_isStatisticsOpen)
-                _statisticsUI.visible = true;
-            else
-                _statisticsUI.visible = false;
-            Debug.Log("Statistics");
+            _statisticsUI.visible = _isStatisticsOpen;
         }
 
         private void WorldOptionButtonOnClicked()
