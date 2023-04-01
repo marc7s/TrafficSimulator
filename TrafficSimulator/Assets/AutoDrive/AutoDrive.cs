@@ -100,7 +100,6 @@ namespace Car {
         private bool _isSetup = false;
 
         TimeManagerEvent _timeManagerEvent;
-        TimeManager _timeManager;
 
         void Start()
         {
@@ -176,14 +175,6 @@ namespace Car {
             _isSetup = true;
 
             UpdateOccupiedNodes();
-
-            _timeManager = TimeManager.Instance;
-
-            // Add event to TimeManager to start driving
-            _timeManagerEvent = new TimeManagerEvent(DateTime.Now.AddSeconds(1));
-            _timeManager.AddEvent(_timeManagerEvent);
-
-            _timeManagerEvent.OnEvent += OnTimeEvent;
         }
 
         void Update()
@@ -211,11 +202,6 @@ namespace Car {
         {
             _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
             _agent.UnsetIntersectionTransition(intersection);
-        }
-
-        protected void OnTimeEvent()
-        {
-            Active = Activity.Driving;
         }
 
         private void SetActivity()
