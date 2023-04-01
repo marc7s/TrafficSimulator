@@ -76,7 +76,7 @@ namespace Car {
         
         private float _originalMaxSpeedForward;
         private float _originalMaxSpeedReverse;
-        private List<LaneNode> _occupiedNodes = new List<LaneNode>();
+        private HashSet<LaneNode> _occupiedNodes = new HashSet<LaneNode>();
         private float _lerpSpeed;
         private LaneNode _target;
         private LineRenderer _targetLineRenderer;
@@ -175,8 +175,8 @@ namespace Car {
 
         void Update()
         {
-            UpdateOccupiedNodes();
             UpdateContext();
+            UpdateOccupiedNodes();
            
             if (Mode == DrivingMode.Quality)
             {
@@ -241,10 +241,10 @@ namespace Car {
         // Update the list of nodes that the vehicle is currently occupying
         private void UpdateOccupiedNodes()
         {
-            foreach (LaneNode node in _occupiedNodes)
+            foreach(LaneNode node in _occupiedNodes)
                 node.UnsetVehicle(_agent.Setting.Vehicle);
 
-            (List<LaneNode> forwardSpanNodes, List<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
+            (HashSet<LaneNode> forwardSpanNodes, HashSet<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
             _occupiedNodes.Clear();
             
             // Start adding the nodes behind the car
@@ -257,7 +257,7 @@ namespace Car {
             AddSpanNodes(forwardSpanNodes);
         }
 
-        private void AddSpanNodes(List<LaneNode> spanNodes)
+        private void AddSpanNodes(HashSet<LaneNode> spanNodes)
         {
             foreach (LaneNode node in spanNodes)
             {
@@ -271,16 +271,18 @@ namespace Car {
         }
 
         // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
-        private (List<LaneNode>, List<LaneNode>) GetVehicleSpanNodes()
+        private (HashSet<LaneNode>, HashSet<LaneNode>) GetVehicleSpanNodes()
         {
-            List<LaneNode> forwardNodes = new List<LaneNode>(){ _agent.Context.CurrentNode };
-            List<LaneNode> backwardNodes = new List<LaneNode>();
+            HashSet<LaneNode> forwardNodes = new HashSet<LaneNode>(){ _agent.Context.CurrentNode };
+            HashSet<LaneNode> backwardNodes = new HashSet<LaneNode>();
             LaneNode node = _agent.Prev(_agent.Context.CurrentNode);
+
+            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
 
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 
             // Add all occupied nodes prior to and including the current node
-            while (node != null && nodeDistance <= _vehicleLength / 2 + VehicleOccupancyOffset)
+            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
             {
                 backwardNodes.Add(node);
                 nodeDistance += node.DistanceToPrevNode;
@@ -290,11 +292,11 @@ namespace Car {
             nodeDistance = 0;
             // Add all occupied nodes after and excluding the current node
             node = _agent.Next(_agent.Context.CurrentNode);
-            while (node != null && nodeDistance <= _vehicleLength / 2 + VehicleOccupancyOffset)
+            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
             {
                 forwardNodes.Add(node);
                 nodeDistance += node.DistanceToPrevNode;
-                node = _agent.Next(node);
+                node = _agent.Next(node, RoadEndBehaviour.Stop);
             }
             
             return (forwardNodes, backwardNodes);
