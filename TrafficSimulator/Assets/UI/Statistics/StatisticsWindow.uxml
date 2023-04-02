@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="StatsPanel" src="project://database/Assets/UI/Statistics/StatsPanel.uxml?fileID=9197481963319205126&amp;guid=961b89874325fa74ebbcc39e71a582ad&amp;type=3#StatsPanel" />
+    <ui:Template name="InfoPanel" src="project://database/Assets/UI/Statistics/InfoPanel.uxml?fileID=9197481963319205126&amp;guid=af417ab8c3950ba4dad54316f988cb57&amp;type=3#InfoPanel" />
+    <ui:Template name="SettingsPanel" src="project://database/Assets/UI/Statistics/SettingsPanel.uxml?fileID=9197481963319205126&amp;guid=0664d2e3a8f1dfa40ad6bead7deb6266&amp;type=3#SettingsPanel" />
+    <ui:VisualElement name="Window" style="width: 350px; height: 450px; flex-shrink: 0;">
+        <ui:VisualElement name="Tabs" style="height: 15%; flex-direction: row; align-items: flex-end; justify-content: flex-start; left: 10%; width: auto; margin-left: 5%; flex-shrink: 0;">
+            <ui:Button text="Stats" display-tooltip-when-elided="true" name="StatsButton" />
+            <ui:Button text="Info" display-tooltip-when-elided="true" name="InfoButton" />
+            <ui:Button text="Settings" display-tooltip-when-elided="true" name="SettingsButton" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Panel" style="width: auto; height: 85%; padding-left: 10%; padding-right: 10%; padding-bottom: 5%; flex-shrink: 0;">
+            <ui:Instance template="StatsPanel" name="StatsPanel" style="width: 100%; height: 100%; display: flex; visibility: visible; flex-shrink: 0; position: absolute; left: 35px;" />
+            <ui:Instance template="InfoPanel" name="InfoPanel" style="width: 100%; height: 100%; display: flex; visibility: visible; flex-shrink: 0; overflow: visible; position: absolute; top: auto; left: 35px;" />
+            <ui:Instance template="SettingsPanel" name="SettingsPanel" style="flex-shrink: 0; width: 100%; height: 100%; display: flex; position: absolute; top: auto; left: 35px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,21 +1,33 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:VisualElement style="height: 900px;">
-        <ui:Button text="Menu" display-tooltip-when-elided="true" name="MenuButton" style="height: 77px; width: 156px; white-space: nowrap; left: 1%; top: 1%;" />
-        <ui:Label text="NO TIME" display-tooltip-when-elided="true" name="Clock" style="left: 360px; width: 119px; top: -50px;" />
-        <ui:VisualElement name="ClockButtons" style="width: 142px; position: absolute; top: 23px; left: 200px;">
-            <ui:Button text="&lt;--" display-tooltip-when-elided="true" name="Rewind" style="width: 44px; height: 28px;" />
-            <ui:Button text="||" display-tooltip-when-elided="true" name="Pause" style="width: 44px; height: 28px; position: absolute; top: 0; left: 45px;" />
-            <ui:Button text="--&gt;" display-tooltip-when-elided="true" name="Fastforward" style="width: 44px; height: 28px; position: absolute; top: 0; left: 90px;" />
+    <ui:Template name="StatisticsWindow" src="project://database/Assets/UI/Statistics/StatisticsWindow.uxml?fileID=9197481963319205126&amp;guid=61279e05a9bb27740bf68173ef7dcf35&amp;type=3#StatisticsWindow" />
+    <ui:VisualElement style="height: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; width: 100%; flex-shrink: 0;">
+        <ui:VisualElement style="align-items: center; flex-direction: row; flex-shrink: 0; width: 100%; justify-content: space-between; top: auto; bottom: auto; left: auto; flex-grow: 0;">
+            <ui:VisualElement style="flex-shrink: 0; left: auto; flex-direction: row; align-items: center; flex-grow: 0; width: auto; justify-content: flex-start; flex-basis: auto;">
+                <ui:Button text="Menu" display-tooltip-when-elided="true" name="MenuButton" style="height: 77px; width: 156px; white-space: nowrap; left: auto; top: auto; align-items: center; justify-content: center;" />
+                <ui:VisualElement name="ClockButtons" style="width: auto; position: relative; top: auto; left: auto; align-items: center; flex-direction: row; flex-shrink: 0; justify-content: center; margin-right: 3%; margin-left: 3%;">
+                    <ui:Button text="&lt;--" display-tooltip-when-elided="true" name="Rewind" style="width: 44px; height: 28px; align-items: center; flex-direction: row;" />
+                    <ui:Button text="||" display-tooltip-when-elided="true" name="Pause" style="width: 44px; height: 28px; position: relative; top: auto; left: auto; align-items: auto; flex-direction: row;" />
+                    <ui:Button text="--&gt;" display-tooltip-when-elided="true" name="Fastforward" style="width: 44px; height: 28px; position: relative; top: auto; left: auto; align-items: auto; flex-direction: row;" />
+                </ui:VisualElement>
+                <ui:Label text="NO TIME" display-tooltip-when-elided="true" name="Clock" style="left: auto; width: auto; top: auto; height: 15px; align-items: center; justify-content: center; margin-right: 3px; margin-left: 3px; padding-left: 0; padding-right: 0;" />
+            </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="CameraButtons" style="width: 260px; top: 80%; left: 75%;">
-            <ui:Button text="Free Cam" display-tooltip-when-elided="true" name="FreeCam" style="width: 83px; height: 35px;" />
-            <ui:Button text="2D" display-tooltip-when-elided="true" name="2D" style="width: 83px; height: 35px; position: absolute; top: 0; left: 84px;" />
-            <ui:Button text="FPV" display-tooltip-when-elided="true" name="FPV" style="width: 83px; height: 35px; position: absolute; top: 0; left: 168px;" />
+        <ui:VisualElement style="height: 100%; width: 100%; flex-shrink: 1; align-items: center; justify-content: flex-start; flex-grow: 1;">
+            <ui:Instance template="StatisticsWindow" name="StatisticsWindow" style="flex-shrink: 0; display: flex; width: 350px; height: 450px; flex-grow: 0; min-width: initial; min-height: initial;" />
         </ui:VisualElement>
-        <ui:VisualElement name="ModeButtons" style="width: 82px; height: 252px; left: 93%; top: 55%;">
-            <ui:Button text="Statistics" display-tooltip-when-elided="true" name="Statistics" enable-rich-text="true" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px;" />
-            <ui:Button text="World" display-tooltip-when-elided="true" name="WorldOptions" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; top: 5%;" />
-            <ui:Button text="Editor" display-tooltip-when-elided="true" name="Editor" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; right: auto; top: 10%;" />
+        <ui:VisualElement style="flex-direction: row-reverse; align-items: flex-end; width: 100%; flex-shrink: 0; flex-grow: 0;">
+            <ui:VisualElement name="ModeButtons" style="width: auto; height: auto; left: auto; top: auto; bottom: 10%; right: 1%; position: relative; align-items: center; flex-shrink: 0;">
+                <ui:Button text="Statistics" display-tooltip-when-elided="true" name="Statistics" enable-rich-text="true" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; margin-top: 3px; margin-bottom: 3px;" />
+                <ui:Button text="World" display-tooltip-when-elided="true" name="WorldOptions" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; top: auto; margin-top: 3px; margin-bottom: 3px;" />
+                <ui:Button text="Editor" display-tooltip-when-elided="true" name="Editor" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; right: auto; top: auto; margin-top: 3px; margin-bottom: 3px;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-shrink: 0; bottom: 10%; right: 2%;">
+                <ui:VisualElement name="CameraButtons" style="width: auto; top: auto; left: auto; bottom: auto; flex-direction: row; align-items: center; right: auto; height: auto; flex-shrink: 0; flex-grow: 0;">
+                    <ui:Button text="Free Cam" display-tooltip-when-elided="true" name="FreeCam" style="width: 83px; height: 35px;" />
+                    <ui:Button text="2D" display-tooltip-when-elided="true" name="2D" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
+                    <ui:Button text="FPV" display-tooltip-when-elided="true" name="FPV" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
