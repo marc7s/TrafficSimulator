@@ -29,10 +29,10 @@ namespace Car {
         // Variables
         private VehicleController _vehicleController;
         private Rigidbody _rigidbody;
-        private double _totalFuelConsumed = 0;
+        public float _maxFuelCapacity = 60; // L
+        public double _totalFuelConsumed = 0;
         private float _fuelConsumed = 0;
         private Vector3 _lastPosition = Vector3.zero;
-        private double _totalDistance = 0;
 
         // Vehicle specific values used in the fuel consumption calculation
         private float _idleFuelConsumption = 0; // L/s
@@ -114,7 +114,6 @@ namespace Car {
 
             // Calculate the distance traveled since last frame and add it to the total distance
             float distance = Vector3.Distance(_lastPosition, transform.position);
-            _totalDistance += distance;
 
             // Calculate the average acceleration since last frame
             _averageAcceleration = MathF.Max((_vehicleController.speed - _lastSpeed) /Time.deltaTime, 0);
