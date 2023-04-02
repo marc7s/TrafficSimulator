@@ -14,7 +14,7 @@ namespace UI
             Info,
             Settings
         }
-        
+
         private UIDocument _doc;
         private UserSelectManager _userSelectManager;
         private Selectable _selectedCar;
@@ -113,8 +113,9 @@ namespace UI
             // Get the selected car (returns null if no car is selected)
             _selectedCar = _userSelectManager.SelectedGameObject;
             AutoDrive car = _selectedCar?.gameObject.GetComponent<AutoDrive>();
+            FuelConsumption fuelConsumption = _selectedCar?.gameObject.GetComponent<FuelConsumption>();
 
-            _infoController.UpdateInfo(car);
+            _statsController.UpdateInfo(car, fuelConsumption);
         }
 
         // Update is called once per frame

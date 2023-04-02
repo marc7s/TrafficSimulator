@@ -63,6 +63,7 @@ namespace UI
 
             // Get statistics UI visual element
             _statisticsUI = _doc.rootVisualElement.Q<VisualElement>("StatisticsWindow");
+            _statisticsUI.pickingMode = PickingMode.Position;
             _statisticsUI.visible = false;
 
             _worldOptionButton = _doc.rootVisualElement.Q<Button>("WorldOptions");
