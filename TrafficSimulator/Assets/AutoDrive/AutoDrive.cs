@@ -462,7 +462,7 @@ namespace Car {
             }
 
             // If the road ended but we are looping, teleport to the first position
-            if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop)
+            if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
                 ResetToNode(_agent.Context.StartNode);
 
             // After the first increment of the current node, we are no longer entering the network
@@ -569,7 +569,7 @@ namespace Car {
                 TotalDistance += _target.DistanceToPrevNode;
                 _agent.Context.CurrentNode = _target;
 
-                if(_target == _agent.Context.EndNode)
+                if(_target == _agent.Context.EndNode && !_target.RoadNode.Road.IsClosed())
                 {
                     ResetToNode(_agent.Context.StartNode);
                     _target = _agent.Context.StartNode;
