@@ -180,6 +180,7 @@ namespace RoadGenerator
                     prevIntersection = current.Intersection;
                     continue;
                 }
+
                 current = current.Next;
             }
             navigationPath = positions;

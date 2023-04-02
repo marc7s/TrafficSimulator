@@ -115,14 +115,15 @@ namespace Car
                 if(node == entry)
                     return guideStart;   
             }
- 
+            LaneNode newLaneNode;
             if((node.Type == RoadNodeType.JunctionEdge && node.Intersection != null) || node.RoadNode.IsNavigationNode)
-                return UpdateAndGetGuideNode(node, true);
+                newLaneNode = UpdateAndGetGuideNode(node, true);
 
             if(node.Next == null)
-                return endBehaviour == RoadEndBehaviour.Loop ? _context.StartNode : null;
+                newLaneNode = endBehaviour == RoadEndBehaviour.Loop ? _context.StartNode : null;
             else
-                return node.Next;
+                newLaneNode = node.Next;
+            return newLaneNode;
         }
 
         public LaneNode Prev(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
