@@ -83,10 +83,11 @@ namespace Car {
         
         private float _originalMaxSpeedForward;
         private float _originalMaxSpeedReverse;
-        private List<LaneNode> _occupiedNodes = new List<LaneNode>();
+        private HashSet<LaneNode> _occupiedNodes = new HashSet<LaneNode>();
         private float _lerpSpeed;
         private LaneNode _target;
         private LineRenderer _targetLineRenderer;
+        private Rigidbody _rigidbody;
 
         // Quality variables
         private const int _repositioningOffset = 1;
@@ -130,6 +131,10 @@ namespace Car {
             Lane lane = Road.Lanes[LaneIndex];
             LaneNode currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = currentNode;
+
+            _rigidbody = GetComponent<Rigidbody>();
+
+            GetComponent<Vehicle>().CurrentSpeedFunction = GetCurrentSpeed;
             
             // Setup target line renderer
             float targetLineWidth = 0.3f;
@@ -156,9 +161,8 @@ namespace Car {
             else if (Mode == DrivingMode.Performance)
             {
                 // In performance mode the vehicle should not be affected by physics or gravity
-                Rigidbody rigidbody = GetComponent<Rigidbody>();
-                rigidbody.isKinematic = false;
-                rigidbody.useGravity = false;
+                _rigidbody.isKinematic = false;
+                _rigidbody.useGravity = false;
                 _target = _agent.Context.CurrentNode;
                 _lerpSpeed = Speed;
             }
@@ -179,11 +183,10 @@ namespace Car {
 
         void Update()
         {
-            UpdateOccupiedNodes();
             UpdateContext();
-
+            UpdateOccupiedNodes();
             SetActivity();
-            
+
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
         }
@@ -251,13 +254,18 @@ namespace Car {
                 _agent.UpdateRandomPath(node, ShowNavigationPath);
         }
 
+        public float GetCurrentSpeed()
+        {
+            return _rigidbody.velocity.magnitude;
+        }
+
         // Update the list of nodes that the vehicle is currently occupying
         private void UpdateOccupiedNodes()
         {
-            foreach (LaneNode node in _occupiedNodes)
+            foreach(LaneNode node in _occupiedNodes)
                 node.UnsetVehicle(_agent.Setting.Vehicle);
 
-            (List<LaneNode> forwardSpanNodes, List<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
+            (HashSet<LaneNode> forwardSpanNodes, HashSet<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
             _occupiedNodes.Clear();
             
             // Start adding the nodes behind the car
@@ -270,7 +278,7 @@ namespace Car {
             AddSpanNodes(forwardSpanNodes);
         }
 
-        private void AddSpanNodes(List<LaneNode> spanNodes)
+        private void AddSpanNodes(HashSet<LaneNode> spanNodes)
         {
             foreach (LaneNode node in spanNodes)
             {
@@ -284,16 +292,18 @@ namespace Car {
         }
 
         // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
-        private (List<LaneNode>, List<LaneNode>) GetVehicleSpanNodes()
+        private (HashSet<LaneNode>, HashSet<LaneNode>) GetVehicleSpanNodes()
         {
-            List<LaneNode> forwardNodes = new List<LaneNode>(){ _agent.Context.CurrentNode };
-            List<LaneNode> backwardNodes = new List<LaneNode>();
+            HashSet<LaneNode> forwardNodes = new HashSet<LaneNode>(){ _agent.Context.CurrentNode };
+            HashSet<LaneNode> backwardNodes = new HashSet<LaneNode>();
             LaneNode node = _agent.Prev(_agent.Context.CurrentNode);
+
+            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
 
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 
             // Add all occupied nodes prior to and including the current node
-            while (node != null && nodeDistance <= _vehicleLength / 2 + VehicleOccupancyOffset)
+            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
             {
                 backwardNodes.Add(node);
                 nodeDistance += node.DistanceToPrevNode;
@@ -303,11 +313,11 @@ namespace Car {
             nodeDistance = 0;
             // Add all occupied nodes after and excluding the current node
             node = _agent.Next(_agent.Context.CurrentNode);
-            while (node != null && nodeDistance <= _vehicleLength / 2 + VehicleOccupancyOffset)
+            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
             {
                 forwardNodes.Add(node);
                 nodeDistance += node.DistanceToPrevNode;
-                node = _agent.Next(node);
+                node = _agent.Next(node, RoadEndBehaviour.Stop);
             }
             
             return (forwardNodes, backwardNodes);
@@ -319,8 +329,9 @@ namespace Car {
             _vehicleController.cachedRigidbody.MoveRotation(_agent.Context.CurrentNode.Rotation);
             
             // Move it to the current position, offset in the opposite direction of the lane
-            _vehicleController.cachedRigidbody.MovePosition(_agent.Context.CurrentNode.Position - (2 * (_agent.Context.CurrentNode.Rotation * Vector3.forward).normalized));
-            
+            _vehicleController.cachedRigidbody.position = _agent.Context.CurrentNode.Position - (2 * (_agent.Context.CurrentNode.Rotation * Vector3.forward).normalized);
+            transform.position = _vehicleController.cachedRigidbody.position;
+
             // Reset velocity and angular velocity
             _vehicleController.cachedRigidbody.velocity = Vector3.zero;
             _vehicleController.cachedRigidbody.angularVelocity = Vector3.zero;
