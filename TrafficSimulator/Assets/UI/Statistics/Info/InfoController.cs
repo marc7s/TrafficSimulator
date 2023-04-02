@@ -15,10 +15,6 @@ namespace UI
         void Awake()
         {
             _doc = GetComponent<UIDocument>();
-
-            // Labels
-            _totalTimeOnRoad = _doc.rootVisualElement.Q<Label>("TotalTimeOnRoad");
-            _totalDistanceTraveled = _doc.rootVisualElement.Q<Label>("TotalDistanceTraveled");
             
         }
         
@@ -29,13 +25,12 @@ namespace UI
                 ResetInfo();
                 return;
             }
-            _totalDistanceTraveled.text = car.TotalDistance.ToString("0.00") + " m";
+
         }
 
         public void ResetInfo()
         {
-            _totalTimeOnRoad.text = "N/A";
-            _totalDistanceTraveled.text = "N/A";
+
         }
     }
 }
