@@ -645,7 +645,7 @@ namespace RoadGenerator
                     // Do not compute guide paths for U turns
                     if(entrySection.EdgeID == exitSection.EdgeID)
                         continue;
-                    _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection)));
+                    _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
                 }
             }
         }
@@ -669,6 +669,62 @@ namespace RoadGenerator
             }
 
             return yieldNodes;
+        }
+
+        /// <summary> Get a list of all nodes a path going between these sections needs to yield for blocking vehicles to </summary>
+        private Dictionary<string, List<LaneNode>> GetYieldToBlockingNodes(Section entrySection, Section exitSection)
+        {
+            Dictionary<string, List<LaneNode>> blockingNodes = new Dictionary<string, List<LaneNode>>();
+            
+            // Only yield for blocking nodes if you are going straight, so if you are turning then return an empty list
+            if(entrySection.Road != exitSection.Road)
+                return blockingNodes;
+
+            List<LaneNode> sourceNodes = new List<LaneNode>();
+            LaneNode curr = entrySection.Start;
+            while(curr != null)
+            {
+                sourceNodes.Add(curr);
+                curr = curr == entrySection.End ? exitSection.Start : curr.Next;
+            }
+
+            foreach(LaneNode source in sourceNodes)
+            {
+                blockingNodes[source.ID] = new List<LaneNode>();
+                foreach(Section section in _intersectionEntrySections.Values)
+                {
+                    // Do not yield to blocking vehicles on your own road
+                    if(section.Road == entrySection.Road)
+                        continue;
+
+                    blockingNodes[source.ID].AddRange(GetSectionBlockingNodes(section, source, true));
+                }
+
+                foreach(Section section in _intersectionExitSections.Values)
+                {
+                    // Do not yield to blocking vehicles on your own road
+                    if(section.Road == exitSection.Road)
+                        continue;
+
+                    blockingNodes[source.ID].AddRange(GetSectionBlockingNodes(section, source, false));
+                }
+            }
+
+            return blockingNodes;
+        }
+
+        private List<LaneNode> GetSectionBlockingNodes(Section section, LaneNode source, bool isEntry)
+        {
+            float maxBlockingDistance = section.Road.LaneWidth / 2;
+            List<LaneNode> sectionBlockingNodes = new List<LaneNode>();
+            LaneNode curr = isEntry ? section.End : section.Start;
+            while(curr != null && Vector3.Distance(curr.Position, source.Position) <= maxBlockingDistance)
+            {
+                sectionBlockingNodes.Add(curr);
+                curr = isEntry ? curr.Prev : curr.Next;
+            }
+
+            return sectionBlockingNodes;
         }
         
         private void CreateEntryIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
@@ -819,7 +875,7 @@ namespace RoadGenerator
             return (finalNode.First, finalNode.Last, guidePath);
         }
 
-        private GuideNode CreateGuidePath(Section entrySection, Section exitSection, List<(LaneNode, LaneNode)> yieldNodes)
+        private GuideNode CreateGuidePath(Section entrySection, Section exitSection, List<(LaneNode, LaneNode)> yieldNodes, Dictionary<string, List<LaneNode>> yieldBlockingNodes)
         {
             LaneNode entryLast = entrySection.End;
 
@@ -836,11 +892,15 @@ namespace RoadGenerator
                     prev.Next = curr;
                 prev = curr;
 
+                // Set the GuideNode to yield to potential blocking nodes
+                if(yieldBlockingNodes.ContainsKey(currLaneNode.ID))
+                    curr.YieldBlockingNodes = yieldBlockingNodes[currLaneNode.ID];
+
                 // If we have reached the end of the entry section
                 if(currLaneNode == entryLast)
                 {
                     // Set the GuideNode at the end of the entry section to yield to the yield nodes
-                    curr.YieldNodes = yieldNodes;
+                    curr.YieldNodes = yieldNodes;   
 
                     // Set the current lane node to the exit section
                     currLaneNode = exitSection.Start;

@@ -10,7 +10,8 @@ namespace Car
         Vehicle, 
         RoadEnd, 
         TrafficLight,
-        Yield
+        Yield,
+        YieldBlocking
     }
 
     public class BrakeController : AutoDriveController<BrakeEventType>
@@ -83,6 +84,11 @@ namespace Car
         {
             return node.YieldNodes.Exists(nodePair => ShouldYieldForNode(agent, ref nodePair));
         }
+
+        private static bool ShouldYieldBlocking(AutoDriveAgent agent, ref LaneNode node)
+        {
+            return node.YieldBlockingNodes.Exists(blockingNode => blockingNode.HasVehicle() && blockingNode.Vehicle != agent.Setting.Vehicle);
+        }
         
         private static bool ShouldYieldForNode(AutoDriveAgent agent, ref (LaneNode, LaneNode) yieldForNodePair)
         {
@@ -138,6 +144,8 @@ namespace Car
                     return (LaneNode node) => node.TrafficLight != null && node.TrafficLight.CurrentState != TrafficLightState.Green && node.Intersection?.ID != prevIntersectionID;
                 case BrakeEventType.Yield:
                     return (LaneNode node) => node != currentNode && ShouldYield(agentInstance, ref node);
+                case BrakeEventType.YieldBlocking:
+                    return (LaneNode node) => node != currentNode && ShouldYieldBlocking(agentInstance, ref node);
                 default:
                     return (LaneNode _) => false;
             }

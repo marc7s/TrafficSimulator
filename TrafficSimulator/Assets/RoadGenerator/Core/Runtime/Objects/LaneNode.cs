@@ -12,6 +12,7 @@ namespace RoadGenerator
         protected Vehicle _vehicle;
         protected int _laneIndex;
         public List<(LaneNode, LaneNode)> YieldNodes = new List<(LaneNode, LaneNode)>();
+        public List<LaneNode> YieldBlockingNodes = new List<LaneNode>();
 
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
         public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, float distanceToPrevNode) : this(position, laneSide, laneIndex, roadNode, null, null, distanceToPrevNode){}
