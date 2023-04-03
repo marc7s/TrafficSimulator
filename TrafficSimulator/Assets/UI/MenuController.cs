@@ -11,6 +11,7 @@ namespace UI
 
         // Start Menu UI
         private VisualElement _settingsContainer;
+        private VisualElement _startMenuContainer;
         private Button _startButton;
         private Button _settingsButton;
         private Button _exitButton;
@@ -39,12 +40,14 @@ namespace UI
         {
             _doc = GetComponent<UIDocument>();
             // Set the displayed container to the start menu
-            _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
+            _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("MenuDisplay");
 
             // Get the overlay controller
             _overlayController = GameObject.Find("UIOverlay").GetComponent<OverlayController>();
 
             // Start Menu UI
+            _startMenuContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
+
             _startButton = _doc.rootVisualElement.Q<Button>("StartButton");
             _startButton.clicked += StartButtonOnClicked;
             
@@ -136,9 +139,7 @@ namespace UI
         {
             // Clear the displayed container and add the start menu UI
             _displayedContainer.Clear();
-            _displayedContainer.Add(_startButton);
-            _displayedContainer.Add(_settingsButton);
-            _displayedContainer.Add(_exitButton);
+            _displayedContainer.Add(_startMenuContainer);
         }
 
         /// <summary>Wrapper to allow setting bools in PlayerPrefs</summary>
