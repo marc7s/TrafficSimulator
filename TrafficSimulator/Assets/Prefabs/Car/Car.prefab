@@ -1876,6 +1876,7 @@ MonoBehaviour:
   LaneIndex: 0
   _mesh: {fileID: 1577973480899245783}
   Mode: 1
+  Active: 0
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 0
@@ -1886,7 +1887,7 @@ MonoBehaviour:
   MaxReverseDistance: 20
   BaseTLD: 10
   TLDSpeedDivider: 20
-  VehicleOccupancyOffset: 3
+  VehicleOccupancyOffset: 2
   Speed: 10
   Acceleration: 7
   RotationSpeed: 5
@@ -1952,7 +1953,7 @@ MonoBehaviour:
   centerOfMassPosition: 0.7
   centerOfMassHeightOffset: 0
   centerOfMassTransform: {fileID: 0}
-  maxSpeedForward: 7
+  maxSpeedForward: 5
   maxSpeedReverse: 7
   tireFriction: 3
   rollingResistance: 0.05
@@ -2368,6 +2369,8 @@ MonoBehaviour:
   _engineDisplacement: 1.6
   _numberOfCylinders: 4
   _idlingRPM: 650
+  _maxFuelCapacity: 60
+  _totalFuelConsumed: 0
 --- !u!1 &1577973480899416901
 GameObject:
   m_ObjectHideFlags: 0

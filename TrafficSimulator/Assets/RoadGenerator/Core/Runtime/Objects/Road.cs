@@ -78,7 +78,7 @@ namespace RoadGenerator
 
         [Header ("Road settings")]
         public LaneAmount LaneAmount = LaneAmount.One;
-        public float LaneWidth = 4f;
+        public float LaneWidth = 6f;
         [Range (0, .5f)] public float Thickness = .15f;
         [Range(0.1f, 5f)] public float MaxAngleError = 2f;
         [Range(0, 5f)] public float MinVertexDistance = 0;
@@ -143,6 +143,9 @@ namespace RoadGenerator
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
+            if(RoadSystem == null)
+                return;
+            
             // Update the intersections and road when a node is changed
             IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
@@ -920,9 +923,12 @@ namespace RoadGenerator
         
         void OnDestroy()
         {
+            if(RoadSystem == null) 
+                return;
+            
             RoadSystem.RemoveRoad(this);
             int count = Intersections.Count;
-            for (var i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
                 Intersection intersection = Intersections[0];
                 Intersections.RemoveAt(0);

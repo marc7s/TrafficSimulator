@@ -1,4 +1,5 @@
 //#define DEBUG_INTERSECTION
+//#define YIELD_ALL_BLOCKING
 
 using UnityEngine;
 using System.Collections.Generic;
@@ -681,12 +682,17 @@ namespace RoadGenerator
                 return blockingNodes;
 
             List<LaneNode> sourceNodes = new List<LaneNode>();
+
+#if YIELD_ALL_BLOCKING
             LaneNode curr = entrySection.Start;
             while(curr != null)
             {
                 sourceNodes.Add(curr);
                 curr = curr == entrySection.End ? exitSection.Start : curr.Next;
             }
+#else
+            sourceNodes.Add(entrySection.End);
+#endif
 
             foreach(LaneNode source in sourceNodes)
             {
