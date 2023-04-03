@@ -47,25 +47,7 @@ namespace RoadGenerator
         public float CurrLength;
         public NodeBuilder(RoadNode prev, RoadNode curr, float currLength) => (Prev, Curr, CurrLength) = (prev, curr, currLength);
     }
-    public struct TrafficSignSettings
-    {
-        public float SpeedSignDistanceFromIntersectionEdge;
-        public float SpeedSignDistanceFromRoadEnd;
-        public float LampPoleDistanceOffset;
-        public bool ShouldSpawnLampPoles;
-        public float DefaultTrafficSignOffset;
-        public float LampPoleSideDistanceOffset;
-        public TrafficSignSettings(float speedSignDistanceFromIntersectionEdge, float speedSignDistanceFromRoadEnd, float lampPoleDistanceOffset, bool shouldSpawnLampPoles, float defaultTrafficSignOffset, float lampPoleSideDistanceOffset)
-        {
-            SpeedSignDistanceFromIntersectionEdge = speedSignDistanceFromIntersectionEdge;
-            LampPoleDistanceOffset = lampPoleDistanceOffset;
-            ShouldSpawnLampPoles = shouldSpawnLampPoles;
-            DefaultTrafficSignOffset = defaultTrafficSignOffset;
-            LampPoleSideDistanceOffset = lampPoleSideDistanceOffset;
-            SpeedSignDistanceFromRoadEnd = speedSignDistanceFromRoadEnd;
-        }
-    }
-    
+
     [ExecuteInEditMode()]
     [RequireComponent(typeof(PathCreator))]
     [RequireComponent(typeof(RoadMeshCreator))]
@@ -551,7 +533,8 @@ namespace RoadGenerator
         // Procedurally places the traffic signs along the road
         public void PlaceTrafficSigns()
         {
-            TrafficSignCreator trafficSignCreator = new TrafficSignCreator(GetTrafficSignSettings());
+            TrafficSignCreator trafficSignCreator = new TrafficSignCreator();
+            
             // Destroy the old container and create a new one
             if (_trafficSignContainer != null)
                 DestroyImmediate(_trafficSignContainer);
@@ -926,10 +909,6 @@ namespace RoadGenerator
         public float Length
         {
             get => _path.length;
-        }
-        private TrafficSignSettings GetTrafficSignSettings()
-        {
-            return new TrafficSignSettings(SpeedSignDistanceFromIntersectionEdge, SpeedSignDistanceFromRoadEnd, LampPoleDistanceOffset, ShouldSpawnLampPoles, DefaultTrafficSignOffset, LampPoleSideDistanceOffset);
         }
         void OnDestroy()
         {
