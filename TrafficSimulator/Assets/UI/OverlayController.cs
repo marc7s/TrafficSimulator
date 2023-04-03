@@ -88,6 +88,7 @@ namespace UI
 
         private void MenuButtonOnClicked()
         {
+            _statisticsUI.visible = false;
             _doc.rootVisualElement.visible = false;
             _menuController.Enable();
         }
