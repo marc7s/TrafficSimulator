@@ -21,6 +21,11 @@ namespace RoadEditor
             private SerializedProperty _generateSpeedSigns;
             private SerializedProperty _speedLimit;
             private SerializedProperty _speedSignDistanceFromIntersectionEdge;
+            private SerializedProperty _speedSignDistanceFromRoadEnd;
+            private SerializedProperty _shouldSpawnLampPoles;
+            private SerializedProperty _lampPoleDistanceOffset;
+            private SerializedProperty _lampPoleSideDistanceOffset;
+            private SerializedProperty _defaultTrafficSignOffset;
         #endregion
 
         private void OnEnable()
@@ -38,11 +43,17 @@ namespace RoadEditor
             _generateSpeedSigns = serializedObject.FindProperty("GenerateSpeedSigns");
             _speedLimit = serializedObject.FindProperty("SpeedLimit");
             _speedSignDistanceFromIntersectionEdge = serializedObject.FindProperty("SpeedSignDistanceFromIntersectionEdge");
+            _speedSignDistanceFromRoadEnd = serializedObject.FindProperty("SpeedSignDistanceFromRoadEnd");
+            _shouldSpawnLampPoles = serializedObject.FindProperty("ShouldSpawnLampPoles");
+            _lampPoleDistanceOffset = serializedObject.FindProperty("LampPoleDistanceOffset");
+            _lampPoleSideDistanceOffset = serializedObject.FindProperty("LampPoleSideDistanceOffset");
+            _defaultTrafficSignOffset = serializedObject.FindProperty("DefaultTrafficSignOffset");
+
         }
         public override void OnInspectorGUI()
         {
             // Uncomment this to change connections
-            DrawDefaultInspector();
+            //DrawDefaultInspector();
             
             serializedObject.Update();
             Road road = (Road)target;
@@ -57,9 +68,15 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_generateSpeedSigns);
             EditorGUILayout.PropertyField(_speedLimit);
             EditorGUILayout.PropertyField(_speedSignDistanceFromIntersectionEdge);
+            EditorGUILayout.PropertyField(_speedSignDistanceFromRoadEnd);
+            EditorGUILayout.PropertyField(_shouldSpawnLampPoles);
+            EditorGUILayout.PropertyField(_lampPoleDistanceOffset);
+            EditorGUILayout.PropertyField(_lampPoleSideDistanceOffset);
+            EditorGUILayout.PropertyField(_defaultTrafficSignOffset);
             EditorGUILayout.PropertyField(_drawLanes);
             EditorGUILayout.PropertyField(_drawRoadNodes);
             EditorGUILayout.PropertyField(_drawLaneNodes);
+            EditorGUILayout.PropertyField(_shouldSpawnLampPoles);
 
             
             // Only show the Draw Lane Pointers option if we are drawing lane nodes
@@ -128,6 +145,31 @@ namespace RoadEditor
             {
                 changed = true;
                 road.SpeedSignDistanceFromIntersectionEdge = _speedSignDistanceFromIntersectionEdge.floatValue;
+            }
+            if (_speedSignDistanceFromRoadEnd.floatValue != road.SpeedSignDistanceFromRoadEnd)
+            {
+                changed = true;
+                road.SpeedSignDistanceFromRoadEnd = _speedSignDistanceFromRoadEnd.floatValue;
+            }
+            if (_shouldSpawnLampPoles.boolValue != road.ShouldSpawnLampPoles)
+            {
+                changed = true;
+                road.ShouldSpawnLampPoles = _shouldSpawnLampPoles.boolValue;
+            }
+            if (_lampPoleDistanceOffset.floatValue != road.LampPoleDistanceOffset)
+            {
+                changed = true;
+                road.LampPoleDistanceOffset = _lampPoleDistanceOffset.floatValue;
+            }
+            if (_lampPoleSideDistanceOffset.floatValue != road.LampPoleSideDistanceOffset)
+            {
+                changed = true;
+                road.LampPoleSideDistanceOffset = _lampPoleSideDistanceOffset.floatValue;
+            }
+            if (_defaultTrafficSignOffset.floatValue != road.DefaultTrafficSignOffset)
+            {
+                changed = true;
+                road.DefaultTrafficSignOffset = _defaultTrafficSignOffset.floatValue;
             }
 
             if(_drawLaneNodes.boolValue != road.DrawLaneNodes)

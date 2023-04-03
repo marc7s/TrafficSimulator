@@ -103,14 +103,15 @@ namespace RoadGenerator
         [Range(1f, 20f)] public float MaxRoadNodeDistance = 5f;
         public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
         public bool GenerateSpeedSigns = true;
-        public float SpeedSignDistanceFromIntersectionEdge = 5f;
+
         [Header ("Traffic sign settings")]
-        [SerializeField] private float _speedSignDistanceFromIntersectionEdge = 5f;
-        [SerializeField] private float _speedSignDistanceFromRoadEnd = 5f;
-        [SerializeField] private float _lampPoleDistanceOffset = 20f;
-        [SerializeField] private bool _shouldSpawnLampPoles = true;
-        [SerializeField] private float _defaultTrafficSignOffset = 0.5f;
-        [SerializeField] private float _lampPoleSideDistanceOffset = 1f;
+        public float SpeedSignDistanceFromIntersectionEdge = 5f;
+        public float SpeedSignDistanceFromRoadEnd = 5f;
+        public bool ShouldSpawnLampPoles = true;
+        public float LampPoleDistanceOffset = 20f;
+        public float LampPoleSideDistanceOffset = 1f;
+        public float DefaultTrafficSignOffset = 0.5f;
+
 
         [Header ("Debug settings")]
         public bool DrawLanes = false;
@@ -563,7 +564,8 @@ namespace RoadGenerator
             float distanceToEndNode = currentNode.GetDistanceToEndRoadNode();
             float? distanceToNextIntersection = DistanceToNextIntersection(currentNode, out Intersection nextIntersection);
             float? distanceToPrevIntersection = null;
-            bool intersectionFound = false;
+            // If the there is an threeway intersection at start
+            bool intersectionFound = _start.Next.IsIntersection();
             Intersection prevIntersection = null;
             while(currentNode != null)
             {
@@ -587,7 +589,7 @@ namespace RoadGenerator
                 }
 
                 RoadNodeData roadNodeData = new RoadNodeData(currentNode, distanceToStartNode, distanceToEndNode, intersectionFound, this, distanceToNextIntersection, distanceToPrevIntersection, nextIntersection, prevIntersection);
-                List<TrafficSignData> trafficSignsToPlace = trafficSignCreator.SignThatShouldPlace(roadNodeData);
+                List<TrafficSignData> trafficSignsToPlace = trafficSignCreator.GetSignsThatShouldBePlaced(roadNodeData);
 
                 foreach (TrafficSignData trafficSignData in trafficSignsToPlace)
                     SpawnTrafficSign(trafficSignData);
@@ -927,7 +929,7 @@ namespace RoadGenerator
         }
         private TrafficSignSettings GetTrafficSignSettings()
         {
-            return new TrafficSignSettings(_speedSignDistanceFromIntersectionEdge, _speedSignDistanceFromRoadEnd, _lampPoleDistanceOffset, _shouldSpawnLampPoles, _defaultTrafficSignOffset, _lampPoleSideDistanceOffset);
+            return new TrafficSignSettings(SpeedSignDistanceFromIntersectionEdge, SpeedSignDistanceFromRoadEnd, LampPoleDistanceOffset, ShouldSpawnLampPoles, DefaultTrafficSignOffset, LampPoleSideDistanceOffset);
         }
         void OnDestroy()
         {

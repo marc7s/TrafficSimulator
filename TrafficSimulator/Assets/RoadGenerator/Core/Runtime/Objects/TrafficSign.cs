@@ -105,7 +105,7 @@ namespace RoadGenerator
         }
 
         private float? _distanceToPreviousLampPost = null;
-        public List<TrafficSignData> SignThatShouldPlace(RoadNodeData data)
+        public List<TrafficSignData> GetSignsThatShouldBePlaced(RoadNodeData data)
         {
             
             if (_distanceToPreviousLampPost.HasValue)
@@ -114,35 +114,42 @@ namespace RoadGenerator
             List<TrafficSignData> signs = new List<TrafficSignData>();
             ShouldPlaceTrafficLight(data, ref signs);
             ShouldPlaceStopSign(data, ref signs);
-            ShouldPlaceSpeedSign(data, ref signs);
+            ShouldSpeedSignBePlaced(data, ref signs);
             ShouldPlaceLampPost(data, ref signs);
             return signs;
         }
 
-        private void ShouldPlaceSpeedSign(RoadNodeData data, ref List<TrafficSignData> signs)
+        private void ShouldSpeedSignBePlaced(RoadNodeData data, ref List<TrafficSignData> signs)
         {
-            // Place a speedsign before each intersection
-            if (data.DistanceToNextIntersection.HasValue && data.DistanceToNextIntersection.Value < _settings.SpeedSignDistanceFromIntersectionEdge && !_havePlacedSpeedSignAtStartOfIntersection.ContainsKey(data.nextIntersection.ID))
+            if (data.roadNode.Type == RoadNodeType.JunctionEdge || data.roadNode.IsIntersection())
+                return;
+            
+            // Don't place a speed sign at an threeway intersectoin
+            if (data.roadNode.Type == RoadNodeType.End && (data.roadNode.Next?.IsIntersection() == true || data.roadNode.Prev?.IsIntersection() == true))
+                return;
+
+            // Place a speed sign before each intersection
+            if (data.DistanceToNextIntersection < _settings.SpeedSignDistanceFromIntersectionEdge && !_havePlacedSpeedSignAtStartOfIntersection.ContainsKey(data.nextIntersection.ID))
              {
                 signs.Add(new TrafficSignData(data.road.GetSpeedSignType(), data.roadNode, data.road.GetSpeedSignPrefab(), false, _settings.DefaultTrafficSignOffset));
                 _havePlacedSpeedSignAtStartOfIntersection[data.nextIntersection.ID] = true;
              }
 
-            // Place a speedsign after each intersection
-            if (data.DistanceToPrevIntersection.HasValue && data.DistanceToPrevIntersection.Value > _settings.SpeedSignDistanceFromIntersectionEdge && !_havePlacedSpeedSignAtEndOfIntersection.ContainsKey(data.prevIntersection.ID))
+            // Place a speed sign after each intersection
+            if (data.DistanceToPrevIntersection > _settings.SpeedSignDistanceFromIntersectionEdge && !_havePlacedSpeedSignAtEndOfIntersection.ContainsKey(data.prevIntersection.ID))
             {
                 signs.Add(new TrafficSignData(data.road.GetSpeedSignType(), data.roadNode, data.road.GetSpeedSignPrefab(), true, _settings.DefaultTrafficSignOffset));
                 _havePlacedSpeedSignAtEndOfIntersection[data.prevIntersection.ID] = true;
             }
 
-            // Place a speedsign at the start of the road
+            // Place a speed sign at the start of the road
             if (!HavePlacedSpeedSignAtStart && data.DistanceToStart > _settings.SpeedSignDistanceFromRoadEnd)
             {
                 signs.Add(new TrafficSignData(data.road.GetSpeedSignType(), data.roadNode, data.road.GetSpeedSignPrefab(), true, _settings.DefaultTrafficSignOffset));
                 HavePlacedSpeedSignAtStart = true;
             }
 
-            // Place a speedsign at the end of the road
+            // Place a speed sign at the end of the road
             if (!HavePlacedSpeedSignAtEnd && data.DistanceToEnd < _settings.SpeedSignDistanceFromRoadEnd)
             {
                signs.Add(new TrafficSignData(data.road.GetSpeedSignType(), data.roadNode, data.road.GetSpeedSignPrefab(), false, _settings.DefaultTrafficSignOffset));
@@ -151,7 +158,7 @@ namespace RoadGenerator
         }
         private void ShouldPlaceStopSign(RoadNodeData data, ref List<TrafficSignData> signs)
         {
-            // Place a stopsign at each junction edge
+            // Place a stop sign at each junction edge
             if (data.roadNode.Type == RoadNodeType.JunctionEdge && data.roadNode.Intersection.FlowType == FlowType.StopSigns)
             {
                 signs.Add(new TrafficSignData(TrafficSignType.StopSign, data.roadNode, data.road.RoadSystem.DefaultStopSignPrefab, data.IntersectionFound, _settings.DefaultTrafficSignOffset));
@@ -159,7 +166,7 @@ namespace RoadGenerator
         }
         private void ShouldPlaceTrafficLight(RoadNodeData data, ref List<TrafficSignData> signs)
         {
-            // Place a trafficlight at each junction edge
+            // Place a traffic light at each junction edge
             if (data.roadNode.Type == RoadNodeType.JunctionEdge && data.roadNode.Intersection.FlowType == FlowType.TrafficLights)
             {
                 signs.Add(new TrafficSignData(TrafficSignType.TrafficLight, data.roadNode, data.road.RoadSystem.DefaultTrafficLightPrefab, data.IntersectionFound, _settings.DefaultTrafficSignOffset));
@@ -168,7 +175,15 @@ namespace RoadGenerator
 
         private void ShouldPlaceLampPost(RoadNodeData data, ref List<TrafficSignData> signs)
         {
+            if (!_settings.ShouldSpawnLampPoles)
+                return;
+
+            // Don't place a lamp Post at an junction edge or intersection
             if (data.roadNode.Type == RoadNodeType.JunctionEdge || data.roadNode.IsIntersection())
+                return;
+
+            // Don't place a lamp Post at an threeway intersectoin
+            if (data.roadNode.Type == RoadNodeType.End && (data.roadNode.Next?.IsIntersection() == true || data.roadNode.Prev?.IsIntersection() == true))
                 return;
 
             // Place a lamppost all over the road at a certain interval
