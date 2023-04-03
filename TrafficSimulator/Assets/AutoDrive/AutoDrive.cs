@@ -100,8 +100,6 @@ namespace Car {
 
         private bool _isSetup = false;
 
-        TimeManagerEvent _timeManagerEvent;
-
         void Start()
         {
             if(!_isSetup)
