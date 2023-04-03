@@ -76,7 +76,6 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_drawLanes);
             EditorGUILayout.PropertyField(_drawRoadNodes);
             EditorGUILayout.PropertyField(_drawLaneNodes);
-            EditorGUILayout.PropertyField(_shouldSpawnLampPoles);
 
             
             // Only show the Draw Lane Pointers option if we are drawing lane nodes
