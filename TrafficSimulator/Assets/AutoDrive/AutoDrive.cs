@@ -48,7 +48,7 @@ namespace Car {
 
         [Header("Settings")]
         public DrivingMode Mode = DrivingMode.Quality;
-        public Activity Active = Activity.Parked;
+        public Activity Active = Activity.Driving;
         public RoadEndBehaviour EndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
         public NavigationMode OriginalNavigationMode = NavigationMode.Disabled;
