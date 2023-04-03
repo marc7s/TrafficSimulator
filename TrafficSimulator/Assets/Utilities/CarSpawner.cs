@@ -47,7 +47,6 @@ namespace RoadGenerator
         private float _carLength;
 
         private bool _spawned = false;
-
         
         private void Start()
         {

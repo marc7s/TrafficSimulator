@@ -9,9 +9,11 @@ namespace Simulation
 
         public Action OnEvent;
 
+
+
         public TimeManagerEvent(DateTime dateTime)
         {
-            _dateTime = TimeManager.FormatDateTime(dateTime);
+            _dateTime = TimeManager.Instance.FormatDateTime(dateTime);
             _timeStamp = _dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
