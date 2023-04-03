@@ -18,6 +18,7 @@ namespace Car
         public override bool ShouldAct(ref AutoDriveAgent agent)
         {
             LaneNode curr = agent.Context.CurrentNode;
+            LaneNode prev = curr.Prev;
             float distance = 0;
             float brakeDistance = GetBrakeDistance(agent.Setting) + Vector3.Distance(agent.Context.CurrentNode.Position, agent.Context.VehiclePosition);
 
@@ -28,11 +29,17 @@ namespace Car
                 if(ShouldActAtNode(ref agent, curr))
                     return true;
 
+                prev = curr;
                 curr = agent.Next(curr);
-                distance += curr.DistanceToPrevNode;
+                distance += GetNodeDistance(curr, prev);
             }
             
             return false;
+        }
+
+        private static float GetNodeDistance(LaneNode curr, LaneNode prev)
+        {
+            return curr.Type == RoadNodeType.JunctionEdge && curr.Prev.IsIntersection() ? Vector3.Distance(curr.Position, prev.Position) : curr.DistanceToPrevNode;
         }
 
         private static float GetBrakeDistance(AutoDriveSetting setting)
@@ -81,7 +88,7 @@ namespace Car
         {
             (LaneNode yieldStart, LaneNode yieldTransition) = yieldForNodePair;
             LaneNode curr = yieldStart;
-            LaneNode prev = curr;
+            LaneNode prev = curr.Next;
             float distanceToYieldNode = Vector3.Distance(agent.Context.CurrentNode.Position, yieldStart.Position);
             float distance = distanceToYieldNode;
 
@@ -98,7 +105,7 @@ namespace Car
                 if(curr.HasVehicle() && curr.Vehicle != agent.Setting.Vehicle && curr.Vehicle.CurrentSpeed >= maxSpeedOtherVehicle)
                     return true;
 
-                distance += curr.DistanceToPrevNode;
+                distance += GetNodeDistance(curr, prev);
                 prev = curr;
                 curr = agent.Prev(curr, RoadEndBehaviour.Stop);
 
