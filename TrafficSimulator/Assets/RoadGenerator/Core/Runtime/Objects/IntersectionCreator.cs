@@ -11,6 +11,9 @@ namespace RoadGenerator
         const int SEGMENT_ANCHOR2_INDEX = 3;
         public static void UpdateIntersections(Road road)
         {
+            if(road == null || road.RoadSystem == null)
+                return;
+            
             PathCreator pathCreator = road.RoadObject.GetComponent<PathCreator>();
             RoadSystem roadSystem = road.RoadSystem;
             
