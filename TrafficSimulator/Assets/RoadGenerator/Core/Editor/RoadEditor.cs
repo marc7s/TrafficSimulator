@@ -42,7 +42,7 @@ namespace RoadEditor
         public override void OnInspectorGUI()
         {
             // Uncomment this to change connections
-            //DrawDefaultInspector();
+            DrawDefaultInspector();
             
             serializedObject.Update();
             Road road = (Road)target;
