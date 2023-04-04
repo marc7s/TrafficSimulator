@@ -151,6 +151,17 @@ namespace RoadGenerator
                 curr = curr.Next;
             }
         }
+        public float GetDistanceToEnd()
+        {
+            RoadNode current = this.Next;
+            float distance = 0;
+            while(current != null)
+            {
+                distance += current.DistanceToPrevNode;
+                current = current.Next;
+            }
+            return distance;
+        }
 
         /// <summary>Returns `true` if this node is an intersection</summary>
         public bool IsIntersection() => _intersectionTypes.Contains(_type);
