@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/Statistics/StatPanelStyles.uss?fileID=7433441132597879392&amp;guid=ce764de00c236184fbd8fad2785ae52f&amp;type=3#StatPanelStyles" />
-    <ui:VisualElement style="width: 100%; height: 100%; background-color: rgb(255, 255, 255); flex-shrink: 0;">
+    <ui:VisualElement class="panel-container" style="width: 100%; height: 100%; background-color: rgb(255, 255, 255); flex-shrink: 0;">
         <ui:VisualElement name="Head" class="head-element">
             <ui:Label text="Statistics" display-tooltip-when-elided="true" style="left: auto;" />
         </ui:VisualElement>
