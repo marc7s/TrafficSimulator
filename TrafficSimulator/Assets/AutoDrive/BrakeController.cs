@@ -133,7 +133,7 @@ namespace Car
             string prevIntersectionID = agent.Context.PrevIntersection?.ID;
             AutoDriveAgent agentInstance = agent;
             LaneNode currentNode = agent.Context.CurrentNode;
-            
+
             switch(type)
             {
                 case BrakeEventType.Vehicle:
