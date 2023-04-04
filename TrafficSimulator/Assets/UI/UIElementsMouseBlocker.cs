@@ -16,7 +16,7 @@ namespace UI
             VisualElement root = GetComponent<UIDocument>().rootVisualElement;
 
             // Supply the name of the root element whose children you want to add
-            string rootElementName = "Root";
+            string rootElementName = "CameraAndModeButtons";
             VisualElement targetRootElement = root.Q<VisualElement>(rootElementName);
 
             if (targetRootElement != null)
