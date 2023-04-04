@@ -493,7 +493,16 @@ namespace Car {
 
             // If the road ended but we are looping, teleport to the first position
             if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop)
+            {
+                RigidbodyPause pause = _vehicleController.GetComponent<RigidbodyPause>();
+
                 ResetToNode(_agent.Context.StartNode);
+                pause.pause = true;
+                TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
+                TimeManager.Instance.AddEvent(unPauseEvent);
+                unPauseEvent.OnEvent += () => pause.pause = false;
+            }
+
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)
