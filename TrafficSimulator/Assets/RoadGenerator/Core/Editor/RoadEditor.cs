@@ -23,7 +23,7 @@ namespace RoadEditor
             private SerializedProperty _speedSignDistanceFromIntersectionEdge;
             private SerializedProperty _speedSignDistanceFromRoadEnd;
             private SerializedProperty _shouldSpawnLampPoles;
-            private SerializedProperty _lampPoleDistanceOffset;
+            private SerializedProperty _lampPoleIntervalDistance;
             private SerializedProperty _lampPoleSideDistanceOffset;
             private SerializedProperty _defaultTrafficSignOffset;
         #endregion
@@ -45,10 +45,9 @@ namespace RoadEditor
             _speedSignDistanceFromIntersectionEdge = serializedObject.FindProperty("SpeedSignDistanceFromIntersectionEdge");
             _speedSignDistanceFromRoadEnd = serializedObject.FindProperty("SpeedSignDistanceFromRoadEnd");
             _shouldSpawnLampPoles = serializedObject.FindProperty("ShouldSpawnLampPoles");
-            _lampPoleDistanceOffset = serializedObject.FindProperty("LampPoleDistanceOffset");
+            _lampPoleIntervalDistance = serializedObject.FindProperty("LampPoleIntervalDistance");
             _lampPoleSideDistanceOffset = serializedObject.FindProperty("LampPoleSideDistanceOffset");
             _defaultTrafficSignOffset = serializedObject.FindProperty("DefaultTrafficSignOffset");
-
         }
         public override void OnInspectorGUI()
         {
@@ -70,7 +69,7 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_speedSignDistanceFromIntersectionEdge);
             EditorGUILayout.PropertyField(_speedSignDistanceFromRoadEnd);
             EditorGUILayout.PropertyField(_shouldSpawnLampPoles);
-            EditorGUILayout.PropertyField(_lampPoleDistanceOffset);
+            EditorGUILayout.PropertyField(_lampPoleIntervalDistance);
             EditorGUILayout.PropertyField(_lampPoleSideDistanceOffset);
             EditorGUILayout.PropertyField(_defaultTrafficSignOffset);
             EditorGUILayout.PropertyField(_drawLanes);
@@ -155,10 +154,10 @@ namespace RoadEditor
                 changed = true;
                 road.ShouldSpawnLampPoles = _shouldSpawnLampPoles.boolValue;
             }
-            if (_lampPoleDistanceOffset.floatValue != road.LampPoleDistanceOffset)
+            if (_lampPoleIntervalDistance.floatValue != road.LampPoleIntervalDistance)
             {
                 changed = true;
-                road.LampPoleDistanceOffset = _lampPoleDistanceOffset.floatValue;
+                road.LampPoleIntervalDistance = _lampPoleIntervalDistance.floatValue;
             }
             if (_lampPoleSideDistanceOffset.floatValue != road.LampPoleSideDistanceOffset)
             {
