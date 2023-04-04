@@ -73,7 +73,6 @@ namespace RoadGenerator
         [SerializeField] private GameObject _speedSignOneHundredTenKPH;
         [SerializeField] private GameObject _speedSignOneHundredTwentyKPH;
         [SerializeField] private GameObject _speedSignOneHundredThirtyKPH;
-
         public GameObject LampPostPrefab;
 
         [Header ("Road settings")]
@@ -90,7 +89,7 @@ namespace RoadGenerator
         public float SpeedSignDistanceFromIntersectionEdge = 5f;
         public float SpeedSignDistanceFromRoadEnd = 5f;
         public bool ShouldSpawnLampPoles = true;
-        public float LampPoleDistanceOffset = 20f;
+        public float LampPoleIntervalDistance = 20f;
         public float LampPoleSideDistanceOffset = 1f;
         public float DefaultTrafficSignOffset = 0.5f;
 
@@ -544,7 +543,7 @@ namespace RoadGenerator
 
             RoadNode currentNode = _start;
             float distanceToStartNode = 0;
-            float distanceToEndNode = currentNode.GetDistanceToEndRoadNode();
+            float distanceToEndNode = currentNode.GetDistanceToEnd();
             float? distanceToNextIntersection = DistanceToNextIntersection(currentNode, out Intersection nextIntersection);
             float? distanceToPrevIntersection = null;
             // If the there is an threeway intersection at start
@@ -584,11 +583,11 @@ namespace RoadGenerator
         /// <summary> Spawns the traffic signs along the road </summary>
         private GameObject SpawnTrafficSign(TrafficSignData data)
         {
-            Quaternion rotation = data.RoadNode.Rotation * (data.isForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
+            Quaternion rotation = data.RoadNode.Rotation * (data.IsForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
             GameObject trafficSign = Instantiate(data.SignPrefab, data.RoadNode.Position, rotation);
             data.RoadNode.TrafficSignType = data.TrafficSignType;
             bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
-            Vector3 offsetDirection =  data.RoadNode.Normal * (isDrivingRight ? 1 : -1) * (data.isForward ? 1 : -1);
+            Vector3 offsetDirection =  data.RoadNode.Normal * (isDrivingRight ? 1 : -1) * (data.IsForward ? 1 : -1);
             trafficSign.transform.position += (data.DistanceFromRoad + LaneCount / 2 * LaneWidth) * offsetDirection;
             trafficSign.transform.parent = _trafficSignContainer.transform;
             if(data.TrafficSignType == TrafficSignType.TrafficLight)
