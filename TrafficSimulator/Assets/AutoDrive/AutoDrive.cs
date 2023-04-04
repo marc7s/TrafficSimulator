@@ -6,7 +6,6 @@ using EVP;
 using RoadGenerator;
 using CustomProperties;
 using DataModel;
-using Simulation;
 
 
 namespace Car {
@@ -80,6 +79,7 @@ namespace Car {
         private AutoDriveAgent _agent;
         private BrakeController _brakeController;
         private NavigationController _navigationController;
+        private BrakeLightController _brakeLightController;
         
         private float _originalMaxSpeedForward;
         private float _originalMaxSpeedReverse;
@@ -114,7 +114,7 @@ namespace Car {
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
             _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
             _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
-            
+            _brakeLightController = GetComponent<BrakeLightController>();
             // If the road has not updated yet there will be no lanes, so update them first
             if(Road.Lanes.Count == 0)
                 Road.OnChange();
@@ -443,11 +443,13 @@ namespace Car {
             {
                 _vehicleController.brakeInput = 0.2f;
                 _vehicleController.throttleInput = 0f;
+                _brakeLightController.SetBrakeLights(BrakeLightState.On);
             }
             else
             {
                 _vehicleController.brakeInput = 0f;
                 _vehicleController.throttleInput = 0.5f;
+                _brakeLightController.SetBrakeLights(BrakeLightState.Off);
             }
         }
 
