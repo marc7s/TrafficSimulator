@@ -6,7 +6,6 @@ namespace Car
     public enum IndicatorState
     {
         Left,
-
         Off,
         Right,
         Hazard
