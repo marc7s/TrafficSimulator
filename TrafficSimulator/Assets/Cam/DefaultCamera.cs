@@ -57,6 +57,7 @@ namespace Cam
 
         private void HandleNewGameObjectSelection(Selectable selectable)
         {
+            StopAllCoroutines();
             if(selectable == null)
             {
                 SetToggledGameObjectToNull();
@@ -117,6 +118,7 @@ namespace Cam
         {
             _toggledGameObject = null;
             _hasToggledGameObject = false;
+            _isMovingTowardsTarget = false;
         }
 
         private void SetToggledGameObject(GameObject toggledGameObject)
