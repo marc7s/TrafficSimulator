@@ -170,7 +170,7 @@ namespace RoadGenerator
                 // When the current node is a new intersection
                 if (current.Type == RoadNodeType.JunctionEdge && prevIntersection?.ID != current.Intersection.ID)
                 {
-                    float turnDirection = 0;
+                    int turnDirection = 0;
                     (_, _, current) = current.RoadNode.Intersection.GetNewLaneNode(clonedPath.Pop(), current, ref turnDirection);
                     prevIntersection = current.Intersection;
                     continue;
