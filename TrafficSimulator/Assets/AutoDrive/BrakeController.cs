@@ -51,6 +51,7 @@ namespace Car
         {
             float speed = agent.Setting.Vehicle.CurrentSpeed;
             const float g = 9.82f;
+            const float qualityOffset = 2f;
             
             float performanceBrakeCoef = agent.Context.CurrentAction == DrivingAction.Braking || agent.Context.CurrentAction == DrivingAction.Stopped ? 2f : 1f;
             
@@ -58,7 +59,7 @@ namespace Car
             {
                 case DrivingMode.Quality:
                     // Calculate the distance it will take to stop
-                    return agent.Setting.BrakeOffset + speed / 2 + speed * speed / (agent.Setting.VehicleController.tireFriction * g);
+                    return agent.Setting.BrakeOffset + qualityOffset + speed / 2 + speed * speed / (agent.Setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
                     /* 
@@ -102,30 +103,42 @@ namespace Car
             LaneNode curr = yieldStart;
             LaneNode prev = curr.Next;
             float distanceToYieldNode = Vector3.Distance(agent.Context.CurrentNode.Position, yieldStart.Position);
-            float distance = distanceToYieldNode;
+            float distanceToCurrNode = distanceToYieldNode;
 
-            const float yieldTime = 3f;
+            const float yieldTime = 2f;
             const float maxSpeed = 20f;
             const float maxDistance = maxSpeed * yieldTime;
 
-            while(curr != null && distance < maxDistance + distanceToYieldNode)
+            while(curr != null && distanceToCurrNode < maxDistance + distanceToYieldNode)
             {
                 if(curr.Type == RoadNodeType.End)
                     return false;
 
-                float maxSpeedOtherVehicle = distance / yieldTime;
-                if(curr.HasVehicle() && curr.Vehicle != agent.Setting.Vehicle && curr.Vehicle.CurrentSpeed >= maxSpeedOtherVehicle)
-                    return true;
+                if(curr.HasVehicle() && curr.Vehicle != agent.Setting.Vehicle)
+                {
+                    float maxSpeedOtherVehicle = distanceToCurrNode / yieldTime;
+                    
+                    float currentSpeed = Mathf.Max(1, agent.Setting.Vehicle.CurrentSpeed);
+                    float otherSpeed = Mathf.Max(1, curr.Vehicle.CurrentSpeed);
+                    
+                    float timeToNode = distanceToCurrNode / currentSpeed;
+                    float otherTimeToNode = distanceToCurrNode / otherSpeed;
 
-                distance += GetNodeDistance(curr, prev);
+                    if(currentSpeed > maxSpeedOtherVehicle && otherTimeToNode < timeToNode)
+                        return true;
+                }
+
+                distanceToCurrNode += GetNodeDistance(curr, prev);
+                
                 prev = curr;
                 curr = agent.Prev(curr, RoadEndBehaviour.Stop);
 
                 if(curr == null)
                 {
                     curr = yieldTransition;
+                    
                     if(prev != null)
-                        distance += Vector3.Distance(prev.Position, curr.Position);
+                        distanceToCurrNode += Vector3.Distance(prev.Position, curr.Position);
                 }
             }
 
