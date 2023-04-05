@@ -209,7 +209,6 @@ namespace RoadGenerator
                 // This can be removed if roads serialize the graph correctly
                road.UpdateRoadNodes();
                road.UpdateLanes();
-                
             }
 
             // Generate a new graph

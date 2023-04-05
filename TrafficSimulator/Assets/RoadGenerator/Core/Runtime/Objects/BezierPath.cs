@@ -349,7 +349,6 @@ namespace RoadGenerator
 			points.Reverse();
 			perAnchorNormalsAngle.Reverse();
 			// Reverse control points so that they stay in the same place relative to their anchor
-			
 			for (int i = 1; i < points.Count; i += 3)
 			{
 				Vector3 tmp = points[i];
