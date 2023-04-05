@@ -570,6 +570,10 @@ namespace Car {
                 if(nextNode == null)
                     return node;
                 
+                // Ignore non-steering target nodes
+                if(!nextNode.IsSteeringTarget)
+                    i--;
+                
                 node = nextNode;
             }
             
