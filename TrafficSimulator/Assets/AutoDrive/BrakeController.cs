@@ -21,9 +21,13 @@ namespace Car
             LaneNode curr = agent.Context.CurrentNode;
             LaneNode prev = curr.Prev;
             float distance = 0;
-            float brakeDistance = GetBrakeDistance(agent.Setting) + Vector3.Distance(agent.Context.CurrentNode.Position, agent.Context.VehiclePosition);
+            float brakeDistance = GetBrakeDistance(ref agent) + Vector3.Distance(agent.Context.CurrentNode.Position, agent.Context.VehiclePosition);
+            
+            // Add an offset if we are braking or are stopped so we do not lose track of the braking target due to deceleration
+            float brakingOffset = agent.Setting.Mode == DrivingMode.Quality ? 2f : 10f;
+            float offset = agent.Context.CurrentAction == DrivingAction.Braking || agent.Context.CurrentAction == DrivingAction.Stopped ? brakingOffset : 0;
 
-            while(curr != null && distance < brakeDistance)
+            while(curr != null && distance < brakeDistance + offset)
             {
                 agent.Context.BrakeTarget = curr;
                     
@@ -34,7 +38,7 @@ namespace Car
                 curr = agent.Next(curr);
                 distance += GetNodeDistance(curr, prev);
             }
-            
+
             return false;
         }
 
@@ -43,16 +47,19 @@ namespace Car
             return curr.Type == RoadNodeType.JunctionEdge && curr.Prev.IsIntersection() ? Vector3.Distance(curr.Position, prev.Position) : curr.DistanceToPrevNode;
         }
 
-        private static float GetBrakeDistance(AutoDriveSetting setting)
+        private static float GetBrakeDistance(ref AutoDriveAgent agent)
         {
-            float speed = setting.Mode == DrivingMode.Quality ? setting.VehicleController.speed : setting.Speed;
+            float speed = agent.Setting.Vehicle.CurrentSpeed;
             const float g = 9.82f;
             const float qualityBuffer = 3f;
-            switch(setting.Mode)
+            
+            float performanceBrakeCoef = agent.Context.CurrentAction == DrivingAction.Braking || agent.Context.CurrentAction == DrivingAction.Stopped ? 2f : 1f;
+            
+            switch(agent.Setting.Mode)
             {
                 case DrivingMode.Quality:
                     // Calculate the distance it will take to stop
-                    return qualityBuffer + setting.BrakeOffset + speed / 2 + speed * speed / (setting.VehicleController.tireFriction * g);
+                    return qualityBuffer + agent.Setting.BrakeOffset + speed / 2 + speed * speed / (agent.Setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
                     /* 
@@ -74,7 +81,7 @@ namespace Car
                         Going back to (2), this gives us the final formula:
                         s = v * v / 2a
                     */
-                    return setting.BrakeOffset + speed * speed / (setting.Acceleration * 2f);
+                    return agent.Setting.BrakeOffset + performanceBrakeCoef * speed * speed / (agent.Setting.Acceleration * 2f);
 
                 default:
                     return 0;
