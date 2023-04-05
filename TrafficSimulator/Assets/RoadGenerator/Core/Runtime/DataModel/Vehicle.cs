@@ -1,10 +1,12 @@
 using UnityEngine;
+using System;
 
 namespace DataModel
 {
     abstract public class Vehicle : MonoBehaviour
     {
         protected string _id;
+        public Func<float> CurrentSpeedFunction;
 
         protected void Init()
         {
@@ -14,6 +16,11 @@ namespace DataModel
         public string ID
         {
             get => _id;
+        }
+
+        public float CurrentSpeed
+        {
+            get => CurrentSpeedFunction();
         }
 
         /// <summary>Override the generic equals for this class</summary>

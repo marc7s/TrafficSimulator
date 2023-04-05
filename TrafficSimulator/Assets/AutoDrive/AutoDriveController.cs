@@ -11,6 +11,7 @@ namespace Car
     public abstract class AutoDriveController<T> : IAutoDriveController<T> where T : System.Enum
     {
         public abstract bool ShouldAct(ref AutoDriveAgent agent);
+        private readonly T[] _eventTypes = (T[])Enum.GetValues(typeof(T));
 
         public abstract Func<LaneNode, bool> EventAssessor(ref AutoDriveAgent agent, T type);
         public Action OnNavigationUpdate { get; set; }
@@ -18,7 +19,7 @@ namespace Car
         protected bool ShouldActAtNode(ref AutoDriveAgent agent, LaneNode node)
         {
             // Check all events and return true if any of them returns true
-            foreach(T type in Enum.GetValues(typeof(T)))
+            foreach(T type in _eventTypes)
             {
                 if(EventAssessor(ref agent, type)(node))
                     return true;

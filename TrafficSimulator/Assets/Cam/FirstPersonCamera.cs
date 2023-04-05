@@ -19,7 +19,7 @@ namespace Cam
 
         private CinemachinePOV _pov;
 
-        private void Awake()
+        protected override void Awake()
         {
             base.Awake();
             _pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();

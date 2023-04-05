@@ -6,6 +6,13 @@ using RoadGenerator;
 
 namespace Car
 {
+    public enum DrivingAction
+    {
+        Accelerating,
+        Driving,
+        Braking,
+        Stopped
+    }
     public class AutoDriveAgent
     {
         private AutoDriveSetting _setting;
@@ -55,7 +62,8 @@ namespace Car
                 Context.VisitedNavigationNodes.Add(node.RoadNode.Position);
                 Context.NavigationPath.Pop();
             }
-
+                
+            
             if (Context.NavigationPathEndNode != null && Context.NavigationPathEndNode.RoadNode == node.RoadNode && Context.NavigationPath.Count == 0)
                 UpdateRandomPath(node, showNavigationPath);
             
@@ -69,9 +77,8 @@ namespace Car
                 {                    
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                     {
-                        Debug.Log("AutoDrive: Intersection reached, switching to navigation path" + node.RoadNode.Position);
-                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node);
-                        
+                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
+
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (Setting.Mode == DrivingMode.Performance)
                             Navigation.DrawPathRemoveOldestPoint(ref Context.NavigationPathPositions, Context.NavigationPathContainer);
@@ -147,6 +154,7 @@ namespace Car
     {
         private Vehicle _vehicle;
         private DrivingMode _mode;
+        private Activity _active;
         private RoadEndBehaviour _endBehaviour;
         private VehicleController _vehicleController;
         private float _brakeOffset;
@@ -157,6 +165,7 @@ namespace Car
         
         public Vehicle Vehicle => _vehicle;
         public DrivingMode Mode => _mode;
+        public Activity Active => _active;
         public RoadEndBehaviour EndBehaviour => _endBehaviour;
         public VehicleController VehicleController => _vehicleController;
         public float BrakeOffset => _brakeOffset;
@@ -165,10 +174,11 @@ namespace Car
         public GameObject NavigationTargetMarker => _navigationTargetMarker;
         public Material NavigationPathMaterial => _navigationPathMaterial;
         
-        public AutoDriveSetting(Vehicle vehicle, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
+        public AutoDriveSetting(Vehicle vehicle, DrivingMode mode, Activity active, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
             _vehicle = vehicle;
             _mode = mode;
+            _active = active;
             _endBehaviour = endBehaviour;
             _vehicleController = vehicleController;
             _brakeOffset = brakeOffset;
@@ -191,6 +201,9 @@ namespace Car
         public LaneNode PrevTarget;
         public NavigationMode NavigationMode;
         public LaneNode BrakeTarget;
+        public float CurrentBrakeInput;
+        public float CurrentThrottleInput;
+        public DrivingAction CurrentAction;
         public NavigationNode NavigationPathEndNode;
         
         public Stack<NavigationNodeEdge> NavigationPath;
@@ -198,6 +211,9 @@ namespace Car
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
 
+        public TurnDirection TurnDirection;
+        public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
+        
         public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
         {
             CurrentRoad = currentRoad;
@@ -211,11 +227,15 @@ namespace Car
             PrevTarget = null;
             NavigationMode = navigationMode;
             BrakeTarget = null;
+            CurrentBrakeInput = 0;
+            CurrentThrottleInput = 0;
+            CurrentAction = DrivingAction.Stopped;
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathContainer = new GameObject("Navigation Path");
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
+            TurnDirection = TurnDirection.Straight;
         }
     }
 }

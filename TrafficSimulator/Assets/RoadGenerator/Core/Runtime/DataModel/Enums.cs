@@ -6,4 +6,10 @@ namespace DataModel
         Loop,
         Stop
     }
+    public enum TurnDirection
+    {
+        Left = -1,
+        Straight = 0,
+        Right = 1
+    }
 }
