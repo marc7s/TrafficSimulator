@@ -96,6 +96,7 @@ namespace Car {
         private const float _intersectionMaxSpeed = 4f;
         private LaneNode _repositioningTarget;
         private VehicleController _vehicleController;
+        private IndicatorController _indicatorController;
 
         private bool _isSetup = false;
 
@@ -120,6 +121,7 @@ namespace Car {
             _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
             _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
             _brakeLightController = GetComponent<BrakeLightController>();
+            _indicatorController = GetComponent<IndicatorController>();
             // If the road has not updated yet there will be no lanes, so update them first
             if(Road.Lanes.Count == 0)
                 Road.OnChange();
@@ -190,11 +192,16 @@ namespace Car {
             UpdateContext();
             UpdateOccupiedNodes();
             SetActivity();
-
+            UpdateIndicators();
+            
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
         }
 
+        private void UpdateIndicators()
+        {
+            _indicatorController.SetIndicator(IndicatorController.TurnDirectionToIndicatorState(_agent.Context.TurnDirection));
+        }
         private void UpdateContext()
         {
             _agent.Context.VehiclePosition = transform.position;
@@ -210,6 +217,7 @@ namespace Car {
         {
             _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
             _agent.UnsetIntersectionTransition(intersection);
+            _agent.Context.TurnDirection = TurnDirection.Straight;
         }
 
         private void SetActivity()
