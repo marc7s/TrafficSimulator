@@ -21,11 +21,11 @@ namespace Car
             LaneNode curr = agent.Context.CurrentNode;
             LaneNode prev = curr.Prev;
             float distance = 0;
+            float brakingOffset = agent.Setting.Mode == DrivingMode.Quality ? 2f : 10f;
             float brakeDistance = GetBrakeDistance(ref agent) + Vector3.Distance(agent.Context.CurrentNode.Position, agent.Context.VehiclePosition);
             
             // Add an offset if we are braking or are stopped so we do not lose track of the braking target due to deceleration
-            float brakingOffset = agent.Setting.Mode == DrivingMode.Quality ? 2f : 10f;
-            float offset = agent.Context.CurrentAction == DrivingAction.Braking || agent.Context.CurrentAction == DrivingAction.Stopped ? brakingOffset : 0;
+            float offset = agent.Context.IsBrakingOrStopped ? brakingOffset : 0;
 
             while(curr != null && distance < brakeDistance + offset)
             {
@@ -51,7 +51,6 @@ namespace Car
         {
             float speed = agent.Setting.Vehicle.CurrentSpeed;
             const float g = 9.82f;
-            const float qualityBuffer = 3f;
             
             float performanceBrakeCoef = agent.Context.CurrentAction == DrivingAction.Braking || agent.Context.CurrentAction == DrivingAction.Stopped ? 2f : 1f;
             
@@ -59,7 +58,7 @@ namespace Car
             {
                 case DrivingMode.Quality:
                     // Calculate the distance it will take to stop
-                    return qualityBuffer + agent.Setting.BrakeOffset + speed / 2 + speed * speed / (agent.Setting.VehicleController.tireFriction * g);
+                    return agent.Setting.BrakeOffset + speed / 2 + speed * speed / (agent.Setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
                     /* 
@@ -140,7 +139,7 @@ namespace Car
             string prevIntersectionID = agent.Context.PrevIntersection?.ID;
             AutoDriveAgent agentInstance = agent;
             LaneNode currentNode = agent.Context.CurrentNode;
-            
+
             switch(type)
             {
                 case BrakeEventType.Vehicle:

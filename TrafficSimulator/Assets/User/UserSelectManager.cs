@@ -29,6 +29,7 @@ namespace User
         private InputAction _doubleClickInput;
         private bool _hasSelectedGameObject;
         private InputAction _pointInput;
+        public bool IsHoveringUIElement { get; set; } = false;
 
         /// <summary>
         ///     The currently selected game object.
@@ -57,7 +58,7 @@ namespace User
                 return _instance;
             }
         }
-
+        
         private void Awake()
         {
             InitializeSingletonInstance();
@@ -113,12 +114,19 @@ namespace User
 
         private void OnSingleClickInput(InputAction.CallbackContext ctx)
         {
-            OnClickInput(ctx, OnSelectedGameObject);
+            if(!IsHoveringUIElement)
+            {
+                OnClickInput(OnSelectedGameObject);
+                Debug.Log("Single click");
+            }
         }
 
         private void OnDoubleClickInput(InputAction.CallbackContext ctx)
         {
-            OnClickInput(ctx, OnDoubleClickedSelectedGameObject);
+            if(!IsHoveringUIElement)
+            {
+                OnClickInput(OnDoubleClickedSelectedGameObject);
+            }
         }
 
         /// <summary>
@@ -132,7 +140,7 @@ namespace User
         public event SelectedGameObjectChangedHandler OnSelectedGameObject;
 
         // Common method for handling click and double-click inputs
-        private void OnClickInput(InputAction.CallbackContext ctx, SelectedGameObjectChangedHandler eventToInvoke)
+        private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke)
         {
             Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
