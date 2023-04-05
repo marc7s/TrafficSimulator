@@ -720,7 +720,7 @@ namespace RoadGenerator
             EndRoadNode = StartRoadNode.Last;
             ConnectRoadNodesForConnectedRoads();
             // Create a new navigation graph
-            _navigationGraph = new RoadNavigationGraph(StartRoadNode, path.IsClosed);
+            _navigationGraph = new RoadNavigationGraph(StartRoadNode);
             StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
         
             // If an intersection exists on the road, update the intersection junction edge navigation

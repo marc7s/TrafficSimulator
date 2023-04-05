@@ -120,16 +120,20 @@ namespace RoadGenerator
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge, targetNode);
                 if (path == null)
                     continue;
+
                 // To avoid getting a closed loop as the target node we check if the target node is the first node in a closed loop
                 if (targetNode.RoadNode.Road.FirstRoadInClosedLoop || targetNode.RoadNode.Road.ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true)
                     continue;
+
                 // To avoid getting an intersection as the target node we check if the target node is an intersection.
                 // To check for three way intersections we need to check the next and previous nodes as well
                 if (targetNode.RoadNode.IsIntersection() || targetNode.RoadNode.Next?.IsIntersection() == true || targetNode.RoadNode.Prev?.IsIntersection() == true)
                     continue;
+
                 // Avoid getting navigation nodes as the target node
                 if (targetNode.RoadNode.IsNavigationNode)
                     continue;
+
                 // Trying to find a path that is not too short
                 if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
                     return path;
@@ -173,7 +177,7 @@ namespace RoadGenerator
                     clonedPath.Pop();
                     prevIntersection = null; 
                 }
-                
+
                 // When the current node is a new intersection
                 if (current.Type == RoadNodeType.JunctionEdge && prevIntersection?.ID != current.Intersection.ID)
                 {

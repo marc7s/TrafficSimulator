@@ -5,12 +5,6 @@ using UnityEngine;
 
 namespace RoadGenerator
 {
-    public enum NavigationNodeType
-    {
-        Intersection,
-        TwowayRoad,
-        EndPoint
-    }
     public class NavigationNodeEdge
     {
         public NavigationNode StartNavigationNode;
@@ -75,28 +69,6 @@ namespace RoadGenerator
                 newNode.SecondaryDirectionEdge = edge;
             }
         }
-
-        private void AddEdge(NavigationNode newNode, bool isPrimaryDirection, float cost)
-        {
-            if (isPrimaryDirection)
-            {
-                if (PrevPrimaryDirectionNode != null)
-                {
-                    NavigationNodeEdge edge = new NavigationNodeEdge(PrevPrimaryDirectionNode, newNode, cost);
-                    PrevPrimaryDirectionNode.Edges.Add(edge);
-                    PrevPrimaryDirectionNode.PrimaryDirectionEdge = edge;
-                }
-            }
-            else
-            {
-                if (PrevSecondaryDirectionNode != null)
-                {
-                    NavigationNodeEdge edge = new NavigationNodeEdge(newNode, PrevSecondaryDirectionNode , cost);
-                    newNode.Edges.Add(edge);
-                    newNode.SecondaryDirectionEdge = edge;
-                }
-            }
-        }
     }
     /// <summary> A graph representation of a road </summary>
     public class RoadNavigationGraph
@@ -115,15 +87,9 @@ namespace RoadGenerator
         };
 
         private float _currentCost = 0f;
-        public RoadNavigationGraph(RoadNode roadNode, bool isClosed)
+        public RoadNavigationGraph(RoadNode roadNode)
         {
             RoadNode curr = roadNode;
-            
-            NavigationNode PreviouslyAddedNode = null;
-            
-            NavigationNode closedStartNodePrimaryDirection = null;
-            NavigationNode closedStartNodeSecondaryDirection = null;
-            
             NavigationGraphBuilder builder = new NavigationGraphBuilder();
             while (curr != null)
             {
@@ -139,11 +105,7 @@ namespace RoadGenerator
                     curr = curr.Next;
                     continue;
                 }
-                // In a closed loop we never want to add the end node, so we skip it
-                if (curr.Type == RoadNodeType.End && isClosed && PreviouslyAddedNode != null)
-                    break;   
-            
-                
+
                 builder.AddNode(curr, _currentCost);
                 _currentCost = 0f;
                 curr = curr.Next;
@@ -151,18 +113,6 @@ namespace RoadGenerator
             EndNavigationNode = builder.Nodes.Last();
             StartNavigationNode = builder.Nodes.First();
             Graph = builder.Nodes;
-            
-            // If the road is closed we need to add the edges between the start and end node
-            if (isClosed)
-            {
-                NavigationNodeEdge edgePrimary = new NavigationNodeEdge(closedStartNodeSecondaryDirection, EndNavigationNode, _currentCost);
-                EndNavigationNode.PrimaryDirectionEdge = edgePrimary;
-                EndNavigationNode.Edges.Add(edgePrimary);
-                NavigationNodeEdge edgeSecondary = new NavigationNodeEdge(EndNavigationNode, closedStartNodeSecondaryDirection, _currentCost);
-                closedStartNodeSecondaryDirection.Edges.Add(edgeSecondary);
-                closedStartNodeSecondaryDirection.SecondaryDirectionEdge = edgeSecondary;
-                closedStartNodePrimaryDirection.SecondaryDirectionEdge = edgeSecondary;   
-            }
         }
         
         private float CalculateCost(float distance, float speedLimit = 1f)
