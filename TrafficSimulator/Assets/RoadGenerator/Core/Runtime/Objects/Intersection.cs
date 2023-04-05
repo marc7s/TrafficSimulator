@@ -855,7 +855,8 @@ namespace RoadGenerator
             return guidePaths;
         }
         
-        /// <summary> Get the new start node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
+        /// <summary> Get the new start node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (StartNode, EndNode, NextNode)
+        /// turnDirection will return the values 1, 0 or -1. 1 is right turn, 0 is straight and -1 is left turn </summary> 
         public (LaneNode, LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current, ref float turnDirection)
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
