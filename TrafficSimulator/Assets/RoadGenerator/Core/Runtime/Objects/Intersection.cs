@@ -856,14 +856,13 @@ namespace RoadGenerator
         }
         
         /// <summary> Get the new start node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
-        public (LaneNode, LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current)
+        public (LaneNode, LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current, ref float turnDirection)
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
                 return (null, null, null);
             }
-
             LaneNode finalNode = GetClosestIndexExitNode(_laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID], current.Index);
 
             if (!_intersectionGuidePaths.ContainsKey((current.ID, finalNode.ID)))
@@ -874,7 +873,7 @@ namespace RoadGenerator
 
             
             GuideNode guidePath = _intersectionGuidePaths[(current.ID, finalNode.ID)];
-            
+            turnDirection = GetTurnDirection(current, finalNode);
             // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
             // never to it, once the vehicle passes the control point and reaches the start point, it can never come back to the control point
             // which is then removed by the garbage collector
@@ -920,6 +919,27 @@ namespace RoadGenerator
 
             return guidePath;
         }
+        /// <summary> Returns the turn direction for the intersection path. Returns 1, 0 or -1. 1 Is right turn, 0 is straight, -1 is left </summary>
+        private float GetTurnDirection(LaneNode entry, LaneNode exit)
+        {
+            // If the entry and exit nodes share the same first node it means that the entry and exit nodes are on the same road
+            if (entry.RoadNode.First == exit.RoadNode.First)
+                return 0f;
+
+            Vector3 entryDirection = entry.Position - entry.Next.Position;
+            Vector3 exitDirection = exit.Position - exit.Prev.Position;
+
+            Vector3 perp = Vector3.Cross(entryDirection, exitDirection);
+            float dir = Vector3.Dot(perp, Vector3.up);
+            
+            if (dir > 0f)
+                return -1f;
+            else if (dir < 0f)
+                return 1f;
+            else 
+                return 0f;
+        }
+
         private bool IsThreeWayIntersection()
         {
             return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
