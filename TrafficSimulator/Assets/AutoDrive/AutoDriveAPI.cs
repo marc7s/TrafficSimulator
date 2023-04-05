@@ -72,8 +72,8 @@ namespace Car
                 {
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                     {
-                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node);
-                        
+                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
+
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (Setting.Mode == DrivingMode.Performance)
                             Navigation.DrawPathRemoveOldestPoint(ref Context.NavigationPathPositions, Context.NavigationPathContainer);
@@ -204,6 +204,7 @@ namespace Car
         public Stack<NavigationNodeEdge> NavigationPath;
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
+        public TurnDirection TurnDirection;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         
         public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
@@ -226,6 +227,7 @@ namespace Car
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathContainer = new GameObject("Navigation Path");
             NavigationPathPositions = new List<Vector3>();
+            TurnDirection = TurnDirection.Straight;
         }
     }
 }
