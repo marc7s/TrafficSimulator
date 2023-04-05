@@ -26,8 +26,8 @@ namespace Car {
     public enum TurnDirection
     {
         Left = -1,
-        Right = 1,
         Straight = 0,
+        Right = 1
     }
     public enum Activity 
     {
