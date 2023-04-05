@@ -96,6 +96,7 @@ namespace RoadGenerator
         [Range(1f, 20f)] public float MaxRoadNodeDistance = 5f;
         public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
         public bool GenerateSpeedSigns = true;
+        // If two road endpoints are within this distance of each other, they will be connected
         public float ConnectionDistanceThreshold = 3f;
 
         [Header ("Traffic sign settings")]
@@ -209,6 +210,7 @@ namespace RoadGenerator
                 {
                     if (road == currentRoad)
                         continue;
+
                     currentRoad.UpdateStartConnectionRoad(road);
                     currentRoad.UpdateEndConnectionRoad(road);
                 }
@@ -299,6 +301,7 @@ namespace RoadGenerator
             endRoadInStartDirection.FirstRoadInClosedLoop = true;
             return endRoadInStartDirection;
         }
+
         /// <summary> Finds the end road in a connected road. If the connected road is a closed loop, it will return this road </summary>
         private Road FindEndRoadInConnectedDirection(EndOfRoadType direction)
         {
@@ -336,6 +339,7 @@ namespace RoadGenerator
                 }
             }
         }
+
         private void UpdateAllConnectedRoads(List<(Vector3, PathCreator)> bezierAnchorPoints)
         {
             List<Vector3> anchorPositions = new List<Vector3>();
@@ -552,18 +556,13 @@ namespace RoadGenerator
             // Calculate the distance from the new position to the previous node, and update the current length accordingly
             float dstToPrev = Vector3.Distance(builder.Prev.Position, position);
             builder.CurrLength += dstToPrev;
-            if(type == RoadNodeType.End)
-            {
-                //Debug.Log((ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true) + "" + this);
-            }
-            RoadNodeType type2 = type == RoadNodeType.End ? (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
+            // If the roadnode have eaten too much candy it will get diabetes
+            RoadNodeType diabetesType2 = type == RoadNodeType.End ? (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
             // Add the new node to the end
-            builder.Curr = new RoadNode(position, tangent, normal, type2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
-            bool shouldBeNavigationNode = (type2 == RoadNodeType.End && IsClosed()) || type2 == RoadNodeType.RoadConnection;
+            builder.Curr = new RoadNode(position, tangent, normal, diabetesType2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
+            bool shouldBeNavigationNode = (diabetesType2 == RoadNodeType.End && IsClosed()) || diabetesType2 == RoadNodeType.RoadConnection;
             if (shouldBeNavigationNode)
-            {
                 builder.Curr.IsNavigationNode = true;
-            }
 
             builder.Curr.Road = this;
             // Update the previous node's next pointer
@@ -629,9 +628,7 @@ namespace RoadGenerator
             StartRoadNode = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
             StartRoadNode.Road = this;
             if (startType == RoadNodeType.RoadConnection ||(startType == RoadNodeType.End && IsClosed()))
-            {
                 StartRoadNode.IsNavigationNode = true;
-            }
             
             // Create a new node builder starting at the start node
             NodeBuilder roadBuilder = new NodeBuilder(null, StartRoadNode, 0);

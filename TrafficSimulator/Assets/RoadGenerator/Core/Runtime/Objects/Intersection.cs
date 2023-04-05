@@ -588,9 +588,8 @@ namespace RoadGenerator
                 while(currentNode != null)
                 {
                     if (currentNode.RoadNode.Road != road)
-                    {
                         break;
-                    }
+
                     if (currentNode.Type != RoadNodeType.JunctionEdge)
                     {
                         currentNode = currentNode.Next;
