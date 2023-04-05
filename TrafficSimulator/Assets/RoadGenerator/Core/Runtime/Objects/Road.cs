@@ -127,7 +127,7 @@ namespace RoadGenerator
         [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] private float _length;
-        [HideInInspector] public bool FirstRoadInClosedLoop = false;
+        [HideInInspector] public bool IsFirstRoadInClosedLoop = false;
         [HideInInspector] public ConnectedRoad? ConnectedToAtStart;
         [HideInInspector] public ConnectedRoad? ConnectedToAtEnd;
         [HideInInspector] public bool IsRoadClosed = false;
@@ -298,7 +298,7 @@ namespace RoadGenerator
             
             // Closed loop, if both directions doesn't have an end
             // Set a flag to indicate that this road is the first road in the closed loop
-            endRoadInStartDirection.FirstRoadInClosedLoop = true;
+            endRoadInStartDirection.IsFirstRoadInClosedLoop = true;
             return endRoadInStartDirection;
         }
 
@@ -317,7 +317,7 @@ namespace RoadGenerator
             while (true)
             {
                 // Reset the closed loop flag
-                road.FirstRoadInClosedLoop = false;
+                road.IsFirstRoadInClosedLoop = false;
                 // If the road is closed, return the road
                 if((road.ConnectedToAtStart?.Road == this || road.ConnectedToAtEnd?.Road == this) && ConnectedToAtEnd?.Road == road)
                     return this;
@@ -557,7 +557,7 @@ namespace RoadGenerator
             float dstToPrev = Vector3.Distance(builder.Prev.Position, position);
             builder.CurrLength += dstToPrev;
             // If the roadnode have eaten too much candy it will get diabetes
-            RoadNodeType diabetesType2 = type == RoadNodeType.End ? (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
+            RoadNodeType diabetesType2 = type == RoadNodeType.End ? (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.IsFirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
             // Add the new node to the end
             builder.Curr = new RoadNode(position, tangent, normal, diabetesType2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
             bool shouldBeNavigationNode = (diabetesType2 == RoadNodeType.End && IsClosed()) || diabetesType2 == RoadNodeType.RoadConnection;
@@ -623,7 +623,7 @@ namespace RoadGenerator
             // Set the end of path instruction depending on if the path is closed or not
             _endOfPathInstruction = path.IsClosed ? EndOfPathInstruction.Loop : EndOfPathInstruction.Stop;
 
-            RoadNodeType startType = ConnectedToAtStart == null || FirstRoadInClosedLoop ? RoadNodeType.End : RoadNodeType.RoadConnection;
+            RoadNodeType startType = ConnectedToAtStart == null || IsFirstRoadInClosedLoop ? RoadNodeType.End : RoadNodeType.RoadConnection;
             // Create the start node for the road. The start node must be an end node
             StartRoadNode = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
             StartRoadNode.Road = this;
@@ -715,7 +715,7 @@ namespace RoadGenerator
 
         private void ConnectRoadNodesForConnectedRoads()
         {
-            if (ConnectedToAtStart != null && !FirstRoadInClosedLoop)
+            if (ConnectedToAtStart != null && !IsFirstRoadInClosedLoop)
             {
                 Road road = ConnectedToAtStart?.Road;
                 if (road.StartRoadNode != null && road._lanes.Count != 0)
@@ -741,7 +741,7 @@ namespace RoadGenerator
                     }
                 }
             }
-            if (ConnectedToAtEnd != null && ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == false)
+            if (ConnectedToAtEnd != null && ConnectedToAtEnd?.Road.IsFirstRoadInClosedLoop == false)
             {
                 Road road = ConnectedToAtEnd?.Road;
                 if (road.StartRoadNode != null && road._lanes.Count != 0)
