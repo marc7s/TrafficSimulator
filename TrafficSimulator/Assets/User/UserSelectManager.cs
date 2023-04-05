@@ -36,6 +36,8 @@ namespace User
         /// </summary>
         public Selectable SelectedGameObject { get; private set; }
         
+        private Selectable _previousClickedSelectable;
+        
         /// <summary>
         ///     Singleton instance of the UserSelectManager.
         /// </summary>
@@ -112,12 +114,13 @@ namespace User
             _doubleClickInput.performed -= OnDoubleClickInput;
         }
 
+
         private void OnSingleClickInput(InputAction.CallbackContext ctx)
         {
             if(!IsHoveringUIElement)
             {
+                _previousClickedSelectable = SelectedGameObject;
                 OnClickInput(OnSelectedGameObject);
-                Debug.Log("Single click");
             }
         }
 
@@ -125,10 +128,18 @@ namespace User
         {
             if(!IsHoveringUIElement)
             {
-                OnClickInput(OnDoubleClickedSelectedGameObject);
+                if (_previousClickedSelectable == SelectedGameObject)
+                {
+                    OnClickInput(OnDoubleClickedSelectedGameObject);
+                }
+                else
+                {
+                    _previousClickedSelectable = null;
+                }
             }
         }
 
+        // ... (the rest of the code from the original script)
         /// <summary>
         ///     Event for handling double-clicked selected game object.
         /// </summary>
