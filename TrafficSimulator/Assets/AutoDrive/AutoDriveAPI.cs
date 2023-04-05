@@ -6,6 +6,13 @@ using RoadGenerator;
 
 namespace Car
 {
+    public enum DrivingAction
+    {
+        Accelerating,
+        Driving,
+        Braking,
+        Stopped
+    }
     public class AutoDriveAgent
     {
         private AutoDriveSetting _setting;
@@ -189,11 +196,15 @@ namespace Car
         public LaneNode PrevTarget;
         public NavigationMode NavigationMode;
         public LaneNode BrakeTarget;
+        public float CurrentBrakeInput;
+        public float CurrentThrottleInput;
+        public DrivingAction CurrentAction;
         public NavigationNode NavigationPathEndNode;
         
         public Stack<NavigationNodeEdge> NavigationPath;
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
+        public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         
         public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
         {
@@ -208,6 +219,9 @@ namespace Car
             PrevTarget = null;
             NavigationMode = navigationMode;
             BrakeTarget = null;
+            CurrentBrakeInput = 0;
+            CurrentThrottleInput = 0;
+            CurrentAction = DrivingAction.Stopped;
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathContainer = new GameObject("Navigation Path");
