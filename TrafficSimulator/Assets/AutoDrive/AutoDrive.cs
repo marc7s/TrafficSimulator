@@ -23,12 +23,6 @@ namespace Car {
         OccupiedNodes,
         All
     }
-    public enum TurnDirection
-    {
-        Left = -1,
-        Straight = 0,
-        Right = 1
-    }
     public enum Activity 
     {
         Driving,

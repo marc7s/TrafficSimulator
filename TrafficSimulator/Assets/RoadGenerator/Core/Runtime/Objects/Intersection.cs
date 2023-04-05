@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using CustomProperties;
+using DataModel;
 
 namespace RoadGenerator
 {
@@ -857,7 +858,7 @@ namespace RoadGenerator
         
         /// <summary> Get the new start node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (StartNode, EndNode, NextNode)
         /// turnDirection will return the values 1, 0 or -1. 1 is right turn, 0 is straight and -1 is left turn </summary> 
-        public (LaneNode, LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current, ref int turnDirection)
+        public (LaneNode, LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current, ref TurnDirection turnDirection)
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
@@ -921,11 +922,11 @@ namespace RoadGenerator
             return guidePath;
         }
         /// <summary> Returns the turn direction for the intersection path. Returns 1, 0 or -1. 1 Is right turn, 0 is straight, -1 is left </summary>
-        private int GetTurnDirection(LaneNode entry, LaneNode exit)
+        private TurnDirection GetTurnDirection(LaneNode entry, LaneNode exit)
         {
             // If the entry and exit nodes share the same first node it means that the entry and exit nodes are on the same road
             if (entry.RoadNode.First == exit.RoadNode.First)
-                return 0;
+                return TurnDirection.Straight;
 
             Vector3 entryDirection = entry.Position - entry.Next.Position;
             Vector3 exitDirection = exit.Position - exit.Prev.Position;
@@ -934,11 +935,11 @@ namespace RoadGenerator
             float dir = Vector3.Dot(perp, Vector3.up);
             
             if (dir > 0f)
-                return -1;
+                return TurnDirection.Left;
             else if (dir < 0)
-                return 1;
+                return TurnDirection.Right;
             else 
-                return 0;
+                return TurnDirection.Straight;
         }
 
         private bool IsThreeWayIntersection()
