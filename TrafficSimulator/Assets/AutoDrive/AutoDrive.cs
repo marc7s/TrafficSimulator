@@ -82,7 +82,6 @@ namespace Car {
         private float _originalMaxSpeedReverse;
         private HashSet<LaneNode> _occupiedNodes = new HashSet<LaneNode>();
         
-        private LaneNode _prevBrakeStart;
         private LaneNode _prevTarget;
         private LaneNode _target;
         private LineRenderer _targetLineRenderer;
@@ -135,7 +134,6 @@ namespace Car {
             LaneNode currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = currentNode;
             _prevTarget = currentNode;
-            _prevBrakeStart = currentNode;
 
             _rigidbody = GetComponent<Rigidbody>();
 
@@ -454,8 +452,11 @@ namespace Car {
         {
             _prevTarget = _target;
             _target = newTarget;
-            _timeElapsedSinceLastTarget = 0;
-            _lastLerpTime = 0;
+            if(_agent.Setting.Mode == DrivingMode.Performance)
+            {
+                _timeElapsedSinceLastTarget = 0;
+                _lastLerpTime = 0;
+            }
         }
 
         private void Q_SetBrakeInput(float brakeInput)
