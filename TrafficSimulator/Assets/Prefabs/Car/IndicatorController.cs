@@ -8,7 +8,7 @@ namespace Car
         Left,
         Off,
         Right,
-        Hazard
+        Hazards
     }
     public class IndicatorController : MonoBehaviour
     {
@@ -33,8 +33,8 @@ namespace Car
             {
                 _isLightOn = !_isLightOn;
                 _lastSwitchTime = Time.time;
-                bool turnOnLeftIndicators = _isLightOn && (_indicatorState == IndicatorState.Left || _indicatorState == IndicatorState.Hazard);
-                bool turnOnRightIndicators = _isLightOn && (_indicatorState == IndicatorState.Right || _indicatorState == IndicatorState.Hazard);
+                bool turnOnLeftIndicators = _isLightOn && (_indicatorState == IndicatorState.Left || _indicatorState == IndicatorState.Hazards);
+                bool turnOnRightIndicators = _isLightOn && (_indicatorState == IndicatorState.Right || _indicatorState == IndicatorState.Hazards);
 
                 foreach (Light leftIndicatorLight in _leftIndicatorLights)
                     leftIndicatorLight.enabled = turnOnLeftIndicators;
