@@ -200,7 +200,7 @@ namespace Car {
 
         private void UpdateIndicators()
         {
-            _indicatorController.SetIndicator(_agent.Context.TurnDirection);
+            _indicatorController.SetIndicator(IndicatorController.TurnDirectionToIndicatorState(_agent.Context.TurnDirection));
         }
         private void UpdateContext()
         {
