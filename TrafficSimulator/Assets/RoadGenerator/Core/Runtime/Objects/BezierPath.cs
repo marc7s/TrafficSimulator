@@ -355,7 +355,7 @@ namespace RoadGenerator
 				points[i] = points[i + 1];
 				points[i + 1] = tmp;
 			}
-			
+
 			NotifyPathModified();
 		}
 
