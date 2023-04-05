@@ -122,7 +122,7 @@ namespace RoadGenerator
                     continue;
 
                 // To avoid getting a closed loop as the target node we check if the target node is the first node in a closed loop
-                if (targetNode.RoadNode.Road.FirstRoadInClosedLoop || targetNode.RoadNode.Road.ConnectedToAtEnd?.Road.FirstRoadInClosedLoop == true)
+                if (targetNode.RoadNode.Road.IsFirstRoadInClosedLoop || targetNode.RoadNode.Road.ConnectedToAtEnd?.Road.IsFirstRoadInClosedLoop == true)
                     continue;
 
                 // To avoid getting an intersection as the target node we check if the target node is an intersection.
