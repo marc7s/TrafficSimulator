@@ -312,6 +312,9 @@ namespace Car {
 
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 
+            // Occupy nodes further ahead in intersections
+            float intersectionOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? Intersection.IntersectionLength / 3 : 0;
+
             // Add all occupied nodes prior to and including the current node
             while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
             {
@@ -324,8 +327,12 @@ namespace Car {
             
             // Add all occupied nodes after and excluding the current node
             node = _agent.Next(_agent.Context.CurrentNode);
-            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
+            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + intersectionOccupancyOffset)
             {
+                // Do not occupy nodes in front of a red light
+                if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
+                    break;
+                
                 forwardNodes.Add(node);
                 nodeDistance += node.DistanceToPrevNode;
                 node = _agent.Next(node, RoadEndBehaviour.Stop);
