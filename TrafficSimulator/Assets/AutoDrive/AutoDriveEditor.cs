@@ -25,7 +25,7 @@ namespace CarGenerator
             private SerializedProperty _TLDSpeedDivider;
             private SerializedProperty _vehicleOccupancyOffset;
             private SerializedProperty _speed;
-            private SerializedProperty _rotationSpeed;
+            private SerializedProperty _acceleration;
             private SerializedProperty _totalDistance;
 
 
@@ -48,9 +48,8 @@ namespace CarGenerator
             _TLDSpeedDivider = serializedObject.FindProperty("TLDSpeedDivider");
             _vehicleOccupancyOffset = serializedObject.FindProperty("VehicleOccupancyOffset");
             _speed = serializedObject.FindProperty("Speed");
-            _rotationSpeed = serializedObject.FindProperty("RotationSpeed");
+            _acceleration = serializedObject.FindProperty("Acceleration");
             _totalDistance = serializedObject.FindProperty("TotalDistance");
-
         }
         public override void OnInspectorGUI()
         {
@@ -84,7 +83,7 @@ namespace CarGenerator
                 EditorGUILayout.PropertyField(_TLDSpeedDivider);
                 EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
                 EditorGUILayout.PropertyField(_speed);
-                EditorGUILayout.PropertyField(_rotationSpeed);
+                EditorGUILayout.PropertyField(_acceleration);
             }
 
             EditorGUILayout.PropertyField(_totalDistance);
