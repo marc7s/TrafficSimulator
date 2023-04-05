@@ -584,10 +584,10 @@ namespace RoadGenerator
             foreach (Lane lane in lanes)
             {
                 LaneNode currentNode = lane.StartNode;
-                Road road = currentNode.RoadNode.Road;
+                Road road1 = currentNode.RoadNode.Road;
                 while(currentNode != null)
                 {
-                    if (currentNode.RoadNode.Road != road)
+                    if (currentNode.RoadNode.Road != road1)
                     {
                         break;
                     }

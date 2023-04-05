@@ -660,7 +660,6 @@ namespace Car {
                 _agent.Context.CurrentNode = _target;
 
                 if(_target == _agent.Context.EndNode && !_target.RoadNode.Road.IsClosed())
-                {
                     ResetToNode(_agent.Context.StartNode);
 
                 // All logic for the navigation controller is handled through the actions, so we ignore the return value
@@ -671,7 +670,6 @@ namespace Car {
                     Navigation.DrawPathRemoveOldestPoint(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
             
                 SetTarget(GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop));
-            }
             }
 
             P_MoveTowardsTargetNode();
