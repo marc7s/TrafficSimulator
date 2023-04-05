@@ -12,6 +12,7 @@ namespace CarGenerator
             private SerializedProperty _road;
             private SerializedProperty _laneIndex;
             private SerializedProperty _mode;
+            private SerializedProperty _active;
             private SerializedProperty _endBehaviour;
             private SerializedProperty _showNavigationPath;
             private SerializedProperty _originalNavigationMode;
@@ -24,7 +25,7 @@ namespace CarGenerator
             private SerializedProperty _TLDSpeedDivider;
             private SerializedProperty _vehicleOccupancyOffset;
             private SerializedProperty _speed;
-            private SerializedProperty _rotationSpeed;
+            private SerializedProperty _acceleration;
             private SerializedProperty _totalDistance;
 
 
@@ -34,6 +35,7 @@ namespace CarGenerator
             _road = serializedObject.FindProperty("Road");
             _laneIndex = serializedObject.FindProperty("LaneIndex");
             _mode = serializedObject.FindProperty("Mode");
+            _active = serializedObject.FindProperty("Active");
             _endBehaviour = serializedObject.FindProperty("EndBehaviour");
             _showNavigationPath = serializedObject.FindProperty("ShowNavigationPath");
             _originalNavigationMode = serializedObject.FindProperty("OriginalNavigationMode");
@@ -46,9 +48,8 @@ namespace CarGenerator
             _TLDSpeedDivider = serializedObject.FindProperty("TLDSpeedDivider");
             _vehicleOccupancyOffset = serializedObject.FindProperty("VehicleOccupancyOffset");
             _speed = serializedObject.FindProperty("Speed");
-            _rotationSpeed = serializedObject.FindProperty("RotationSpeed");
+            _acceleration = serializedObject.FindProperty("Acceleration");
             _totalDistance = serializedObject.FindProperty("TotalDistance");
-
         }
         public override void OnInspectorGUI()
         {
@@ -64,6 +65,7 @@ namespace CarGenerator
                 EditorGUILayout.PropertyField(_road);
                 EditorGUILayout.PropertyField(_laneIndex);
                 EditorGUILayout.PropertyField(_mode);
+                EditorGUILayout.PropertyField(_active);
                 EditorGUILayout.PropertyField(_endBehaviour);
             }
 
@@ -81,7 +83,7 @@ namespace CarGenerator
                 EditorGUILayout.PropertyField(_TLDSpeedDivider);
                 EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
                 EditorGUILayout.PropertyField(_speed);
-                EditorGUILayout.PropertyField(_rotationSpeed);
+                EditorGUILayout.PropertyField(_acceleration);
             }
 
             EditorGUILayout.PropertyField(_totalDistance);

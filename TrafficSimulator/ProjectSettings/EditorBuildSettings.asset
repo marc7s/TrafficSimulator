@@ -8,7 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Jakob.unity
     guid: 252d082ef0dd08947b561744b320bebe
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Hannes.unity
     guid: be53561d09e916944899b445ea2f11c1
+  - enabled: 1
+    path: Assets/Scenes/Felix.unity
+    guid: 7c2736c574fe82847af023e7fa808e25
   m_configObjects: {}
