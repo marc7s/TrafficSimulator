@@ -21,10 +21,10 @@ namespace Car
             LaneNode curr = agent.Context.CurrentNode;
             LaneNode prev = curr.Prev;
             float distance = 0;
-            float brakingOffset = agent.Setting.Mode == DrivingMode.Quality ? 2f : 10f;
             float brakeDistance = GetBrakeDistance(ref agent) + Vector3.Distance(agent.Context.CurrentNode.Position, agent.Context.VehiclePosition);
             
             // Add an offset if we are braking or are stopped so we do not lose track of the braking target due to deceleration
+            float brakingOffset = agent.Setting.Mode == DrivingMode.Quality ? 2f : 10f;
             float offset = agent.Context.IsBrakingOrStopped ? brakingOffset : 0;
 
             while(curr != null && distance < brakeDistance + offset)
