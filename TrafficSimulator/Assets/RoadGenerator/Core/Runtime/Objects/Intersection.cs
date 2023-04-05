@@ -642,7 +642,7 @@ namespace RoadGenerator
 
             _intersectionCenterRoadNode = new RoadNode(IntersectionPosition, new Vector3(0, 0, -1), new Vector3(-1, 0, 0), RoadNodeType.IntersectionGuide, 0, 0);
             _intersectionCenterRoadNode.Intersection = this;
-            _intersectionCenterLaneNode = new LaneNode(IntersectionPosition, LaneSide.Primary, 0, _intersectionCenterRoadNode, 0);
+            _intersectionCenterLaneNode = new LaneNode(IntersectionPosition, LaneSide.Primary, 0, _intersectionCenterRoadNode, 0, false);
 
             // Precompute all the guide paths and store them
             foreach(Section entrySection in _intersectionEntrySections.Values)
