@@ -469,7 +469,7 @@ namespace Car {
 
         private void Q_SetThrottleInput(float throttleInput)
         {
-            _agent.Context.CurrentThrottleInput = Mathf.MoveTowards(_agent.Context.CurrentThrottleInput, throttleInput, Time.deltaTime * 0.5f);;
+            _agent.Context.CurrentThrottleInput = Mathf.MoveTowards(_agent.Context.CurrentThrottleInput, throttleInput, Time.deltaTime * 0.5f);
             _vehicleController.throttleInput = _agent.Context.CurrentThrottleInput;
         }
 
