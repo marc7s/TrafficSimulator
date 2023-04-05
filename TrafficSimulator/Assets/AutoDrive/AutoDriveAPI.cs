@@ -72,10 +72,7 @@ namespace Car
                 {
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                     {
-                        int turnDirection = 0;
-                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref turnDirection);
-                        // Convert the turn direction float to a TurnDirection 
-                        Context.TurnDirection = (TurnDirection) turnDirection;
+                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
 
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (Setting.Mode == DrivingMode.Performance)
