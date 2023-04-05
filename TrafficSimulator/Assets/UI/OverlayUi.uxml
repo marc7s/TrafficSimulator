@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:Template name="StatisticsWindow" src="project://database/Assets/UI/Statistics/StatisticsWindow.uxml?fileID=9197481963319205126&amp;guid=61279e05a9bb27740bf68173ef7dcf35&amp;type=3#StatisticsWindow" />
-    <ui:VisualElement style="height: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; width: 100%; flex-shrink: 0;">
+    <ui:VisualElement style="height: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; width: 100%; flex-shrink: 0; display: flex; visibility: visible;">
         <ui:VisualElement style="align-items: center; flex-direction: row; flex-shrink: 0; width: 100%; justify-content: space-between; top: auto; bottom: auto; left: auto; flex-grow: 0;">
             <ui:VisualElement style="flex-shrink: 0; left: auto; flex-direction: row; align-items: center; flex-grow: 0; width: auto; justify-content: flex-start; flex-basis: auto;">
                 <ui:Button text="Menu" display-tooltip-when-elided="true" name="MenuButton" style="height: 77px; width: 156px; white-space: nowrap; left: auto; top: auto; align-items: center; justify-content: center;" />
@@ -12,16 +12,19 @@
                 <ui:Label text="NO TIME" display-tooltip-when-elided="true" name="Clock" style="left: auto; width: auto; top: auto; height: 15px; align-items: center; justify-content: center; margin-right: 3px; margin-left: 3px; padding-left: 0; padding-right: 0;" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement style="height: 100%; width: 100%; flex-shrink: 1; align-items: center; justify-content: flex-start; flex-grow: 1;">
-            <ui:Instance template="StatisticsWindow" name="StatisticsWindow" style="flex-shrink: 0; display: flex; width: 350px; height: 450px; flex-grow: 0; min-width: initial; min-height: initial;" />
+        <ui:VisualElement style="height: 100%; width: 100%; flex-shrink: 1; align-items: center; justify-content: center; flex-grow: 1; flex-direction: row;">
+            <ui:VisualElement style="flex-grow: 1; flex-shrink: 0; width: 50%;" />
+            <ui:VisualElement style="flex-shrink: 0; flex-grow: 1; align-items: center; justify-content: center; width: 50%; flex-direction: column;">
+                <ui:Instance template="StatisticsWindow" name="StatisticsWindow" style="flex-shrink: 0; display: flex; width: 350px; height: 450px; flex-grow: 0; min-width: 350px; min-height: 450px; visibility: visible;" />
+            </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement style="flex-direction: row-reverse; align-items: flex-end; width: 100%; flex-shrink: 0; flex-grow: 0;">
+        <ui:VisualElement name="CameraAndModeButtons" style="flex-direction: row-reverse; align-items: flex-end; width: 100%; flex-shrink: 0; flex-grow: 0;">
             <ui:VisualElement name="ModeButtons" style="width: auto; height: auto; left: auto; top: auto; bottom: 10%; right: 1%; position: relative; align-items: center; flex-shrink: 0;">
                 <ui:Button text="Statistics" display-tooltip-when-elided="true" name="Statistics" enable-rich-text="true" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; margin-top: 3px; margin-bottom: 3px;" />
                 <ui:Button text="World" display-tooltip-when-elided="true" name="WorldOptions" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; top: auto; margin-top: 3px; margin-bottom: 3px;" />
                 <ui:Button text="Editor" display-tooltip-when-elided="true" name="Editor" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; right: auto; top: auto; margin-top: 3px; margin-bottom: 3px;" />
             </ui:VisualElement>
-            <ui:VisualElement style="flex-shrink: 0; bottom: 10%; right: 2%;">
+            <ui:VisualElement name="CameraButtons" style="flex-shrink: 0; bottom: 10%; right: 2%;">
                 <ui:VisualElement name="CameraButtons" style="width: auto; top: auto; left: auto; bottom: auto; flex-direction: row; align-items: center; right: auto; height: auto; flex-shrink: 0; flex-grow: 0;">
                     <ui:Button text="Free Cam" display-tooltip-when-elided="true" name="FreeCam" style="width: 83px; height: 35px;" />
                     <ui:Button text="2D" display-tooltip-when-elided="true" name="2D" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />

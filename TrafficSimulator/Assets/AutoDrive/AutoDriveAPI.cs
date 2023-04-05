@@ -204,6 +204,7 @@ namespace Car
         public Stack<NavigationNodeEdge> NavigationPath;
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
+        public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         
         public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
         {

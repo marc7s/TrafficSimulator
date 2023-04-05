@@ -6,7 +6,7 @@ using EVP;
 using RoadGenerator;
 using CustomProperties;
 using DataModel;
-
+using Simulation;
 
 namespace Car {
     public enum DrivingMode 
@@ -77,6 +77,7 @@ namespace Car {
         private AutoDriveAgent _agent;
         private BrakeController _brakeController;
         private NavigationController _navigationController;
+        private BrakeLightController _brakeLightController;
         
         private float _originalMaxSpeedForward;
         private float _originalMaxSpeedReverse;
@@ -118,7 +119,7 @@ namespace Car {
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
             _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
             _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
-            
+            _brakeLightController = GetComponent<BrakeLightController>();
             // If the road has not updated yet there will be no lanes, so update them first
             if(Road.Lanes.Count == 0)
                 Road.OnChange();
@@ -197,7 +198,7 @@ namespace Car {
         private void UpdateContext()
         {
             _agent.Context.VehiclePosition = transform.position;
-            _agent.Context.CurrentAction = P_GetCurrentDrivingAction();
+            _agent.Context.CurrentAction = GetCurrentDrivingAction();
         }
 
         private void IntersectionEntryHandler(Intersection intersection)
@@ -229,6 +230,7 @@ namespace Car {
                         // Brake if needed
                         P_UpdateTargetAndCurrent();
                     }
+                    _brakeLightController.SetBrakeLights(_agent.Context.IsBrakingOrStopped ?  BrakeLightState.On : BrakeLightState.Off);
                     break;
                 case Activity.Parked:
                     break;
@@ -461,21 +463,21 @@ namespace Car {
 
         private void Q_SetBrakeInput(float brakeInput)
         {
-            _agent.Context.CurrentBrakeInput = brakeInput;
-            _vehicleController.brakeInput = brakeInput;
+            _agent.Context.CurrentBrakeInput = Mathf.MoveTowards(_agent.Context.CurrentBrakeInput, brakeInput, Time.deltaTime * 0.5f);
+            _vehicleController.brakeInput = _agent.Context.CurrentBrakeInput;
         }
 
         private void Q_SetThrottleInput(float throttleInput)
         {
-            _agent.Context.CurrentThrottleInput = throttleInput;
-            _vehicleController.throttleInput = throttleInput;
+            _agent.Context.CurrentThrottleInput = Mathf.MoveTowards(_agent.Context.CurrentThrottleInput, throttleInput, Time.deltaTime * 0.5f);;
+            _vehicleController.throttleInput = _agent.Context.CurrentThrottleInput;
         }
 
         private void Q_Brake()
         {
             if(_brakeController.ShouldAct(ref _agent))
             {
-                Q_SetBrakeInput(0.2f);
+                Q_SetBrakeInput(0.3f);
                 Q_SetThrottleInput(0f);
             }
             else
@@ -528,7 +530,16 @@ namespace Car {
 
             // If the road ended but we are looping, teleport to the first position
             if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop)
+            {
+                // Since there is an issue with the car spinning after teleporting, we pause the rigidbody for a second
+                // This is a temporary fix until the real issue is resolved
+                RigidbodyPause pause = _vehicleController.GetComponent<RigidbodyPause>();
                 ResetToNode(_agent.Context.StartNode);
+                pause.pause = true;
+                TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
+                TimeManager.Instance.AddEvent(unPauseEvent);
+                unPauseEvent.OnEvent += () => pause.pause = false;
+            }
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)
@@ -700,7 +711,7 @@ namespace Car {
             
             // If the car has slowed down enough that this will be the last target node, then do not move all the way to it to avoid updating the current node
             // Otherwise, only update the lerp time if the speed is large enough to remove oscillations
-            if(speed < 3f && (_agent.Context.CurrentAction == DrivingAction.Braking || _agent.Context.CurrentAction == DrivingAction.Stopped))
+            if(speed < 3f && _agent.Context.IsBrakingOrStopped)
                 newLerpTime = Mathf.MoveTowards(_lastLerpTime, 0.9f, Time.deltaTime * 0.2f);
             else if(speed >= 3f)
                 newLerpTime = _timeElapsedSinceLastTarget / t;
@@ -710,13 +721,10 @@ namespace Car {
             return _lastLerpTime;
         }
 
-        private DrivingAction P_GetCurrentDrivingAction()
+        private DrivingAction GetCurrentDrivingAction()
         {
-            if (_lerpSpeed < 0.01f)
+            if (GetCurrentSpeed() < 0.01f)
                 return DrivingAction.Stopped;
-            
-            if (_lerpSpeed == Speed)
-                return DrivingAction.Driving;
             
             if (_agent.Context.CurrentBrakeInput > 0)
                 return DrivingAction.Braking;

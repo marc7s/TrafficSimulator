@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5761927508822258430
+--- !u!1 &4601614798071418940
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,12 +8,12 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5761927508822258431}
-  - component: {fileID: 1387509832852011855}
-  - component: {fileID: 5387963023345359458}
-  - component: {fileID: 1131470622488222073}
-  - component: {fileID: 6349525408430712732}
-  - component: {fileID: 2980669288167571831}
+  - component: {fileID: 5975865563827481608}
+  - component: {fileID: 4876591229708280347}
+  - component: {fileID: 9193119221568891823}
+  - component: {fileID: 2442473895085808588}
+  - component: {fileID: 4803063164712473576}
+  - component: {fileID: 3194208644826295019}
   m_Layer: 6
   m_Name: Intersection
   m_TagString: Untagged
@@ -21,13 +21,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5761927508822258431
+--- !u!4 &5975865563827481608
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5761927508822258430}
+  m_GameObject: {fileID: 4601614798071418940}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -6.73, y: 0, z: 13.315}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -36,19 +36,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1387509832852011855
+--- !u!114 &4876591229708280347
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5761927508822258430}
+  m_GameObject: {fileID: 4601614798071418940}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5fe983f4c8631b24ab4c047047091ba0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntersectionObject: {fileID: 5761927508822258430}
+  IntersectionObject: {fileID: 4601614798071418940}
   RoadSystem: {fileID: 0}
   IntersectionPosition: {x: 0, y: 0, z: 0}
   Road1: {fileID: 0}
@@ -60,31 +60,31 @@ MonoBehaviour:
   Road2AnchorPoint1: {x: 0, y: 0, z: 0}
   Road2AnchorPoint2: {x: 0, y: 0, z: 0}
   Type: 0
-  TrafficLightController: {fileID: 2980669288167571831}
+  TrafficLightController: {fileID: 3194208644826295019}
   ID: 
   _guideRoadNodePrefab: {fileID: 6519265059532225654, guid: 05acad94cfea5be4d9c4ae2b9e81982a, type: 3}
   _guideLaneNodePrefab: {fileID: 6519265059532225654, guid: cd0b879c858f97b499405ab9f1cfcb01, type: 3}
   _stretchFactor: 0.2
   FlowType: 0
-  _material: {fileID: 2100000, guid: 95fd35d811c46354da85037da76c5774, type: 2}
+  _material: {fileID: 2100000, guid: f4b3387b0279cfc4d8c42c039b55d140, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: ac13cd34ea241854f9dc39260c81716b, type: 2}
   _drawGuideNodes: 0
   _guideNodeContainer: {fileID: 0}
---- !u!33 &5387963023345359458
+--- !u!33 &9193119221568891823
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5761927508822258430}
+  m_GameObject: {fileID: 4601614798071418940}
   m_Mesh: {fileID: 0}
---- !u!23 &1131470622488222073
+--- !u!23 &2442473895085808588
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5761927508822258430}
+  m_GameObject: {fileID: 4601614798071418940}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -120,13 +120,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &6349525408430712732
+--- !u!64 &4803063164712473576
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5761927508822258430}
+  m_GameObject: {fileID: 4601614798071418940}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
@@ -134,13 +134,13 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!114 &2980669288167571831
+--- !u!114 &3194208644826295019
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5761927508822258430}
+  m_GameObject: {fileID: 4601614798071418940}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 74db488e55dbffc4a966b46c6868d7cd, type: 3}

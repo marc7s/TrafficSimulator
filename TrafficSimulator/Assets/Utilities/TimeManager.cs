@@ -62,7 +62,7 @@ namespace Simulation
             get => _dateTime.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
-        void Start()
+        void Awake()
         {
             // Set start time
             SetTime(DateTime.Now);
@@ -105,7 +105,6 @@ namespace Simulation
             {
                 TimeManagerEvent currentEvent = currentMonth.Dequeue();
                 currentEvent.OnEvent?.Invoke();
-                Debug.Log("Event triggered: " + currentEvent.TimeStamp);
             }
         }
 
