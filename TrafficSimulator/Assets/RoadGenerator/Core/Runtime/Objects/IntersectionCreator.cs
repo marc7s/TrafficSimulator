@@ -224,8 +224,8 @@ namespace RoadGenerator
             
             DeleteAnchorsInsideIntersectionBounds(intersection);
 
-            road.UpdateMesh();
-            otherRoad.UpdateMesh();
+            road.OnChange();
+            otherRoad.OnChange();
             intersection.UpdateMesh();
         }
 

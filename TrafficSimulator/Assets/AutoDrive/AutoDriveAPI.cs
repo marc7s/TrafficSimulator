@@ -77,6 +77,7 @@ namespace Car
                 {                    
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                     {
+                        Debug.Log("AutoDrive: Intersection reached, switching to navigation path" + Context.NavigationPath.Peek().EndNavigationNode.RoadNode.Position);
                         (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
 
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
