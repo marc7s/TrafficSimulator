@@ -5,9 +5,10 @@ namespace Car
 {
     public enum IndicatorState
     {
-        Right,
         Left,
+
         Off,
+        Right,
         Hazard
     }
     public class IndicatorController : MonoBehaviour
@@ -38,6 +39,7 @@ namespace Car
 
                 foreach (Light leftIndicatorLight in _leftIndicatorLights)
                     leftIndicatorLight.enabled = turnOnLeftIndicators;
+
                 foreach (Light rightIndicatorLight in _rightIndicatorLights)
                     rightIndicatorLight.enabled = turnOnRightIndicators;
             }
