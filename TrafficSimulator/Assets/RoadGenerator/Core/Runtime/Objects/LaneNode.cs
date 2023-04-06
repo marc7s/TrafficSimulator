@@ -118,6 +118,7 @@ namespace RoadGenerator
                 
                 if (curr.RoadNode.Type == RoadNodeType.End)
                     return curr;
+                
                 curr = curr.Next;
             }
             return null;
