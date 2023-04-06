@@ -970,7 +970,6 @@ namespace RoadGenerator
 		public void SetFirstAnchorPos(Vector3 pos)
 		{
 			MovePoint(0, pos);
-
 		}
 		public void SetLastAnchorPos(Vector3 pos)
 		{
