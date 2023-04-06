@@ -738,8 +738,8 @@ namespace RoadGenerator
                         }
                         else
                         {
-                          thisRoadLaneNode.Next = road._lanes[i].StartNode;
-                          road._lanes[i].StartNode.Prev = thisRoadLaneNode;
+                            thisRoadLaneNode.Next = road._lanes[i].StartNode;
+                            road._lanes[i].StartNode.Prev = thisRoadLaneNode;
                         }
                     }
                 }
@@ -758,10 +758,11 @@ namespace RoadGenerator
                         LaneNode otherRoadLaneNode = road._lanes[i].StartNode.GetLastLaneNodeInRoad();
                         if (thisRoadLaneNode == null)
                             continue;
+
                         if (_lanes[i].Type.Side == LaneSide.Primary)
                         {
-                        thisRoadLaneNode.Next = road._lanes[i].StartNode;
-                        road._lanes[i].StartNode.Prev = thisRoadLaneNode;
+                            thisRoadLaneNode.Next = road._lanes[i].StartNode;
+                            road._lanes[i].StartNode.Prev = thisRoadLaneNode;
                         }
                         else
                         {
