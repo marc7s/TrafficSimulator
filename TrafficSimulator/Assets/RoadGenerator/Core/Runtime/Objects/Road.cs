@@ -360,7 +360,7 @@ namespace RoadGenerator
                 if (bezierAnchorPoint.Item2 != currentPathCreator)
                 {
                     if (!first)
-                        count ++;
+                        count++;
                     else
                         first = false;
 
@@ -373,7 +373,7 @@ namespace RoadGenerator
             }
 
             if (!first)
-                count ++;
+                count++;
 
             roadPathCreator.Add((count * 3 - 2, currentPathCreator));
             // If the road is closed, the last point of the bezier path is not added as the closed loop bezier path will handle the control points
@@ -385,15 +385,16 @@ namespace RoadGenerator
             int pathCreatorIndex = 0;
             foreach ((int, PathCreator) roadCreator in roadPathCreator)
             {
-                for (var i = 0; i < roadCreator.Item1; i++)
+                for (int i = 0; i < roadCreator.Item1; i++)
                 {
                     pathCreatorIndex = i;
                     roadCreator.Item2.bezierPath.SetPoint(pathCreatorIndex, connectedBezierPath.GetPoint(index));
                     index++;
                 }
 
-                index --;
+                index--;
                 roadCreator.Item2.bezierPath.NotifyPathModified();
+
                 if (!roads.Contains(roadCreator.Item2.gameObject.GetComponent<Road>()))
                     roads.Add(roadCreator.Item2.gameObject.GetComponent<Road>());
             }
@@ -423,7 +424,8 @@ namespace RoadGenerator
             BezierPath bezierPathOtherRoad = road.RoadObject.GetComponent<PathCreator>().bezierPath;
             Vector3 startPosOtherRoad = bezierPathOtherRoad.GetFirstAnchorPos();
             Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();   
-            if (Vector3.Distance(startPosOtherRoad, startPos) < ConnectionDistanceThreshold && ((road.ConnectedToAtStart == null) || road.ConnectedToAtStart?.Road == this))
+            
+            if (Vector3.Distance(startPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
             {
                 bezierPath.SetFirstAnchorPos(startPosOtherRoad);
                 ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.Start);
@@ -630,7 +632,7 @@ namespace RoadGenerator
             // Create the start node for the road. The start node must be an end node
             StartRoadNode = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
             StartRoadNode.Road = this;
-            if (startType == RoadNodeType.RoadConnection ||(startType == RoadNodeType.End && IsClosed()))
+            if (startType == RoadNodeType.RoadConnection || (startType == RoadNodeType.End && IsClosed()))
                 StartRoadNode.IsNavigationNode = true;
             
             // Create a new node builder starting at the start node
@@ -721,16 +723,18 @@ namespace RoadGenerator
             if (ConnectedToAtStart != null && !IsFirstRoadInClosedLoop)
             {
                 Road road = ConnectedToAtStart?.Road;
-                if (road.StartRoadNode != null && road._lanes.Count != 0)
+                if (road.StartRoadNode != null && road.LaneCount > 0)
                 {
                     StartRoadNode.Prev = road.EndRoadNode;
                     road.EndRoadNode.Next = StartRoadNode;
-                    for (var i = 0; i < _lanes.Count; i++)
+                    for (int i = 0; i < _lanes.Count; i++)
                     {
                         LaneNode otherRoadLaneNode = road._lanes[i].StartNode.GetLastLaneNodeInRoad();
                         LaneNode thisRoadLaneNode = _lanes[i].StartNode.GetLastLaneNodeInRoad();
+
                         if (otherRoadLaneNode == null)
                             continue;
+
                         if (_lanes[i].Type.Side == LaneSide.Primary)
                         {
                             _lanes[i].StartNode.Prev = otherRoadLaneNode;
@@ -744,18 +748,21 @@ namespace RoadGenerator
                     }
                 }
             }
+
             if (ConnectedToAtEnd != null && ConnectedToAtEnd?.Road.IsFirstRoadInClosedLoop == false)
             {
                 Road road = ConnectedToAtEnd?.Road;
+
                 if (road.StartRoadNode != null && road._lanes.Count != 0)
                 {
                     EndRoadNode.Next = road.StartRoadNode;
                     road.StartRoadNode.Prev = EndRoadNode;
                 
-                    for (var i = 0; i < _lanes.Count; i++)
+                    for (int i = 0; i < _lanes.Count; i++)
                     {
                         LaneNode thisRoadLaneNode = _lanes[i].StartNode.GetLastLaneNodeInRoad();
                         LaneNode otherRoadLaneNode = road._lanes[i].StartNode.GetLastLaneNodeInRoad();
+
                         if (thisRoadLaneNode == null)
                             continue;
 
@@ -963,6 +970,9 @@ namespace RoadGenerator
             Intersection prevIntersection = null;
             while(currentNode != null)
             {
+                if (currentNode.Road != this)
+                    return;
+
                 distanceToStartNode += currentNode.DistanceToPrevNode;
                 distanceToEndNode -= currentNode.DistanceToPrevNode;
 
@@ -1194,7 +1204,7 @@ namespace RoadGenerator
                     
                     roadNodeObject.name = i + " " + curr.Type;
 
-                    if ((curr.Type == RoadNodeType.RoadConnection && i != 0) || (curr.Type == RoadNodeType.End && i != 0))
+                    if (i != 0 && (curr.Type == RoadNodeType.RoadConnection || curr.Type == RoadNodeType.End))
                         return;
                     curr = curr.Next;
                     i++;
