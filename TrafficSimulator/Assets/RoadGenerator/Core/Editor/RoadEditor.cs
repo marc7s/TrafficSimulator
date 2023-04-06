@@ -19,6 +19,7 @@ namespace RoadEditor
             private SerializedProperty _drawLaneNodes;
             private SerializedProperty _drawLaneNodePointers;
             private SerializedProperty _generateSpeedSigns;
+            private SerializedProperty _connectionDistanceThreshold;
             private SerializedProperty _speedLimit;
             private SerializedProperty _speedSignDistanceFromIntersectionEdge;
             private SerializedProperty _speedSignDistanceFromRoadEnd;
@@ -41,6 +42,7 @@ namespace RoadEditor
             _drawLaneNodes = serializedObject.FindProperty("DrawLaneNodes");
             _drawLaneNodePointers = serializedObject.FindProperty("DrawLaneNodePointers");
             _generateSpeedSigns = serializedObject.FindProperty("GenerateSpeedSigns");
+            _connectionDistanceThreshold = serializedObject.FindProperty("ConnectionDistanceThreshold");
             _speedLimit = serializedObject.FindProperty("SpeedLimit");
             _speedSignDistanceFromIntersectionEdge = serializedObject.FindProperty("SpeedSignDistanceFromIntersectionEdge");
             _speedSignDistanceFromRoadEnd = serializedObject.FindProperty("SpeedSignDistanceFromRoadEnd");
@@ -65,6 +67,7 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_minVertexDistance);
             EditorGUILayout.PropertyField(_maxRoadNodeDistance);
             EditorGUILayout.PropertyField(_generateSpeedSigns);
+            EditorGUILayout.PropertyField(_connectionDistanceThreshold);
             EditorGUILayout.PropertyField(_speedLimit);
             EditorGUILayout.PropertyField(_speedSignDistanceFromIntersectionEdge);
             EditorGUILayout.PropertyField(_speedSignDistanceFromRoadEnd);
@@ -133,6 +136,11 @@ namespace RoadEditor
             {
                 changed = true;
                 road.GenerateSpeedSigns = _generateSpeedSigns.boolValue;
+            }
+            if (_connectionDistanceThreshold.floatValue != road.ConnectionDistanceThreshold)
+            {
+                changed = true;
+                road.ConnectionDistanceThreshold = _connectionDistanceThreshold.floatValue;
             }
             if (_speedLimit.intValue != (int)road.SpeedLimit)
             {

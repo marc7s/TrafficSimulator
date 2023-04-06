@@ -16,7 +16,8 @@ namespace RoadGenerator
         [SerializeField] private SNReadOnly<RoadNodeType> _type = null;
         [SerializeField] private SNReadOnly<float> _time = null;
         [SerializeField] private SNReadOnly<float> _distanceToPrevNode = null;
-
+        [SerializeField] private SNReadOnly<Vector3> _primaryDirectionEdgePos = null;
+        [SerializeField] private SNReadOnly<Vector3> _secondaryDirectionEdgePos = null;
         protected override void SetInfoFromReference(RoadNode _roadNode)
         {
             _trafficSignType = _roadNode.TrafficSignType;
@@ -30,6 +31,8 @@ namespace RoadGenerator
             _type = _roadNode.Type;
             _time = _roadNode.Time;
             _distanceToPrevNode = _roadNode.DistanceToPrevNode;
+            _primaryDirectionEdgePos = _roadNode.PrimaryNavigationNodeEdge?.EndNavigationNode.RoadNode.Position;
+            _secondaryDirectionEdgePos = _roadNode.SecondaryNavigationNodeEdge?.EndNavigationNode.RoadNode.Position;
         }
     }
 }

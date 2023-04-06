@@ -190,9 +190,11 @@ namespace RoadGenerator
 
             bool usePathNormals = !(path.space == PathSpace.xyz && _flattenSurface);
             RoadNode curr = _road.StartNode;
-            
             while(curr != null)
             {
+                if (curr.Road != _road)
+                    break;
+
                 vertIndex = verts.Count == 0 ? 0 : verts.Count;
 
                 // Skip the start node if the next node is a three way intersection
@@ -300,7 +302,7 @@ namespace RoadGenerator
                 // Get the current lane triangle map
                 List<int> laneTriangleMap = laneTriangleMaps[_laneCount - 1];
                 
-                if((curr.Next != null && !curr.Next.IsIntersection()) || path.isClosedLoop)
+                if((curr.Next != null && !curr.Next.IsIntersection() && curr.Next.Road == _road) || path.isClosedLoop)
                 {
                     // Set the lane triangle indices
                     for (int j = 0; j < laneTriangleMap.Count; j++) 
