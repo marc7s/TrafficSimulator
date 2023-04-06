@@ -813,7 +813,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Get a random lane node that leads out of the intersection. Returns a tuple on the format (StartNode, EndNode, NextNode) </summary>
-        public (LaneNode, LaneNode, LaneNode) GetRandomLaneNode(LaneNode current)
+        public (LaneNode, LaneNode, LaneNode) GetRandomLaneNode(LaneNode current, ref TurnDirection turnDirection)
         {
             List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
             
@@ -823,6 +823,7 @@ namespace RoadGenerator
             GuideNode guidePath = guidePaths[randomLaneNodeIndex];
             LaneNode finalNode = guidePath.Last;
 
+            turnDirection = GetTurnDirection(current, finalNode);
             return (finalNode.First, finalNode.Last, guidePath);
         }
 
