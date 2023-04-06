@@ -10,7 +10,7 @@ namespace Cam
     /// </summary>
     public class ThirdPersonCamera : CameraState
     {
-        [Range(0, 1)] [SerializeField] private float _rotateSpeed = 1f;
+        [SerializeField] private float _rotateSpeed = 1f;
         [SerializeField] private float _minZoom = 50f;
         [SerializeField] private float _maxZoom = 10f;
         [SerializeField] private float _zoomSpeed = 1f;
