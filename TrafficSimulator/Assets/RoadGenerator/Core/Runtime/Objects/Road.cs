@@ -352,7 +352,7 @@ namespace RoadGenerator
 
             BezierPath connectedBezierPath = new BezierPath(anchorPositions, isClosed, PathSpace.xz);
             PathCreator currentPathCreator = bezierAnchorPoints[0].Item2;
-            List<(int, PathCreator)> roadsCreator = new List<(int, PathCreator)>();
+            List<(int, PathCreator)> roadPathCreator = new List<(int, PathCreator)>();
             int count = 0;
             bool first = true;
             foreach ((Vector3, PathCreator) bezierAnchorPoint in bezierAnchorPoints)
@@ -364,7 +364,8 @@ namespace RoadGenerator
                     else
                         first = false;
 
-                    roadsCreator.Add((count * 3 - 2, currentPathCreator));
+                    // count * 3 - 2 is the total amount of points the bezier path will have from the current path creator
+                    roadPathCreator.Add((count * 3 - 2, currentPathCreator));
                     currentPathCreator = bezierAnchorPoint.Item2;
                     count = 0;
                 }
@@ -374,15 +375,15 @@ namespace RoadGenerator
             if (!first)
                 count ++;
 
-            roadsCreator.Add((count * 3 - 2, currentPathCreator));
+            roadPathCreator.Add((count * 3 - 2, currentPathCreator));
             // If the road is closed, the last point of the bezier path is not added as the closed loop bezier path will handle the control points
             if (isClosed)
-                roadsCreator[roadsCreator.Count - 1] = (roadsCreator[roadsCreator.Count - 1].Item1 - 3, roadsCreator[roadsCreator.Count - 1].Item2);
+                roadPathCreator[roadPathCreator.Count - 1] = (roadPathCreator[roadPathCreator.Count - 1].Item1 - 3, roadPathCreator[roadPathCreator.Count - 1].Item2);
 
             List<Road> roads = new List<Road>();
             int index = 0;
             int pathCreatorIndex = 0;
-            foreach ((int, PathCreator) roadCreator in roadsCreator)
+            foreach ((int, PathCreator) roadCreator in roadPathCreator)
             {
                 for (var i = 0; i < roadCreator.Item1; i++)
                 {
@@ -400,7 +401,7 @@ namespace RoadGenerator
             // If the road is closed, manually add the last control points 
             if (isClosed)
             {
-                PathCreator lastRoadPathCreator = roadsCreator[roadsCreator.Count - 1].Item2;
+                PathCreator lastRoadPathCreator = roadPathCreator[roadPathCreator.Count - 1].Item2;
                 lastRoadPathCreator.bezierPath.SetPoint(pathCreatorIndex + 1 , connectedBezierPath.GetPoint(index + 1));
                 lastRoadPathCreator.bezierPath.SetPoint(pathCreatorIndex + 2, connectedBezierPath.GetPoint(index + 2));
                 lastRoadPathCreator.bezierPath.SetPoint(pathCreatorIndex + 3, connectedBezierPath.GetPoint(0));
@@ -556,11 +557,13 @@ namespace RoadGenerator
             // Calculate the distance from the new position to the previous node, and update the current length accordingly
             float dstToPrev = Vector3.Distance(builder.Prev.Position, position);
             builder.CurrLength += dstToPrev;
-            // If the roadnode have eaten too much candy it will get diabetes
-            RoadNodeType diabetesType2 = type == RoadNodeType.End ? (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.IsFirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection : type;
+            // If an end node is connected to a road, it should be a road connection node
+            if (type == RoadNodeType.End)
+                type = (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.IsFirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection;
+
             // Add the new node to the end
-            builder.Curr = new RoadNode(position, tangent, normal, diabetesType2, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
-            bool shouldBeNavigationNode = (diabetesType2 == RoadNodeType.End && IsClosed()) || diabetesType2 == RoadNodeType.RoadConnection;
+            builder.Curr = new RoadNode(position, tangent, normal, type, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
+            bool shouldBeNavigationNode = (type == RoadNodeType.End && IsClosed()) || type == RoadNodeType.RoadConnection;
             if (shouldBeNavigationNode)
                 builder.Curr.IsNavigationNode = true;
 
