@@ -186,7 +186,6 @@ namespace RoadGenerator
                 foreach (NavigationNodeEdge edge2 in edge1.EndNavigationNode.Edges)
                 {
                     if (edge2.EndNavigationNode.RoadNode.Position == oldNodePosition)
-                    {
                         edge2.EndNavigationNode = newNode;
                     }
                 }
