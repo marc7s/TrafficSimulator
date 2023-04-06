@@ -53,7 +53,7 @@ namespace Car
             bool isNonIntersectionNavigationNode = node.RoadNode.IsNavigationNode && !node.IsIntersection();
             bool currentTargetNodeNotChecked = node.RoadNode != Context.PrevTarget?.RoadNode;
 
-            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count != 0 && currentTargetNodeNotChecked && !Context.VisitedNavigationNodes.Contains(node.RoadNode.Position))
+            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count > 0 && currentTargetNodeNotChecked && !Context.VisitedNavigationNodes.Contains(node.RoadNode.Position))
             {
                 Context.VisitedNavigationNodes.Add(node.RoadNode.Position);
                 Context.NavigationPath.Pop();
