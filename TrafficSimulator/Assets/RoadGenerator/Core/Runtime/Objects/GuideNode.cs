@@ -61,5 +61,7 @@ namespace RoadGenerator
         {
             return _laneNodeReference.HasVehicle();
         }
+
+        public override bool IsSteeringTarget => _laneNodeReference.IsSteeringTarget;
     }
 }
