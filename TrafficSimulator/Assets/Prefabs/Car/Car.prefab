@@ -1889,12 +1889,11 @@ MonoBehaviour:
   BrakeOffset: 5
   MaxRepositioningSpeed: 5
   MaxReverseDistance: 20
-  BaseTLD: 10
+  BaseTLD: 8
   TLDSpeedDivider: 20
   VehicleOccupancyOffset: 2
   Speed: 10
   Acceleration: 7
-  RotationSpeed: 5
   TotalDistance: 0
 --- !u!54 &1577973480894095029
 Rigidbody:
