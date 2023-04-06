@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using Cinemachine;
 using UnityEngine;
 using User;
 
@@ -13,28 +15,38 @@ namespace Cam
     /// </summary>
     public class DefaultCamera : CameraState
     {
-        // Edge Scrolling is not implemented yet!
+        [Header("Edge Scrolling Settings")]
         [SerializeField] private bool _enableEdgeScrolling;
-        [SerializeField] private float _movementSpeed = 50f;
-        [SerializeField] private float _rotationSpeed = 50f;
-        [SerializeField] private float _minZoom = 40f;
-        [SerializeField] private float _maxZoom = 10f;
-        [SerializeField] private float _zoomSpeed = 5f;
-    
-        // Should be set by a function of the current screen size
         [Range(0,0.3f)]
         private float _edgeScrollSensitivity = 0.1f;
-        private float _targetZoom = 50f;
+
+        [Header("Movement Settings")]
+        [SerializeField] private float _movementSpeed = 50f;
+        [SerializeField] private float _rotationSpeed = 50f;
+
+        [Header("Zoom Settings")]
+        [SerializeField] private float _followOffsetMin = 5f;
+        [SerializeField] private float _followOffsetMax = 50f;
+        [SerializeField] private float _zoomLerpSpeed = 5f;
+        [SerializeField] private float _zoomScrollFactor = 2f;
+
+        [Header("Toggle Follow Settings")]
+        [SerializeField] private float _togglePanSpeed = 0.3f;
 
         private GameObject _toggledGameObject;
         private bool _hasToggledGameObject;
-        
         private Vector3 _mousePointDirection;
         private bool _isNearScreenBorder;
-        
         private bool _isMovingTowardsTarget = false;
-        [SerializeField] private float _togglePanSpeed = 0.3f;
+        private Vector3 _followOffset;
+        private Vector3 _startingFollowOffset;
         
+        private void Start()
+        {
+            _startingFollowOffset = VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset;
+            _followOffset = _startingFollowOffset;
+        }
+
         private void Update()
         {
             if (_hasToggledGameObject && !_isMovingTowardsTarget) FollowTransform.position = _toggledGameObject.transform.position;
@@ -43,6 +55,8 @@ namespace Cam
         public override void SetActive(CameraManager cameraManager)
         {
             base.SetActive(cameraManager);
+            VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset = _startingFollowOffset;
+            _followOffset = _startingFollowOffset;
             UserSelectManager.Instance.CanSelectNewObject = true;
             UserSelectManager.Instance.OnSelectedGameObject += HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject += HandleGameObjectDoubleClickSelection;
@@ -89,7 +103,6 @@ namespace Cam
             _isNearScreenBorder = (horizontal != 0f) || (vertical != 0f);
             _mousePointDirection = new Vector3(horizontal, vertical);
         }
-        
 
         public override void Move(Vector3 direction)
         {
@@ -105,15 +118,35 @@ namespace Cam
         {
             FollowTransform.eulerAngles += new Vector3(0, horizontalRotation * _rotationSpeed * Time.deltaTime, 0);
         }
-
+        
         public override void Zoom(float zoomValue)
         {
-            _targetZoom -= zoomValue;
-            _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
-            VirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(VirtualCamera.m_Lens.FieldOfView,
-                _targetZoom, Time.deltaTime * _zoomSpeed);
+            Vector3 zoomDirection = _followOffset.normalized;
+            
+            if (zoomValue > 0)
+            {
+                _followOffset -= zoomDirection * _zoomScrollFactor;
+            }
+            else if(zoomValue < 0)
+            {
+                _followOffset += zoomDirection * _zoomScrollFactor;
+            }
+            if ( _followOffset.magnitude < _followOffsetMin)
+            {
+                _followOffset = zoomDirection * _followOffsetMin;
+            }
+            else if (_followOffset.magnitude > _followOffsetMax)
+            {
+                _followOffset = zoomDirection * _followOffsetMax;
+            }
+            
+            VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset =
+                Vector3.Lerp(VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset,
+                    _followOffset,
+                    Time.deltaTime * _zoomLerpSpeed);
+
         }
-        
+
         private void SetToggledGameObjectToNull()
         {
             _toggledGameObject = null;
