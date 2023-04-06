@@ -938,7 +938,6 @@ namespace RoadGenerator
         // Procedurally places the traffic signs along the road
         public void PlaceTrafficSigns()
         {
-            return;
             TrafficSignAssessor trafficSignCreator = new TrafficSignAssessor();
 
             // Destroy the old container and create a new one
