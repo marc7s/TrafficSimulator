@@ -851,6 +851,7 @@ namespace RoadGenerator
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
+
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
                 return (null, null, null);
             }

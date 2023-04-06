@@ -142,54 +142,14 @@ namespace RoadGenerator
             return new Stack<NavigationNodeEdge>();
         }
         
-        public static void DrawNavigationPath(out List<Vector3> navigationPath, NavigationNode nodeToFind, Stack<NavigationNodeEdge> path, LaneNode startNode, GameObject container, Material pathMaterial, Intersection prevIntersection, GameObject targetMarker)
+        public static void DrawNewNavigationPath(List<Vector3> positions, NavigationNode nodeToFind, GameObject container, Material pathMaterial, GameObject targetMarker)
         {
-            navigationPath = new List<Vector3>();
-            if(nodeToFind == null)
-                return;
-            LaneNode current = startNode;
-            Stack<NavigationNodeEdge> clonedPath = new Stack<NavigationNodeEdge>(new Stack<NavigationNodeEdge>(path));
             if (container.GetComponent<LineRenderer>() == null)
                 container.AddComponent<LineRenderer>();
             LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
             lineRenderer.startWidth = 1f;
             lineRenderer.endWidth = 1f;
-            List<Vector3> positions = new List<Vector3>();
             
-            // Go through the path according to the road logic and add the positions to the list
-            while (current != null)
-            {
-                positions.Add(current.Position);
-                if (current.RoadNode == nodeToFind.RoadNode)
-                    break;
-                // If the stack is empty, keep going on the same lane
-                if (clonedPath.Count == 0)
-                {
-                    current = current.Next;
-                    continue;
-                }
-
-                bool isNonIntersectionNavigationNode = current.RoadNode.IsNavigationNode && !current.IsIntersection() && current.Type != RoadNodeType.JunctionEdge && current.Prev?.RoadNode.Type != RoadNodeType.RoadConnection;
-
-                // When the current node is a non intersection navigation node, pop the stack
-                if (isNonIntersectionNavigationNode && clonedPath.Count != 0)
-                {
-                    clonedPath.Pop();
-                    prevIntersection = null; 
-                }
-
-                // When the current node is a new intersection
-                if (current.Type == RoadNodeType.JunctionEdge && prevIntersection?.ID != current.Intersection.ID)
-                {
-                    TurnDirection turnDirection = TurnDirection.Straight;
-                    (_, _, current) = current.RoadNode.Intersection.GetNewLaneNode(clonedPath.Pop(), current, ref turnDirection);
-                    prevIntersection = current.Intersection;
-                    continue;
-                }
-
-                current = current.Next;
-            }
-            navigationPath = positions;
             lineRenderer.material = pathMaterial;
             lineRenderer.positionCount = positions.Count;
             lineRenderer.SetPositions(positions.ToArray());
@@ -203,12 +163,11 @@ namespace RoadGenerator
             marker.transform.parent = container.transform;
         }
 
-        public static void DrawPathRemoveOldestPoint(ref List<Vector3> navigationPath, GameObject container)
+        public static void DrawUpdatedNavigationPath(ref List<Vector3> navigationPath, GameObject container)
         {
             if (navigationPath.Count == 0)
                 return;
 
-            navigationPath.RemoveAt(0);
             LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
             lineRenderer.positionCount = navigationPath.Count;
             lineRenderer.SetPositions(navigationPath.ToArray());
