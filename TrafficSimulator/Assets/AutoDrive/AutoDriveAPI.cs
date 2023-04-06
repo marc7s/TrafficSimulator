@@ -47,6 +47,7 @@ namespace Car
 
         private LaneNode UpdateAndGetGuideNode(LaneNode node, bool showNavigationPath)
         {
+            Debug.Log("UpdateAndGetGuideNode");
             if (Context.NavigationMode == NavigationMode.Disabled)
                 return node.Next;
 
@@ -77,7 +78,8 @@ namespace Car
 
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (Setting.Mode == DrivingMode.Performance)
-                            Navigation.DrawPathRemoveOldestPoint(ref Context.NavigationPathPositions, Context.NavigationPathContainer);
+                            Context.NavigationPathPositions.RemoveAt(0);
+                         //   Navigation.DrawUpdatedNavigationPath(ref Context.NavigationPathPositions, Context.NavigationPathContainer);
                         
                         // If the intersection does not have a lane node that matches the navigation path, unexpected behaviour has occurred, switch to random navigation
                         if (node == null)
@@ -100,12 +102,59 @@ namespace Car
             Context.VisitedNavigationNodes.Clear();
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetRandomPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), out Context.NavigationPathEndNode);
-            
-            if (showNavigationPath)
-                Navigation.DrawNavigationPath(out Context.NavigationPathPositions, Context.NavigationPathEndNode, Context.NavigationPath, Context.CurrentNode, Context.NavigationPathContainer, Setting.NavigationPathMaterial, Context.PrevIntersection, Setting.NavigationTargetMarker);
-            
+
             if (Context.NavigationPath.Count == 0)
                 Context.NavigationMode = NavigationMode.Random;
+            
+            if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
+                MapNavigationPath(node, showNavigationPath);
+        }
+
+        private void MapNavigationPath(LaneNode node, bool showNavigationPath)
+        {
+            if (Context.NavigationPathEndNode == null)
+            {
+                Debug.LogError("Navigation path end node is null");
+                return;
+            }
+            LaneNode current = node;
+
+            // If the start node is a road connection, since it is a navigation node we need to skip it to avoid a pop
+            if (node.Type == RoadNodeType.RoadConnection)
+            {
+                _context.NavigationPathPositions.Add(current.Position);
+                current = node.Next;
+            }
+
+            int count = 0;
+            _context.NavigationPathPositions.Clear();
+            while(current != null)
+            {
+                _context.NavigationPathPositions.Add(current.Position);
+                if (current.RoadNode == Context.NavigationPathEndNode.RoadNode)
+                    break;
+                count ++;
+                if (count > 1000)
+                {
+                    Debug.LogError("Infinite loop detected");
+                    break;
+                }
+
+
+                if( (current.Type == RoadNodeType.JunctionEdge && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(current.Intersection.ID)) || current.RoadNode.IsNavigationNode)
+                {
+                    current = UpdateAndGetGuideNode(current, true);
+                }
+                else
+                {
+                    current = Next(current, RoadEndBehaviour.Stop);
+                }
+
+                
+
+            }
+            if (showNavigationPath)
+                Navigation.DrawNewNavigationPath(_context.NavigationPathPositions, Context.NavigationPathEndNode, Context.NavigationPathContainer, Setting.NavigationPathMaterial , Setting.NavigationTargetMarker);
         }
 
         public LaneNode Next(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
@@ -116,14 +165,6 @@ namespace Car
                 (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[node.Intersection.ID];
                 if(node == entry)
                     return guideStart;   
-            }
-
-            if((node.Type == RoadNodeType.JunctionEdge && node.Intersection != null) || node.RoadNode.IsNavigationNode)
-            {
-                LaneNode newLaneNode = UpdateAndGetGuideNode(node, true);
-                if(node.Next == null)
-                    newLaneNode = endBehaviour == RoadEndBehaviour.Loop ? _context.StartNode : null;
-                return newLaneNode;
             }
 
             if(node.Next == null)
