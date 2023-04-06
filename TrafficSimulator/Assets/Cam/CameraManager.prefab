@@ -86,7 +86,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FollowTransform: {fileID: 0}
   IsDefault: 0
-  _rotateSpeed: 1
+  _rotateSpeed: 45
   _minZoom: 80
   _maxZoom: 50
   _zoomSpeed: 1
