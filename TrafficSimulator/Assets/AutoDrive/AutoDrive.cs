@@ -321,7 +321,10 @@ namespace Car {
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 
             // Occupy nodes further ahead in intersections
-            float intersectionOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? Intersection.IntersectionLength / 3 : 0;
+            // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
+            // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
+            const float intersectionOccupancyOffset = Intersection.IntersectionLength / 3;
+            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? intersectionOccupancyOffset : 0;
 
             // Add all occupied nodes prior to and including the current node
             while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
@@ -335,7 +338,7 @@ namespace Car {
             
             // Add all occupied nodes after and excluding the current node
             node = _agent.Next(_agent.Context.CurrentNode);
-            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + intersectionOccupancyOffset)
+            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + forwardOccupancyOffset)
             {
                 // Do not occupy nodes in front of a red light
                 if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
