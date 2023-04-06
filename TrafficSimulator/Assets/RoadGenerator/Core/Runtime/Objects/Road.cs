@@ -268,7 +268,7 @@ namespace RoadGenerator
             Road currentRoad = startRoad; 
             while(currentRoad != null)
             {   
-                // for closed loop, return when the start road is reached again
+                // For closed loop, return when the start road is reached again
                 if (currentRoad == startRoad && points.Count != 0)
                     return points;
 
