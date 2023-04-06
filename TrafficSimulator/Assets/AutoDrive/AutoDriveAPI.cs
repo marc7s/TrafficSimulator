@@ -85,7 +85,7 @@ namespace Car
                     }
                     else if (Context.NavigationMode == NavigationMode.Random)
                     {
-                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetRandomLaneNode(node);
+                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetRandomLaneNode(node, ref Context.TurnDirection);
                     }
                     SetIntersectionTransition(entryNode.Intersection, entryNode, node);
                 }
