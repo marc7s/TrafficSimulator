@@ -1333,6 +1333,7 @@ namespace RoadGenerator
                 Road road = ConnectedToAtStart?.Road;
                 road.ConnectedToAtEnd = null;
             }
+            
             if (ConnectedToAtEnd != null)
             {
                 Road road = ConnectedToAtEnd?.Road;
