@@ -25,7 +25,6 @@ namespace Cam
 
         public override void RotateHorizontal(float horizontalRotation)
         {
-            print("Rotate" + horizontalRotation);
             FollowTransform.rotation *= Quaternion.AngleAxis(horizontalRotation * _rotateSpeed * Time.deltaTime, Vector3.up);
         }
 
