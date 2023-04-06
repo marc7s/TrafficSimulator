@@ -847,6 +847,7 @@ namespace RoadGenerator
                 
                 if (currRoadNode.Type == RoadNodeType.RoadConnection)
                     break;
+                    
                 currRoadNode = currRoadNode.Next;
 
             }
