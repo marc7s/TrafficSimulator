@@ -117,15 +117,19 @@ namespace Car
                 if(node == entry)
                     return guideStart;   
             }
-            LaneNode newLaneNode;
+
             if((node.Type == RoadNodeType.JunctionEdge && node.Intersection != null) || node.RoadNode.IsNavigationNode)
-                newLaneNode = UpdateAndGetGuideNode(node, true);
+            {
+                LaneNode newLaneNode = UpdateAndGetGuideNode(node, true);
+                if(node.Next == null)
+                    newLaneNode = endBehaviour == RoadEndBehaviour.Loop ? _context.StartNode : null;
+                return newLaneNode;
+            }
 
             if(node.Next == null)
-                newLaneNode = endBehaviour == RoadEndBehaviour.Loop ? _context.StartNode : null;
+                return endBehaviour == RoadEndBehaviour.Loop ? _context.StartNode : null;
             else
-                newLaneNode = node.Next;
-            return newLaneNode;
+                return node.Next;
         }
 
         public LaneNode Prev(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
