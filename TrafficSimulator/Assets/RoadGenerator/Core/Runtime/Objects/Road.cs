@@ -962,7 +962,7 @@ namespace RoadGenerator
 
             RoadNode currentNode = StartNode;
             float distanceToStartNode = 0;
-            float distanceToEndNode = currentNode.GetDistanceToEnd();
+            float distanceToEndNode = currentNode.GetDistanceToEndOfRoad();
             float? distanceToNextIntersection = DistanceToNextIntersection(currentNode, out Intersection nextIntersection);
             float? distanceToPrevIntersection = null;
             // If the there is an threeway intersection at start
