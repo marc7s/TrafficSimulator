@@ -337,17 +337,22 @@ namespace Car {
             nodeDistance = 0;
             
             // Add all occupied nodes after and excluding the current node
-            node = _agent.Next(_agent.Context.CurrentNode);
-            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + forwardOccupancyOffset)
+            node = _agent.Context.CurrentNode;
+            if(!(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID))
             {
-                // Do not occupy nodes in front of a red light
-                if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
-                    break;
-                
-                forwardNodes.Add(node);
-                nodeDistance += node.DistanceToPrevNode;
-                node = _agent.Next(node, RoadEndBehaviour.Stop);
+                node = _agent.Next(_agent.Context.CurrentNode);
+                while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + forwardOccupancyOffset)
+                {
+                    // Do not occupy nodes in front of a red light
+                    if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
+                        break;
+                    
+                    forwardNodes.Add(node);
+                    nodeDistance += node.DistanceToPrevNode;
+                    node = _agent.Next(node, RoadEndBehaviour.Stop);
+                }
             }
+            
             
             return (forwardNodes, backwardNodes);
         }
