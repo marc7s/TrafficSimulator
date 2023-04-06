@@ -187,7 +187,6 @@ namespace RoadGenerator
                 {
                     if (edge2.EndNavigationNode.RoadNode.Position == oldNodePosition)
                         edge2.EndNavigationNode = newNode;
-                    }
                 }
             }
         }
