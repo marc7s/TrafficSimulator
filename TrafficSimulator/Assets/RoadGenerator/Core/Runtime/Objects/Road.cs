@@ -274,7 +274,7 @@ namespace RoadGenerator
 
                 BezierPath bezierPath = currentRoad.PathCreator.bezierPath;
                 // Add the bezier points of this road
-                for (var i = 0; i < bezierPath.NumPoints; i +=3)
+                for (int i = 0; i < bezierPath.NumPoints; i +=3)
                 {
                     if (i != 0 || currentRoad == startRoad)
                         points.Add((bezierPath.GetPoint(i), currentRoad.PathCreator));
