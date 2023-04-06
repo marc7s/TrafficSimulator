@@ -159,7 +159,7 @@ namespace RoadGenerator
             RoadNode curr = road.StartNode;
             List<RoadNode> junctionNodes = new List<RoadNode>();
             
-            while(curr != null)
+            while(curr != null && curr.Road == road)
             {
                 if(curr.Type == RoadNodeType.JunctionEdge || curr.IsIntersection())
                     junctionNodes.Add(curr);
@@ -586,8 +586,12 @@ namespace RoadGenerator
             foreach (Lane lane in lanes)
             {
                 LaneNode currentNode = lane.StartNode;
+                Road road = currentNode.RoadNode.Road;
                 while(currentNode != null)
                 {
+                    if (currentNode.RoadNode.Road != road)
+                        break;
+
                     if (currentNode.Type != RoadNodeType.JunctionEdge)
                     {
                         currentNode = currentNode.Next;
@@ -596,27 +600,21 @@ namespace RoadGenerator
 
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
                     
-                    Road road = null;
-
                     switch(currentNode.RoadNode.Position)
                     {
                         case Vector3 p when p == Road1AnchorPoint1:
-                            road = Road1;
                             if (!isEdgePointingToIntersection)
                                 AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint1NavigationEdge, currentNode);
                             break;
                         case Vector3 p when p == Road1AnchorPoint2:
-                            road = Road1;
                             if (!isEdgePointingToIntersection)
                                 AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint2NavigationEdge, currentNode);
                             break;
                         case Vector3 p when p == Road2AnchorPoint1:
-                            road = Road2;
                             if (!isEdgePointingToIntersection)
                                 AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint1NavigationEdge, currentNode);
                             break;
                         case Vector3 p when p == Road2AnchorPoint2:
-                            road = Road2;
                             if (!isEdgePointingToIntersection && !IsThreeWayIntersection())
                                 AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint2NavigationEdge, currentNode);
                             break;
@@ -959,6 +957,15 @@ namespace RoadGenerator
                 Road1.RemoveIntersection(this);
             if (Road2?.HasIntersection(this) == true)
                 Road2.RemoveIntersection(this);
+        }
+
+        public void Reverse(Road road)
+        {
+            /// When reversing the road these need to be reversed as well.
+            if (road == Road1)
+                (Road1AnchorPoint1, Road1AnchorPoint2) = (Road1AnchorPoint2, Road1AnchorPoint1);
+            else if (road == Road2)
+                (Road2AnchorPoint1, Road2AnchorPoint2) = (Road2AnchorPoint2, Road2AnchorPoint1);
         }
     }
 }

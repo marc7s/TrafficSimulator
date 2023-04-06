@@ -207,7 +207,8 @@ namespace RoadGenerator
             {
                 // This needs to be called because after script update the scene reloads and the roads don't save their graph correctly
                 // This can be removed if roads serialize the graph correctly
-                road.UpdateRoadNodes();
+               road.UpdateRoadNodes();
+               road.UpdateLanes();
             }
 
             // Generate a new graph

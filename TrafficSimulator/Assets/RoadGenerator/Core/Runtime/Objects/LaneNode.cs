@@ -86,5 +86,21 @@ namespace RoadGenerator
         {
             return Vehicle != null;
         }
+
+        public LaneNode GetLastLaneNodeInRoad()
+        {
+            LaneNode curr = this.Next;
+            while(curr != null)
+            {
+                if(curr.RoadNode.Type == RoadNodeType.RoadConnection)
+                    return curr;
+                
+                if (curr.RoadNode.Type == RoadNodeType.End)
+                    return curr;
+                
+                curr = curr.Next;
+            }
+            return null;
+        }
     }
 }

@@ -344,6 +344,21 @@ namespace RoadGenerator
 			NotifyPathModified();
 		}
 
+		public void Reverse()
+		{
+			points.Reverse();
+			perAnchorNormalsAngle.Reverse();
+			// Reverse control points so that they stay in the same place relative to their anchor
+			for (int i = 1; i < points.Count; i += 3)
+			{
+				Vector3 tmp = points[i];
+				points[i] = points[i + 1];
+				points[i + 1] = tmp;
+			}
+
+			NotifyPathModified();
+		}
+
 		/// <summary>Insert new anchor point at given position. Automatically place control points around it so as to keep shape of curve the same</summary>
 		public void SplitSegment(Vector3 anchorPos, int segmentIndex, float splitTime)
 		{
@@ -807,7 +822,7 @@ namespace RoadGenerator
 		}
 
 		/// Determines good positions (for a smooth path) for all control points
-		void AutoSetAllControlPoints()
+		public void AutoSetAllControlPoints()
 		{
 			if (NumAnchorPoints > 2)
 			{
@@ -943,6 +958,22 @@ namespace RoadGenerator
 			}
 
 			NotifyPathModified();
+		}
+		public Vector3 GetFirstAnchorPos()
+		{
+			return points[0];
+		}
+		public Vector3 GetLastAnchorPos()
+		{
+			return points[points.Count - 1];
+		}
+		public void SetFirstAnchorPos(Vector3 pos)
+		{
+			MovePoint(0, pos);
+		}
+		public void SetLastAnchorPos(Vector3 pos)
+		{
+			MovePoint(points.Count - 1, pos);
 		}
 
 		/// Add/remove the extra 2 controls required for a closed path

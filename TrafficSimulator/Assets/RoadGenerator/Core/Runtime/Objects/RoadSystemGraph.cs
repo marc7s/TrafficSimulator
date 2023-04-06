@@ -11,7 +11,7 @@ namespace RoadGenerator
         public NavigationNode EndNavigationNode;
         private string _id;
         public double Cost;
-        public NavigationNodeEdge(NavigationNode endNode, NavigationNode startNode, double cost)
+        public NavigationNodeEdge(NavigationNode startNode, NavigationNode endNode, double cost)
         {
             _id = System.Guid.NewGuid().ToString();
             EndNavigationNode = endNode;
@@ -37,6 +37,39 @@ namespace RoadGenerator
         }
     }
     
+    public class NavigationGraphBuilder
+    {
+        public NavigationNode PrevPrimaryDirectionNode;
+        public NavigationNode PrevSecondaryDirectionNode;
+        public List<NavigationNode> Nodes = new List<NavigationNode>();
+
+        public void AddNode(RoadNode roadNode, float cost)
+        {
+            if(Nodes.FindAll(x => x.RoadNode.Position == roadNode.Position).Count != 0)
+                return;
+
+            NavigationNode node = new NavigationNode(roadNode);
+            Nodes.Add(node);
+            AddEdges(node, cost);
+            PrevPrimaryDirectionNode = node;
+            PrevSecondaryDirectionNode = node;
+        }
+        private void AddEdges(NavigationNode newNode, float cost)
+        {
+            if (PrevPrimaryDirectionNode != null)
+            {
+                NavigationNodeEdge edge = new NavigationNodeEdge(PrevPrimaryDirectionNode, newNode, cost);
+                PrevPrimaryDirectionNode.Edges.Add(edge);
+                PrevPrimaryDirectionNode.PrimaryDirectionEdge = edge;
+            }
+            if (PrevSecondaryDirectionNode != null)
+            {
+                NavigationNodeEdge edge = new NavigationNodeEdge(newNode, PrevSecondaryDirectionNode, cost);
+                newNode.Edges.Add(edge);
+                newNode.SecondaryDirectionEdge = edge;
+            }
+        }
+    }
     /// <summary> A graph representation of a road </summary>
     public class RoadNavigationGraph
     {
@@ -49,26 +82,20 @@ namespace RoadGenerator
         {
             RoadNodeType.ThreeWayIntersection,
             RoadNodeType.FourWayIntersection,
+            RoadNodeType.RoadConnection,
             RoadNodeType.End
         };
 
         private float _currentCost = 0f;
-        public RoadNavigationGraph(RoadNode roadNode, bool isClosed)
+        public RoadNavigationGraph(RoadNode roadNode)
         {
             RoadNode curr = roadNode;
-            
-            NavigationNode PreviouslyAddedNode = null;
-            
-            NavigationNode closedStartNodePrimaryDirection = null;
-            NavigationNode closedStartNodeSecondaryDirection = null;
-            
-            NavigationNode prevNonIntersectionNodePrimary = null;
-            NavigationNode prevIntersectionNodeSecondary = null;
-            
-            bool isPreviousNodeNotIntersection = false;
-            
+            NavigationGraphBuilder builder = new NavigationGraphBuilder();
             while (curr != null)
             {
+                // If the current node is not part of the same road, we stop
+                if (curr.Road != roadNode.Road)
+                    break;
                 // Increase the current cost if the current node is not the starting node
                 if (curr.Prev != null)
                     _currentCost += CalculateCost(curr.DistanceToPrevNode);
@@ -78,86 +105,16 @@ namespace RoadGenerator
                     curr = curr.Next;
                     continue;
                 }
-                // In a closed loop we never want to add the end node, so we skip it
-                if (curr.Type == RoadNodeType.End && isClosed && PreviouslyAddedNode != null)
-                    break;   
-            
-                // If the current node is the first node to be added
-                if (PreviouslyAddedNode == null)
-                {
-                    PreviouslyAddedNode = new NavigationNode(curr);
-                    StartNavigationNode = PreviouslyAddedNode;
-                    Graph.Add(PreviouslyAddedNode);
-                    if (isClosed)
-                    {
-                        closedStartNodePrimaryDirection = PreviouslyAddedNode;
-                        prevNonIntersectionNodePrimary = closedStartNodePrimaryDirection;
-                        closedStartNodeSecondaryDirection = new NavigationNode(curr);
-                        prevIntersectionNodeSecondary = closedStartNodeSecondaryDirection;
-                        Graph.Add(closedStartNodeSecondaryDirection);
-                        isPreviousNodeNotIntersection = true;
-                        curr.IsNavigationNode = true;
-                    }
-                        
-                    curr = curr.Next;
-                    continue;
-                }
-                
-                if(Graph.FindAll(x => x.RoadNode.Position == curr.Position).Count == 0)
-                {
-                    NavigationNode graphNode = new NavigationNode(curr);
-                    Graph.Add(graphNode);
 
-                    // When a non intersection node is added, we need to one node for the primary direction and one for the secondary direction
-                    if (isPreviousNodeNotIntersection)
-                    {
-                        // Edges with the current cost are added in both directions
-                        NavigationNodeEdge edgeSecondaryDirection = new NavigationNodeEdge(prevIntersectionNodeSecondary, graphNode, _currentCost);
-                        graphNode.Edges.Add(edgeSecondaryDirection);
-                        graphNode.SecondaryDirectionEdge = edgeSecondaryDirection;
-                        NavigationNodeEdge edgePrimaryDirection = new NavigationNodeEdge(graphNode, prevNonIntersectionNodePrimary, _currentCost);
-                        prevNonIntersectionNodePrimary.Edges.Add(edgePrimaryDirection);
-                        prevIntersectionNodeSecondary.PrimaryDirectionEdge = edgePrimaryDirection;
-                        prevNonIntersectionNodePrimary.PrimaryDirectionEdge = edgePrimaryDirection;
-
-                        PreviouslyAddedNode = graphNode;
-                        _currentCost = 0f;
-                        isPreviousNodeNotIntersection = false;
-                        continue;
-                    }
-
-                    // Edges with the current cost are added in both directions
-                    AddEdgeInBothDirections(PreviouslyAddedNode, graphNode, _currentCost);
-
-                    PreviouslyAddedNode = graphNode;
-                    _currentCost = 0f;
-                }
+                builder.AddNode(curr, _currentCost);
+                _currentCost = 0f;
                 curr = curr.Next;
             }
-            EndNavigationNode = PreviouslyAddedNode;
-            
-            // If the road is closed we need to add the edges between the start and end node
-            if (isClosed)
-            {
-                NavigationNodeEdge edgePrimary = new NavigationNodeEdge(closedStartNodeSecondaryDirection, EndNavigationNode, _currentCost);
-                EndNavigationNode.PrimaryDirectionEdge = edgePrimary;
-                EndNavigationNode.Edges.Add(edgePrimary);
-                NavigationNodeEdge edgeSecondary = new NavigationNodeEdge(EndNavigationNode, closedStartNodeSecondaryDirection, _currentCost);
-                closedStartNodeSecondaryDirection.Edges.Add(edgeSecondary);
-                closedStartNodeSecondaryDirection.SecondaryDirectionEdge = edgeSecondary;
-                closedStartNodePrimaryDirection.SecondaryDirectionEdge = edgeSecondary;   
-            }
+            EndNavigationNode = builder.Nodes.Last();
+            StartNavigationNode = builder.Nodes.First();
+            Graph = builder.Nodes;
         }
         
-        private void AddEdgeInBothDirections(NavigationNode prevNode, NavigationNode newNode, double cost)
-        {
-            NavigationNodeEdge edgePrimary = new NavigationNodeEdge(newNode, prevNode, cost);
-            prevNode.Edges.Add(edgePrimary);
-            prevNode.PrimaryDirectionEdge = edgePrimary;
-            NavigationNodeEdge edgeSecondary = new NavigationNodeEdge(prevNode, newNode, cost);
-            newNode.Edges.Add(edgeSecondary);
-            newNode.SecondaryDirectionEdge = edgeSecondary;
-        }
         private float CalculateCost(float distance, float speedLimit = 1f)
         {
             return distance / speedLimit;

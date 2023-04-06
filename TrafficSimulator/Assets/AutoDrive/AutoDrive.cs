@@ -132,7 +132,7 @@ namespace Car {
                 Debug.LogError("Lane index out of range");
                 return;
             }
-            
+
             Lane lane = Road.Lanes[LaneIndex];
             LaneNode currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = currentNode;
@@ -547,7 +547,7 @@ namespace Car {
             }
 
             // If the road ended but we are looping, teleport to the first position
-            if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop)
+            if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
             {
                 // Since there is an issue with the car spinning after teleporting, we pause the rigidbody for a second
                 // This is a temporary fix until the real issue is resolved
@@ -673,7 +673,7 @@ namespace Car {
                 TotalDistance += _target.DistanceToPrevNode;
                 _agent.Context.CurrentNode = _target;
 
-                if(_target == _agent.Context.EndNode)
+                if(_target == _agent.Context.EndNode && !_target.RoadNode.Road.IsClosed())
                     ResetToNode(_agent.Context.StartNode);
 
                 // All logic for the navigation controller is handled through the actions, so we ignore the return value
