@@ -844,6 +844,7 @@ namespace RoadGenerator
                     laneNodes[i] = AddLaneNode(currRoadNode, primaryPrev, primaryCurr, true);
                     laneNodes[i + 1] = AddLaneNode(currRoadNode, secondaryPrev, secondaryCurr, false);
                 }
+                
                 if (currRoadNode.Type == RoadNodeType.RoadConnection)
                     break;
                 currRoadNode = currRoadNode.Next;
