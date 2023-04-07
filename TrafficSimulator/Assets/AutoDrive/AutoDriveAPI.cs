@@ -131,7 +131,7 @@ namespace Car
             while(current != null)
             {
                 _context.NavigationPathPositions.Add(current.Position);
-                if (current.RoadNode == Context.NavigationPathEndNode.RoadNode)
+                if (current.RoadNode == Context.NavigationPathEndNode.RoadNode && Context.NavigationPath.Count == 0)
                     break;
 
                 if( (current.Type == RoadNodeType.JunctionEdge && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(current.Intersection.ID)) || current.RoadNode.IsNavigationNode)
