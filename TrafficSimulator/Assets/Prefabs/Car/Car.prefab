@@ -1886,7 +1886,7 @@ MonoBehaviour:
   OriginalNavigationMode: 0
   LogRepositioningInformation: 1
   ShowTargetLines: 0
-  BrakeOffset: 5
+  BrakeOffset: 3
   MaxRepositioningSpeed: 5
   MaxReverseDistance: 20
   BaseTLD: 8
