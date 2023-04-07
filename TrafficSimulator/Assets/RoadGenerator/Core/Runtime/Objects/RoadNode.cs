@@ -157,12 +157,14 @@ namespace RoadGenerator
                 curr = curr.Next;
             }
         }
-        public float GetDistanceToEnd()
+        public float GetDistanceToEndOfRoad()
         {
             RoadNode current = this.Next;
             float distance = 0;
             while(current != null)
             {
+                if (current.Road != this.Road)
+                    break;
                 distance += current.DistanceToPrevNode;
                 current = current.Next;
             }
