@@ -66,7 +66,7 @@ namespace RoadGenerator
         public List<Vector3> Vertices = new List<Vector3>();
         public List<int> TrianglesMainMesh = new List<int>();
         public List<int> TrianglesRails = new List<int>();
-
+        public List<int> TrianglesBottom = new List<int>();
         public List<Vector2> UVs = new List<Vector2>();
         private TramRail _rail;
         private int _laneCount = 1;
@@ -122,41 +122,41 @@ namespace RoadGenerator
         Vector3 vertOuterRailOuterBottom = vertOuterRailOuterTop - localUp * _rail.RailDepth;
 
         bool isEven = count % 2 == 0;
-        float testt = isEven ? 1 : 0; 
+        float vValue = isEven ? 1 : 0; 
         Vertices.Add(vertOuterTop);
-        UVs.Add(new Vector2(0.99f, testt));
+        UVs.Add(new Vector2(0.99f, vValue));
         Vertices.Add(vertOuterBottom);
-        UVs.Add(new Vector2(1, testt));
+        UVs.Add(new Vector2(1, vValue));
 
         Vertices.Add(vertInnerRailInnerPadding);
-        UVs.Add(new Vector2(0, testt));
+        UVs.Add(new Vector2(0, vValue));
         Vertices.Add(vertInnerRailInnerTop);
-        UVs.Add(new Vector2(0.3f, testt));
+        UVs.Add(new Vector2(0.3f, vValue));
         Vertices.Add(vertInnerRailInnerBottom);
-        UVs.Add(new Vector2(0.45f, testt));
+        UVs.Add(new Vector2(0.45f, vValue));
         Vertices.Add(vertInnerRailOuterTop);
-        UVs.Add(new Vector2(0.65f, testt));
+        UVs.Add(new Vector2(0.65f, vValue));
         Vertices.Add(vertInnerRailOuterBottom);
-        UVs.Add(new Vector2(0.55f, testt));
+        UVs.Add(new Vector2(0.55f, vValue));
         Vertices.Add(vertInnerRailOuterPadding);
-        UVs.Add(new Vector2(1f, testt));
+        UVs.Add(new Vector2(1f, vValue));
 
         Vertices.Add(vertOuterRailInnerPadding);
-        UVs.Add(new Vector2(0f, testt));
+        UVs.Add(new Vector2(0f, vValue));
         Vertices.Add(vertOuterRailInnerTop);
-        UVs.Add(new Vector2(0.3f, testt));
+        UVs.Add(new Vector2(0.3f, vValue));
         Vertices.Add(vertOuterRailInnerBottom);
-        UVs.Add(new Vector2(0.45f, testt));
+        UVs.Add(new Vector2(0.45f, vValue));
         Vertices.Add(vertOuterRailOuterTop);
-        UVs.Add(new Vector2(0.65f, testt));
+        UVs.Add(new Vector2(0.65f, vValue));
         Vertices.Add(vertOuterRailOuterBottom);
-        UVs.Add(new Vector2(0.55f, testt));
+        UVs.Add(new Vector2(0.55f, vValue));
         Vertices.Add(vertOuterRailOuterPadding);
-        UVs.Add(new Vector2(1, testt));
+        UVs.Add(new Vector2(1, vValue));
         Vertices.Add(vertCenterTop);
-        UVs.Add(new Vector2(0, testt));
+        UVs.Add(new Vector2(0, vValue));
         Vertices.Add(vertCenterBottom);
-        UVs.Add(new Vector2(1, testt));
+        UVs.Add(new Vector2(1, vValue));
 
         if (isFirst)
         {
@@ -167,7 +167,6 @@ namespace RoadGenerator
             return;
         }
 
-        // Traingles
         int vertIndex;
         if (RailSide.Left == railSide)
         {
@@ -239,15 +238,14 @@ namespace RoadGenerator
         AddRectangle(vertOuterRailOuterBottomIndex, vertOuterRailOuterTopIndex, prevVertOuterRailOuterBottomIndex, prevVertOuterRailOuterTopIndex, railSide, TrianglesRails);
         AddRectangle(vertOuterRailOuterTopIndex, vertOuterRailOuterPaddingIndex, prevVertOuterRailOuterTopIndex, prevVertOuterRailOuterPaddingIndex, railSide, TrianglesRails);
 
+        // Rectangle between the outer rail and the outer side of the road
         AddRectangle(vertOuterRailOuterPaddingIndex, vertOuterTopIndex, prevVertOuterRailOuterPaddingIndex, prevVertOuterTopIndex, railSide, TrianglesMainMesh);
 
         // The side of the road mesh
         AddRectangle(vertOuterTopIndex, vertOuterBottomIndex, prevVertOuterTopIndex, prevVertOuterBottomIndex, railSide, TrianglesMainMesh);
         
         // Bottom of the road mesh
-        AddRectangle(vertOuterBottomIndex, vertCenterBottomIndex, prevVertOuterBottomIndex, prevVertCenterBottomIndex, railSide, TrianglesMainMesh);
-
-
+        AddRectangle(vertOuterBottomIndex, vertCenterBottomIndex, prevVertOuterBottomIndex, prevVertCenterBottomIndex, railSide, TrianglesBottom);
     }
 
     private void AddRectangle(int currentSideIndex1, int currentSideIndex2, int prevSideIndex1, int prevSideIndex2, RailSide railSide, List<int> triangles)
@@ -273,6 +271,14 @@ namespace RoadGenerator
             triangles.Add(currentSideIndex2);
         }
 
+    }
+    public void AddShortSideRectangles()
+    {
+        int vertOuterRightTopIndex = RightSidePrevIndex + (int)VerticeType.OuterTop;
+        int vertOuterRightBottomIndex = RightSidePrevIndex + (int)VerticeType.OuterBottom;
+        int vertOuterLeftTopIndex = LeftSidePrevIndex + (int)VerticeType.OuterTop;
+        int vertOuterLeftBottomIndex = LeftSidePrevIndex + (int)VerticeType.OuterBottom;
+        AddRectangle(vertOuterRightTopIndex, vertOuterRightBottomIndex, vertOuterLeftTopIndex, vertOuterLeftBottomIndex, RailSide.Left, TrianglesMainMesh);
     }
     }
 
@@ -330,11 +336,13 @@ namespace RoadGenerator
                 curr = curr.Next;
             }
 
+            meshBuilder.AddShortSideRectangles();
             _mesh.Clear();
             _mesh.vertices = meshBuilder.Vertices.ToArray();
-            _mesh.subMeshCount = 2;
+            _mesh.subMeshCount = 3;
             _mesh.SetTriangles(meshBuilder.TrianglesMainMesh.ToArray(), 0);
             _mesh.SetTriangles(meshBuilder.TrianglesRails.ToArray(), 1);
+            _mesh.SetTriangles(meshBuilder.TrianglesBottom.ToArray(), 2);
             _mesh.uv = meshBuilder.UVs.ToArray();
             _mesh.RecalculateBounds();
         }
@@ -375,9 +383,10 @@ namespace RoadGenerator
         }
 
         private void AssignMaterials() {
-            Material[] materials = new Material[2];
+            Material[] materials = new Material[3];
             materials[0] = roadMaterial;
             materials[1] = railMaterial;
+            materials[2] = _bottomMaterial;
             _meshRenderer.sharedMaterials = materials;
         }
     }

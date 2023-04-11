@@ -33,7 +33,7 @@ namespace RoadGenerator
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;
-        [SerializeField][HideInInspector] private List<Road> _carRoads = new List<Road>();
+        [SerializeField][HideInInspector] private List<Road> _defaultRoads = new List<Road>();
         [SerializeField][HideInInspector] private List<TramRail> _tramRails = new List<TramRail>();
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
@@ -45,14 +45,14 @@ namespace RoadGenerator
         private bool _isSetup = false;
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
-        public void AddRoad(Road road) => _carRoads.Add(road);
+        public void AddRoad(Road road) => _defaultRoads.Add(road);
         public void AddRail(TramRail rail) => _tramRails.Add(rail);
 
         public void RemoveRoad(Road road)
         {
             if (road is DefaultRoad)
             {
-                _carRoads.Remove(road);
+                _defaultRoads.Remove(road as DefaultRoad);
             }
             else if (road is TramRail)
             {
@@ -187,7 +187,14 @@ namespace RoadGenerator
                 Road road = roadT.GetComponent<Road>();
                 road.RoadSystem = this;
                 
-                AddRoad(road);
+                if (road is DefaultRoad)
+                {
+                    AddRoad(road);
+                }
+                else if (road is TramRail)
+                {
+                    AddRail(road as TramRail);
+                }
             }
 
             // Find intersections
@@ -199,7 +206,7 @@ namespace RoadGenerator
                 AddIntersection(intersection);
             }
 
-            foreach (Road road in _carRoads)
+            foreach (Road road in _defaultRoads)
             {
                 road.OnChange();
             }
@@ -258,7 +265,7 @@ namespace RoadGenerator
             // Clear the graph
             ClearRoadGraph();
             
-            foreach (Road road in _carRoads)
+            foreach (Road road in _defaultRoads)
             {
                 // This needs to be called because after script update the scene reloads and the roads don't save their graph correctly
                 // This can be removed if roads serialize the graph correctly
@@ -280,7 +287,7 @@ namespace RoadGenerator
 
         public void UpdateRoads()
         {
-            foreach(Road road in _carRoads)
+            foreach(Road road in _defaultRoads)
             {
                 road.OnChange();
             }
@@ -305,16 +312,16 @@ namespace RoadGenerator
         /// <summary>Returns the number of roads in the road system</summary>
         public int RoadCount 
         {
-            get => _carRoads.Count;
+            get => _defaultRoads.Count;
         }
 
         public int TramRailCount
         {
             get => _tramRails.Count;
         }
-        public List<Road> CarRoads 
+        public List<Road> DefaultRoads 
         {
-            get => _carRoads;
+            get => _defaultRoads;
         }
 
         public List<TramRail> TramRails

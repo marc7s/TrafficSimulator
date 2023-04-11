@@ -30,7 +30,7 @@ namespace RoadGenerator
                 List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
                 
                 // Check all other roads for intersections
-                foreach(Road otherRoad in roadSystem.CarRoads) 
+                foreach(Road otherRoad in roadSystem.DefaultRoads) 
                 {
                     // Do not check intersections with itself
                     if (otherRoad == road)
@@ -325,7 +325,7 @@ namespace RoadGenerator
             Road foundRoad = null;
             
             // Search each road in the road system for the road
-            foreach (Road road in roadSystem.CarRoads)
+            foreach (Road road in roadSystem.DefaultRoads)
             {
                 if (road.RoadObject.GetComponent<PathCreator>() == pathCreator)
                 {

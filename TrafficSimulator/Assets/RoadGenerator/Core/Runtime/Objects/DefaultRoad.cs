@@ -12,6 +12,8 @@ namespace RoadGenerator
         Rail
     }
 
+    [ExecuteInEditMode()]
+    [Serializable]
     [RequireComponent(typeof(RoadMeshCreator))]
     public class DefaultRoad : Road
     {        

@@ -825,7 +825,7 @@ MonoBehaviour:
   NavigationTargetMarker: {fileID: 0}
   NavigationPathMaterial: {fileID: 0}
   LaneIndex: 0
-  _mesh: {fileID: 0}
+  _mesh: {fileID: 3442594187742297645}
   Mode: 1
   Active: 0
   EndBehaviour: 0

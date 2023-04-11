@@ -198,7 +198,7 @@ namespace RoadGenerator
                 }
                 else if (this is DefaultRoad)
                 {
-                    roadsToCheck = new List<Road>(RoadSystem.CarRoads);
+                    roadsToCheck = new List<Road>(RoadSystem.DefaultRoads);
                 }
                 foreach (Road road in roadsToCheck)
                 {
