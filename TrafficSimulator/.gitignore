@@ -63,7 +63,6 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
-# Assets
-[Aa]ssets/EVP5/
-[Aa]ssets/European Road Signs/
-[Aa]ssets/QuickOutline/
+# Unity Assets
+[Aa]ssets/Unity Assets/*
+![Aa]ssets/Unity Assets/ASSETS.md
