@@ -17,19 +17,19 @@ namespace RoadGenerator
     [RequireComponent(typeof(RoadMeshCreator))]
     public class DefaultRoad : Road
     {        
-        [SerializeField] protected GameObject _speedSignTenKPH;
-        [SerializeField] protected GameObject _speedSignTwentyKPH;
-        [SerializeField] protected GameObject _speedSignThirtyKPH;
-        [SerializeField] protected GameObject _speedSignFortyKPH;
-        [SerializeField] protected GameObject _speedSignFiftyKPH;
-        [SerializeField] protected GameObject _speedSignSixtyKPH;
-        [SerializeField] protected GameObject _speedSignSeventyKPH;
-        [SerializeField] protected GameObject _speedSignEightyKPH;
-        [SerializeField] protected GameObject _speedSignNinetyKPH;
-        [SerializeField] protected GameObject _speedSignOneHundredKPH;
-        [SerializeField] protected GameObject _speedSignOneHundredTenKPH;
-        [SerializeField] protected GameObject _speedSignOneHundredTwentyKPH;
-        [SerializeField] protected GameObject _speedSignOneHundredThirtyKPH;
+        [SerializeField] private GameObject _speedSignTenKPH;
+        [SerializeField] private GameObject _speedSignTwentyKPH;
+        [SerializeField] private GameObject _speedSignThirtyKPH;
+        [SerializeField] private GameObject _speedSignFortyKPH;
+        [SerializeField] private GameObject _speedSignFiftyKPH;
+        [SerializeField] private GameObject _speedSignSixtyKPH;
+        [SerializeField] private GameObject _speedSignSeventyKPH;
+        [SerializeField] private GameObject _speedSignEightyKPH;
+        [SerializeField] private GameObject _speedSignNinetyKPH;
+        [SerializeField] private GameObject _speedSignOneHundredKPH;
+        [SerializeField] private GameObject _speedSignOneHundredTenKPH;
+        [SerializeField] private GameObject _speedSignOneHundredTwentyKPH;
+        [SerializeField] private GameObject _speedSignOneHundredThirtyKPH;
         public GameObject LampPostPrefab;
         public override TrafficSignAssessor GetNewTrafficSignAssessor()
         {

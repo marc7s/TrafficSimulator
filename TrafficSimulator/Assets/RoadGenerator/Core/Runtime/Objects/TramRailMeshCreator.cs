@@ -71,31 +71,30 @@ namespace RoadGenerator
         private TramRail _rail;
         private int _laneCount = 1;
         private bool _flattenSurface = true;
-        private VertexPath path;
-        private int count = 0;
-        private int RightSidePrevIndex;
-        private int LeftSidePrevIndex;
-        private int NumVerticesPerNode = Enum.GetNames(typeof(VerticeType)).Length;
+        private VertexPath _path;
+        private int _count = 0;
+        private int _rightSidePrevIndex;
+        private int _leftSidePrevIndex;
+        private int _numVerticesPerNode = Enum.GetNames(typeof(VerticeType)).Length;
 
         public MeshBuilder(VertexPath path, TramRail rail)
         {
-            this._rail = rail;
-            this.path = path;
+            _rail = rail;
+            _path = path;
         }
 
         public void AddNode(RoadNode node)
         {
             AddRailMeshVertices(node, RailSide.Right);
             AddRailMeshVertices(node, RailSide.Left);
-            count++;
+            _count++;
         }
 
     public void AddRailMeshVertices(RoadNode node, RailSide railSide)
     {
-        // Vertices
         bool isFirst = Vertices.Count == 0;
-        bool usePathNormals = !(path.space == PathSpace.xyz && _flattenSurface);
-        Vector3 localUp = usePathNormals ? Vector3.Cross(node.Tangent, node.Normal) : path.up;
+        bool usePathNormals = !(_path.space == PathSpace.xyz && _flattenSurface);
+        Vector3 localUp = usePathNormals ? Vector3.Cross(node.Tangent, node.Normal) : _path.up;
         Vector3 localRight = usePathNormals ? node.Normal : Vector3.Cross(localUp, node.Tangent);
         Vector3 localLeft = -localRight;
 
@@ -121,7 +120,7 @@ namespace RoadGenerator
         Vector3 vertOuterRailOuterPadding = vertOuterRailOuterTop + side * _rail.RailPadding;
         Vector3 vertOuterRailOuterBottom = vertOuterRailOuterTop - localUp * _rail.RailDepth;
 
-        bool isEven = count % 2 == 0;
+        bool isEven = _count % 2 == 0;
         float vValue = isEven ? 1 : 0; 
         Vertices.Add(vertOuterTop);
         UVs.Add(new Vector2(0.99f, vValue));
@@ -161,22 +160,22 @@ namespace RoadGenerator
         if (isFirst)
         {
             if (RailSide.Left == railSide)
-                LeftSidePrevIndex = Vertices.Count - NumVerticesPerNode;
+                _leftSidePrevIndex = Vertices.Count - _numVerticesPerNode;
             else
-                RightSidePrevIndex = Vertices.Count - NumVerticesPerNode;
+                _rightSidePrevIndex = Vertices.Count - _numVerticesPerNode;
             return;
         }
 
         int vertIndex;
         if (RailSide.Left == railSide)
         {
-            vertIndex = LeftSidePrevIndex;
-            LeftSidePrevIndex = Vertices.Count - NumVerticesPerNode;
+            vertIndex = _leftSidePrevIndex;
+            _leftSidePrevIndex = Vertices.Count - _numVerticesPerNode;
         }
         else
         {
-            vertIndex = RightSidePrevIndex;
-            RightSidePrevIndex = Vertices.Count - NumVerticesPerNode;
+            vertIndex = _rightSidePrevIndex;
+            _rightSidePrevIndex = Vertices.Count - _numVerticesPerNode;
         }
 
         int prevVertOuterTopIndex = vertIndex + (int)VerticeType.OuterTop;
@@ -199,24 +198,24 @@ namespace RoadGenerator
         int prevVertCenterTopIndex = vertIndex + (int)VerticeType.CenterTop;
         int prevVertCenterBottomIndex = vertIndex + (int)VerticeType.CenterBottom;
 
-        int vertOuterTopIndex = Vertices.Count - NumVerticesPerNode + (int)VerticeType.OuterTop;
-        int vertOuterBottomIndex = Vertices.Count - NumVerticesPerNode + (int)VerticeType.OuterBottom;
-        int vertInnerRailInnerTopIndex = Vertices.Count - NumVerticesPerNode + (int)VerticeType.InnerRailInnerTop;
-        int vertInnerRailInnerBottomIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.InnerRailInnerBottom;
-        int vertInnerRailOuterTopIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.InnerRailOuterTop;
-        int vertInnerRailOuterBottomIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.InnerRailOuterBottom;
-        int vertOuterRailInnerTopIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.OuterRailInnerTop;
-        int vertOuterRailInnerBottomIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.OuterRailInnerBottom;
-        int vertOuterRailOuterTopIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.OuterRailOuterTop;
-        int vertOuterRailOuterBottomIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.OuterRailOuterBottom;
+        int vertOuterTopIndex = Vertices.Count - _numVerticesPerNode + (int)VerticeType.OuterTop;
+        int vertOuterBottomIndex = Vertices.Count - _numVerticesPerNode + (int)VerticeType.OuterBottom;
+        int vertInnerRailInnerTopIndex = Vertices.Count - _numVerticesPerNode + (int)VerticeType.InnerRailInnerTop;
+        int vertInnerRailInnerBottomIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.InnerRailInnerBottom;
+        int vertInnerRailOuterTopIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.InnerRailOuterTop;
+        int vertInnerRailOuterBottomIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.InnerRailOuterBottom;
+        int vertOuterRailInnerTopIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.OuterRailInnerTop;
+        int vertOuterRailInnerBottomIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.OuterRailInnerBottom;
+        int vertOuterRailOuterTopIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.OuterRailOuterTop;
+        int vertOuterRailOuterBottomIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.OuterRailOuterBottom;
 
-        int vertInnerRailInnerPaddingIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.InnerRailInnerPadding;
-        int vertInnerRailOuterPaddingIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.InnerRailOuterPadding;
-        int vertOuterRailInnerPaddingIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.OuterRailInnerPadding;
-        int vertOuterRailOuterPaddingIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.OuterRailOuterPadding;
+        int vertInnerRailInnerPaddingIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.InnerRailInnerPadding;
+        int vertInnerRailOuterPaddingIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.InnerRailOuterPadding;
+        int vertOuterRailInnerPaddingIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.OuterRailInnerPadding;
+        int vertOuterRailOuterPaddingIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.OuterRailOuterPadding;
 
-        int vertCenterTopIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.CenterTop;
-        int vertCenterBottomIndex = Vertices.Count -  NumVerticesPerNode + (int)VerticeType.CenterBottom;
+        int vertCenterTopIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.CenterTop;
+        int vertCenterBottomIndex = Vertices.Count -  _numVerticesPerNode + (int)VerticeType.CenterBottom;
         
         // Rectangle between the center and to the inner rail
         AddRectangle(vertCenterTopIndex, vertInnerRailInnerPaddingIndex, prevVertCenterTopIndex, prevVertInnerRailInnerPaddingIndex, railSide, TrianglesMainMesh);
@@ -274,10 +273,10 @@ namespace RoadGenerator
     }
     public void AddShortSideRectangles()
     {
-        int vertOuterRightTopIndex = RightSidePrevIndex + (int)VerticeType.OuterTop;
-        int vertOuterRightBottomIndex = RightSidePrevIndex + (int)VerticeType.OuterBottom;
-        int vertOuterLeftTopIndex = LeftSidePrevIndex + (int)VerticeType.OuterTop;
-        int vertOuterLeftBottomIndex = LeftSidePrevIndex + (int)VerticeType.OuterBottom;
+        int vertOuterRightTopIndex = _rightSidePrevIndex + (int)VerticeType.OuterTop;
+        int vertOuterRightBottomIndex = _rightSidePrevIndex + (int)VerticeType.OuterBottom;
+        int vertOuterLeftTopIndex = _leftSidePrevIndex + (int)VerticeType.OuterTop;
+        int vertOuterLeftBottomIndex = _leftSidePrevIndex + (int)VerticeType.OuterBottom;
         AddRectangle(vertOuterRightTopIndex, vertOuterRightBottomIndex, vertOuterLeftTopIndex, vertOuterLeftBottomIndex, RailSide.Left, TrianglesMainMesh);
     }
     }
