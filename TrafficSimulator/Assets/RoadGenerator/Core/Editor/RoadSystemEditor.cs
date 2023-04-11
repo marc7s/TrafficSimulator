@@ -30,7 +30,7 @@ namespace RoadSystemGenerator
             serializedObject.Update();
             
             // Uncomment this if you want to change the connections to containers and prefabs
-            //DrawDefaultInspector();
+            DrawDefaultInspector();
             
             RoadSystem roadSystem = (RoadSystem)target;
             
@@ -77,7 +77,11 @@ namespace RoadSystemGenerator
 
             if(GUILayout.Button("Add new road"))
             {
-                roadSystem.AddNewRoad();
+                roadSystem.AddNewRoad(PathType.Road);
+            }
+            if(GUILayout.Button("Add new rail"))
+            {
+                roadSystem.AddNewRoad(PathType.Rail);
             }
 
             serializedObject.ApplyModifiedProperties();

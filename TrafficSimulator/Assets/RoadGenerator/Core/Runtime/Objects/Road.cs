@@ -13,7 +13,7 @@ namespace RoadGenerator
         Four = 4
     }
 
-    struct QueuedNode : IComparable<QueuedNode>
+    public struct QueuedNode : IComparable<QueuedNode>
     {
         public RoadNodeType NodeType;
         public float Distance;
@@ -40,7 +40,7 @@ namespace RoadGenerator
     }
 
     // A struct used for building RoadNodes. It keeps the necessary information to be able to append new nodes to the end of the list
-    struct NodeBuilder
+    public struct NodeBuilder
     {
         public RoadNode Prev;
         public RoadNode Curr;
@@ -62,30 +62,15 @@ namespace RoadGenerator
 
     [ExecuteInEditMode()]
     [RequireComponent(typeof(PathCreator))]
-    [RequireComponent(typeof(RoadMeshCreator))]
     [Serializable]
-	public class Road : MonoBehaviour
+	public abstract class Road : MonoBehaviour
 	{
         [Header ("Connections")]
         public GameObject RoadObject;
-        public RoadSystem RoadSystem;
         public GameObject RoadNodePrefab;
         public GameObject LaneNodePrefab;
-        [SerializeField] private GameObject _trafficSignContainer;
-        [SerializeField] private GameObject _speedSignTenKPH;
-        [SerializeField] private GameObject _speedSignTwentyKPH;
-        [SerializeField] private GameObject _speedSignThirtyKPH;
-        [SerializeField] private GameObject _speedSignFortyKPH;
-        [SerializeField] private GameObject _speedSignFiftyKPH;
-        [SerializeField] private GameObject _speedSignSixtyKPH;
-        [SerializeField] private GameObject _speedSignSeventyKPH;
-        [SerializeField] private GameObject _speedSignEightyKPH;
-        [SerializeField] private GameObject _speedSignNinetyKPH;
-        [SerializeField] private GameObject _speedSignOneHundredKPH;
-        [SerializeField] private GameObject _speedSignOneHundredTenKPH;
-        [SerializeField] private GameObject _speedSignOneHundredTwentyKPH;
-        [SerializeField] private GameObject _speedSignOneHundredThirtyKPH;
-        public GameObject LampPostPrefab;
+        public RoadSystem RoadSystem;
+        [SerializeField] protected GameObject _trafficSignContainer;
 
         [Header ("Road settings")]
         public LaneAmount LaneAmount = LaneAmount.One;
@@ -117,27 +102,27 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] public RoadNode StartRoadNode;
         [SerializeField][HideInInspector] public RoadNode EndRoadNode;
         [SerializeField][HideInInspector] public LaneNode EndLaneNode;
-        [SerializeField][HideInInspector] private List<Lane> _lanes = new List<Lane>();
-        [SerializeField][HideInInspector] private GameObject _laneContainer;
-        [SerializeField][HideInInspector] private GameObject _roadNodeContainer;
-        [SerializeField][HideInInspector] private GameObject _laneNodeContainer;
-        [SerializeField][HideInInspector] private VertexPath _path;
+        [SerializeField][HideInInspector] protected List<Lane> _lanes = new List<Lane>();
+        [SerializeField][HideInInspector] protected GameObject _laneContainer;
+        [SerializeField][HideInInspector] protected GameObject _roadNodeContainer;
+        [SerializeField][HideInInspector] protected GameObject _laneNodeContainer;
+        [SerializeField][HideInInspector] protected VertexPath _path;
         [SerializeField][HideInInspector] public PathCreator PathCreator;
-        [SerializeField][HideInInspector] private EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
+        [SerializeField][HideInInspector] protected EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
         [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
-        [SerializeField][HideInInspector] private RoadNavigationGraph _navigationGraph;
-        [SerializeField][HideInInspector] private float _length;
+        [SerializeField][HideInInspector] protected RoadNavigationGraph _navigationGraph;
+        [SerializeField][HideInInspector] protected float _length;
         [HideInInspector] public bool IsFirstRoadInClosedLoop = false;
         [HideInInspector] public ConnectedRoad? ConnectedToAtStart;
         [HideInInspector] public ConnectedRoad? ConnectedToAtEnd;
         [HideInInspector] public bool IsRoadClosed = false;
-        private const string LANE_NAME = "Lane";
-        private const string LANE_CONTAINER_NAME = "Lanes";
-        private const string ROAD_NODE_CONTAINER_NAME = "Road Nodes";
-        private const string LANE_NODE_NAME = "LaneNode";
-        private const string LANE_NODE_CONTAINER_NAME = "Lane Nodes";
-        private const string LANE_NODE_POINTER_NAME = "Lane Node Pointer";
-        private const string TRAFFIC_SIGN_CONTAINER_NAME = "Traffic Sign Container";
+        protected const string LANE_NAME = "Lane";
+        protected const string LANE_CONTAINER_NAME = "Lanes";
+        protected const string ROAD_NODE_CONTAINER_NAME = "Road Nodes";
+        protected const string LANE_NODE_NAME = "LaneNode";
+        protected const string LANE_NODE_CONTAINER_NAME = "Lane Nodes";
+        protected const string LANE_NODE_POINTER_NAME = "Lane Node Pointer";
+        protected const string TRAFFIC_SIGN_CONTAINER_NAME = "Traffic Sign Container";
 
         void Awake()
         {
@@ -170,7 +155,7 @@ namespace RoadGenerator
             // Do nothing when nodes are moved
         }
         /// <summary>Connects this road with any other roads that have their endpoint close to this roads end points </summary>
-        private void ConnectRoadIfEndPointsAreClose()
+        protected void ConnectRoadIfEndPointsAreClose()
         {
             // Find and map the connected roads
             MapConnectedRoads();
@@ -206,7 +191,16 @@ namespace RoadGenerator
                     continue;
 
                 visitedRoads.Add(currentRoad);
-                foreach (Road road in RoadSystem.Roads)
+                List<Road> roadsToCheck = new List<Road>();
+                if (this is TramRail)
+                {
+                    roadsToCheck = new List<Road>(RoadSystem.TramRails);
+                }
+                else if (this is DefaultRoad)
+                {
+                    roadsToCheck = new List<Road>(RoadSystem.CarRoads);
+                }
+                foreach (Road road in roadsToCheck)
                 {
                     if (road == currentRoad)
                         continue;
@@ -233,7 +227,7 @@ namespace RoadGenerator
             UpdateRoad();
         }
 
-        private void ReverseConnectedRoad(Road startRoad)
+        protected void ReverseConnectedRoad(Road startRoad)
         {
             // Special case, closed loop between two roads
             if (startRoad.ConnectedToAtStart?.Road == startRoad.ConnectedToAtEnd?.Road)
@@ -286,7 +280,7 @@ namespace RoadGenerator
             return points;
         }
         /// <summary> Finds the starting road in a connected road. If the connected road is a closed loop, it will return this road </summary>
-        private Road FindStartRoadInConnection()
+        protected Road FindStartRoadInConnection()
         {
             Road endRoadInStartDirection = FindEndRoadInConnectedDirection(EndOfRoadType.Start);
             Road endRoadInEndDirection = FindEndRoadInConnectedDirection(EndOfRoadType.End);
@@ -303,7 +297,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Finds the end road in a connected road. If the connected road is a closed loop, it will return this road </summary>
-        private Road FindEndRoadInConnectedDirection(EndOfRoadType direction)
+        protected Road FindEndRoadInConnectedDirection(EndOfRoadType direction)
         {
             // If the next road in the direction is null, return this road
             if ((direction == EndOfRoadType.Start ? ConnectedToAtStart : ConnectedToAtEnd) == null)
@@ -340,7 +334,7 @@ namespace RoadGenerator
             }
         }
 
-        private void UpdateAllConnectedRoads(List<(Vector3, PathCreator)> bezierAnchorPoints)
+        protected void UpdateAllConnectedRoads(List<(Vector3, PathCreator)> bezierAnchorPoints)
         {
             List<Vector3> anchorPositions = new List<Vector3>();
             foreach ((Vector3, PathCreator) bezierAnchorPoint in bezierAnchorPoints)
@@ -467,7 +461,7 @@ namespace RoadGenerator
             }
         }
 
-        private void ClearConnectedRoad(Road road, EndOfRoadType type)
+        protected void ClearConnectedRoad(Road road, EndOfRoadType type)
         {
             ConnectedRoad? connectedRoad = type == EndOfRoadType.Start ? ConnectedToAtStart : ConnectedToAtEnd;
             if (connectedRoad?.Road == road && connectedRoad != null)
@@ -502,40 +496,33 @@ namespace RoadGenerator
             UpdateRoad();
         }
 
-        private void UpdateRoad()
+        protected void UpdateRoad()
         {
-
-            RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
-            if(roadMeshCreator != null)
-            {
-                UpdateRoadNodes();
-                UpdateLanes();
-                roadMeshCreator.UpdateMesh();
-                foreach(Intersection intersection in Intersections)
-                    intersection.UpdateMesh();
-                RoadSystem.UpdateRoadSystemGraph();
-                PlaceTrafficSigns();
-                ShowLanes();
-                ShowRoadNodes();
-                ShowLaneNodes();
-            }
+            UpdateRoadNodes();
+            UpdateLanes();
+            UpdateMesh();
+            foreach(Intersection intersection in Intersections)
+                intersection.UpdateMesh();
+            RoadSystem.UpdateRoadSystemGraph();
+            PlaceTrafficSigns();
+            ShowLanes();
+            ShowRoadNodes();
+            ShowLaneNodes();
         }
+
+        public abstract void UpdateMesh();
 
         public void UpdateRoadNoGraphUpdate()
         {
-            RoadMeshCreator roadMeshCreator = RoadObject.GetComponent<RoadMeshCreator>();
-            if(roadMeshCreator != null)
-            {
                 UpdateRoadNodes();
                 UpdateLanes();
-                roadMeshCreator.UpdateMesh();
+                UpdateMesh();
                 foreach(Intersection intersection in Intersections)
                     intersection.UpdateMesh();
                 PlaceTrafficSigns();
-            } 
         }
 
-        private (Vector3, Vector3, float, float) GetPositionsAndDistancesInOrder(Vector3 position1, Vector3 position2, VertexPath path)
+        protected (Vector3, Vector3, float, float) GetPositionsAndDistancesInOrder(Vector3 position1, Vector3 position2, VertexPath path)
         {
             float distance1 = path.GetClosestDistanceAlongPath(position1);
             float distance2 = path.GetClosestDistanceAlongPath(position2);
@@ -551,7 +538,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Appends a new RoadNode to the end and returns the new NodeBuilder </summary>
-        private NodeBuilder AppendNode(NodeBuilder builder, Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type, Intersection intersection = null)
+        protected NodeBuilder AppendNode(NodeBuilder builder, Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type, Intersection intersection = null)
         {
             // Update the previous node
             builder.Prev = builder.Curr;
@@ -577,7 +564,7 @@ namespace RoadGenerator
         }
         
         /// <summary> Adds intermediate RoadNodes between start and end point to bridge the gap, making sure the MaxRoadNodeDistance invariant is upheld </summary>
-        private NodeBuilder AddIntermediateNodes(NodeBuilder builder, Vector3 start, Vector3 end, Vector3 tangent, Vector3 normal, RoadNodeType type = RoadNodeType.Default)
+        protected NodeBuilder AddIntermediateNodes(NodeBuilder builder, Vector3 start, Vector3 end, Vector3 tangent, Vector3 normal, RoadNodeType type = RoadNodeType.Default)
         {
             // Calculate the total distance that needs to be bridged
             float distanceToBridge = Vector3.Distance(start, end);
@@ -718,7 +705,7 @@ namespace RoadGenerator
                 StartRoadNode.UpdateIntersectionJunctionEdgeNavigation(this);
         }
 
-        private void ConnectRoadNodesForConnectedRoads()
+        protected void ConnectRoadNodesForConnectedRoads()
         {
             if (ConnectedToAtStart != null && !IsFirstRoadInClosedLoop)
             {
@@ -782,7 +769,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Adds a new lane node and returns the new previous and new current nodes </summary>
-        private (LaneNode, LaneNode) AddLaneNode(RoadNode roadNode, LaneNode previous, LaneNode current, bool isPrimary)
+        protected (LaneNode, LaneNode) AddLaneNode(RoadNode roadNode, LaneNode previous, LaneNode current, bool isPrimary)
         {
             // Determine the offset direction
             int direction = (int)RoadSystem.DrivingSide * (isPrimary ? 1 : -1);
@@ -876,7 +863,7 @@ namespace RoadGenerator
             }
             ConnectRoadNodesForConnectedRoads();
         }
-        private PriorityQueue<QueuedNode> QueueIntersectionNodes()
+        protected PriorityQueue<QueuedNode> QueueIntersectionNodes()
         {
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
@@ -948,10 +935,11 @@ namespace RoadGenerator
             return null;
         }
 
-        // Procedurally places the traffic signs along the road
+        public abstract TrafficSignAssessor GetNewTrafficSignAssessor();
+
         public void PlaceTrafficSigns()
         {
-            TrafficSignAssessor trafficSignCreator = new TrafficSignAssessor();
+            TrafficSignAssessor trafficSignCreator = GetNewTrafficSignAssessor();
 
             // Destroy the old container and create a new one
             if (_trafficSignContainer != null)
@@ -1003,7 +991,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Spawns the traffic signs along the road </summary>
-        private GameObject SpawnTrafficSign(TrafficSignData data)
+        protected GameObject SpawnTrafficSign(TrafficSignData data)
         {
             Quaternion rotation = data.RoadNode.Rotation * (data.IsForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
             GameObject trafficSign = Instantiate(data.SignPrefab, data.RoadNode.Position, rotation);
@@ -1017,7 +1005,7 @@ namespace RoadGenerator
             return trafficSign;
         }
 
-        private void AssignTrafficLightController(RoadNode roadNode, GameObject trafficLightObject)
+        protected void AssignTrafficLightController(RoadNode roadNode, GameObject trafficLightObject)
         {
             TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
             
@@ -1030,54 +1018,6 @@ namespace RoadGenerator
             trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
             roadNode.TrafficLight = trafficLight;
         }
-
-        /// <summary> Returns the speed sign type for the current speed limit </summary>
-        public TrafficSignType GetSpeedSignType()
-        {
-            switch (SpeedLimit)
-            {
-                case SpeedLimit.TenKPH: return TrafficSignType.SpeedSignTenKPH;
-                case SpeedLimit.TwentyKPH: return TrafficSignType.SpeedSignTwentyKPH;
-                case SpeedLimit.ThirtyKPH: return TrafficSignType.SpeedSignThirtyKPH;
-                case SpeedLimit.FortyKPH: return TrafficSignType.SpeedSignFortyKPH;
-                case SpeedLimit.FiftyKPH: return TrafficSignType.SpeedSignFiftyKPH;
-                case SpeedLimit.SixtyKPH: return TrafficSignType.SpeedSignSixtyKPH;
-                case SpeedLimit.SeventyKPH: return TrafficSignType.SpeedSignSeventyKPH;
-                case SpeedLimit.EightyKPH: return TrafficSignType.SpeedSignEightyKPH;
-                case SpeedLimit.NinetyKPH: return TrafficSignType.SpeedSignNinetyKPH;
-                case SpeedLimit.OneHundredKPH: return TrafficSignType.SpeedSignOneHundredKPH;
-                case SpeedLimit.OneHundredTenKPH: return TrafficSignType.SpeedSignOneHundredTenKPH;
-                case SpeedLimit.OneHundredTwentyKPH: return TrafficSignType.SpeedSignOneHundredTwentyKPH;
-                case SpeedLimit.OneHundredThirtyKPH: return TrafficSignType.SpeedSignOneHundredThirtyKPH;
-                default:
-                    Debug.LogError("Speed sign type mapping for speed limit " + SpeedLimit + " not found");
-                    return TrafficSignType.SpeedSignFiftyKPH;
-            }
-        }
-        /// <summary> Returns the speed sign prefab for the current speed limit </summary>
-        public GameObject GetSpeedSignPrefab()
-        {
-            switch (SpeedLimit)
-            {
-                case SpeedLimit.TenKPH: return _speedSignTenKPH;
-                case SpeedLimit.TwentyKPH: return _speedSignTwentyKPH;
-                case SpeedLimit.ThirtyKPH: return _speedSignThirtyKPH;
-                case SpeedLimit.FortyKPH: return _speedSignFortyKPH;
-                case SpeedLimit.FiftyKPH: return _speedSignFiftyKPH;
-                case SpeedLimit.SixtyKPH: return _speedSignSixtyKPH;
-                case SpeedLimit.SeventyKPH: return _speedSignSeventyKPH;
-                case SpeedLimit.EightyKPH: return _speedSignEightyKPH;
-                case SpeedLimit.NinetyKPH: return _speedSignNinetyKPH;
-                case SpeedLimit.OneHundredKPH: return _speedSignOneHundredKPH;
-                case SpeedLimit.OneHundredTenKPH: return _speedSignOneHundredTenKPH;
-                case SpeedLimit.OneHundredTwentyKPH: return _speedSignOneHundredTwentyKPH;
-                case SpeedLimit.OneHundredThirtyKPH: return _speedSignOneHundredThirtyKPH;
-                default:
-                    Debug.LogError("Speed sign prefab mapping for speed limit " + SpeedLimit + " not found");
-                    return null;
-            }
-        }
-        
         /// <summary>Draws the lanes as coloured lines </summary>
         public void ShowLanes()
         {
@@ -1240,7 +1180,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Helper function that performs the drawing of a lane's path</summary>
-        private static void DrawPath(GameObject line, Vector3[] path, Color color, float width = 0.5f)
+        protected static void DrawPath(GameObject line, Vector3[] path, Color color, float width = 0.5f)
         {
             // Get the line renderer
             LineRenderer lr = line.GetComponent<LineRenderer>();
@@ -1261,7 +1201,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Draws a lane</summary>
-        private static void DrawLane(Lane lane, Color color, GameObject parent)
+        protected static void DrawLane(Lane lane, Color color, GameObject parent)
         {
             if(lane.StartNode.Count < 1) return;
             
@@ -1283,7 +1223,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Draws a pointer from a lane node to its corresponding road node</summary>
-        private static void DrawAllLaneNodePointers(LaneNode laneNode, Color color, GameObject parent)
+        protected static void DrawAllLaneNodePointers(LaneNode laneNode, Color color, GameObject parent)
         {
             int i = 0;
             LaneNode curr = laneNode;
