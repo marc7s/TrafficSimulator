@@ -70,7 +70,7 @@ namespace Car
                 // Only check the intersection if the vehicle has not already just checked it
                 bool intersectionNotChecked = node.Intersection?.ID != Context.PrevIntersection?.ID;
                 if (intersectionNotChecked)
-                {                    
+                {
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                     {
                         (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
@@ -91,7 +91,7 @@ namespace Car
                 }
             }
             Context.BrakeTarget = node;
-            Context.PrevTarget = node;  
+            Context.PrevTarget = node;
             return node.Next;
         }
 
@@ -100,7 +100,7 @@ namespace Car
             Context.VisitedNavigationNodes.Clear();
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetRandomPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), out Context.NavigationPathEndNode);
-            
+
             if (Context.NavigationPath.Count == 0)
                 Context.NavigationMode = NavigationMode.Random;
 
@@ -145,7 +145,7 @@ namespace Car
             if (showNavigationPath)
                 Navigation.DrawNewNavigationPath(_context.NavigationPathPositions, Context.NavigationPathEndNode, Context.NavigationPathContainer, Setting.NavigationPathMaterial , Setting.NavigationTargetMarker);
         }
-        
+
         public LaneNode Next(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
         {
             RoadEndBehaviour endBehaviour = overrideEndBehaviour ?? _setting.EndBehaviour;

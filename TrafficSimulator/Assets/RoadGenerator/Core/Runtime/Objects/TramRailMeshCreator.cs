@@ -292,8 +292,8 @@ namespace RoadGenerator
         private MeshRenderer _meshRenderer;
         public Mesh _mesh;
         private Road _road;
-        public Material railMaterial;
-        public Material roadMaterial;
+        public Material RailMaterial;
+        public Material RoadMaterial;
         [SerializeField, HideInInspector] private GameObject _meshHolder;
 
         protected override void PathUpdated()
@@ -383,8 +383,8 @@ namespace RoadGenerator
 
         private void AssignMaterials() {
             Material[] materials = new Material[3];
-            materials[0] = roadMaterial;
-            materials[1] = railMaterial;
+            materials[0] = RoadMaterial;
+            materials[1] = RailMaterial;
             materials[2] = _bottomMaterial;
             _meshRenderer.sharedMaterials = materials;
         }

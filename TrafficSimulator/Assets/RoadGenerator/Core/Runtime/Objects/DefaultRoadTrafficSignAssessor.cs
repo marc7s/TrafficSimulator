@@ -7,8 +7,8 @@ namespace RoadGenerator
 {
     public class DefaultRoadTrafficSignAssessor : TrafficSignAssessor
     {
-        private bool HavePlacedSpeedSignAtStart = false;
-        private bool HavePlacedSpeedSignAtEnd = false;
+        private bool _havePlacedSpeedSignAtStart = false;
+        private bool _havePlacedSpeedSignAtEnd = false;
         private Dictionary<string, bool> _havePlacedSpeedSignAtStartOfIntersection = new Dictionary<string, bool>();
         private Dictionary<string, bool> _havePlacedSpeedSignAtEndOfIntersection = new Dictionary<string, bool>();
         private float? _distanceToPreviousLampPost = null;
@@ -51,17 +51,17 @@ namespace RoadGenerator
             }
 
             // Place a speed sign at the start of the road
-            if (!HavePlacedSpeedSignAtStart && data.DistanceToStart > data.Road.SpeedSignDistanceFromRoadEnd && data.PrevIntersection?.Type != IntersectionType.ThreeWayIntersectionAtStart)
+            if (!_havePlacedSpeedSignAtStart && data.DistanceToStart > data.Road.SpeedSignDistanceFromRoadEnd && data.PrevIntersection?.Type != IntersectionType.ThreeWayIntersectionAtStart)
             {
                 signsToBePlaced.Add(new TrafficSignData(carRoad.GetSpeedSignType(), data.RoadNode, carRoad.GetSpeedSignPrefab(), true, data.Road.DefaultTrafficSignOffset));
-                HavePlacedSpeedSignAtStart = true;
+                _havePlacedSpeedSignAtStart = true;
             }
 
             // Place a speed sign at the end of the road
-            if (!HavePlacedSpeedSignAtEnd && data.DistanceToEnd < data.Road.SpeedSignDistanceFromRoadEnd && data.NextIntersection?.Type != IntersectionType.ThreeWayIntersectionAtEnd)
+            if (!_havePlacedSpeedSignAtEnd && data.DistanceToEnd < data.Road.SpeedSignDistanceFromRoadEnd && data.NextIntersection?.Type != IntersectionType.ThreeWayIntersectionAtEnd)
             {
                signsToBePlaced.Add(new TrafficSignData(carRoad.GetSpeedSignType(), data.RoadNode, carRoad.GetSpeedSignPrefab(), false, data.Road.DefaultTrafficSignOffset));
-               HavePlacedSpeedSignAtEnd = true;
+               _havePlacedSpeedSignAtEnd = true;
             }
         }
 
