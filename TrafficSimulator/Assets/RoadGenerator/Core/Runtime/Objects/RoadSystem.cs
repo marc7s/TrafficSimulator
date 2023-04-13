@@ -134,12 +134,9 @@ namespace RoadGenerator
         {
             switch(pathType)
             {
-                case PathType.Road:
-                    return _roadPrefab;
-                case PathType.Rail:
-                    return _railPrefab;
-                default:
-                    return null;
+                case PathType.Road: return _roadPrefab;
+                case PathType.Rail: return _railPrefab;
+                default: return null;
             }
         }
 
@@ -147,15 +144,11 @@ namespace RoadGenerator
         {
             switch(pathType)
             {
-                case PathType.Road:
-                    return "Road";
-                case PathType.Rail:
-                    return "Rail";
-                default:
-                    return null;
+                case PathType.Road: return "Road";
+                case PathType.Rail: return "Rail";
+                default: return null;
             }
         }
-
 
         private bool PositionsAreInRoadSystem(Vector3[] positions)
         {
@@ -207,9 +200,7 @@ namespace RoadGenerator
             }
 
             foreach (Road road in _defaultRoads)
-            {
                 road.OnChange();
-            }
 
             // Find the graph container
             GraphContainer = gameObject.transform.Find("Graph")?.gameObject;
@@ -288,9 +279,7 @@ namespace RoadGenerator
         public void UpdateRoads()
         {
             foreach(Road road in _defaultRoads)
-            {
                 road.OnChange();
-            }
         }
 
         private void ClearRoadGraph() {

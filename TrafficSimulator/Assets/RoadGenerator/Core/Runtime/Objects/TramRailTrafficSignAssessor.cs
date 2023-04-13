@@ -11,6 +11,5 @@ namespace RoadGenerator
         {
             return new List<TrafficSignData>();
         }
-
     }
 }
