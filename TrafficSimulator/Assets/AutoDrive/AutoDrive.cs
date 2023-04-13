@@ -118,8 +118,12 @@ namespace Car {
 
             _vehicleController = GetComponent<VehicleController>();
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
-            _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
-            _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
+            if (Mode == DrivingMode.Quality)
+            {
+                _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
+                _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
+            }
+
             _brakeLightController = GetComponent<BrakeLightController>();
             _indicatorController = GetComponent<IndicatorController>();
             // If the road has not updated yet there will be no lanes, so update them first

@@ -77,7 +77,11 @@ namespace RoadSystemGenerator
 
             if(GUILayout.Button("Add new road"))
             {
-                roadSystem.AddNewRoad();
+                roadSystem.AddNewRoad(PathType.Road);
+            }
+            if(GUILayout.Button("Add new rail"))
+            {
+                roadSystem.AddNewRoad(PathType.Rail);
             }
 
             serializedObject.ApplyModifiedProperties();

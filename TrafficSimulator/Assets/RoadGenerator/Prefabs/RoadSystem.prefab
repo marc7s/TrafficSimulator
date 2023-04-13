@@ -49,6 +49,7 @@ MonoBehaviour:
   _roadContainer: {fileID: 2382052090468904982}
   _intersectionContainer: {fileID: 2768285544214366368}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
+  _railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   _intersectionPrefab: {fileID: 4601614798071418940, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
   _roadSystemGraphNodePrefab: {fileID: 6519265059532225654, guid: 454238e3f781fa44fa41bcc016a4e5fd, type: 3}
   DrivingSide: -1
@@ -58,6 +59,7 @@ MonoBehaviour:
   ShowGraph: 0
   SpawnRoadsAtOrigin: 0
   _roads: []
+  _rails: []
   _intersections: []
   GraphContainer: {fileID: 0}
 --- !u!1 &2382052090468904982
