@@ -31,6 +31,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _speedSignOneHundredTwentyKPH;
         [SerializeField] private GameObject _speedSignOneHundredThirtyKPH;
         public GameObject LampPostPrefab;
+
         public override TrafficSignAssessor GetNewTrafficSignAssessor()
         {
             return new DefaultRoadTrafficSignAssessor();

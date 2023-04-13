@@ -56,7 +56,7 @@ namespace CarGenerator
             serializedObject.Update();
             
             // Uncomment this if you want to change the connections to containers and prefabs
-            DrawDefaultInspector();
+            //DrawDefaultInspector();
             
             AutoDrive autoDrive = (AutoDrive)target;
             
