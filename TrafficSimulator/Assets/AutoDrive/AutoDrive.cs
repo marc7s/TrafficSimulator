@@ -547,8 +547,11 @@ namespace Car {
                 _navigationController.ShouldAct(ref _agent);
                 
                 // When the current node is updated, it needs to redraw the navigation path
+                if (_agent.Context.NavigationPathPositions.Count > 0)
+                    _agent.Context.NavigationPathPositions.RemoveAt(0);
+
                 if (ShowNavigationPath)
-                    Navigation.DrawPathRemoveOldestPoint(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
+                    Navigation.DrawUpdatedNavigationPath(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
                 
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
@@ -689,8 +692,11 @@ namespace Car {
                 _navigationController.ShouldAct(ref _agent);
 
                 // When the currentNode is changed, the navigation path needs to be updated
+                if (_agent.Context.NavigationPathPositions.Count > 0)
+                    _agent.Context.NavigationPathPositions.RemoveAt(0);
+
                 if (ShowNavigationPath)
-                    Navigation.DrawPathRemoveOldestPoint(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
+                    Navigation.DrawUpdatedNavigationPath(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
             
                 SetTarget(GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop));
             }
@@ -721,9 +727,6 @@ namespace Car {
                     _agent.Context.NavigationPathContainer.transform.GetChild(0).gameObject.SetActive(visible);
                     _agent.Context.NavigationPathContainer.GetComponent<LineRenderer>().enabled = visible;
                 }
-
-                if(visible)
-                    Navigation.DrawNavigationPath(out _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathEndNode, _agent.Context.NavigationPath, _agent.Context.CurrentNode, _agent.Context.NavigationPathContainer, _agent.Setting.NavigationPathMaterial, _agent.Context.PrevIntersection, _agent.Setting.NavigationTargetMarker);
             }
         }
 
