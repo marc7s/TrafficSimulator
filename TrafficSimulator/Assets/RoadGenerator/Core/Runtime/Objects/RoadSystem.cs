@@ -209,9 +209,9 @@ namespace RoadGenerator
             UpdateRoadSystemGraph();
         }
 
-        public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
+        public Intersection AddNewIntersection(IntersectionPointData intersectionPointData)
         {
-            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, intersectionPointData.Rotation);
+            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, Quaternion.identity);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = _intersectionContainer.transform;
             
@@ -221,17 +221,13 @@ namespace RoadGenerator
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
             intersection.IntersectionPosition = intersectionPointData.Position;
-            intersection.Road1PathCreator = intersectionPointData.Road1PathCreator;
-            intersection.Road2PathCreator = intersectionPointData.Road2PathCreator;
-            intersection.Road1 = road1;
-            intersection.Road2 = road2;
-            intersection.Road1AnchorPoint1 = intersectionPointData.Road1AnchorPoint1;
-            intersection.Road1AnchorPoint2 = intersectionPointData.Road1AnchorPoint2;
-            intersection.Road2AnchorPoint1 = intersectionPointData.Road2AnchorPoint1;
-            intersection.Road2AnchorPoint2 = intersectionPointData.Road2AnchorPoint2;
-            
-            road1.AddIntersection(intersection);
-            road2.AddIntersection(intersection);
+            List<IntersectionArm> intersectionArms = new List<IntersectionArm>();
+
+            foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
+                intersectionArms.Add(new IntersectionArm(junctionEdgeData));
+
+            foreach (Road road in intersection.GetIntersectionRoads())
+                road.AddIntersection(intersection);
             
             AddIntersection(intersection);
             

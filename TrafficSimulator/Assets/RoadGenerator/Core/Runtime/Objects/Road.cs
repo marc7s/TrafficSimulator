@@ -865,8 +865,11 @@ namespace RoadGenerator
         }
         protected PriorityQueue<QueuedNode> QueueIntersectionNodes()
         {
+
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
+            return queuedNodes;
+                        /*
             foreach(Intersection intersection in Intersections)
             {
                 if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
@@ -914,6 +917,7 @@ namespace RoadGenerator
                 }
             } 
             return queuedNodes;
+            */
         }
 
         public float? DistanceToNextIntersection(RoadNode roadNode, out Intersection intersection)
@@ -1007,6 +1011,7 @@ namespace RoadGenerator
 
         protected void AssignTrafficLightController(RoadNode roadNode, GameObject trafficLightObject)
         {
+            /*
             TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
             
             // Add the traffic light to the correct traffic light group, Road1 gets added to trafficLightGroup1 and Road2 gets added to trafficLightGroup2
@@ -1017,6 +1022,7 @@ namespace RoadGenerator
 
             trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
             roadNode.TrafficLight = trafficLight;
+            */
         }
         /// <summary>Draws the lanes as coloured lines </summary>
         public void ShowLanes()

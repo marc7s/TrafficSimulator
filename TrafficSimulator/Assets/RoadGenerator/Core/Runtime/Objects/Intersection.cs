@@ -22,6 +22,27 @@ namespace RoadGenerator
         StopSigns
     }
 
+    public struct IntersectionArm
+    {
+        public Vector3 JunctionEdgePosition;
+        public Road Road;
+        public NavigationNodeEdge NavigationNodeEdgeOutwards;
+
+        public IntersectionArm(Vector3 junctionEdgePosition, Road road, NavigationNodeEdge navigationNodeEdgeOutwards)
+        {
+            JunctionEdgePosition = junctionEdgePosition;
+            Road = road;
+            NavigationNodeEdgeOutwards = navigationNodeEdgeOutwards;
+        }
+
+        public IntersectionArm(JunctionEdgeData junctionEdgeData)
+        {
+            JunctionEdgePosition = junctionEdgeData.AnchorPoint;
+            Road = junctionEdgeData.Road;
+            NavigationNodeEdgeOutwards = null; 
+        }
+    }
+
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     [ExecuteInEditMode()]
     [Serializable]
@@ -30,18 +51,7 @@ namespace RoadGenerator
         [HideInInspector] public GameObject IntersectionObject;
         [HideInInspector] public RoadSystem RoadSystem;
         [HideInInspector] public Vector3 IntersectionPosition;
-        [HideInInspector] public Road Road1;
-        [HideInInspector] public Road Road2;
-        [HideInInspector] public PathCreator Road1PathCreator;
-        [HideInInspector] public PathCreator Road2PathCreator;
-        [HideInInspector] public Vector3 Road1AnchorPoint1;
-        [HideInInspector] public Vector3 Road1AnchorPoint2;
-        [HideInInspector] public Vector3 Road2AnchorPoint1;
-        [HideInInspector] public Vector3 Road2AnchorPoint2;
-        [HideInInspector] public NavigationNodeEdge Road1AnchorPoint1NavigationEdge;
-        [HideInInspector] public NavigationNodeEdge Road1AnchorPoint2NavigationEdge;
-        [HideInInspector] public NavigationNodeEdge Road2AnchorPoint1NavigationEdge;
-        [HideInInspector] public NavigationNodeEdge Road2AnchorPoint2NavigationEdge;
+        [HideInInspector] public List<IntersectionArm> IntersectionArms = new List<IntersectionArm>();
         [HideInInspector] private Dictionary<string, List<LaneNode>> _laneNodeFromNavigationNodeEdge = new Dictionary<string, List<LaneNode>>();
         [HideInInspector] private Dictionary<string, Section> _intersectionEntrySections = new Dictionary<string, Section>();
         [HideInInspector] private RoadNode _intersectionCenterRoadNode;
@@ -144,8 +154,6 @@ namespace RoadGenerator
 
         public void UpdateMesh()
         {
-            // Set the thickness of the intersection
-            _thickness = Road1.Thickness;
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
@@ -169,14 +177,26 @@ namespace RoadGenerator
             return junctionNodes;
         }
 
+        public List<Road> GetIntersectionRoads()
+        {
+            List<Road> roads = new List<Road>();
+            foreach(IntersectionArm arm in IntersectionArms)
+            {
+                if(!roads.Contains(arm.Road))
+                    roads.Add(arm.Road);
+            }
+            return roads;
+        }
+
         private void CreateIntersectionMesh()
         {
-            Road1.UpdateRoadNodes();
-            Road1.UpdateLanes();
-            Road1.PlaceTrafficSigns();
-            Road2.UpdateRoadNodes();
-            Road2.UpdateLanes();
-            Road2.PlaceTrafficSigns();
+            /*
+            foreach(Road road in GetIntersectionRoads())
+            {
+                road.UpdateRoadNodes();
+                road.UpdateLanes();
+                road.PlaceTrafficSigns();
+            }
 
 #if DEBUG_INTERSECTION            
             Debug.Log("----------- Road 1 nodes -----------");
@@ -401,6 +421,7 @@ namespace RoadGenerator
             _mesh.subMeshCount = 2;
 
             _mesh.SetTriangles(topTris.ToArray(), 0);
+            */
         }
 
         /// <summary> Returns the position of a mid point corner used for creating the intersections. Uses line intersection with a fallback for lerps </summary>
@@ -567,6 +588,15 @@ namespace RoadGenerator
                 _laneNodeFromNavigationNodeEdge[nodeEdge.ID].Add(laneNode);
         }
 
+        public IntersectionArm? GetIntersectionArmAtJunctionEdge(RoadNode roadNode)
+        {   
+            foreach(IntersectionArm arm in IntersectionArms)
+            {
+                if(arm.JunctionEdgePosition == roadNode.Position)
+                    return arm;
+            }
+            return null;
+        }
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
@@ -580,8 +610,10 @@ namespace RoadGenerator
             _intersectionGuidePaths.Clear();
 
             List<Lane> lanes = new List<Lane>();
-            lanes.AddRange(Road1.Lanes);
-            lanes.AddRange(Road2.Lanes);
+            foreach (Road road in GetIntersectionRoads())
+            {
+                lanes.AddRange(road.Lanes);
+            }
             
             foreach (Lane lane in lanes)
             {
@@ -599,27 +631,14 @@ namespace RoadGenerator
                     }
 
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
-                    
-                    switch(currentNode.RoadNode.Position)
+                    if (!isEdgePointingToIntersection)
                     {
-                        case Vector3 p when p == Road1AnchorPoint1:
-                            if (!isEdgePointingToIntersection)
-                                AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint1NavigationEdge, currentNode);
-                            break;
-                        case Vector3 p when p == Road1AnchorPoint2:
-                            if (!isEdgePointingToIntersection)
-                                AddLaneNodeFromNavigationNodeEdge(Road1AnchorPoint2NavigationEdge, currentNode);
-                            break;
-                        case Vector3 p when p == Road2AnchorPoint1:
-                            if (!isEdgePointingToIntersection)
-                                AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint1NavigationEdge, currentNode);
-                            break;
-                        case Vector3 p when p == Road2AnchorPoint2:
-                            if (!isEdgePointingToIntersection && !IsThreeWayIntersection())
-                                AddLaneNodeFromNavigationNodeEdge(Road2AnchorPoint2NavigationEdge, currentNode);
-                            break;
+                        IntersectionArm? arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
+                        if (arm != null)
+                        {
+                            AddLaneNodeFromNavigationNodeEdge(arm?.NavigationNodeEdgeOutwards, currentNode);
+                        }
                     }
-
                         
                     
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
@@ -943,6 +962,18 @@ namespace RoadGenerator
         {
             return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
         }
+
+        private List<Vector3> GetJuctionEdgesPositionForRoad(Road road)
+        {
+            List<Vector3> positions = new List<Vector3>();
+            foreach (IntersectionArm arm in IntersectionArms)
+            {
+                if (arm.Road == road)
+                    positions.Add(arm.JunctionEdgePosition);
+            }
+            return positions;
+        }
+
         /// <summary>Cleans up the intersection and removes the references to it from the road system and roads</summary>
         void OnDestroy()
         {
@@ -950,23 +981,23 @@ namespace RoadGenerator
             RoadSystem.RemoveIntersection(this);
 
             // Remove the anchor points for the intersection
-            Road1PathCreator.bezierPath.RemoveAnchors(new List<Vector3>{ Road1AnchorPoint1, Road1AnchorPoint2 });
-            Road2PathCreator.bezierPath.RemoveAnchors(new List<Vector3>{ Road2AnchorPoint1, Road2AnchorPoint2 });
-            
-            // Remove reference to intersection in the roads
-            if (Road1?.HasIntersection(this) == true)
-                Road1.RemoveIntersection(this);
-            if (Road2?.HasIntersection(this) == true)
-                Road2.RemoveIntersection(this);
+            foreach (Road road in GetIntersectionRoads())
+            {
+                road.PathCreator.bezierPath.RemoveAnchors(GetJuctionEdgesPositionForRoad(road));
+
+                // Remove reference to intersection in the roads
+                if (road.HasIntersection(this))
+                    road.RemoveIntersection(this);
+            }
         }
 
         public void Reverse(Road road)
         {
             /// When reversing the road these need to be reversed as well.
-            if (road == Road1)
-                (Road1AnchorPoint1, Road1AnchorPoint2) = (Road1AnchorPoint2, Road1AnchorPoint1);
-            else if (road == Road2)
-                (Road2AnchorPoint1, Road2AnchorPoint2) = (Road2AnchorPoint2, Road2AnchorPoint1);
+        //    if (road == Road1)
+          //      (Road1AnchorPoint1, Road1AnchorPoint2) = (Road1AnchorPoint2, Road1AnchorPoint1);
+          //  else if (road == Road2)
+           //     (Road2AnchorPoint1, Road2AnchorPoint2) = (Road2AnchorPoint2, Road2AnchorPoint1);
         }
     }
 }
