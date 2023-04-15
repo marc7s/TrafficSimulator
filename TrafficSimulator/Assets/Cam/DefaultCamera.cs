@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Cinemachine;
 using UnityEngine;
@@ -6,18 +5,11 @@ using User;
 
 namespace Cam
 {
-    /// <summary>
-    /// Represents the initial camera state. It provides functionality for moving, rotating,
-    /// and zooming the camera, as well as handling input and toggling between transforms to follow.
-    /// It also has a number of serialized fields for configuring movement and zoom speed,
-    /// minimum and maximum zoom, and edge scrolling
-    /// behavior (which is not yet implemented).
-    /// </summary>
     public class DefaultCamera : CameraState
     {
         [Header("Edge Scrolling Settings")]
         [SerializeField] private bool _enableEdgeScrolling;
-        [Range(0,0.3f)]
+        [Range(0, 0.3f)]
         private float _edgeScrollSensitivity = 0.1f;
 
         [Header("Movement Settings")]
@@ -38,35 +30,32 @@ namespace Cam
         private Vector3 _mousePointDirection;
         private bool _isNearScreenBorder;
         private bool _isMovingTowardsTarget = false;
-        private Vector3 _followOffset;
         private Vector3 _initialFollowOffset;
         private Vector3 _beforeSwitchFollowOffset;
-        
+        private CinemachineTransposer _cinemachineTransposer;
+
+        private Vector3 FollowOffset
+        {
+            get => _cinemachineTransposer.m_FollowOffset;
+            set => _cinemachineTransposer.m_FollowOffset = value;
+        }
+
         private void Start()
         {
-            _initialFollowOffset = VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset;
+            _cinemachineTransposer = VirtualCamera.GetCinemachineComponent<CinemachineTransposer>();
+            _initialFollowOffset = _cinemachineTransposer.m_FollowOffset;
         }
 
         private void Update()
         {
             if (_hasToggledGameObject && !_isMovingTowardsTarget) FollowTransform.position = _toggledGameObject.transform.position;
         }
-        
+
         public override void SetActive(CameraManager cameraManager)
         {
             base.SetActive(cameraManager);
-            VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset = _initialFollowOffset;
-            if (Mathf.Approximately(_beforeSwitchFollowOffset.magnitude, 0f))
-            {
-                _followOffset = _initialFollowOffset;
-            }
-            else
-            {
-                print(65);
-                print("SetActive: " + _beforeSwitchFollowOffset);
-                _followOffset = _beforeSwitchFollowOffset;
-                
-            }
+            FollowOffset = _initialFollowOffset;
+            FollowOffset = Mathf.Approximately(_beforeSwitchFollowOffset.magnitude, 0f) ? _initialFollowOffset : _beforeSwitchFollowOffset;
             UserSelectManager.Instance.CanSelectNewObject = true;
             UserSelectManager.Instance.OnSelectedGameObject += HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject += HandleGameObjectDoubleClickSelection;
@@ -74,8 +63,7 @@ namespace Cam
 
         public override void SetInactive(CameraManager cameraManager)
         {
-            _beforeSwitchFollowOffset = _followOffset;
-            print("SetInactive: " + _beforeSwitchFollowOffset);
+            _beforeSwitchFollowOffset = _cinemachineTransposer.m_FollowOffset;
             base.SetInactive(cameraManager);
             UserSelectManager.Instance.OnSelectedGameObject -= HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject -= HandleGameObjectDoubleClickSelection;
@@ -84,15 +72,15 @@ namespace Cam
         private void HandleNewGameObjectSelection(Selectable selectable)
         {
             StopAllCoroutines();
-            if(selectable == null)
+            if (selectable == null)
             {
-                SetToggledGameObjectToNull();
+                SetToggledGameObject();
                 return;
             }
             SetToggledGameObject(selectable.gameObject);
             StartCoroutine(PanToTarget(selectable.transform));
         }
-        
+
         private void HandleGameObjectDoubleClickSelection(Selectable selectable)
         {
             CameraManager.ToggleThirdPersonCamera();
@@ -118,10 +106,9 @@ namespace Cam
 
         public override void Move(Vector3 direction)
         {
-            // Ignore the input argument if the mouse is near the screen border
             if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
 
-            if (direction.sqrMagnitude != 0 && _hasToggledGameObject) SetToggledGameObjectToNull();
+            if (direction.sqrMagnitude != 0 && _hasToggledGameObject) SetToggledGameObject(null);
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
             FollowTransform.position += translatedDirection * _movementSpeed * Time.deltaTime;
         }
@@ -133,49 +120,41 @@ namespace Cam
         
         public override void Zoom(float zoomValue)
         {
-            Vector3 zoomDirection = _followOffset.normalized;
-            
+            Vector3 zoomDirection = FollowOffset.normalized;
+    
             if (zoomValue > 0)
             {
-                _followOffset -= zoomDirection * _zoomScrollFactor;
+                FollowOffset -= zoomDirection * _zoomScrollFactor;
             }
-            else if(zoomValue < 0)
+            else if (zoomValue < 0)
             {
-                _followOffset += zoomDirection * _zoomScrollFactor;
+                FollowOffset += zoomDirection * _zoomScrollFactor;
             }
-            if ( _followOffset.magnitude < _followOffsetMin)
+            if (FollowOffset.magnitude < _followOffsetMin)
             {
-                _followOffset = zoomDirection * _followOffsetMin;
+                FollowOffset = zoomDirection * _followOffsetMin;
             }
-            else if (_followOffset.magnitude > _followOffsetMax)
+            else if (FollowOffset.magnitude > _followOffsetMax)
             {
-                _followOffset = zoomDirection * _followOffsetMax;
+                FollowOffset = zoomDirection * _followOffsetMax;
             }
-            
-            VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset =
-                Vector3.Lerp(VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset,
-                    _followOffset,
+    
+            _cinemachineTransposer.m_FollowOffset =
+                Vector3.Lerp(_cinemachineTransposer.m_FollowOffset,
+                    FollowOffset,
                     Time.deltaTime * _zoomLerpSpeed);
-
         }
 
-        private void SetToggledGameObjectToNull()
+        private void SetToggledGameObject(GameObject toggledGameObject = null)
         {
-            _toggledGameObject = null;
-            _hasToggledGameObject = false;
+            _toggledGameObject = toggledGameObject;
+            _hasToggledGameObject = toggledGameObject != null;
             _isMovingTowardsTarget = false;
         }
 
-        private void SetToggledGameObject(GameObject toggledGameObject)
-        {
-            _toggledGameObject = toggledGameObject;
-            _hasToggledGameObject = true;
-            StartCoroutine(PanToTarget(toggledGameObject.transform));
-        }
-        
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
         {
-            return FollowTransform.forward * forwardScalar + transform.right * sidewaysScalar;
+            return FollowTransform.forward * forwardScalar + FollowTransform.right * sidewaysScalar;
         }
 
         private IEnumerator PanToTarget(Transform target)
@@ -193,6 +172,5 @@ namespace Cam
             }
             _isMovingTowardsTarget = false;
         }
-
     }
 }
