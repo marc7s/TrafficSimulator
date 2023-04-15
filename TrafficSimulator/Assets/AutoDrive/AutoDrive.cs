@@ -561,19 +561,26 @@ namespace Car {
             // If the road ended but we are looping, teleport to the first position
             if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
             {
-                // Since there is an issue with the car spinning after teleporting, we pause the rigidbody for a second
-                // This is a temporary fix until the real issue is resolved
-                RigidbodyPause pause = _vehicleController.GetComponent<RigidbodyPause>();
-                ResetToNode(_agent.Context.StartNode);
-                pause.pause = true;
-                TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
-                TimeManager.Instance.AddEvent(unPauseEvent);
-                unPauseEvent.OnEvent += () => pause.pause = false;
+                Q_EndOfRoadTeleport();
             }
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)
                 _agent.Context.IsEnteringNetwork = false;
+        }
+
+        private void Q_EndOfRoadTeleport()
+        {
+            _agent.Context.Loop();
+
+            // Since there is an issue with the car spinning after teleporting, we pause the rigidbody for a second
+            // This is a temporary fix until the real issue is resolved
+            RigidbodyPause pause = _vehicleController.GetComponent<RigidbodyPause>();
+            ResetToNode(_agent.Context.CurrentNode);
+            pause.pause = true;
+            TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
+            TimeManager.Instance.AddEvent(unPauseEvent);
+            unPauseEvent.OnEvent += () => pause.pause = false;
         }
 
         private LaneNode Q_GetTarget()
@@ -685,8 +692,12 @@ namespace Car {
                 TotalDistance += _target.DistanceToPrevNode;
                 _agent.Context.CurrentNode = _target;
 
-                if(_target == _agent.Context.EndNode && !_target.RoadNode.Road.IsClosed())
-                    ResetToNode(_agent.Context.StartNode);
+                if(!_agent.Context.IsEnteringNetwork && _target.Type == RoadNodeType.End && !_target.RoadNode.Road.IsClosed())
+                {
+                    _agent.Context.Loop();
+                    ResetToNode(_agent.Context.CurrentNode);
+                }
+                    
 
                 // All logic for the navigation controller is handled through the actions, so we ignore the return value
                 _navigationController.ShouldAct(ref _agent);
