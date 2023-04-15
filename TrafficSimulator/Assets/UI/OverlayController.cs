@@ -3,6 +3,7 @@ using Cam;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Simulation;
+using User;
 
 namespace UI 
 {
@@ -38,11 +39,11 @@ namespace UI
         private const string FULLSCREEN = "Fullscreen";
 
         private CameraManager _cameraManager;
-
-
+        
         void Awake()
         {
             _doc = GetComponent<UIDocument>();
+
             //_menuController = GameObject.Find("UIMenu").GetComponent<MenuController>();
 
             // Labels
@@ -60,9 +61,11 @@ namespace UI
 
             _focusedCameraButton = _doc.rootVisualElement.Q<Button>("Focus");
             _focusedCameraButton.clicked += FocusedCameraButtonOnClicked;
+            GreyOutButton(_focusedCameraButton);
 
             _fpvButton = _doc.rootVisualElement.Q<Button>("FPV");
             _fpvButton.clicked += FPVButtonOnClicked;
+            GreyOutButton(_fpvButton);
 
             _statisticsButton = _doc.rootVisualElement.Q<Button>("Statistics");
             _statisticsButton.clicked += StatisticsButtonOnClicked;
@@ -89,6 +92,23 @@ namespace UI
 
             _doc.rootVisualElement.visible = false;
         }
+
+        private void Start()
+        {
+            UserSelectManager.Instance.OnSelectedGameObject += selectedGameObject =>
+            {
+                if (selectedGameObject)
+                {
+                    RestoreButton(_fpvButton);
+                    RestoreButton(_focusedCameraButton);
+                }
+                else
+                {
+                    GreyOutButton(_fpvButton);
+                    GreyOutButton(_focusedCameraButton);
+                }
+            };
+        }
         
         private void FindCameraManager()
         {
@@ -97,6 +117,20 @@ namespace UI
             {
                 _cameraManager = go.GetComponent<CameraManager>();
             }
+        }
+        
+        public void GreyOutButton(Button button)
+        {
+            button.style.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+            button.style.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
+            button.SetEnabled(false);
+        }
+        
+        public void RestoreButton(Button button)
+        {
+            button.style.backgroundColor = StyleKeyword.Null;
+            button.style.color = StyleKeyword.Null;
+            button.SetEnabled(true);
         }
 
         private void MenuButtonOnClicked()
