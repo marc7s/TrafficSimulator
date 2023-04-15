@@ -1,3 +1,5 @@
+using System;
+using Cam;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Simulation;
@@ -17,8 +19,8 @@ namespace UI
         public bool _isStatisticsOpen = false;
 
         // Camera Buttons
-        private Button _freeCamButton;
-        private Button _twoDButton;
+        private Button _defaultCameraButton;
+        private Button _focusedCameraButton;
         private Button _fpvButton;
 
         // Mode Buttons
@@ -35,25 +37,29 @@ namespace UI
 
         private const string FULLSCREEN = "Fullscreen";
 
+        private CameraManager _cameraManager;
+
 
         void Awake()
         {
             _doc = GetComponent<UIDocument>();
-            _menuController = GameObject.Find("UIMenu").GetComponent<MenuController>();
+            //_menuController = GameObject.Find("UIMenu").GetComponent<MenuController>();
 
             // Labels
             _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
             _clockLabel.text = "0000:00:00:00:00:00";
 
+            
+            FindCameraManager();
             // Buttons
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
 
-            _freeCamButton = _doc.rootVisualElement.Q<Button>("FreeCam");
-            _freeCamButton.clicked += FreeCamButtonOnClicked;
+            _defaultCameraButton = _doc.rootVisualElement.Q<Button>("Default");
+            _defaultCameraButton.clicked += DefaultCameraButtonClicked;
 
-            _twoDButton = _doc.rootVisualElement.Q<Button>("2D");
-            _twoDButton.clicked += TwoDButtonOnClicked;
+            _focusedCameraButton = _doc.rootVisualElement.Q<Button>("Focus");
+            _focusedCameraButton.clicked += FocusedCameraButtonOnClicked;
 
             _fpvButton = _doc.rootVisualElement.Q<Button>("FPV");
             _fpvButton.clicked += FPVButtonOnClicked;
@@ -83,6 +89,15 @@ namespace UI
 
             _doc.rootVisualElement.visible = false;
         }
+        
+        private void FindCameraManager()
+        {
+            GameObject go = GameObject.Find("CameraManager");
+            if (go != null)
+            {
+                _cameraManager = go.GetComponent<CameraManager>();
+            }
+        }
 
         private void MenuButtonOnClicked()
         {
@@ -91,19 +106,19 @@ namespace UI
             _menuController.Enable();
         }
 
-        private void FreeCamButtonOnClicked()
+        private void DefaultCameraButtonClicked()
         {
-            Debug.Log("FreeCam");
+            _cameraManager.ToggleDefaultCamera();
         }
 
-        private void TwoDButtonOnClicked()
+        private void FocusedCameraButtonOnClicked()
         {
-            Debug.Log("2D");
+            _cameraManager.ToggleThirdPersonCamera();
         }
 
         private void FPVButtonOnClicked()
         {
-            Debug.Log("FPV");
+            _cameraManager.ToggleFirstPersonDriverCamera();
         }
 
         private void StatisticsButtonOnClicked()

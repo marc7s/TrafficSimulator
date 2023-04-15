@@ -26,9 +26,9 @@
             </ui:VisualElement>
             <ui:VisualElement name="CameraButtons" style="flex-shrink: 0; bottom: 10%; right: 2%;">
                 <ui:VisualElement name="CameraButtons" style="width: auto; top: auto; left: auto; bottom: auto; flex-direction: row; align-items: center; right: auto; height: auto; flex-shrink: 0; flex-grow: 0;">
-                    <ui:Button text="Free Cam" display-tooltip-when-elided="true" name="FreeCam" style="width: 83px; height: 35px;" />
-                    <ui:Button text="2D" display-tooltip-when-elided="true" name="2D" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
-                    <ui:Button text="FPV" display-tooltip-when-elided="true" name="FPV" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
+                    <ui:Button text="Default&#10;Camera" display-tooltip-when-elided="true" name="Default" style="width: 83px; height: 35px;" />
+                    <ui:Button text="Focus&#10;Camera" display-tooltip-when-elided="true" name="Focus" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
+                    <ui:Button text="FPV&#10;Camera" display-tooltip-when-elided="true" name="FPV" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
