@@ -39,12 +39,12 @@ namespace Cam
         private bool _isNearScreenBorder;
         private bool _isMovingTowardsTarget = false;
         private Vector3 _followOffset;
-        private Vector3 _startingFollowOffset;
+        private Vector3 _initialFollowOffset;
+        private Vector3 _beforeSwitchFollowOffset;
         
         private void Start()
         {
-            _startingFollowOffset = VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset;
-            _followOffset = _startingFollowOffset;
+            _initialFollowOffset = VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset;
         }
 
         private void Update()
@@ -55,8 +55,18 @@ namespace Cam
         public override void SetActive(CameraManager cameraManager)
         {
             base.SetActive(cameraManager);
-            VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset = _startingFollowOffset;
-            _followOffset = _startingFollowOffset;
+            VirtualCamera.GetCinemachineComponent<CinemachineTransposer>().m_FollowOffset = _initialFollowOffset;
+            if (Mathf.Approximately(_beforeSwitchFollowOffset.magnitude, 0f))
+            {
+                _followOffset = _initialFollowOffset;
+            }
+            else
+            {
+                print(65);
+                print("SetActive: " + _beforeSwitchFollowOffset);
+                _followOffset = _beforeSwitchFollowOffset;
+                
+            }
             UserSelectManager.Instance.CanSelectNewObject = true;
             UserSelectManager.Instance.OnSelectedGameObject += HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject += HandleGameObjectDoubleClickSelection;
@@ -64,6 +74,8 @@ namespace Cam
 
         public override void SetInactive(CameraManager cameraManager)
         {
+            _beforeSwitchFollowOffset = _followOffset;
+            print("SetInactive: " + _beforeSwitchFollowOffset);
             base.SetInactive(cameraManager);
             UserSelectManager.Instance.OnSelectedGameObject -= HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject -= HandleGameObjectDoubleClickSelection;
