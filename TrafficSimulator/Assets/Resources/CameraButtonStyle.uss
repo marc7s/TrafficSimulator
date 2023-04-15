@@ -1,6 +1,3 @@
 .button-highlighted {
     background-color: #ADD8E6; 
 }
-.button:focus {
-    border-color: transparent;
-}
