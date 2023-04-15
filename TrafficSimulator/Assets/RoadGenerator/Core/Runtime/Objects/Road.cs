@@ -551,12 +551,11 @@ namespace RoadGenerator
                 type = (ConnectedToAtEnd == null || ConnectedToAtEnd?.Road.IsFirstRoadInClosedLoop == true) ? RoadNodeType.End : RoadNodeType.RoadConnection;
 
             // Add the new node to the end
-            builder.Curr = new RoadNode(position, tangent, normal, type, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
+            builder.Curr = new RoadNode(this, position, tangent, normal, type, builder.Prev, null, dstToPrev, builder.CurrLength / Length, intersection);
             bool shouldBeNavigationNode = (type == RoadNodeType.End && IsClosed()) || type == RoadNodeType.RoadConnection;
             if (shouldBeNavigationNode)
                 builder.Curr.IsNavigationNode = true;
 
-            builder.Curr.Road = this;
             // Update the previous node's next pointer
             builder.Prev.Next = builder.Curr;
 
@@ -617,8 +616,8 @@ namespace RoadGenerator
 
             RoadNodeType startType = ConnectedToAtStart == null || IsFirstRoadInClosedLoop ? RoadNodeType.End : RoadNodeType.RoadConnection;
             // Create the start node for the road. The start node must be an end node
-            StartRoadNode = new RoadNode(_path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
-            StartRoadNode.Road = this;
+            StartRoadNode = new RoadNode(this, _path.GetPoint(0), _path.GetTangent(0), _path.GetNormal(0), startType, 0, 0);
+
             if (startType == RoadNodeType.RoadConnection || (startType == RoadNodeType.End && IsClosed()))
                 StartRoadNode.IsNavigationNode = true;
             
