@@ -18,6 +18,7 @@ namespace Car
     {
         public override bool ShouldAct(ref AutoDriveAgent agent)
         {
+            agent.Context.BrakeUndershoot = 0;
             LaneNode curr = agent.Context.CurrentNode;
             LaneNode prev = curr.Prev;
             float distance = 0;
@@ -30,6 +31,7 @@ namespace Car
             while(curr != null && distance < brakeDistance + offset)
             {
                 agent.Context.BrakeTarget = curr;
+                agent.Context.BrakeUndershoot = Mathf.Max(0, brakeDistance - distance);
                     
                 if(ShouldActAtNode(ref agent, curr))
                     return true;
@@ -59,7 +61,7 @@ namespace Car
             {
                 case DrivingMode.Quality:
                     // Calculate the distance it will take to stop
-                    return agent.Setting.BrakeOffset + qualityOffset + speed / 2 + speed * speed / (agent.Setting.VehicleController.tireFriction * g);
+                    return agent.Setting.BrakeOffset + qualityOffset + speed + speed * speed / (agent.Setting.VehicleController.tireFriction * g);
 
                 case DrivingMode.Performance:
                     /* 

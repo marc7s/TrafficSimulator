@@ -227,6 +227,9 @@ namespace RoadGenerator
 
             foreach (Road road in intersection.GetIntersectionRoads())
                 road.AddIntersection(intersection);
+
+            // TODO FIXXXXX 
+            intersection.IntersectionLength = Intersection.CalculateIntersectionLength(intersection.GetIntersectionRoads()[0], intersection.GetIntersectionRoads()[1]);
             
             AddIntersection(intersection);
             
@@ -237,7 +240,7 @@ namespace RoadGenerator
         {
             foreach (Intersection intersection in _intersections)
             {
-                if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
+                if (Vector3.Distance(position, intersection.IntersectionPosition) < intersection.IntersectionLength)
                     return true;
             }
             return false;

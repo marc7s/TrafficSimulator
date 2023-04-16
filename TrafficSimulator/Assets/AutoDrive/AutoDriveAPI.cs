@@ -71,9 +71,10 @@ namespace Car
                 bool intersectionNotChecked = node.Intersection?.ID != Context.PrevIntersection?.ID;
                 if (intersectionNotChecked)
                 {
+                    LaneNode loopNode = null;
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                     {
-                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
+                        (loopNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
 
                         // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
                         if (Setting.Mode == DrivingMode.Performance)
@@ -85,9 +86,10 @@ namespace Car
                     }
                     else if (Context.NavigationMode == NavigationMode.Random)
                     {
-                        (Context.StartNode, Context.EndNode, node) = node.Intersection.GetRandomLaneNode(node, ref Context.TurnDirection);
+                        (loopNode, node) = node.Intersection.GetRandomLaneNode(node, ref Context.TurnDirection);
                     }
                     SetIntersectionTransition(entryNode.Intersection, entryNode, node);
+                    Context.SetLoopNode(loopNode);
                 }
             }
             Context.BrakeTarget = node;
@@ -157,7 +159,7 @@ namespace Car
             }
 
             if(node.Next == null)
-                return endBehaviour == RoadEndBehaviour.Loop ? _context.StartNode : null;
+                return endBehaviour == RoadEndBehaviour.Loop ? _context.EndNextNode : null;
             else
                 return node.Next;
         }
@@ -173,7 +175,7 @@ namespace Car
             }
 
             if(node.Prev == null)
-                return endBehaviour == RoadEndBehaviour.Loop ? _context.EndNode : null;
+                return endBehaviour == RoadEndBehaviour.Loop ? _context.EndPrevNode : null;
             else
                 return node.Prev;
         }
@@ -218,12 +220,12 @@ namespace Car
         }
     }
 
-    public struct AutoDriveContext
+    public class AutoDriveContext
     {
         public Road CurrentRoad;
         public LaneNode CurrentNode;
-        public LaneNode StartNode;
-        public LaneNode EndNode;
+        public LaneNode EndPrevNode;
+        public LaneNode EndNextNode;
         public Vector3 VehiclePosition;
         public bool IsEnteringNetwork;
         public Intersection PrevIntersection;
@@ -239,14 +241,13 @@ namespace Car
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
+        public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         
         public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
         {
             CurrentRoad = currentRoad;
             CurrentNode = initialNode;
-            StartNode = initialNode.First;
-            EndNode = initialNode.Last;
             VehiclePosition = vehiclePosition;
 
             IsEnteringNetwork = true;
@@ -263,6 +264,22 @@ namespace Car
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;
+            BrakeUndershoot = 0;
+
+            SetLoopNode(initialNode);
+        }
+
+        public void Loop()
+        {
+            CurrentNode = EndNextNode;
+            // Calculate the new loop node
+            SetLoopNode(CurrentNode);
+        }
+
+        public void SetLoopNode(LaneNode node)
+        {
+            EndPrevNode = node.Last;
+            EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.Index && l.Type.Side != node.LaneSide).StartNode;
         }
     }
 }

@@ -42,7 +42,7 @@ namespace RoadGenerator
                     if (!otherPathCreator.bezierPath.PathBounds.Intersects(otherPathCreator.bezierPath.PathBounds))
                         continue;
 
-                    intersectionPointDatas.AddRange(GetBezierPathIntersections(road.RoadObject.transform, otherRoad.RoadObject.transform, road,  otherRoad));
+                    intersectionPointDatas.AddRange(GetBezierPathIntersections(road, otherRoad));
                 }
 
                 // Go through all the intersections and create an intersection at every position
@@ -54,7 +54,7 @@ namespace RoadGenerator
                         continue;
                     if (road.ConnectedToAtEnd != null && Vector3.Distance(intersectionPointData.Position, pathCreator.bezierPath.GetLastAnchorPos()) < 1f)
                         continue;
-                        Debug.Log("IntersectionPointData: " + intersectionPointData);
+
                     // If the vertex count is small in a segment, then there is a possibility that the same intersection is added multiple times
                     // Therefore only add an intersection if it does not already exist
                     if (!roadSystem.DoesIntersectionExist(intersectionPointData.Position))
@@ -87,19 +87,13 @@ namespace RoadGenerator
             */
         }
 
-        static bool IntersectionIsUnique(List<IntersectionPointData> intersectionPointDatas, Vector3 intersectionPosition)
-        {
-            float uniqueDistance = Intersection.IntersectionLength;
-            return intersectionPointDatas.Count < 1 || intersectionPointDatas.Any(x => Vector3.Distance(x.Position, intersectionPosition) < uniqueDistance);
-        }
-
-        private static List<IntersectionPointData> GetBezierPathIntersections(Transform road1Transform, Transform road2Transform, Road road1, Road road2)
+        private static List<IntersectionPointData> GetBezierPathIntersections(Road road1, Road road2)
         {
             PathCreator road1PathCreator = road1.PathCreator;
             PathCreator road2PathCreator = road2.PathCreator;
             List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
 
-            List<BezierIntersection> bezierIntersections = road1PathCreator.bezierPath.IntersectionPoints(road1Transform, road2Transform, road2PathCreator.bezierPath);
+            List<BezierIntersection> bezierIntersections = road1PathCreator.bezierPath.IntersectionPoints(road1.RoadObject.transform, road2.RoadObject.transform, road2PathCreator.bezierPath);
             
             foreach(BezierIntersection bezierIntersection in bezierIntersections)
                 intersectionPointDatas.Add(CalculateIntersectionData(bezierIntersection.point, road1, road2));
@@ -118,11 +112,11 @@ namespace RoadGenerator
         {
             List<JunctionEdgeData> junctionEdgeDatas = new List<JunctionEdgeData>();
             // Get the anchor points on either side of the intersection for the two roads
-            junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road1, intersectionPosition));
-            junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road2, intersectionPosition));
+            junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road1, intersectionPosition, Intersection.CalculateIntersectionLength(road1, road2)));
+            junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road2, intersectionPosition, Intersection.CalculateIntersectionLength(road1, road2)));
 
             float intersectionExtendCoef = 1.2f;
-            float intersectionExtension = Intersection.IntersectionLength * 0.5f * intersectionExtendCoef;
+            float intersectionExtension = Intersection.CalculateIntersectionLength(road1, road2) * 0.5f * intersectionExtendCoef;
 
             IntersectionType type = IntersectionType.FourWayIntersection;
 
@@ -137,7 +131,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Calculate the positions of the two anchor points to be created on either side of the intersection</summary>
-        static List<JunctionEdgeData> GetIntersectionAnchorPoints(Road road, Vector3 intersectionPosition)
+        static List<JunctionEdgeData> GetIntersectionAnchorPoints(Road road, Vector3 intersectionPosition, float intersectionLength)
         {
             VertexPath vertexPath = road.PathCreator.path;
             int segmentIndex = GetClosestSegmentIndex(road.PathCreator, intersectionPosition);
@@ -150,7 +144,7 @@ namespace RoadGenerator
             // Use EndOfPathInstruction.Stop to cap the anchor points at the end of the road
             if (distanceAtIntersection > intersectionCutoff)
             {
-                Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - Intersection.IntersectionLength/2, EndOfPathInstruction.Stop);
+                Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - intersectionLength/2, EndOfPathInstruction.Stop);
                 anchorPoints.Add(new JunctionEdgeData(secondAnchorPoint, segmentIndex, road));
                 addedAnchorPoint = true;
             }
@@ -161,7 +155,7 @@ namespace RoadGenerator
             }
             if (distanceAtIntersection < vertexPath.length - intersectionCutoff)
             {
-                Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + Intersection.IntersectionLength/2, EndOfPathInstruction.Stop);
+                Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + intersectionLength/2, EndOfPathInstruction.Stop);
                 anchorPoints.Add(new JunctionEdgeData(firstAnchorPoint, segmentIndex + (addedAnchorPoint ? 1 : 0), road));
             }
             else
@@ -246,7 +240,7 @@ namespace RoadGenerator
         {
             // Set the intersection bounds extents
             float intersectionBoundHeight = 2f;
-            float intersectionBoundLength = Intersection.IntersectionLength * Intersection.IntersectionBoundsLengthMultiplier;
+            float intersectionBoundLength = intersection.IntersectionLength * Intersection.IntersectionBoundsLengthMultiplier;
             
             // Create a bounding box around the intersection
             Bounds intersectionBounds = new Bounds(intersection.IntersectionPosition, new Vector3(intersectionBoundLength, intersectionBoundHeight, intersectionBoundLength));

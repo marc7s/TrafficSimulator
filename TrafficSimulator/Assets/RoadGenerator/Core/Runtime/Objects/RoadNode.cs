@@ -18,7 +18,7 @@ namespace RoadGenerator
     /// <summary>Represents a single node in a road</summary>
 	public class RoadNode : Node<RoadNode>
 	{
-        public Road Road;
+        private Road _road;
         public TrafficSignType? TrafficSignType;
         public TrafficLight TrafficLight;
         public Intersection Intersection;
@@ -33,9 +33,10 @@ namespace RoadGenerator
         // A list of all intersection types
         private static RoadNodeType[] _intersectionTypes = new RoadNodeType[]{ RoadNodeType.ThreeWayIntersection, RoadNodeType.FourWayIntersection, RoadNodeType.Roundabout };
         
-        public RoadNode(Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type, float distanceToPrevNode, float time) : this(position, tangent, normal, type, null, null, distanceToPrevNode, time){}
-        public RoadNode(Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type, RoadNode prev, RoadNode next, float distanceToPrevNode, float time, Intersection intersection = null)
+        public RoadNode(Road road, Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type, float distanceToPrevNode, float time) : this(road, position, tangent, normal, type, null, null, distanceToPrevNode, time){}
+        public RoadNode(Road road, Vector3 position, Vector3 tangent, Vector3 normal, RoadNodeType type, RoadNode prev, RoadNode next, float distanceToPrevNode, float time, Intersection intersection = null)
         {
+            _road = road;
             _position = position;
             _tangent = tangent.normalized;
             _normal = normal.normalized;
@@ -50,11 +51,10 @@ namespace RoadGenerator
         }
         public override RoadNode Copy()
         {
-            return new RoadNode(_position, _tangent, _normal, _type, _prev, _next, _distanceToPrevNode, _time)
+            return new RoadNode(_road, _position, _tangent, _normal, _type, _prev, _next, _distanceToPrevNode, _time)
             {
                 PrimaryNavigationNodeEdge = PrimaryNavigationNodeEdge,
-                Intersection = Intersection,
-                Road = Road
+                Intersection = Intersection
             };
         }
 
@@ -170,6 +170,11 @@ namespace RoadGenerator
 
         /// <summary>Returns `true` if this node is an intersection</summary>
         public bool IsIntersection() => _intersectionTypes.Contains(_type);
+
+        public Road Road
+        {
+            get => _road;
+        }
 
         public RoadNodeType Type
         {
