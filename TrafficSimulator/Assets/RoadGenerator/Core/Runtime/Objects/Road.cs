@@ -868,10 +868,29 @@ namespace RoadGenerator
 
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
-            return queuedNodes;
-                        /*
+
             foreach(Intersection intersection in Intersections)
             {
+                List<IntersectionArm> arms = intersection.GetArms(this);
+                RoadNodeType intersectionType = intersection.IsThreeWayIntersection() ? RoadNodeType.ThreeWayIntersection : RoadNodeType.FourWayIntersection;
+                float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
+                if (arms.Count == 2)
+                {
+                        (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(arms[0].JunctionEdgePosition, arms[1].JunctionEdgePosition, _path);
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, false, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
+                }
+                else if (arms.Count == 1)
+                {
+                    bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
+
+                        float anchorDistrance = _path.GetClosestDistanceAlongPath(arms[0].JunctionEdgePosition);
+                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistrance, arms[0].JunctionEdgePosition, false, intersection));
+                        queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
+                }
+
+                /*
                 if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
                 {
                     if(intersection.Road1 == this)
@@ -915,9 +934,10 @@ namespace RoadGenerator
                     queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
                     queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
                 }
+                */
             } 
             return queuedNodes;
-            */
+            
         }
 
         public float? DistanceToNextIntersection(RoadNode roadNode, out Intersection intersection)

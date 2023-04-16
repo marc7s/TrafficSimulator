@@ -970,12 +970,12 @@ namespace RoadGenerator
                 return TurnDirection.Straight;
         }
 
-        private bool IsThreeWayIntersection()
+        public bool IsThreeWayIntersection()
         {
             return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
         }
 
-        private List<Vector3> GetJuctionEdgesPositionForRoad(Road road)
+        private List<Vector3> GetJunctionEdgesPositionForRoad(Road road)
         {
             List<Vector3> positions = new List<Vector3>();
             foreach (IntersectionArm arm in IntersectionArms)
@@ -983,8 +983,7 @@ namespace RoadGenerator
                 if (arm.Road == road)
                     positions.Add(arm.JunctionEdgePosition);
             }
-            foreach (Vector3 position in positions)
-                Debug.Log(position);
+
             return positions;
         }
 
@@ -998,7 +997,7 @@ namespace RoadGenerator
             // Remove the anchor points for the intersection
             foreach (Road road in GetIntersectionRoads())
             {
-                road.PathCreator.bezierPath.RemoveAnchors(GetJuctionEdgesPositionForRoad(road));
+                road.PathCreator.bezierPath.RemoveAnchors(GetJunctionEdgesPositionForRoad(road));
 
                 // Remove reference to intersection in the roads
                 if (road.HasIntersection(this))
