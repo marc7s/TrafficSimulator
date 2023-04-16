@@ -327,7 +327,7 @@ namespace Car {
             // Occupy nodes further ahead in intersections
             // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
             // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
-            const float intersectionOccupancyOffset = Intersection.IntersectionLength / 3;
+            float intersectionOccupancyOffset = _agent.Context.CurrentNode.Intersection.IntersectionLength / 3;
             float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? intersectionOccupancyOffset : 0;
 
             // Add all occupied nodes prior to and including the current node
