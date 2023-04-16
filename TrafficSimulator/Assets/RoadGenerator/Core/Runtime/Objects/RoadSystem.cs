@@ -229,6 +229,7 @@ namespace RoadGenerator
             intersection.Road1AnchorPoint2 = intersectionPointData.Road1AnchorPoint2;
             intersection.Road2AnchorPoint1 = intersectionPointData.Road2AnchorPoint1;
             intersection.Road2AnchorPoint2 = intersectionPointData.Road2AnchorPoint2;
+            intersection.IntersectionLength = Intersection.CalculateIntersectionLength(road1, road2);
             
             road1.AddIntersection(intersection);
             road2.AddIntersection(intersection);
@@ -242,7 +243,7 @@ namespace RoadGenerator
         {
             foreach (Intersection intersection in _intersections)
             {
-                if (Vector3.Distance(position, intersection.IntersectionPosition) < Intersection.IntersectionLength)
+                if (Vector3.Distance(position, intersection.IntersectionPosition) < intersection.IntersectionLength)
                     return true;
             }
             return false;

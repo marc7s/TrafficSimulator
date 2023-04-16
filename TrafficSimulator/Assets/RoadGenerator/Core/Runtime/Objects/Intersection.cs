@@ -75,7 +75,8 @@ namespace RoadGenerator
 
         private Mesh _mesh;
         [SerializeField][HideInInspector] private GameObject _guideNodeContainer;
-        [HideInInspector] public const float IntersectionLength = 20f;
+        [HideInInspector] public const float DefaultIntersectionLength = 20f;
+        [ReadOnly] public float IntersectionLength = DefaultIntersectionLength;
         [HideInInspector] public const float IntersectionBoundsLengthMultiplier = 1.2f;
         private const string GUIDE_NODE_CONTAINER_NAME = "Guide Nodes";
 
@@ -151,6 +152,11 @@ namespace RoadGenerator
             CreateIntersectionMesh();
             ShowGuideNodes();
             gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
+        }
+
+        public static float CalculateIntersectionLength(Road road1, Road road2)
+        {
+            return Mathf.Max((int) road1.LaneAmount, (int)road2.LaneAmount) * Intersection.DefaultIntersectionLength;
         }
 
         /// <summary> Returns a list of all RoadNodes that are of type `JunctionEdge` or an intersection. This is because for 3-way intersections, the intersection node are used as an anchor </summary>
