@@ -327,8 +327,7 @@ namespace Car {
             // Occupy nodes further ahead in intersections
             // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
             // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
-            float intersectionOccupancyOffset = _agent.Context.CurrentNode.Intersection.IntersectionLength / 3;
-            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? intersectionOccupancyOffset : 0;
+            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
 
             // Add all occupied nodes prior to and including the current node
             while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
@@ -504,7 +503,11 @@ namespace Car {
         {
             if(_brakeController.ShouldAct(ref _agent))
             {
-                Q_SetBrakeInput(0.3f);
+                // The coefficient that determines the scaling for the undershoot to the brake input
+                const float undershootCoef = 0.1f;
+                
+                // Try to target 30% braking, but if we are going to overshoot the target then brake harder, all the way up to 80% maximum
+                Q_SetBrakeInput(Mathf.Clamp(0.3f + undershootCoef * _agent.Context.BrakeUndershoot, 0.3f, 0.8f));
                 Q_SetThrottleInput(0f);
             }
             else

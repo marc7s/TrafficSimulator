@@ -241,6 +241,7 @@ namespace Car
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
+        public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         
         public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
@@ -263,6 +264,7 @@ namespace Car
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;
+            BrakeUndershoot = 0;
 
             SetLoopNode(initialNode);
         }

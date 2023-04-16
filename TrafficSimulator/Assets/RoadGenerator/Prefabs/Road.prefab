@@ -200,7 +200,7 @@ MonoBehaviour:
   Thickness: 0.15
   MaxAngleError: 2
   MinVertexDistance: 0
-  MaxRoadNodeDistance: 5
+  MaxRoadNodeDistance: 2
   SpeedLimit: 50
   GenerateSpeedSigns: 1
   ConnectionDistanceThreshold: 3
