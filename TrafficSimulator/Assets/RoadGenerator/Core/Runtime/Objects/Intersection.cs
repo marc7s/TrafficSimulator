@@ -597,6 +597,18 @@ namespace RoadGenerator
             }
             return null;
         }
+
+        public List<IntersectionArm> GetArms(Road road)
+        {
+            List<IntersectionArm> arms = new List<IntersectionArm>();
+            foreach (IntersectionArm arm in IntersectionArms)
+            {
+                if (arm.Road == road)
+                    arms.Add(arm);
+            }
+            return arms;
+        }
+
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
@@ -971,6 +983,8 @@ namespace RoadGenerator
                 if (arm.Road == road)
                     positions.Add(arm.JunctionEdgePosition);
             }
+            foreach (Vector3 position in positions)
+                Debug.Log(position);
             return positions;
         }
 
@@ -980,6 +994,7 @@ namespace RoadGenerator
             // Remove reference to intersection in the road system
             RoadSystem.RemoveIntersection(this);
 
+            Debug.Log("Intersection destroyed");
             // Remove the anchor points for the intersection
             foreach (Road road in GetIntersectionRoads())
             {

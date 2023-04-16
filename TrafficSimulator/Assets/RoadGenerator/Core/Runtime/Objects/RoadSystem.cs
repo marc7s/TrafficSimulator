@@ -221,10 +221,9 @@ namespace RoadGenerator
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
             intersection.IntersectionPosition = intersectionPointData.Position;
-            List<IntersectionArm> intersectionArms = new List<IntersectionArm>();
 
             foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
-                intersectionArms.Add(new IntersectionArm(junctionEdgeData));
+                intersection.IntersectionArms.Add(new IntersectionArm(junctionEdgeData));
 
             foreach (Road road in intersection.GetIntersectionRoads())
                 road.AddIntersection(intersection);
