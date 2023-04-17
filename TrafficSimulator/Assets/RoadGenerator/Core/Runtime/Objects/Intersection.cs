@@ -28,15 +28,8 @@ namespace RoadGenerator
         public Vector3 JunctionEdgePosition;
         public Road Road;
         public NavigationNodeEdge NavigationNodeEdgeOutwards;
-
-        public IntersectionArm? OppositeArm;
-
-        public IntersectionArm(Vector3 junctionEdgePosition, Road road, NavigationNodeEdge navigationNodeEdgeOutwards)
-        {
-            JunctionEdgePosition = junctionEdgePosition;
-            Road = road;
-            NavigationNodeEdgeOutwards = navigationNodeEdgeOutwards;
-        }
+        public string ID = System.Guid.NewGuid().ToString();
+        public string OppositeArmID;
 
         public IntersectionArm(JunctionEdgeData junctionEdgeData)
         {
@@ -199,7 +192,7 @@ namespace RoadGenerator
 
         private void CreateIntersectionMesh()
         {
-            /*
+            
             foreach(Road road in GetIntersectionRoads())
             {
                 road.UpdateRoadNodes();
@@ -220,81 +213,15 @@ namespace RoadGenerator
             List<Vector2> uvs = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();
 
-            // The road nodes related to each anchor point
-            RoadNode road1Anchor1Node = null;
-            RoadNode road1Anchor2Node = null;
-            RoadNode road2Anchor1Node = null;
-            RoadNode road2Anchor2Node = null;
-
-            // The inaccuracy that determines if an anchor point corresponds to a junction node
-            float eps = 3f;
-
-            // Go through all junction nodes in Road1 to find the anchor points
-            foreach(RoadNode junctionNode in GetJunctionNodes(Road1))
-            {
-                Vector3 jpos = junctionNode.Position;
-                
-                if(Vector3.Distance(jpos, Road1AnchorPoint1) < eps)
-                    road1Anchor1Node = junctionNode;
-                else if(Vector3.Distance(jpos, Road1AnchorPoint2) < eps)
-                    road1Anchor2Node = junctionNode;
-            }
-            
-
-            // Go through all junction nodes in Road2 to find the anchor points
-            foreach(RoadNode junctionNode in GetJunctionNodes(Road2))
-            {
-                Vector3 jpos = junctionNode.Position;
-                
-                if(Vector3.Distance(jpos, Road2AnchorPoint1) < eps)
-                    road2Anchor1Node = junctionNode;
-                else if(Vector3.Distance(jpos, Road2AnchorPoint2) < eps)
-                    road2Anchor2Node = junctionNode;
-            }
-
-
-            // Make sure road2Anchor1Node is the only anchor point for road 2 when there is a three way intersection
-            if(Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
-            {
-                if(road2Anchor1Node == null)
-                    road2Anchor1Node = road2Anchor2Node;
-            }
-
-            // Calculate road directions in order to determine if the anchor points need to be swapped
-            Vector3 road1Direction = road1Anchor2Node.Position - road1Anchor1Node.Position;
-            Vector3 road1ToRoad2Direction = road2Anchor1Node.Position - road1Anchor1Node.Position;
-            float roadAngle = Vector3.SignedAngle(road1Direction, road1ToRoad2Direction, Vector3.up);
-            
-            // Is used to flip left/right
-            int directionCoefficient = 1;
-            
-            if(Type == IntersectionType.FourWayIntersection)
-            {
-                // Check the angle between the two roads to determine if the anchor points need to be swapped
-                if(roadAngle < 0)
-                {
-                    // Swap the anchor nodes and extend the mesh to fill in the gap in road 2
-                    RoadNode temp = road2Anchor1Node;
-                    road2Anchor1Node = road2Anchor2Node;
-                    road2Anchor2Node = temp;
-                    
-                    directionCoefficient = -1;
-                }
-            }
-            else if(Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
-            {
-                if(roadAngle < 0)
-                    directionCoefficient = -1;
-            }
 
             List<int> topTris = new List<int>();
 
-            float road1HalfWidth = Road1.LaneWidth * (int)Road1.LaneAmount;
-            float road2HalfWidth = Road2.LaneWidth * (int)Road2.LaneAmount;
+            //float road1HalfWidth = Road1.LaneWidth * (int)Road1.LaneAmount;
+            //float road2HalfWidth = Road2.LaneWidth * (int)Road2.LaneAmount;
 
             if(Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd)
             {
-                
+                /*
                 // Swap the anchor nodes if the main road is going in the opposite direction
                 if(directionCoefficient > 0)
                 {
@@ -356,49 +283,78 @@ namespace RoadGenerator
 
                 // Right
                 verts.AddRange(GetRectVerts(i4, i3, i8, i9));
+                */
             }
             else if(Type == IntersectionType.FourWayIntersection)
             {
-                Vector3 road1BottomLeft = road1Anchor2Node.Position - road1Anchor2Node.Normal * road1HalfWidth;
-                Vector3 road1BottomRight = road1Anchor2Node.Position + road1Anchor2Node.Normal * road1HalfWidth;
+                // Map out the intersection from the first arms perspective
+                IntersectionArm bottomArm = IntersectionArms[0];
+                RoadNode bottomArmRoadNode = GetRoadNodeAtIntersectionArm(bottomArm);
+                float bottomArmRoadHalfWidth = bottomArm.Road.LaneWidth * (int)bottomArm.Road.LaneAmount;
 
-                Vector3 road1TopLeft = road1Anchor1Node.Position - road1Anchor1Node.Normal * road1HalfWidth;
-                Vector3 road1TopRight = road1Anchor1Node.Position + road1Anchor1Node.Normal * road1HalfWidth;
+                Vector3 i5 = bottomArm.JunctionEdgePosition - bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
+                Vector3 i12 = bottomArm.JunctionEdgePosition + bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
+
+                IntersectionArm topArm = GetArm(bottomArm.OppositeArmID);
+                RoadNode topArmRoadNode = GetRoadNodeAtIntersectionArm(topArm);
+                float topArmRoadHalfWidth = topArm.Road.LaneWidth * (int)topArm.Road.LaneAmount;
+
+                Vector3 i8 = topArm.JunctionEdgePosition - topArmRoadNode.Normal * topArmRoadHalfWidth;
+                Vector3 i9 = topArm.JunctionEdgePosition + topArmRoadNode.Normal * topArmRoadHalfWidth;
                 
-                Vector3 road2BottomLeft = road2Anchor1Node.Position + directionCoefficient * road2Anchor1Node.Normal * road2HalfWidth;
-                Vector3 road2BottomRight = road2Anchor1Node.Position - directionCoefficient * road2Anchor1Node.Normal * road2HalfWidth;
+                IntersectionArm sideArm = null;
+                foreach(IntersectionArm intersectionArm in IntersectionArms)
+                {
+                    if (intersectionArm != bottomArm && intersectionArm != topArm)
+                    {
+                        sideArm = intersectionArm;
+                        break;
+                    }
+                }
 
-                Vector3 road2TopLeft = road2Anchor2Node.Position + directionCoefficient * road2Anchor2Node.Normal * road2HalfWidth;
-                Vector3 road2TopRight = road2Anchor2Node.Position - directionCoefficient * road2Anchor2Node.Normal * road2HalfWidth;
+                // Find out which side the side arm is on
+                TurnDirection turnDirection = GetTurnDirection(bottomArmRoadNode, GetRoadNodeAtIntersectionArm(sideArm));
+                IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
 
-                Vector3 road1Dir = (road1Anchor1Node.Position - road1Anchor2Node.Position).normalized;
-                Vector3 road2Dir = (road2Anchor2Node.Position - road2Anchor1Node.Position).normalized;
+                RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
+                float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
 
-                (Vector3, Vector3) road1BottomLeftLine = (road1BottomLeft, road1Dir);
-                (Vector3, Vector3) road1BottomRightLine = (road1BottomRight, road1Dir);
-                (Vector3, Vector3) road1TopLeftLine = (road1TopLeft, -road1Dir);
-                (Vector3, Vector3) road1TopRightLine = (road1TopRight, -road1Dir);
+                Vector3 i11 = rightArm.JunctionEdgePosition - rightArmRoadNode.Normal * rightArmRoadHalfWidth;
+                Vector3 i10 = rightArm.JunctionEdgePosition + rightArmRoadNode.Normal * rightArmRoadHalfWidth;
+                if (Vector3.Distance(i10, i9) < Vector3.Distance(i11, i9))
+                {
+                    (i11, i10) = (i10, i11);
+                }
 
-                (Vector3, Vector3) road2BottomLeftLine = (road2BottomLeft, road2Dir);
-                (Vector3, Vector3) road2BottomRightLine = (road2BottomRight, road2Dir);
-                (Vector3, Vector3) road2TopLeftLine = (road2TopLeft, -road2Dir);
-                (Vector3, Vector3) road2TopRightLine = (road2TopRight, -road2Dir);
+                IntersectionArm leftArm = GetArm(rightArm.OppositeArmID);
+                RoadNode leftArmRoadNode = GetRoadNodeAtIntersectionArm(leftArm);
+                float leftArmRoadHalfWidth = leftArm.Road.LaneWidth * (int)leftArm.Road.LaneAmount;
+
+                Vector3 i7 = leftArm.JunctionEdgePosition - leftArmRoadNode.Normal * leftArmRoadHalfWidth;
+                Vector3 i6 = leftArm.JunctionEdgePosition + leftArmRoadNode.Normal * leftArmRoadHalfWidth;
+                if (Vector3.Distance(i6, i5) < Vector3.Distance(i7, i5))
+                {
+                    (i7, i6) = (i6, i7);
+                }
+
+                Vector3 road1Dir = (bottomArm.JunctionEdgePosition - topArm.JunctionEdgePosition).normalized;
+                Vector3 road2Dir = (leftArm.JunctionEdgePosition - rightArm.JunctionEdgePosition).normalized;
+
+                (Vector3, Vector3) road1BottomLeftLine = (i5, road1Dir);
+                (Vector3, Vector3) road1BottomRightLine = (i12, road1Dir);
+                (Vector3, Vector3) road1TopLeftLine = (i8, -road1Dir);
+                (Vector3, Vector3) road1TopRightLine = (i9, -road1Dir);
+
+                (Vector3, Vector3) road2BottomLeftLine = (i7, road2Dir);
+                (Vector3, Vector3) road2BottomRightLine = (i6, road2Dir);
+                (Vector3, Vector3) road2TopLeftLine = (i10, -road2Dir);
+                (Vector3, Vector3) road2TopRightLine = (i11, -road2Dir);
 
                 // Mid points
                 Vector3 i1 = GetMidPointCorner(road1BottomLeftLine, road2BottomRightLine);
                 Vector3 i2 = GetMidPointCorner(road1TopLeftLine, road2BottomLeftLine);
                 Vector3 i3 = GetMidPointCorner(road2TopLeftLine, road1TopRightLine);
                 Vector3 i4 = GetMidPointCorner(road2TopRightLine, road1BottomRightLine);
-
-                // Road edge points
-                Vector3 i5 = road1BottomLeft;
-                Vector3 i6 = road2BottomRight;
-                Vector3 i7 = road2BottomLeft;
-                Vector3 i8 = road1TopLeft;
-                Vector3 i9 = road1TopRight;
-                Vector3 i10 = road2TopLeft;
-                Vector3 i11 = road2TopRight;
-                Vector3 i12 = road1BottomRight;
                 
                 // Mid
                 verts.AddRange(GetRectVerts(i1, i2, i3, i4));
@@ -415,7 +371,7 @@ namespace RoadGenerator
                 // Right
                 verts.AddRange(GetRectVerts(i4, i3, i10, i11)); 
             }
-
+            Debug.Log("Verts: " + verts.Count);
             
             // The vertices are already mapped in the correct order, so we simply create an incrementing list
             for (int i = 0; i < verts.Count; i++)
@@ -430,7 +386,6 @@ namespace RoadGenerator
             _mesh.subMeshCount = 2;
 
             _mesh.SetTriangles(topTris.ToArray(), 0);
-            */
         }
 
         /// <summary> Returns the position of a mid point corner used for creating the intersections. Uses line intersection with a fallback for lerps </summary>
@@ -603,6 +558,28 @@ namespace RoadGenerator
             {
                 if(arm.JunctionEdgePosition == roadNode.Position)
                     return arm;
+            }
+            return null;
+        }
+
+        public IntersectionArm GetArm(string armID)
+        {
+            foreach(IntersectionArm arm in IntersectionArms)
+            {
+                if(arm.ID == armID)
+                    return arm;
+            }
+            return null;
+        }
+        public RoadNode? GetRoadNodeAtIntersectionArm(IntersectionArm arm)
+        {
+            Debug.Log(arm);
+            RoadNode curr = arm.Road.StartNode;
+            while(curr != null)
+            {
+                if(curr.Position == arm.JunctionEdgePosition)
+                    return curr;
+                curr = curr.Next;
             }
             return null;
         }
@@ -962,6 +939,26 @@ namespace RoadGenerator
         {
             // If the entry and exit nodes share the same first node it means that the entry and exit nodes are on the same road
             if (entry.RoadNode.First == exit.RoadNode.First)
+                return TurnDirection.Straight;
+
+            Vector3 entryDirection = entry.Position - entry.Next.Position;
+            Vector3 exitDirection = exit.Position - exit.Prev.Position;
+
+            Vector3 perp = Vector3.Cross(entryDirection, exitDirection);
+            float dir = Vector3.Dot(perp, Vector3.up);
+            
+            if (dir > 0f)
+                return TurnDirection.Left;
+            else if (dir < 0)
+                return TurnDirection.Right;
+            else 
+                return TurnDirection.Straight;
+        }
+
+        private TurnDirection GetTurnDirection(RoadNode entry, RoadNode exit)
+        {
+            // If the entry and exit nodes share the same first node it means that the entry and exit nodes are on the same road
+            if (entry.First == exit.First)
                 return TurnDirection.Straight;
 
             Vector3 entryDirection = entry.Position - entry.Next.Position;
