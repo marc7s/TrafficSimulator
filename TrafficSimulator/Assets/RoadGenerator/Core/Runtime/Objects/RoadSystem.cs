@@ -249,7 +249,7 @@ namespace RoadGenerator
                         minAngleArm = otherIntersectionArm;
                     }
                 }
-                intersectionArm.OppositeArmID = minAngleArm.ID;
+                intersectionArm.OppositeArmID = minAngleArm?.ID;
             }
 
 

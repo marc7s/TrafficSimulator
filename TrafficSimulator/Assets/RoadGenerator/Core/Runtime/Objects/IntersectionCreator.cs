@@ -116,6 +116,8 @@ namespace RoadGenerator
             float intersectionExtension = Intersection.CalculateIntersectionLength(road1, road2) * 0.5f * intersectionExtendCoef;
 
             IntersectionType type = IntersectionType.FourWayIntersection;
+            if (junctionEdgeDatas.Count == 3)
+                type = GetThreeWayIntersectionType(road1.PathCreator, road1.PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition));
 
 
           
