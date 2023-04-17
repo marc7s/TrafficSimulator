@@ -30,6 +30,7 @@ namespace RoadGenerator
         public NavigationNodeEdge NavigationNodeEdgeOutwards;
         public string ID = System.Guid.NewGuid().ToString();
         public string OppositeArmID;
+        public int? FlowControlGroupID;
 
         public IntersectionArm(JunctionEdgeData junctionEdgeData)
         {

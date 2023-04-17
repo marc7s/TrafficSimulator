@@ -103,8 +103,8 @@ namespace RoadGenerator
         }
         public void OnDestroy()
         {
-//            trafficLightController.TrafficLightsGroup1.Remove(this);
-  //          trafficLightController.TrafficLightsGroup2.Remove(this);
+            trafficLightController.TrafficLightsGroup1.Remove(this);
+            trafficLightController.TrafficLightsGroup2.Remove(this);
         }
     }
 }

@@ -109,7 +109,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] protected VertexPath _path;
         [SerializeField][HideInInspector] public PathCreator PathCreator;
         [SerializeField][HideInInspector] protected EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
-        public List<Intersection> Intersections = new List<Intersection>();
+        [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] protected RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] protected float _length;
         [HideInInspector] public bool IsFirstRoadInClosedLoop = false;
@@ -864,7 +864,6 @@ namespace RoadGenerator
         }
         protected PriorityQueue<QueuedNode> QueueIntersectionNodes()
         {
-
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
 
@@ -873,6 +872,7 @@ namespace RoadGenerator
                 List<IntersectionArm> arms = intersection.GetArms(this);
                 RoadNodeType intersectionType = intersection.IsThreeWayIntersection() ? RoadNodeType.ThreeWayIntersection : RoadNodeType.FourWayIntersection;
                 float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
+                // When there are two arms from this road
                 if (arms.Count == 2)
                 {
                         (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(arms[0].JunctionEdgePosition, arms[1].JunctionEdgePosition, _path);
@@ -880,12 +880,13 @@ namespace RoadGenerator
                         queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, false, intersection));
                         queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
                 }
+                // When there is only one arm from this road
                 else if (arms.Count == 1)
                 {
                     bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
                     bool junctionEdgeEndsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
-                    float anchorDistrance = _path.GetClosestDistanceAlongPath(arms[0].JunctionEdgePosition);
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistrance, arms[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
+                    float anchorDistance = _path.GetClosestDistanceAlongPath(arms[0].JunctionEdgePosition);
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistance, arms[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
                     queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
                 }
                 else
@@ -894,7 +895,6 @@ namespace RoadGenerator
                 }
             } 
             return queuedNodes;
-            
         }
 
         public float? DistanceToNextIntersection(RoadNode roadNode, out Intersection intersection)
@@ -988,18 +988,18 @@ namespace RoadGenerator
 
         protected void AssignTrafficLightController(RoadNode roadNode, GameObject trafficLightObject)
         {
-            /*
+            Debug.Log(roadNode.Position + "gh");
             TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
             
             // Add the traffic light to the correct traffic light group, Road1 gets added to trafficLightGroup1 and Road2 gets added to trafficLightGroup2
-            if (this == roadNode.Intersection.Road1)
+            if (roadNode.Intersection.GetIntersectionArmAtJunctionEdge(roadNode).FlowControlGroupID == 0)
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup1.Add(trafficLight);
-            else if (this == roadNode.Intersection.Road2)
+            else
                 roadNode.Intersection.TrafficLightController.TrafficLightsGroup2.Add(trafficLight);
 
             trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
             roadNode.TrafficLight = trafficLight;
-            */
+            
         }
         /// <summary>Draws the lanes as coloured lines </summary>
         public void ShowLanes()

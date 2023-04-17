@@ -251,7 +251,21 @@ namespace RoadGenerator
                 }
                 intersectionArm.OppositeArmID = minAngleArm?.ID;
             }
-
+            bool isFirstIteration = true;
+            foreach (IntersectionArm intersectionArm in intersection.IntersectionArms)
+            {
+                if (isFirstIteration)
+                {
+                    intersectionArm.FlowControlGroupID = 0;
+                    intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
+                }
+                if (intersectionArm.FlowControlGroupID == null)
+                {
+                    intersectionArm.FlowControlGroupID = 1;
+                    intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
+                }
+                isFirstIteration = false;
+            }
 
 
             foreach (Road road in intersection.GetIntersectionRoads())
