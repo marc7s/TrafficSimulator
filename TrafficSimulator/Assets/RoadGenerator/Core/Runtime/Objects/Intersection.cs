@@ -22,11 +22,14 @@ namespace RoadGenerator
         StopSigns
     }
 
-    public struct IntersectionArm
+    [Serializable]
+    public class IntersectionArm
     {
         public Vector3 JunctionEdgePosition;
         public Road Road;
         public NavigationNodeEdge NavigationNodeEdgeOutwards;
+
+        public IntersectionArm? OppositeArm;
 
         public IntersectionArm(Vector3 junctionEdgePosition, Road road, NavigationNodeEdge navigationNodeEdgeOutwards)
         {
@@ -676,7 +679,7 @@ namespace RoadGenerator
                 }
             }
 
-            _intersectionCenterRoadNode = new RoadNode(Road1, IntersectionPosition, new Vector3(0, 0, -1), new Vector3(-1, 0, 0), RoadNodeType.IntersectionGuide, 0, 0);
+            _intersectionCenterRoadNode = new RoadNode(GetIntersectionRoads()[0], IntersectionPosition, new Vector3(0, 0, -1), new Vector3(-1, 0, 0), RoadNodeType.IntersectionGuide, 0, 0);
             _intersectionCenterRoadNode.Intersection = this;
             _intersectionCenterLaneNode = new LaneNode(IntersectionPosition, LaneSide.Primary, 0, _intersectionCenterRoadNode, 0, false);
 

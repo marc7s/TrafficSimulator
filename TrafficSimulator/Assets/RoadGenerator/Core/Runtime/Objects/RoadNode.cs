@@ -148,7 +148,7 @@ namespace RoadGenerator
                     IntersectionArm? arm = intersection.GetIntersectionArmAtJunctionEdge(curr);
                     if (arm == null)
                         continue;
-                    IntersectionArm intersectionArm = arm.Value;
+                    IntersectionArm intersectionArm = arm;
                     intersectionArm.NavigationNodeEdgeOutwards = edge;
                 }
                 curr = curr.Next;

@@ -109,7 +109,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] protected VertexPath _path;
         [SerializeField][HideInInspector] public PathCreator PathCreator;
         [SerializeField][HideInInspector] protected EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
-        [HideInInspector] public List<Intersection> Intersections = new List<Intersection>();
+        public List<Intersection> Intersections = new List<Intersection>();
         [SerializeField][HideInInspector] protected RoadNavigationGraph _navigationGraph;
         [SerializeField][HideInInspector] protected float _length;
         [HideInInspector] public bool IsFirstRoadInClosedLoop = false;
@@ -883,57 +883,15 @@ namespace RoadGenerator
                 else if (arms.Count == 1)
                 {
                     bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
-
-                        float anchorDistrance = _path.GetClosestDistanceAlongPath(arms[0].JunctionEdgePosition);
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistrance, arms[0].JunctionEdgePosition, false, intersection));
-                        queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
+                    bool junctionEdgeEndsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
+                    float anchorDistrance = _path.GetClosestDistanceAlongPath(arms[0].JunctionEdgePosition);
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistrance, arms[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
+                    queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
                 }
-
-                /*
-                if(intersection.Type == IntersectionType.ThreeWayIntersectionAtStart || intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd)
+                else
                 {
-                    if(intersection.Road1 == this)
-                    {
-                        // This is Road1, so the intersection is somewhere in the middle of this road
-                        Vector3 anchor1 = intersection.Road1AnchorPoint1;
-                        Vector3 anchor2 = intersection.Road1AnchorPoint2;
-                        float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
-
-                        (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
-                    }
-                    else
-                    {
-                        // This is Road2, so the intersection is at the start or end of this road
-                        // The first anchor is AnchorPoint1 of Road2, however the second anchor is the intersection position since it starts or ends there
-                        Vector3 anchor1 = intersection.Road2AnchorPoint1;
-
-                        bool isStart = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
-
-                        // Force the intersection distance to be either the the minimum or maximum since the road either starts or ends at the intersection
-                        float intersectionDistance = isStart ? 0 : _path.length;
-                        
-                        float junctionDistance = _path.GetClosestDistanceAlongPath(anchor1);
-
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, junctionDistance, anchor1, isStart, intersection));
-                        queuedNodes.Enqueue(new QueuedNode(RoadNodeType.ThreeWayIntersection, intersectionDistance, intersection.IntersectionPosition, !isStart, intersection));
-                    }
+                    Debug.LogError("Intersection has no arms");
                 }
-                else if(intersection.Type == IntersectionType.FourWayIntersection)
-                {
-                    Vector3 anchor1 = intersection.Road1 == this ? intersection.Road1AnchorPoint1 : intersection.Road2AnchorPoint1;
-                    Vector3 anchor2 = intersection.Road1 == this ? intersection.Road1AnchorPoint2 : intersection.Road2AnchorPoint2;
-                    float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
-
-
-                    (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(anchor1, anchor2, _path);
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.FourWayIntersection, intersectionDistance, intersection.IntersectionPosition, false, intersection));
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
-                }
-                */
             } 
             return queuedNodes;
             

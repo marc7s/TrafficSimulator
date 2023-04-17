@@ -23,9 +23,6 @@ namespace RoadGenerator
                 // Get the points on the current segment
                 Vector3[] segmentPoints = pathCreator.bezierPath.GetPointsInSegment(roadSegmentIndex);
                 
-                // Get the indices of the closest points on the vertex path to the bezier anchors
-                int startVertexIndex = pathCreator.path.GetClosestIndexOnPath(segmentPoints[SEGMENT_ANCHOR1_INDEX]);
-                int endVertexIndex = pathCreator.path.GetClosestIndexOnPath(segmentPoints[SEGMENT_ANCHOR2_INDEX], false);
                 
                 List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
                 

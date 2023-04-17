@@ -224,6 +224,35 @@ namespace RoadGenerator
 
             foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
                 intersection.IntersectionArms.Add(new IntersectionArm(junctionEdgeData));
+            
+            foreach (IntersectionArm intersectionArm in intersection.IntersectionArms)
+            {
+                // Consider angles under 5 degrees as straight
+                float straightAngleThreshHold = 5f;
+                float minAngle = straightAngleThreshHold;
+                IntersectionArm minAngleArm = null;
+                foreach (IntersectionArm otherIntersectionArm in intersection.IntersectionArms)
+                {
+                    // Direction from junctionEdge to intersection position
+                    Vector3 intersectionArmDirection = intersectionArm.JunctionEdgePosition - intersection.IntersectionPosition;
+
+                    // Direction between the two junction edges
+                    Vector3 directionBetweenTheJunctionEdges = intersectionArm.JunctionEdgePosition - otherIntersectionArm.JunctionEdgePosition;
+
+                    if (intersectionArm == otherIntersectionArm)
+                        continue;
+                    
+                    float angle = Vector3.Angle(intersectionArmDirection, directionBetweenTheJunctionEdges);
+                    if (angle < minAngle)
+                    {
+                        minAngle = angle;
+                        minAngleArm = otherIntersectionArm;
+                    }
+                }
+                intersectionArm.OppositeArm = minAngleArm;
+            }
+
+
 
             foreach (Road road in intersection.GetIntersectionRoads())
                 road.AddIntersection(intersection);
@@ -235,6 +264,7 @@ namespace RoadGenerator
             
             return intersection;
         }
+
         /// <summary> Checks if an intersection already exists at the given position </summary>
         public bool DoesIntersectionExist(Vector3 position)
         {
