@@ -753,7 +753,7 @@ namespace RoadGenerator
             {
                 Vector3 position = currRoadNode.Position + currRoadNode.Normal * laneNodeOffset * laneNodeDirection;
                 
-                curr = curr == null ? new LaneNode(position, laneSide, start.Index, currRoadNode, 0) : new LaneNode(position, laneSide, start.Index, currRoadNode, prev, null, Vector3.Distance(prev.Position, position));
+                curr = curr == null ? new LaneNode(position, laneSide, start.LaneIndex, currRoadNode, 0) : new LaneNode(position, laneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position));
                 
                 if(prev != null)
                     prev.Next = curr;
@@ -814,8 +814,8 @@ namespace RoadGenerator
         /// <summary> Returns the lane node out of a list that has the closest lane index. This maps entry and exit nodes of lanes with differing lane counts </summary>
         private LaneNode GetClosestIndexExitNode(List<LaneNode> exitNodes, int index)
         {
-            int closestLaneIndex = exitNodes.Aggregate((x, y) => Math.Abs(x.Index - index) < Math.Abs(y.Index - index) ? x : y).Index;
-            return exitNodes.Find(x => x.Index == closestLaneIndex);
+            int closestLaneIndex = exitNodes.Aggregate((x, y) => Math.Abs(x.LaneIndex - index) < Math.Abs(y.LaneIndex - index) ? x : y).LaneIndex;
+            return exitNodes.Find(x => x.LaneIndex == closestLaneIndex);
         }
 
         /// <summary> Get a random lane node that leads out of the intersection. Returns a tuple on the format (EndNode, NextNode) </summary>
@@ -859,7 +859,7 @@ namespace RoadGenerator
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
                 return (null, null);
             }
-            LaneNode finalNode = GetClosestIndexExitNode(_laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID], current.Index);
+            LaneNode finalNode = GetClosestIndexExitNode(_laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID], current.LaneIndex);
 
             if (!_intersectionGuidePaths.ContainsKey((current.ID, finalNode.ID)))
             {
@@ -887,7 +887,7 @@ namespace RoadGenerator
             while(currLaneNode != null)
             {
                 Vector3 position = currLaneNode.Position;
-                curr = new GuideNode(position, currLaneNode, currLaneNode.LaneSide, currLaneNode.Index, currLaneNode.RoadNode, prev, null, prev == null ? 0 : Vector3.Distance(prev.Position, position));
+                curr = new GuideNode(position, currLaneNode, currLaneNode.LaneSide, currLaneNode.LaneIndex, currLaneNode.RoadNode, prev, null, prev == null ? 0 : Vector3.Distance(prev.Position, position));
 
                 if(prev != null)
                     prev.Next = curr;
@@ -906,7 +906,7 @@ namespace RoadGenerator
                     // Go through the intersection center node for paths passing through the middle of the intersection
                     if(Vector3.Distance(curr.Position, IntersectionPosition) < Vector3.Distance(curr.Position, exitSection.Start.Position))
                     {
-                        curr = new GuideNode(IntersectionPosition, _intersectionCenterLaneNode, currLaneNode.LaneSide, currLaneNode.Index, currLaneNode.RoadNode, prev, null, Vector3.Distance(prev.Position, IntersectionPosition));
+                        curr = new GuideNode(IntersectionPosition, _intersectionCenterLaneNode, currLaneNode.LaneSide, currLaneNode.LaneIndex, currLaneNode.RoadNode, prev, null, Vector3.Distance(prev.Position, IntersectionPosition));
                         prev.Next = curr;
                         prev = curr;
                     }
