@@ -199,13 +199,13 @@ namespace RoadGenerator
             List<Vector3> verts = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();
-
             List<int> topTris = new List<int>();
 
             if(IsThreeWayIntersection())
             {
                 // Map out the intersection from the arm without an opposite arm
                 IntersectionArm bottomArm = IntersectionArms[0];
+
                 foreach(IntersectionArm arm in IntersectionArms)
                 {
                     if(arm.OppositeArmID == null)
@@ -260,7 +260,6 @@ namespace RoadGenerator
                 Vector3 road1Dir = (bottomArm.JunctionEdgePosition - IntersectionPosition).normalized;
                 Vector3 road2Dir = (leftArm.JunctionEdgePosition - rightArm.JunctionEdgePosition).normalized;
 
-                //
                 (Vector3, Vector3) i5RoadLine = (i5, road1Dir);
                 (Vector3, Vector3) i10RoadLine = (i10, road1Dir);
 
@@ -295,12 +294,21 @@ namespace RoadGenerator
                 Vector3 i5 = bottomArm.JunctionEdgePosition - bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
                 Vector3 i12 = bottomArm.JunctionEdgePosition + bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
 
+                bool isWrongDirection = bottomArmRoadNode.Prev.Type == RoadNodeType.FourWayIntersection;
+
+
                 IntersectionArm topArm = GetArm(bottomArm.OppositeArmID);
                 RoadNode topArmRoadNode = GetRoadNodeAtIntersectionArm(topArm);
                 float topArmRoadHalfWidth = topArm.Road.LaneWidth * (int)topArm.Road.LaneAmount;
 
                 Vector3 i8 = topArm.JunctionEdgePosition - topArmRoadNode.Normal * topArmRoadHalfWidth;
                 Vector3 i9 = topArm.JunctionEdgePosition + topArmRoadNode.Normal * topArmRoadHalfWidth;
+                if (isWrongDirection)
+                {
+                    (i5, i12) = (i12, i5);
+                    (i8, i9) = (i9, i8);
+                }
+
                 
                 // Find one of the side arms
                 IntersectionArm sideArm = null;

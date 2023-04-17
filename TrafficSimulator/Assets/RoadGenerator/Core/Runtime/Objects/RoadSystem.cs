@@ -257,12 +257,14 @@ namespace RoadGenerator
                 if (isFirstIteration)
                 {
                     intersectionArm.FlowControlGroupID = 0;
-                    intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
+                    if (intersectionArm.OppositeArmID != null)
+                        intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
                 }
                 if (intersectionArm.FlowControlGroupID == null)
                 {
                     intersectionArm.FlowControlGroupID = 1;
-                    intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
+                    if (intersectionArm.OppositeArmID != null)
+                        intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
                 }
                 isFirstIteration = false;
             }
