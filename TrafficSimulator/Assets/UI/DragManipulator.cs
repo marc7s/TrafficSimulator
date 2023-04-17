@@ -183,6 +183,7 @@ public class DragManipulator : IManipulator {
       enabled = got;
   }
 
+  private Vector3 _lastPosition;
   private void DragBegin(PointerDownEvent ev) {
     if (! enabled)
       return;
@@ -194,6 +195,7 @@ public class DragManipulator : IManipulator {
         target.RemoveFromClassList(removeClassOnDrag);
     }
 
+    _lastPosition = target.transform.position;
     lastPickingMode = target.pickingMode;
     target.pickingMode = PickingMode.Ignore;
     isDragging = true;
@@ -273,7 +275,7 @@ public class DragManipulator : IManipulator {
       run. (Helps when a "transitions" USS class is used.)
    */
   public virtual void ResetPosition() {
-    target.transform.position = Vector3.zero;
+    target.transform.position = _lastPosition;
   }
 
   protected virtual bool CanDrop(Vector3 position, out VisualElement droppable) {
