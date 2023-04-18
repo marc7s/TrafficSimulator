@@ -237,13 +237,11 @@ namespace RoadGenerator
         private LaneNode CalculateSpawnNode(float targetLength, Lane lane)
         {
             LaneNode curr = lane.StartNode;
-            LaneNode prev = lane.StartNode;
             float currentLength = 0;
             
             while(curr != null && currentLength < targetLength)
             {
                 currentLength += curr.DistanceToPrevNode;
-                prev = curr;
                 curr = curr.Next;
             }
             

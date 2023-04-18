@@ -874,7 +874,6 @@ namespace RoadGenerator
         /// <summary> Get the new end node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (EndNode, NextNode) </summary>
         public (LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current, ref TurnDirection turnDirection)
         {
-            Debug.Log(navigationNodeEdge.ID);
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
