@@ -148,14 +148,13 @@ namespace RoadGenerator
                 {
                     bool isPrimaryEdgePointingToIntersection = curr.PrimaryNavigationNodeEdge.EndNavigationNode.RoadNode.Position == intersection.IntersectionPosition;
                     NavigationNodeEdge edge = isPrimaryEdgePointingToIntersection ? curr.SecondaryNavigationNodeEdge : curr.PrimaryNavigationNodeEdge;
-                    if (curr.Position == intersection.Road1AnchorPoint1)
-                        intersection.Road1AnchorPoint1NavigationEdge = edge;
-                    if (curr.Position == intersection.Road1AnchorPoint2)
-                        intersection.Road1AnchorPoint2NavigationEdge = edge;
-                    if (curr.Position == intersection.Road2AnchorPoint1)
-                        intersection.Road2AnchorPoint1NavigationEdge = edge;
-                    if (curr.Position == intersection.Road2AnchorPoint2)
-                        intersection.Road2AnchorPoint2NavigationEdge = edge;
+                    IntersectionArm arm = intersection.GetIntersectionArmAtJunctionEdge(curr);
+
+                    if (arm == null)
+                        continue;
+
+                    IntersectionArm intersectionArm = arm;
+                    intersectionArm.NavigationNodeEdgeOutwards = edge;
                 }
                 curr = curr.Next;
             }
