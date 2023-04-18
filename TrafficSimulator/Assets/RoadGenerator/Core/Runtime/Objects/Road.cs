@@ -490,9 +490,9 @@ namespace RoadGenerator
             if(RoadSystem == null)
                 return;
 
-            ConnectRoadIfEndPointsAreClose();
+            //ConnectRoadIfEndPointsAreClose();
             // Update the intersections and road when a node is changed
-            IntersectionCreator.UpdateIntersections(this);
+            //IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
         }
 
