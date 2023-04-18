@@ -869,29 +869,24 @@ namespace RoadGenerator
 
             foreach(Intersection intersection in Intersections)
             {
-                List<IntersectionArm> arms = intersection.GetArms(this);
+                List<IntersectionArm> armsFromThisRoad = intersection.GetArms(this);
                 RoadNodeType intersectionType = intersection.IsThreeWayIntersection() ? RoadNodeType.ThreeWayIntersection : RoadNodeType.FourWayIntersection;
                 float intersectionDistance = _path.GetClosestDistanceAlongPath(intersection.IntersectionPosition);
-                // When there are two arms from this road
-                if (arms.Count == 2)
+
+                if (armsFromThisRoad.Count == 2)
                 {
-                        (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(arms[0].JunctionEdgePosition, arms[1].JunctionEdgePosition, _path);
+                        (Vector3 startPoint, Vector3 endPoint, float startDistance, float endDistance) = GetPositionsAndDistancesInOrder(armsFromThisRoad[0].JunctionEdgePosition, armsFromThisRoad[1].JunctionEdgePosition, _path);
                         queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, startDistance, startPoint, false, intersection));
                         queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, false, intersection));
                         queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, endDistance, endPoint, true, intersection));
                 }
-                // When there is only one arm from this road
-                else if (arms.Count == 1)
+                else if (armsFromThisRoad.Count == 1)
                 {
                     bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
                     bool junctionEdgeEndsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
-                    float anchorDistance = _path.GetClosestDistanceAlongPath(arms[0].JunctionEdgePosition);
-                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistance, arms[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
+                    float anchorDistance = _path.GetClosestDistanceAlongPath(armsFromThisRoad[0].JunctionEdgePosition);
+                    queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistance, armsFromThisRoad[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
                     queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
-                }
-                else
-                {
-                    Debug.LogError("Intersection has no arms");
                 }
             } 
             return queuedNodes;
@@ -988,7 +983,6 @@ namespace RoadGenerator
 
         protected void AssignTrafficLightController(RoadNode roadNode, GameObject trafficLightObject)
         {
-            Debug.Log(roadNode.Position + "gh");
             TrafficLight trafficLight = trafficLightObject.GetComponent<TrafficLight>();
             
             // Add the traffic light to the correct traffic light group, Road1 gets added to trafficLightGroup1 and Road2 gets added to trafficLightGroup2

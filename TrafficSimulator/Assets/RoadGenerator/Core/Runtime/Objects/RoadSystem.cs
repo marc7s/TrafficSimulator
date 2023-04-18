@@ -214,7 +214,7 @@ namespace RoadGenerator
             GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, Quaternion.identity);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = _intersectionContainer.transform;
-            
+
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
             intersection.ID = System.Guid.NewGuid().ToString();
             intersection.Type = intersectionPointData.Type;
@@ -225,59 +225,19 @@ namespace RoadGenerator
             foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
                 intersection.IntersectionArms.Add(new IntersectionArm(junctionEdgeData));
             
-            foreach (IntersectionArm intersectionArm in intersection.IntersectionArms)
-            {
-                // Consider angles under 5 degrees as straight
-                float straightAngleThreshHold = 5f;
-                float minAngle = straightAngleThreshHold;
-                IntersectionArm minAngleArm = null;
-                foreach (IntersectionArm otherIntersectionArm in intersection.IntersectionArms)
-                {
-                    // Direction from junctionEdge to intersection position
-                    Vector3 intersectionArmDirection = intersectionArm.JunctionEdgePosition - intersection.IntersectionPosition;
-
-                    // Direction between the two junction edges
-                    Vector3 directionBetweenTheJunctionEdges = intersectionArm.JunctionEdgePosition - otherIntersectionArm.JunctionEdgePosition;
-
-                    if (intersectionArm == otherIntersectionArm)
-                        continue;
-                    
-                    float angle = Vector3.Angle(intersectionArmDirection, directionBetweenTheJunctionEdges);
-                    if (angle < minAngle)
-                    {
-                        minAngle = angle;
-                        minAngleArm = otherIntersectionArm;
-                    }
-                }
-                intersectionArm.OppositeArmID = minAngleArm?.ID;
-            }
-            bool isFirstIteration = true;
-            foreach (IntersectionArm intersectionArm in intersection.IntersectionArms)
-            {
-                if (isFirstIteration)
-                {
-                    intersectionArm.FlowControlGroupID = 0;
-                    if (intersectionArm.OppositeArmID != null)
-                        intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
-                }
-                if (intersectionArm.FlowControlGroupID == null)
-                {
-                    intersectionArm.FlowControlGroupID = 1;
-                    if (intersectionArm.OppositeArmID != null)
-                        intersection.GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
-                }
-                isFirstIteration = false;
-            }
-
+            intersection.SetupIntersectionArms();
 
             foreach (Road road in intersection.GetIntersectionRoads())
                 road.AddIntersection(intersection);
 
-            // TODO FIXXXXX 
-            intersection.IntersectionLength = Intersection.CalculateIntersectionLength(intersection.GetIntersectionRoads()[0], intersection.GetIntersectionRoads()[1]);
-            
+            // Finding roads in the opposide directions to measure the intersection length
+            foreach (IntersectionArm arm in intersection.IntersectionArms)
+            {
+                if (arm != intersection.IntersectionArms[0] && arm.OppositeArmID != intersection.IntersectionArms[0].ID)
+                    intersection.IntersectionLength = Intersection.CalculateIntersectionLength(intersection.IntersectionArms[0].Road, arm.Road);
+            }
+
             AddIntersection(intersection);
-            
             return intersection;
         }
 

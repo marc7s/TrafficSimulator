@@ -57,7 +57,7 @@ namespace RoadGenerator
         [HideInInspector] private Dictionary<string, RoadNode> _intersectionGuideRoadNodes = new Dictionary<string, RoadNode>();
         [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths = new Dictionary<(string, string), GuideNode>();
 
-        [HideInInspector] public IntersectionType Type;
+        public IntersectionType Type;
         [HideInInspector] public TrafficLightController TrafficLightController;
         [ReadOnly] public string ID;
 
@@ -559,7 +559,7 @@ namespace RoadGenerator
                 _laneNodeFromNavigationNodeEdge[nodeEdge.ID].Add(laneNode);
         }
 
-        public IntersectionArm? GetIntersectionArmAtJunctionEdge(RoadNode roadNode)
+        public IntersectionArm GetIntersectionArmAtJunctionEdge(RoadNode roadNode)
         {   
             foreach(IntersectionArm arm in IntersectionArms)
             {
@@ -578,7 +578,7 @@ namespace RoadGenerator
             }
             return null;
         }
-        public RoadNode? GetRoadNodeAtIntersectionArm(IntersectionArm arm)
+        public RoadNode GetRoadNodeAtIntersectionArm(IntersectionArm arm)
         {
             RoadNode curr = arm.Road.StartNode;
             while(curr != null)
@@ -637,14 +637,13 @@ namespace RoadGenerator
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
                     if (!isEdgePointingToIntersection)
                     {
-                        IntersectionArm? arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
+                        IntersectionArm arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
                         if (arm != null)
                         {
                             AddLaneNodeFromNavigationNodeEdge(arm?.NavigationNodeEdgeOutwards, currentNode);
                         }
                     }
-                        
-                    
+
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
                     if(isEdgePointingToIntersection)
                     {
@@ -977,6 +976,53 @@ namespace RoadGenerator
         public bool IsThreeWayIntersection()
         {
             return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
+        }
+
+        public void SetupIntersectionArms()
+        {
+           foreach (IntersectionArm intersectionArm in IntersectionArms)
+            {
+                // Consider angles under 5 degrees as straight
+                float straightAngleThreshHold = 5f;
+                float minAngle = straightAngleThreshHold;
+                IntersectionArm minAngleArm = null;
+                foreach (IntersectionArm otherIntersectionArm in IntersectionArms)
+                {
+                    // Direction from junctionEdge to intersection position
+                    Vector3 intersectionArmDirection = intersectionArm.JunctionEdgePosition - IntersectionPosition;
+
+                    // Direction between the two junction edges
+                    Vector3 directionBetweenTheJunctionEdges = intersectionArm.JunctionEdgePosition - otherIntersectionArm.JunctionEdgePosition;
+
+                    if (intersectionArm == otherIntersectionArm)
+                        continue;
+                    
+                    float angle = Vector3.Angle(intersectionArmDirection, directionBetweenTheJunctionEdges);
+                    if (angle < minAngle)
+                    {
+                        minAngle = angle;
+                        minAngleArm = otherIntersectionArm;
+                    }
+                }
+                intersectionArm.OppositeArmID = minAngleArm?.ID;
+            }
+            bool isFirstIteration = true;
+            foreach (IntersectionArm intersectionArm in IntersectionArms)
+            {
+                if (isFirstIteration)
+                {
+                    intersectionArm.FlowControlGroupID = 0;
+                    if (intersectionArm.OppositeArmID != null)
+                        GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
+                }
+                if (intersectionArm.FlowControlGroupID == null)
+                {
+                    intersectionArm.FlowControlGroupID = 1;
+                    if (intersectionArm.OppositeArmID != null)
+                        GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
+                }
+                isFirstIteration = false;
+            }           
         }
 
         private List<Vector3> GetJunctionEdgesPositionForRoad(Road road)
