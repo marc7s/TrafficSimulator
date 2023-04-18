@@ -3029,7 +3029,7 @@ MonoBehaviour:
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 2
-  LogRepositioningInformation: 1
+  LogRepositioningInformation: 0
   ShowTargetLines: 4
   BrakeOffset: 3
   MaxRepositioningSpeed: 5

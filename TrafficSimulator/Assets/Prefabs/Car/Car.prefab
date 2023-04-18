@@ -1884,8 +1884,8 @@ MonoBehaviour:
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 0
-  LogRepositioningInformation: 1
-  ShowTargetLines: 0
+  LogRepositioningInformation: 0
+  ShowTargetLines: 4
   BrakeOffset: 3
   MaxRepositioningSpeed: 5
   MaxReverseDistance: 20
