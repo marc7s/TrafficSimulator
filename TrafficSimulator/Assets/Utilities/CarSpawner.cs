@@ -16,6 +16,9 @@ namespace RoadGenerator
         [Header("Connections")]
         [SerializeField] private GameObject _carPrefab;
         [SerializeField] private GameObject _sportCarPrefab;
+        [SerializeField] private GameObject _suvCarPrefab;
+        [SerializeField] private GameObject _suvCar1Prefab;
+
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
@@ -53,7 +56,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _vehicleTypes = new List<GameObject>(){_carPrefab, _sportCarPrefab};
+            _vehicleTypes = new List<GameObject>(){_carPrefab, _sportCarPrefab, _suvCarPrefab, _suvCar1Prefab};
 
             _carLength = GetLongestCarLength(_vehicleTypes);
 
@@ -286,7 +289,6 @@ namespace RoadGenerator
 
         private GameObject GetRandomCar(List<GameObject> cars)
         {
-            Debug.Log("Car Type: " + cars[Random.Range(0, cars.Count)]);
             return cars[Random.Range(0, cars.Count)];
         }
     }
