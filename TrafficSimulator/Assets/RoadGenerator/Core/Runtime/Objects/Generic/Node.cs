@@ -12,6 +12,7 @@ namespace RoadGenerator
         protected Quaternion _rotation;
         protected float _distanceToPrevNode;
         protected string _id;
+        protected int _index;
 
         /// <summary>Gets the next node</summary>
         public virtual T Next
@@ -60,6 +61,12 @@ namespace RoadGenerator
         public string ID
         {
             get => _id;
+        }
+
+        /// <summary>Returns the index of this node</summary>
+        public int Index
+        {
+            get => _index;
         }
 
         /// <summary>Returns the first node in the linked list</summary>
@@ -133,6 +140,8 @@ namespace RoadGenerator
             T curr = Copy();
             T prev = null;
             T next = null;
+            int maxIndex = curr.Last.Index;
+            int i = 0;
             
             while(curr != null)
             {
@@ -142,10 +151,12 @@ namespace RoadGenerator
                 if(next != null)
                     curr._distanceToPrevNode = Vector3.Distance(next.Position, curr.Position);
                 
+                curr._index = maxIndex - i;
                 curr.Next = prev;
                 curr.Prev = next;
                 prev = curr;
                 curr = next;
+                i++;
             }
             // This will be the first node so reset the distance to previous node
             prev._distanceToPrevNode = 0;

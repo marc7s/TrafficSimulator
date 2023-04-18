@@ -81,7 +81,7 @@ namespace Car {
         
         private float _originalMaxSpeedForward;
         private float _originalMaxSpeedReverse;
-        private HashSet<LaneNode> _occupiedNodes = new HashSet<LaneNode>();
+        private List<LaneNode> _occupiedNodes = new List<LaneNode>();
         
         private LaneNode _prevTarget;
         private LaneNode _target;
@@ -118,8 +118,12 @@ namespace Car {
 
             _vehicleController = GetComponent<VehicleController>();
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
-            _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
-            _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
+            if (Mode == DrivingMode.Quality)
+            {
+                _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
+                _originalMaxSpeedReverse = _vehicleController.maxSpeedReverse;
+            }
+
             _brakeLightController = GetComponent<BrakeLightController>();
             _indicatorController = GetComponent<IndicatorController>();
             // If the road has not updated yet there will be no lanes, so update them first
@@ -280,26 +284,37 @@ namespace Car {
         // Update the list of nodes that the vehicle is currently occupying
         private void UpdateOccupiedNodes()
         {
-            foreach(LaneNode node in _occupiedNodes)
-                node.UnsetVehicle(_agent.Setting.Vehicle);
-
             (HashSet<LaneNode> forwardSpanNodes, HashSet<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
-            _occupiedNodes.Clear();
+
+            ClearSpanNodes(forwardSpanNodes, backwardSpanNodes);
             
             // Start adding the nodes behind the car
             AddSpanNodes(backwardSpanNodes);
-            
-            // Since we want them in order and the backward nodes are added from the car outwards, reverse the list
-            _occupiedNodes.Reverse();
 
             // Add the nodes in front of the car
             AddSpanNodes(forwardSpanNodes);
+
+            _occupiedNodes.Sort((x, y) => x.Index.CompareTo(y.Index));
+        }
+
+        private void ClearSpanNodes(HashSet<LaneNode> forwardNodes, HashSet<LaneNode> backwardNodes)
+        {
+            for (int i = _occupiedNodes.Count - 1; i >= 0; i--)
+            {
+                if(!forwardNodes.Contains(_occupiedNodes[i]) && !backwardNodes.Contains(_occupiedNodes[i]))
+                {
+                    _occupiedNodes[i].UnsetVehicle(_agent.Setting.Vehicle);
+                    _occupiedNodes.Remove(_occupiedNodes[i]);
+                }
+            }
         }
 
         private void AddSpanNodes(HashSet<LaneNode> spanNodes)
         {
             foreach (LaneNode node in spanNodes)
             {
+                if(_occupiedNodes.Contains(node))
+                    continue;
                 // Add the span nodes we successfully acquire to the list of occupied nodes until we fail to acquire one, then break
                 // This avoids the vehicle from occupying nodes with gaps between them, which could cause a lockup if the vehicle has acquired nodes in front of and behind another vehicle
                 if(node.SetVehicle(_agent.Setting.Vehicle))
@@ -327,8 +342,7 @@ namespace Car {
             // Occupy nodes further ahead in intersections
             // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
             // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
-            const float intersectionOccupancyOffset = Intersection.IntersectionLength / 3;
-            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? intersectionOccupancyOffset : 0;
+            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
 
             // Add all occupied nodes prior to and including the current node
             while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
@@ -504,7 +518,11 @@ namespace Car {
         {
             if(_brakeController.ShouldAct(ref _agent))
             {
-                Q_SetBrakeInput(0.3f);
+                // The coefficient that determines the scaling for the undershoot to the brake input
+                const float undershootCoef = 0.1f;
+                
+                // Try to target 30% braking, but if we are going to overshoot the target then brake harder, all the way up to 80% maximum
+                Q_SetBrakeInput(Mathf.Clamp(0.3f + undershootCoef * _agent.Context.BrakeUndershoot, 0.3f, 0.8f));
                 Q_SetThrottleInput(0f);
             }
             else
@@ -561,19 +579,26 @@ namespace Car {
             // If the road ended but we are looping, teleport to the first position
             if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
             {
-                // Since there is an issue with the car spinning after teleporting, we pause the rigidbody for a second
-                // This is a temporary fix until the real issue is resolved
-                RigidbodyPause pause = _vehicleController.GetComponent<RigidbodyPause>();
-                ResetToNode(_agent.Context.StartNode);
-                pause.pause = true;
-                TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
-                TimeManager.Instance.AddEvent(unPauseEvent);
-                unPauseEvent.OnEvent += () => pause.pause = false;
+                Q_EndOfRoadTeleport();
             }
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)
                 _agent.Context.IsEnteringNetwork = false;
+        }
+
+        private void Q_EndOfRoadTeleport()
+        {
+            _agent.Context.Loop();
+
+            // Since there is an issue with the car spinning after teleporting, we pause the rigidbody for a second
+            // This is a temporary fix until the real issue is resolved
+            RigidbodyPause pause = _vehicleController.GetComponent<RigidbodyPause>();
+            ResetToNode(_agent.Context.CurrentNode);
+            pause.pause = true;
+            TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
+            TimeManager.Instance.AddEvent(unPauseEvent);
+            unPauseEvent.OnEvent += () => pause.pause = false;
         }
 
         private LaneNode Q_GetTarget()
@@ -685,8 +710,12 @@ namespace Car {
                 TotalDistance += _target.DistanceToPrevNode;
                 _agent.Context.CurrentNode = _target;
 
-                if(_target == _agent.Context.EndNode && !_target.RoadNode.Road.IsClosed())
-                    ResetToNode(_agent.Context.StartNode);
+                if(!_agent.Context.IsEnteringNetwork && _target.Type == RoadNodeType.End && !_target.RoadNode.Road.IsClosed())
+                {
+                    _agent.Context.Loop();
+                    ResetToNode(_agent.Context.CurrentNode);
+                }
+                    
 
                 // All logic for the navigation controller is handled through the actions, so we ignore the return value
                 _navigationController.ShouldAct(ref _agent);
