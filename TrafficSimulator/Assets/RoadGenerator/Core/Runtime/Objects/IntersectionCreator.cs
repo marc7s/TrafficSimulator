@@ -205,7 +205,7 @@ namespace RoadGenerator
             // Create a bounding box around the intersection
             Bounds intersectionBounds = new Bounds(intersection.IntersectionPosition, new Vector3(intersectionBoundLength, intersectionBoundHeight, intersectionBoundLength));
             
-            foreach (var road in intersection.GetIntersectionRoads())
+            foreach (Road road in intersection.GetIntersectionRoads())
             {
                 List<Vector3> ignoreAnchors = new List<Vector3>();
 
@@ -213,10 +213,9 @@ namespace RoadGenerator
                     ignoreAnchors.Add(arm.JunctionEdgePosition);
 
                 ignoreAnchors.Add(intersection.IntersectionPosition);
-                 DeleteAnchorsInsideBounds(road.PathCreator.bezierPath, intersectionBounds, ignoreAnchors);
+                DeleteAnchorsInsideBounds(road.PathCreator.bezierPath, intersectionBounds, ignoreAnchors);
             }
         }
-
 
         /// <summary>Delete any anchors inside a bounded area</summary>
         ///<param name="path">The path to delete anchors from</param>

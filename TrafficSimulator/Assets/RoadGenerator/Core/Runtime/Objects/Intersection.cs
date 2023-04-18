@@ -578,6 +578,7 @@ namespace RoadGenerator
             }
             return null;
         }
+
         public RoadNode GetRoadNodeAtIntersectionArm(IntersectionArm arm)
         {
             RoadNode curr = arm.Road.StartNode;
@@ -614,10 +615,9 @@ namespace RoadGenerator
             _intersectionGuidePaths.Clear();
 
             List<Lane> lanes = new List<Lane>();
+
             foreach (Road road in GetIntersectionRoads())
-            {
                 lanes.AddRange(road.Lanes);
-            }
             
             foreach (Lane lane in lanes)
             {
@@ -978,6 +978,7 @@ namespace RoadGenerator
             return Type == IntersectionType.ThreeWayIntersectionAtStart || Type == IntersectionType.ThreeWayIntersectionAtEnd;
         }
 
+        /// <summary> Sets the opposite arm and the flow group for the arms </summary>
         public void SetupIntersectionArms()
         {
            foreach (IntersectionArm intersectionArm in IntersectionArms)
@@ -1012,12 +1013,14 @@ namespace RoadGenerator
                 if (isFirstIteration)
                 {
                     intersectionArm.FlowControlGroupID = 0;
+
                     if (intersectionArm.OppositeArmID != null)
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
                 }
                 if (intersectionArm.FlowControlGroupID == null)
                 {
                     intersectionArm.FlowControlGroupID = 1;
+    
                     if (intersectionArm.OppositeArmID != null)
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
                 }
@@ -1043,7 +1046,6 @@ namespace RoadGenerator
             // Remove reference to intersection in the road system
             RoadSystem.RemoveIntersection(this);
 
-            Debug.Log("Intersection destroyed");
             // Remove the anchor points for the intersection
             foreach (Road road in GetIntersectionRoads())
             {
@@ -1053,15 +1055,6 @@ namespace RoadGenerator
                 if (road.HasIntersection(this))
                     road.RemoveIntersection(this);
             }
-        }
-
-        public void Reverse(Road road)
-        {
-            /// When reversing the road these need to be reversed as well.
-        //    if (road == Road1)
-          //      (Road1AnchorPoint1, Road1AnchorPoint2) = (Road1AnchorPoint2, Road1AnchorPoint1);
-          //  else if (road == Road2)
-           //     (Road2AnchorPoint1, Road2AnchorPoint2) = (Road2AnchorPoint2, Road2AnchorPoint1);
         }
     }
 }

@@ -221,9 +221,6 @@ namespace RoadGenerator
         {
             (ConnectedToAtEnd, ConnectedToAtStart) = (ConnectedToAtStart, ConnectedToAtEnd);
             PathCreator.bezierPath.Reverse();
-            foreach (Intersection intersection in Intersections)
-                intersection.Reverse(this);
-
             UpdateRoad();
         }
 
@@ -993,8 +990,8 @@ namespace RoadGenerator
 
             trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
             roadNode.TrafficLight = trafficLight;
-            
         }
+
         /// <summary>Draws the lanes as coloured lines </summary>
         public void ShowLanes()
         {
