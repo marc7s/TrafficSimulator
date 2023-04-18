@@ -16,6 +16,7 @@ namespace RoadGenerator
         [Header("Connections")]
         [SerializeField] private GameObject _carPrefab;
         [SerializeField] private GameObject _sportCarPrefab;
+        [SerializeField] private GameObject _sportCar1Prefab;
         [SerializeField] private GameObject _suvCarPrefab;
         [SerializeField] private GameObject _suvCar1Prefab;
 
@@ -56,7 +57,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _vehicleTypes = new List<GameObject>(){_carPrefab, _sportCarPrefab, _suvCarPrefab, _suvCar1Prefab};
+            _vehicleTypes = new List<GameObject>(){_carPrefab, _sportCarPrefab, _sportCar1Prefab, _suvCarPrefab, _suvCar1Prefab};
 
             _carLength = GetLongestCarLength(_vehicleTypes);
 
