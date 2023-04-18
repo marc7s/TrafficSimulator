@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using POIs;
 
 namespace RoadGenerator
 {
@@ -106,6 +107,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] protected GameObject _laneContainer;
         [SerializeField][HideInInspector] protected GameObject _roadNodeContainer;
         [SerializeField][HideInInspector] protected GameObject _laneNodeContainer;
+        [SerializeField][HideInInspector] protected GameObject _POIContainer;
         [SerializeField][HideInInspector] protected VertexPath _path;
         [SerializeField][HideInInspector] public PathCreator PathCreator;
         [SerializeField][HideInInspector] protected EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
@@ -115,7 +117,9 @@ namespace RoadGenerator
         [HideInInspector] public bool IsFirstRoadInClosedLoop = false;
         [HideInInspector] public ConnectedRoad? ConnectedToAtStart;
         [HideInInspector] public ConnectedRoad? ConnectedToAtEnd;
+        [HideInInspector] public List<POI> POIs = new List<POI>();
         [HideInInspector] public bool IsRoadClosed = false;
+        protected const string POI_CONTAINER_NAME = "POIs";
         protected const string LANE_NAME = "Lane";
         protected const string LANE_CONTAINER_NAME = "Lanes";
         protected const string ROAD_NODE_CONTAINER_NAME = "Road Nodes";
@@ -127,6 +131,28 @@ namespace RoadGenerator
         void Awake()
         {
             PathCreator = GetComponent<PathCreator>();
+            if(_POIContainer == null)
+            {
+                // Try to find the lane container if it has already been created
+                foreach(Transform child in transform)
+                {
+                    if(child.name == POI_CONTAINER_NAME)
+                    {
+                        _POIContainer = child.gameObject;
+                        break;
+                    }
+                }
+            }
+
+            if(_POIContainer == null)
+            {
+                _POIContainer = new GameObject(POI_CONTAINER_NAME);
+                _POIContainer.transform.parent = transform;
+            }
+                
+            
+            foreach(POI poi in POIs)
+                poi.transform.parent = _POIContainer.transform;
         }
 
         public Intersection[] GetIntersections()
@@ -502,6 +528,7 @@ namespace RoadGenerator
                 intersection.UpdateMesh();
             RoadSystem.UpdateRoadSystemGraph();
             PlaceTrafficSigns();
+            UpdatePOIs();
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();
@@ -989,6 +1016,19 @@ namespace RoadGenerator
 
             trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
             roadNode.TrafficLight = trafficLight;
+        }
+
+        private void UpdatePOIs()
+        {
+            RoadNode curr = StartNode;
+            float distance = 0;
+            POIs.Sort((x, y) => x.DistanceAlongRoad.CompareTo(y.DistanceAlongRoad));
+            while (curr != null)
+            {
+                
+                distance += curr.DistanceToPrevNode;
+                curr = curr.Next;
+            }
         }
 
         /// <summary>Draws the lanes as coloured lines </summary>
