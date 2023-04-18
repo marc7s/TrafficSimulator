@@ -256,7 +256,8 @@ namespace RoadGenerator
         /// <summary>Checks multiple conditions to determine if a car is able to spawn on node</summary>
         private bool IsCarSpawnable(LaneNode node)
         {
-            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle());
+            bool IsThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
+            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !IsThreeWayIntersection && !node.RoadNode.IsNavigationNode;
         }
 
         /// <summary>Spawns a car at the current lane node</summary>
@@ -277,13 +278,11 @@ namespace RoadGenerator
         private LaneNode CalculateSpawnNode(float targetLength, Lane lane)
         {
             LaneNode curr = lane.StartNode;
-            LaneNode prev = lane.StartNode;
             float currentLength = 0;
             
             while(curr != null && currentLength < targetLength)
             {
                 currentLength += curr.DistanceToPrevNode;
-                prev = curr;
                 curr = curr.Next;
             }
             

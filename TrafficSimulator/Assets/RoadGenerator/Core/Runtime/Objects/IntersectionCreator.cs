@@ -23,9 +23,6 @@ namespace RoadGenerator
                 // Get the points on the current segment
                 Vector3[] segmentPoints = pathCreator.bezierPath.GetPointsInSegment(roadSegmentIndex);
                 
-                // Get the indices of the closest points on the vertex path to the bezier anchors
-                int startVertexIndex = pathCreator.path.GetClosestIndexOnPath(segmentPoints[SEGMENT_ANCHOR1_INDEX]);
-                int endVertexIndex = pathCreator.path.GetClosestIndexOnPath(segmentPoints[SEGMENT_ANCHOR2_INDEX], false);
                 
                 List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
                 
@@ -36,13 +33,13 @@ namespace RoadGenerator
                     if (otherRoad == road)
                         continue;
 
-                    PathCreator otherPathCreator = otherRoad.RoadObject.GetComponent<PathCreator>();
+                    PathCreator otherPathCreator = otherRoad.PathCreator;
                     
                     // If the two road bounds are not overlapping, then intersection is not possible
                     if (!otherPathCreator.bezierPath.PathBounds.Intersects(otherPathCreator.bezierPath.PathBounds))
                         continue;
 
-                    intersectionPointDatas.AddRange(GetBezierPathIntersections(road, otherRoad, pathCreator,  otherPathCreator));
+                    intersectionPointDatas.AddRange(GetBezierPathIntersections(road, otherRoad));
                 }
 
                 // Go through all the intersections and create an intersection at every position
@@ -57,44 +54,21 @@ namespace RoadGenerator
                     // If the vertex count is small in a segment, then there is a possibility that the same intersection is added multiple times
                     // Therefore only add an intersection if it does not already exist
                     if (!roadSystem.DoesIntersectionExist(intersectionPointData.Position))
-                    {
-                        CreateIntersectionAtPosition(intersectionPointData, roadSystem, intersectionPointData.MainRoad);
-                        // Update the segment indices if a four way intersection was added. For three way intersections, the points are already correctly added
-                        if(intersectionPointData.Type == IntersectionType.FourWayIntersection)
-                            UpdateSegmentIndex(intersectionPointDatas, intersectionPointData.Road1SegmentIndex, intersectionPointData.Road2SegmentIndex);
-                    }
+                        CreateIntersectionAtPosition(intersectionPointData, roadSystem);
                 }
             }
         }
-        /// <summary>Updates the segment indices after a new segment is placed</summary>
-        static void UpdateSegmentIndex(List<IntersectionPointData> intersectionPointDatas, int road1PlacedSegmentIndex, int road2PlacedSegmentIndex)
-        {
-            // Go through all intersections and increment the segment indices for all prior segments
-            // This is because adding an intersection creates an additional segment
-            for (int i = 0; i < intersectionPointDatas.Count; i++)
-            {
-                // Update all segment indices for road1
-                if (intersectionPointDatas[i].Road1SegmentIndex > road1PlacedSegmentIndex)
-                    intersectionPointDatas[i].Road1SegmentIndex++;
-                
-                // Update all segment indices for road2
-                if (intersectionPointDatas[i].Road2SegmentIndex > road2PlacedSegmentIndex)
-                    intersectionPointDatas[i].Road2SegmentIndex++;
-            }
-        }
 
-        private static List<IntersectionPointData> GetBezierPathIntersections(Road road1, Road road2, PathCreator road1PathCreator, PathCreator road2PathCreator)
+        private static List<IntersectionPointData> GetBezierPathIntersections(Road road1, Road road2)
         {
+            PathCreator road1PathCreator = road1.PathCreator;
+            PathCreator road2PathCreator = road2.PathCreator;
             List<IntersectionPointData> intersectionPointDatas = new List<IntersectionPointData>();
 
             List<BezierIntersection> bezierIntersections = road1PathCreator.bezierPath.IntersectionPoints(road1.RoadObject.transform, road2.RoadObject.transform, road2PathCreator.bezierPath);
             
             foreach(BezierIntersection bezierIntersection in bezierIntersections)
-            {
-                // Set the rotation of the intersection to that of the line
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, bezierIntersection.direction);
-                intersectionPointDatas.Add(CalculateIntersectionData(bezierIntersection.point, rotation, road1, road2, road1PathCreator, road2PathCreator));
-            }
+                intersectionPointDatas.Add(CalculateIntersectionData(bezierIntersection.point, road1, road2));
 
             return intersectionPointDatas;
         }
@@ -106,145 +80,91 @@ namespace RoadGenerator
             return isAtEnd ? IntersectionType.ThreeWayIntersectionAtEnd : IntersectionType.ThreeWayIntersectionAtStart;
         }
 
-        static IntersectionPointData CalculateIntersectionData(Vector3 intersectionPosition, Quaternion rotation, Road road1, Road road2, PathCreator road1PathCreator, PathCreator road2PathCreator)
+        static IntersectionPointData CalculateIntersectionData(Vector3 intersectionPosition, Road road1, Road road2)
         {
-            // Get the closest segment indices at the intersection point
-            int road1SegmentIndex = GetClosestSegmentIndex(road1PathCreator, intersectionPosition);
-            int road2SegmentIndex = GetClosestSegmentIndex(road2PathCreator, intersectionPosition);
-
-            // Get the distance along the path at the intersection point
-            float road1DistanceAtIntersection = road1PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition);
-            float road2DistanceAtIntersection = road2PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition);
-            
+            List<JunctionEdgeData> junctionEdgeDatas = new List<JunctionEdgeData>();
             // Get the anchor points on either side of the intersection for the two roads
-            (Vector3 road1AnchorPoint1, Vector3 road1AnchorPoint2) = GetIntersectionAnchorPoints(road1PathCreator.path, Intersection.CalculateIntersectionLength(road1, road2), road1DistanceAtIntersection);
-            (Vector3 road2AnchorPoint1, Vector3 road2AnchorPoint2) = GetIntersectionAnchorPoints(road2PathCreator.path, Intersection.CalculateIntersectionLength(road1, road2), road2DistanceAtIntersection);
-
-            float intersectionExtendCoef = 1.2f;
-            float intersectionExtension = Intersection.CalculateIntersectionLength(road1, road2) * 0.5f * intersectionExtendCoef;
-
+            junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road1, intersectionPosition, Intersection.CalculateIntersectionLength(road1, road2)));
+            int road1JunctionEdgeCount = junctionEdgeDatas.Count;
+            junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road2, intersectionPosition, Intersection.CalculateIntersectionLength(road1, road2)));
             IntersectionType type = IntersectionType.FourWayIntersection;
 
-            // If Road1 is a 3 way intersection
-            if(road1PathCreator.path.length < road1DistanceAtIntersection + intersectionExtension || road1DistanceAtIntersection - intersectionExtension < 0)
+            if (junctionEdgeDatas.Count == 3)
             {
-                type = GetThreeWayIntersectionType(road1PathCreator, road1DistanceAtIntersection);
-                
-                // We always want Road1 to be the road that does not end at the intersection, so we swap the roads
-                PathCreator temp = road1PathCreator;
-                road1PathCreator = road2PathCreator;
-                road2PathCreator = temp;
-
-                Vector3 tempAP1 = road1AnchorPoint1;
-                Vector3 tempAP2 = road1AnchorPoint2;
-                road1AnchorPoint1 = road2AnchorPoint1;
-                road1AnchorPoint2 = road2AnchorPoint2;
-                road2AnchorPoint1 = tempAP1;
-                road2AnchorPoint2 = tempAP2;
-
-                int tempIndex = road1SegmentIndex;
-                road1SegmentIndex = road2SegmentIndex;
-                road2SegmentIndex = tempIndex;
-
-                // Since we capped the distance at the end of the road, the correct anchor point will be the one furthest away
-                if(Vector3.Distance(road2AnchorPoint2, intersectionPosition) > Vector3.Distance(road2AnchorPoint1, intersectionPosition))
-                    road2AnchorPoint1 = road2AnchorPoint2;
-                
-
-                // For three way intersections Road2 will only have one anchor point, so we zero out the other one to avoid hard to find bugs if the wrong one is used
-                road2AnchorPoint2 = Vector3.zero;                
-            }
-            // If Road2 is a 3 way intersection
-            else if(road2PathCreator.path.length < road2DistanceAtIntersection + intersectionExtension || road2DistanceAtIntersection - intersectionExtension < 0)
-            {
-                type = GetThreeWayIntersectionType(road2PathCreator, road2DistanceAtIntersection);
-
-                // Since we capped the distance at the end of the road, the correct anchor point will be the one furthest away
-                if(Vector3.Distance(road2AnchorPoint2, intersectionPosition) > Vector3.Distance(road2AnchorPoint1, intersectionPosition))
-                    road2AnchorPoint1 = road2AnchorPoint2;
-                
-                // For three way intersections Road2 will only have one anchor point, so we zero out the other one to avoid hard to find bugs if the wrong one is used
-                road2AnchorPoint2 = Vector3.zero;
+                if (road1JunctionEdgeCount == 2)
+                    type = GetThreeWayIntersectionType(road2.PathCreator, road2.PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition));
+                else
+                    type = GetThreeWayIntersectionType(road1.PathCreator, road1.PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition));
             }
 
-            IntersectionPointData intersectionPointData = new IntersectionPointData(
-                intersectionPosition, rotation, road1PathCreator, road2PathCreator, road1AnchorPoint1,
-                road1AnchorPoint2, road2AnchorPoint1, road2AnchorPoint2, road1SegmentIndex, road2SegmentIndex, type, road1PathCreator.GetComponent<Road>()
-                );
-
-            return intersectionPointData;
+            return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
         }
 
         /// <summary>Calculate the positions of the two anchor points to be created on either side of the intersection</summary>
-        private static (Vector3, Vector3) GetIntersectionAnchorPoints(VertexPath vertexPath, float intersectionLength, float distanceAtIntersection)
+        static List<JunctionEdgeData> GetIntersectionAnchorPoints(Road road, Vector3 intersectionPosition, float intersectionLength)
         {
+            float intersectionExtendCoef = 1.2f;
+            float intersectionExtension = intersectionLength * 0.5f * intersectionExtendCoef;
+            VertexPath vertexPath = road.PathCreator.path;
+            int segmentIndex = GetClosestSegmentIndex(road.PathCreator, intersectionPosition);
+            float distanceAtIntersection = road.PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition);
+
+            List<JunctionEdgeData> anchorPoints = new List<JunctionEdgeData>();
+            bool addedAnchorPoint = false;
+
             // Use EndOfPathInstruction.Stop to cap the anchor points at the end of the road
-            Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + intersectionLength / 2, EndOfPathInstruction.Stop);
-            Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - intersectionLength / 2, EndOfPathInstruction.Stop);
-            
-            return (firstAnchorPoint, secondAnchorPoint);
-        }
-
-        /// <summary>Creates an intersection at the given position</summary>
-        private static void CreateIntersectionAtPosition(IntersectionPointData intersectionPointData, RoadSystem roadSystem, Road road)
-        {
-            // Get the path creators for the roads
-            PathCreator road1PathCreator = intersectionPointData.Road1PathCreator;
-            PathCreator road2PathCreator = intersectionPointData.Road2PathCreator;
-
-            Road otherRoad = GetRoad(roadSystem, road2PathCreator);
-            
-            // Create a new intersection at the intersection point
-            Intersection intersection = road.RoadSystem.AddNewIntersection(intersectionPointData, road, otherRoad);
-            
-            // Split Road1 on the intersection, creating an anchor point on each side of the intersection
-            SplitPathOnIntersection(road1PathCreator, intersection.Road1AnchorPoint1, intersection.Road1AnchorPoint2, intersectionPointData.Road1SegmentIndex);
-            
-            if(intersectionPointData.Type == IntersectionType.ThreeWayIntersectionAtStart)
+            if (distanceAtIntersection > intersectionExtension)
             {
-                // If the 3-way intersection is at the start, we move the first point to the junction edge, then add a new node to the start at the intersection point
-                road2PathCreator.bezierPath.MovePoint(0, intersection.Road2AnchorPoint1);
-                road2PathCreator.bezierPath.AddSegmentToStart(intersectionPointData.Position);
-            }
-            else if(intersectionPointData.Type == IntersectionType.ThreeWayIntersectionAtEnd)
-            {
-                // If the 3-way intersection is at the end, we move the last point to the junction edge, then add a new node to the end at the intersection point
-                road2PathCreator.bezierPath.MovePoint(road2PathCreator.bezierPath.NumPoints - 1, intersection.Road2AnchorPoint1);
-                road2PathCreator.bezierPath.AddSegmentToEnd(intersection.IntersectionPosition);
+                Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - intersectionLength / 2, EndOfPathInstruction.Stop);
+                anchorPoints.Add(new JunctionEdgeData(secondAnchorPoint, segmentIndex, road));
+                addedAnchorPoint = true;
             }
             else
             {
-                // If the intersection is a 4-way intersection, we split Road2 at the intersection point creating an anchor point on either side
-                SplitPathOnIntersection(road2PathCreator, intersection.Road2AnchorPoint1, intersection.Road2AnchorPoint2, intersectionPointData.Road2SegmentIndex);
+                // If the intersection is too close to the start of the road, we just move the first anchor point to the intersection
+                road.PathCreator.bezierPath.MovePoint(0, intersectionPosition);
             }
-            
-            DeleteAnchorsInsideIntersectionBounds(intersection);
+            if (distanceAtIntersection < vertexPath.length - intersectionExtension)
+            {
+                Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + intersectionLength / 2, EndOfPathInstruction.Stop);
+                anchorPoints.Add(new JunctionEdgeData(firstAnchorPoint, segmentIndex + (addedAnchorPoint ? 1 : 0), road));
+            }
+            else
+            {
+                // If the intersection is too close to the end of the road, we just move the last anchor point to the intersection
+                road.PathCreator.bezierPath.MovePoint(road.PathCreator.bezierPath.NumPoints - 1, intersectionPosition);
+            }
 
-            road.OnChange();
-            otherRoad.OnChange();
-            intersection.UpdateMesh();
+            return anchorPoints;
         }
 
-        /// <summary>Splits a path on an intersection, creating an anchor point on each side of the intersection</summary>
-        static void SplitPathOnIntersection(PathCreator pathCreator, Vector3 intersectionAnchorPoint1, Vector3 intersectionAnchorPoint2, int segmentIndex)
+        /// <summary>Creates an intersection at the given position</summary>
+        static void CreateIntersectionAtPosition(IntersectionPointData intersectionPointData, RoadSystem roadSystem)
         {
-            // Get the first point on the segment
-            Vector3 segmentStartPoint = pathCreator.bezierPath.GetPointsInSegment(segmentIndex)[SEGMENT_ANCHOR1_INDEX];
-            
-            // Determine if the first intersection anchor point is closer. This determines in which direction the path is split
-            bool anchorPoint1Closer = Vector3.Distance(segmentStartPoint, intersectionAnchorPoint1) < Vector3.Distance(segmentStartPoint, intersectionAnchorPoint2);
-            
-            // Swap the intersection anchor points if the first anchor point is further away than the second
-            Vector3 firstAnchorPoint = anchorPoint1Closer ? intersectionAnchorPoint1 : intersectionAnchorPoint2;
-            Vector3 secondAnchorPoint = anchorPoint1Closer ? intersectionAnchorPoint2 : intersectionAnchorPoint1;
+            List<Road> roads = new List<Road>();
+            foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
+            {
+                if (!roads.Contains(junctionEdgeData.Road))
+                    roads.Add(junctionEdgeData.Road);
+            }
 
-            // The if the first anchor point was closer we are splitting in the reverse direction of the path, which means the second (and therefore lower) index will remain unaffected
-            // Otherwise, splitting the path will create a new segment which means the segment index on the other side of the intersection will increase by 1
-            int secondSegmentIndex = anchorPoint1Closer ? segmentIndex : segmentIndex + 1;
+            // Create a new intersection at the intersection point
+            Intersection intersection = roadSystem.AddNewIntersection(intersectionPointData);
 
-            // Split the first path on the anchor points before and after the intersection
-            SplitPathOnPoint(pathCreator, firstAnchorPoint, segmentIndex);
-            SplitPathOnPoint(pathCreator, secondAnchorPoint, secondSegmentIndex);
+            // Sorting the junction edge data by segment index so that we can place the anchor points in the correct order
+            var query = from intersectionData in intersectionPointData.JunctionEdgeDatas
+            orderby intersectionData.SegmentIndex
+            select intersectionData;
+
+            foreach (JunctionEdgeData junctionEdgeData in query.ToList())
+                SplitPathOnPoint(junctionEdgeData.Road.PathCreator, junctionEdgeData.AnchorPoint, junctionEdgeData.SegmentIndex);
+
+            DeleteAnchorsInsideIntersectionBounds(intersection);
+
+            foreach (Road road in roads)
+                road.OnChange();
+
+            intersection.UpdateMesh();
         }
 
         /// <summary>Splits a path on a point</summary>
@@ -281,16 +201,20 @@ namespace RoadGenerator
             // Set the intersection bounds extents
             float intersectionBoundHeight = 2f;
             float intersectionBoundLength = intersection.IntersectionLength * Intersection.IntersectionBoundsLengthMultiplier;
-
-            BezierPath road1BezierPath = intersection.Road1PathCreator.bezierPath;
-            BezierPath road2BezierPath = intersection.Road2PathCreator.bezierPath;
             
             // Create a bounding box around the intersection
             Bounds intersectionBounds = new Bounds(intersection.IntersectionPosition, new Vector3(intersectionBoundLength, intersectionBoundHeight, intersectionBoundLength));
             
-            // Delete any anchors inside the intersection bounds for both roads, except for the intersection anchors
-            DeleteAnchorsInsideBounds(road1BezierPath, intersectionBounds, new List<Vector3>{ intersection.Road1AnchorPoint1, intersection.Road1AnchorPoint2 });
-            DeleteAnchorsInsideBounds(road2BezierPath, intersectionBounds, new List<Vector3>{ intersection.Road2AnchorPoint1, intersection.Road2AnchorPoint2, intersection.IntersectionPosition });
+            foreach (Road road in intersection.GetIntersectionRoads())
+            {
+                List<Vector3> ignoreAnchors = new List<Vector3>();
+
+                foreach (IntersectionArm arm in intersection.GetArms(road))
+                    ignoreAnchors.Add(arm.JunctionEdgePosition);
+
+                ignoreAnchors.Add(intersection.IntersectionPosition);
+                DeleteAnchorsInsideBounds(road.PathCreator.bezierPath, intersectionBounds, ignoreAnchors);
+            }
         }
 
         /// <summary>Delete any anchors inside a bounded area</summary>
@@ -312,26 +236,18 @@ namespace RoadGenerator
                     path.DeleteSegment(handleIndex);
             }
         }
+    }
 
-        /// <summary> Get the road object that corresponds to the given path creator </summary>
-        static Road GetRoad(RoadSystem roadSystem, PathCreator pathCreator)
+    public struct JunctionEdgeData
+    {
+        public Vector3 AnchorPoint;
+        public int SegmentIndex;
+        public Road Road;
+        public JunctionEdgeData(Vector3 anchorPoint, int segmentIndex, Road road)
         {
-            Road foundRoad = null;
-            
-            // Search each road in the road system for the road
-            foreach (Road road in roadSystem.DefaultRoads)
-            {
-                if (road.RoadObject.GetComponent<PathCreator>() == pathCreator)
-                {
-                    foundRoad = road;
-                    break;
-                }
-            }
-            
-            if (foundRoad == null)
-                Debug.LogError("ERROR, Road not found");
-            
-            return foundRoad;
+            AnchorPoint = anchorPoint;
+            SegmentIndex = segmentIndex;
+            Road = road;
         }
     }
 
@@ -339,32 +255,13 @@ namespace RoadGenerator
     public class IntersectionPointData
     {
         public Vector3 Position;
-        public Quaternion Rotation;
-        public PathCreator Road1PathCreator;
-        public PathCreator Road2PathCreator;
-        public Vector3 Road1AnchorPoint1;
-        public Vector3 Road1AnchorPoint2;
-        public Vector3 Road2AnchorPoint1;
-        public Vector3 Road2AnchorPoint2;
-        public int Road1SegmentIndex;
-        public int Road2SegmentIndex;
+        public List<JunctionEdgeData> JunctionEdgeDatas;
         public IntersectionType Type;
-        public Road MainRoad;
-
-        public IntersectionPointData(Vector3 position, Quaternion rotation, PathCreator road1PathCreator, PathCreator road2PathCreator, Vector3 road1AnchorPoint1, Vector3 road1AnchorPoint2, Vector3 road2AnchorPoint1, Vector3 road2AnchorPoint2, int road1SegmentIndex, int road2SegmentIndex, IntersectionType type, Road mainRoad)
+        public IntersectionPointData(Vector3 position, List<JunctionEdgeData> junctionEdgeData, IntersectionType type)
         {
             Position = position;
-            Rotation = rotation;
-            Road1PathCreator = road1PathCreator;
-            Road2PathCreator = road2PathCreator;
-            Road1AnchorPoint1 = road1AnchorPoint1;
-            Road1AnchorPoint2 = road1AnchorPoint2;
-            Road2AnchorPoint1 = road2AnchorPoint1;
-            Road2AnchorPoint2 = road2AnchorPoint2;
-            Road1SegmentIndex = road1SegmentIndex;
-            Road2SegmentIndex = road2SegmentIndex;
+            JunctionEdgeDatas = junctionEdgeData;
             Type = type;
-            MainRoad = mainRoad;
         }
     }
 }
