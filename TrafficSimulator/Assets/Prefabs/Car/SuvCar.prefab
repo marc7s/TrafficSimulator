@@ -1604,7 +1604,7 @@ MonoBehaviour:
   Active: 0
   EndBehaviour: 0
   ShowNavigationPath: 0
-  OriginalNavigationMode: 0
+  OriginalNavigationMode: 1
   LogRepositioningInformation: 1
   ShowTargetLines: 4
   BrakeOffset: 3
