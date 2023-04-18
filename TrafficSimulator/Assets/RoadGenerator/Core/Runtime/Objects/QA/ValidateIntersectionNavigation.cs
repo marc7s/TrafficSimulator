@@ -22,7 +22,7 @@ namespace RoadGenerator
             intersection.MapIntersectionNavigation();
 
             List<(LaneNode, List<Vector3>)> nodeGroups = new List<(LaneNode, List<Vector3>)>();
-            Road[] roads = new Road[] { intersection.Road1, intersection.Road2 };
+            Road[] roads = intersection.GetIntersectionRoads().ToArray();
 
             // Manually get all entry nodes to the intersection. Do not trust the entry nodes listed in the intersection since
             // that could have bugs as well
