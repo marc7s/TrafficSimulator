@@ -29,8 +29,10 @@ namespace RoadGenerator
         public Road Road;
         public NavigationNodeEdge NavigationNodeEdgeOutwards;
         public string ID = System.Guid.NewGuid().ToString();
-        public string OppositeArmID;
-        public int? FlowControlGroupID;
+        // Since unity can't serialize optional values, we use an empty string to represent null
+        public string OppositeArmID = "";
+        // Since unity can't serialize optional values, we use -1 to represent null
+        public int FlowControlGroupID = -1;
 
         public IntersectionArm(JunctionEdgeData junctionEdgeData)
         {
@@ -204,13 +206,15 @@ namespace RoadGenerator
             if(IsThreeWayIntersection())
             {
                 // Map out the intersection from the arm without an opposite arm
-                IntersectionArm bottomArm = IntersectionArms[0];
+                IntersectionArm bottomArm = null;
 
                 foreach(IntersectionArm arm in IntersectionArms)
                 {
-                    if(arm.OppositeArmID == null)
+                    Debug.Log(arm.OppositeArmID);
+                    if(arm.OppositeArmID == "")
                         bottomArm = arm;
                 }
+                Debug.Assert(bottomArm != null, "No bottom arm found");
 
                 RoadNode bottomArmRoadNode = GetRoadNodeAtIntersectionArm(bottomArm);
                 float bottomArmRoadHalfWidth = bottomArm.Road.LaneWidth * (int)bottomArm.Road.LaneAmount;
@@ -870,6 +874,7 @@ namespace RoadGenerator
         /// <summary> Get the new end node, and the lane node that leads to the navigation node edge. Returns a tuple on the format (EndNode, NextNode) </summary>
         public (LaneNode, LaneNode) GetNewLaneNode(NavigationNodeEdge navigationNodeEdge, LaneNode current, ref TurnDirection turnDirection)
         {
+            Debug.Log(navigationNodeEdge.ID);
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
                 Debug.LogError("Error, The navigation node edge does not exist in the intersection");
@@ -1005,8 +1010,10 @@ namespace RoadGenerator
                         minAngleArm = otherIntersectionArm;
                     }
                 }
-                intersectionArm.OppositeArmID = minAngleArm?.ID;
+                if (minAngleArm != null)
+                    intersectionArm.OppositeArmID = minAngleArm.ID;
             }
+
             bool isFirstIteration = true;
             foreach (IntersectionArm intersectionArm in IntersectionArms)
             {
@@ -1014,14 +1021,14 @@ namespace RoadGenerator
                 {
                     intersectionArm.FlowControlGroupID = 0;
 
-                    if (intersectionArm.OppositeArmID != null)
+                    if (intersectionArm.OppositeArmID != "")
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
                 }
-                if (intersectionArm.FlowControlGroupID == null)
+                if (intersectionArm.FlowControlGroupID == -1)
                 {
                     intersectionArm.FlowControlGroupID = 1;
     
-                    if (intersectionArm.OppositeArmID != null)
+                    if (intersectionArm.OppositeArmID != "")
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
                 }
                 isFirstIteration = false;
