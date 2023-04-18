@@ -48,6 +48,7 @@ namespace RoadGenerator
             Intersection = intersection;
             _id = System.Guid.NewGuid().ToString();
             _rotation = Quaternion.LookRotation(_tangent, Vector3.up);
+            _index = prev == null ? 0 : prev.Index + 1;
         }
         public override RoadNode Copy()
         {
@@ -86,6 +87,7 @@ namespace RoadGenerator
                 // If the current node is not on the same road as the start node, then we have reached the end of the road
                 if (curr.Road != this.Road)
                     break;
+                
                 if (curr.IsIntersection())
                 {
                     // We do not want to skip the first node of the road
@@ -115,6 +117,7 @@ namespace RoadGenerator
                     curr = curr.Next;
                     continue;
                 }
+                
                 // If the end of the road and the road is closed
                 if (curr.IsNavigationNode && !curr.IsIntersection() && isClosed && curr.Next == null)
                 {
@@ -165,6 +168,7 @@ namespace RoadGenerator
             {
                 if (current.Road != this.Road)
                     break;
+                
                 distance += current.DistanceToPrevNode;
                 current = current.Next;
             }
