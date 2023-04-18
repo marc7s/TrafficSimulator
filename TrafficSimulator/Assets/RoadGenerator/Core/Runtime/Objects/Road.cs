@@ -774,9 +774,9 @@ namespace RoadGenerator
             previous = current;
 
             // Calculate the position of the new node
-            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth * (0.5f + current.Index);
+            Vector3 position = roadNode.Position - roadNode.Normal * direction * LaneWidth * (0.5f + current.LaneIndex);
             // Create the new node
-            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, current.Index, roadNode, previous, null, Vector3.Distance(position, previous.Position));
+            current = new LaneNode(position, isPrimary ? LaneSide.Primary : LaneSide.Secondary, current.LaneIndex, roadNode, previous, null, Vector3.Distance(position, previous.Position));
             
             // Update the next pointer of the previous node to the newly created node
             previous.Next = current;
@@ -839,7 +839,6 @@ namespace RoadGenerator
                     break;
                     
                 currRoadNode = currRoadNode.Next;
-
             }
 
             // Create the lanes

@@ -279,7 +279,7 @@ namespace Car
         public void SetLoopNode(LaneNode node)
         {
             EndPrevNode = node.Last;
-            EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.Index && l.Type.Side != node.LaneSide).StartNode;
+            EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.LaneIndex && l.Type.Side != node.LaneSide).StartNode;
         }
     }
 }
