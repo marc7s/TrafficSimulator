@@ -316,7 +316,11 @@ namespace Car {
             HashSet<LaneNode> backwardNodes = new HashSet<LaneNode>();
             LaneNode node = _agent.Prev(_agent.Context.CurrentNode);
 
-            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
+            Vector3 direction = _agent.Context.CurrentNode.Position - transform.position;
+            float dot = Vector3.Dot(transform.forward, direction.normalized);
+
+            float distanceToCurrentNode = (dot < 0) ? -direction.magnitude : direction.magnitude;
+            
 
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 
@@ -341,7 +345,7 @@ namespace Car {
             if(!(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID))
             {
                 node = _agent.Next(_agent.Context.CurrentNode);
-                while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + forwardOccupancyOffset)
+                while (node != null && nodeDistance <= -distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + forwardOccupancyOffset)
                 {
                     // Do not occupy nodes in front of a red light
                     if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
