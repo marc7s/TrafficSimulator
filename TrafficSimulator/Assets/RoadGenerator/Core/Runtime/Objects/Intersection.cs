@@ -59,7 +59,7 @@ namespace RoadGenerator
         [HideInInspector] private Dictionary<string, RoadNode> _intersectionGuideRoadNodes = new Dictionary<string, RoadNode>();
         [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths = new Dictionary<(string, string), GuideNode>();
 
-        public IntersectionType Type;
+        [ReadOnly] public IntersectionType Type;
         [HideInInspector] public TrafficLightController TrafficLightController;
         [ReadOnly] public string ID;
 
@@ -279,7 +279,7 @@ namespace RoadGenerator
                 Vector3 i4 = GetMidPointCorner(i10RoadLine, i9RoadLine);
                 
                 // Adding unused vertice to make sure the index is correct
-                verts.Add(new Vector3(1337,1337,1337));
+                verts.Add(Vector3.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10 });
 
                 AddTrianglesForRectangle(topTris, 5, 10, 1, 4);
@@ -369,7 +369,7 @@ namespace RoadGenerator
                 Vector3 i4 = GetMidPointCorner(i11RoadLine, i12RoadLine);
                 
                 // Adding unused vertice to make sure the index is correct
-                verts.Add(new Vector3(1337,1337,1337));
+                verts.Add(Vector3.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12 });
 
                 AddTrianglesForRectangle(topTris, 5, 12, 1, 4);

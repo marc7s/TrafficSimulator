@@ -115,7 +115,7 @@ namespace RoadGenerator
             // Use EndOfPathInstruction.Stop to cap the anchor points at the end of the road
             if (distanceAtIntersection > intersectionExtension)
             {
-                Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - intersectionLength/2, EndOfPathInstruction.Stop);
+                Vector3 secondAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection - intersectionLength / 2, EndOfPathInstruction.Stop);
                 anchorPoints.Add(new JunctionEdgeData(secondAnchorPoint, segmentIndex, road));
                 addedAnchorPoint = true;
             }
@@ -126,7 +126,7 @@ namespace RoadGenerator
             }
             if (distanceAtIntersection < vertexPath.length - intersectionExtension)
             {
-                Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + intersectionLength/2, EndOfPathInstruction.Stop);
+                Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + intersectionLength / 2, EndOfPathInstruction.Stop);
                 anchorPoints.Add(new JunctionEdgeData(firstAnchorPoint, segmentIndex + (addedAnchorPoint ? 1 : 0), road));
             }
             else
@@ -142,7 +142,7 @@ namespace RoadGenerator
         static void CreateIntersectionAtPosition(IntersectionPointData intersectionPointData, RoadSystem roadSystem)
         {
             List<Road> roads = new List<Road>();
-            foreach (var junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
+            foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
             {
                 if (!roads.Contains(junctionEdgeData.Road))
                     roads.Add(junctionEdgeData.Road);
