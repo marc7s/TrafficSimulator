@@ -3101,7 +3101,7 @@ MonoBehaviour:
   centerOfMassPosition: 0.7
   centerOfMassHeightOffset: 0
   centerOfMassTransform: {fileID: 2165209554537660382}
-  maxSpeedForward: 20
+  maxSpeedForward: 5
   maxSpeedReverse: 7
   tireFriction: 3
   rollingResistance: 0.05
