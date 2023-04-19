@@ -500,7 +500,6 @@ namespace RoadGenerator
             UpdateMesh();
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
-            RoadSystem.UpdateRoadSystemGraph();
             PlaceTrafficSigns();
             ShowLanes();
             ShowRoadNodes();
@@ -511,12 +510,12 @@ namespace RoadGenerator
 
         public void UpdateRoadNoGraphUpdate()
         {
-                UpdateRoadNodes();
-                UpdateLanes();
-                UpdateMesh();
-                foreach(Intersection intersection in Intersections)
-                    intersection.UpdateMesh();
-                PlaceTrafficSigns();
+            UpdateRoadNodes();
+            UpdateLanes();
+            UpdateMesh();
+            foreach(Intersection intersection in Intersections)
+                intersection.UpdateMesh();
+            PlaceTrafficSigns();
         }
 
         protected (Vector3, Vector3, float, float) GetPositionsAndDistancesInOrder(Vector3 position1, Vector3 position2, VertexPath path)
@@ -690,7 +689,8 @@ namespace RoadGenerator
                 if (i == _path.NumPoints - 1)
                     roadBuilder = AppendNode(roadBuilder, currPosition, _path.GetTangent(i), _path.GetNormal(i), RoadNodeType.End);
             }
-            EndRoadNode = StartRoadNode.Last;
+
+            EndRoadNode = roadBuilder.Curr;
             ConnectRoadNodesForConnectedRoads();
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(StartRoadNode);
