@@ -484,13 +484,12 @@ namespace RoadGenerator
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
-            Debug.Log("OnChange" + this);
             if(RoadSystem == null)
                 return;
 
             //ConnectRoadIfEndPointsAreClose();
             // Update the intersections and road when a node is changed
-            //IntersectionCreator.UpdateIntersections(this);
+            IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
         }
 

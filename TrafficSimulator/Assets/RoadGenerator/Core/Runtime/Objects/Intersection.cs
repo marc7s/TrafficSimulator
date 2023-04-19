@@ -196,6 +196,8 @@ namespace RoadGenerator
             Debug.Log("------------------------------------");
 #endif           
 
+            return;
+
             // The mesh code is based on the vertice layout found at TrafficSimulator/Assets/RoadGenerator/Documentation/IntersectionMeshGeneration   
 
             List<Vector3> verts = new List<Vector3>();
@@ -989,7 +991,7 @@ Debug.Log("gdfhgf");
            foreach (IntersectionArm intersectionArm in IntersectionArms)
             {
                 // Consider angles under 5 degrees as straight
-                float straightAngleThreshHold = 10f;
+                float straightAngleThreshHold = 5f;
                 float minAngle = straightAngleThreshHold;
                 IntersectionArm minAngleArm = null;
                 foreach (IntersectionArm otherIntersectionArm in IntersectionArms)

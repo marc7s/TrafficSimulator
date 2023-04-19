@@ -111,6 +111,7 @@ namespace RoadGenerator
 
         public static void CreateIntersectionAtPosition(Vector3 intersectionPosition, Road road1, Road road2)
         {
+            Debug.Log("Creating intersection at position: " + intersectionPosition);
             IntersectionPointData intersectionPointData = CalculateIntersectionData(intersectionPosition, road1, road2);
             if (!road1.RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
                 CreateIntersectionAtPosition(intersectionPointData, road1.RoadSystem);

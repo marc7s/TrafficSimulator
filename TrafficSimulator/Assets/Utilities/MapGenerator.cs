@@ -5,19 +5,44 @@ using System.Xml;
 
 namespace RoadGenerator
 {
-public enum RoadType
+public enum WayType
 {
-    Road,
-    ResidentialRoad,
+    Residential,
     Path,
     Footway,
     Cycleway,
+    Motorway,
+    Primary,
+    Secondary,
+    Trunk,
     Steps,
     RailTrain,
     RailTram,
-    Unknown
+    Tertiary,
+    Building,
+    Unclassified
 }
 
+public struct WayData
+{
+    public WayType WayType;
+    // Lane amount for one direction
+    public int LaneAmount;
+    public int Maxspeed;
+    public bool IsLit;
+    public string Name;
+    public SideWalkType SideWalkType;
+    public int Height;
+    //
+}
+
+public enum SideWalkType
+{
+    None,
+    Left,
+    Right,
+    Both
+}
 
 public class MapGenerator : MonoBehaviour
 {
@@ -26,7 +51,7 @@ public class MapGenerator : MonoBehaviour
     public RoadSystem roadSystem;
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
     int test = 0;
-    void Start()
+    void Awake()
     {
         roadSystem.Setup();
         double minLat = 0;
@@ -50,58 +75,16 @@ public class MapGenerator : MonoBehaviour
         int count = 0;
         foreach(XmlNode node in doc.DocumentElement.ChildNodes){
             if (node.Name == "way") {
-
+                WayData? wayData = GetWayData(node);
                 IEnumerator ienum = node.GetEnumerator();
-                bool isRoad = false;
-                bool isBuilding = false;
-                RoadType type;
-                float height = 10f;
-                string name = "";
-                // search for type of way
-                while (ienum.MoveNext())
-                {
-                    XmlNode currentNode = (XmlNode) ienum.Current;
-                    if (IsTagKeyName(currentNode, "highway") &&  currentNode.Attributes["v"].Value == "residential") {
-                        type = RoadType.ResidentialRoad;
-                    }
-
-                    if (IsTagKeyName(currentNode, "junction") && currentNode.Attributes["v"].Value == "roundabout")
-                    {
-                        // TODO: Add when roundabouts are supported
-                        isRoad = false;
-                        break;
-                    }
-
-                    if (IsTagKeyName(currentNode, "name")) 
-                    {
-                        name = currentNode.Attributes["v"].Value;
-                    }
-
-                    if (IsTagKeyName(currentNode, "maxspeed")) 
-                    {
-                        isRoad = true;
-                    }
-
-                    if (IsTagKeyName(currentNode, "building")) 
-                    {
-                        isBuilding = true;
-                    }
-
-                    if (IsTagKeyName(currentNode, "height")) 
-                    {
-                        height = float.Parse(currentNode.Attributes["v"].Value);
-                    }
-
-                }
-                ienum = node.GetEnumerator();
-                if (isRoad) {
-                    GenerateRoad(ienum, nodesDict, name, minLat, minLon);
+                if (wayData != null && wayData?.WayType != WayType.Building) {
+                    GenerateRoad(ienum, nodesDict, wayData.Value, minLat, minLon);
                     count++;
 
                 }
             }
         }
-        return;
+
         foreach (var roads in roadsAtNode) {
             Vector3 position = roads.Key;
 
@@ -174,51 +157,76 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    private RoadType IdentifyWayType(XmlNode node)
+    private WayData? GetWayData(XmlNode node)
     {
         IEnumerator ienum = node.GetEnumerator();
         bool isRoad = false;
         bool isBuilding = false;
-        RoadType type;
+        WayType? wayType = null;
         float height = 10f;
         string name = "";
+        WayData wayData = new WayData();
         // search for type of way
         while (ienum.MoveNext())
         {
             XmlNode currentNode = (XmlNode) ienum.Current;
-            if (IsTagKeyName(currentNode, "highway") &&  currentNode.Attributes["v"].Value == "residential") {
-                type = RoadType.ResidentialRoad;
-            }
+            if (currentNode.Name != "tag") 
+                continue;
 
-            if (IsTagKeyName(currentNode, "junction") && currentNode.Attributes["v"].Value == "roundabout")
+            switch (currentNode.Attributes["k"].Value)
             {
-                // TODO: Add when roundabouts are supported
-                isRoad = false;
-                break;
+                case "highway":
+                    wayType = GetRoadType(currentNode);
+                    break;
+                case "building":
+                    wayType = WayType.Building;
+                    break;
+                case "name":
+                    wayData.Name = currentNode.Attributes["v"].Value;
+                    break;
+                case "maxspeed":
+                    wayData.Maxspeed = int.Parse(currentNode.Attributes["v"].Value);
+                    break;
+                case "junction":
+                    if (currentNode.Attributes["v"].Value == "roundabout")
+                        return null;
+                    break;
+                case "height":
+                    wayData.Height = int.Parse(currentNode.Attributes["v"].Value);
+                    break;
             }
-
-            if (IsTagKeyName(currentNode, "name")) 
-            {
-                name = currentNode.Attributes["v"].Value;
-            }
-
-            if (IsTagKeyName(currentNode, "maxspeed")) 
-            {
-                isRoad = true;
-            }
-
-            if (IsTagKeyName(currentNode, "building")) 
-            {
-                isBuilding = true;
-            }
-
-            if (IsTagKeyName(currentNode, "height")) 
-            {
-                height = float.Parse(currentNode.Attributes["v"].Value);
-            }
-
         }
-        return RoadType.Unknown;
+        if (wayType == null)
+            return null;
+
+        wayData.WayType = wayType.Value;        
+        return wayData;
+    }
+
+    //https://wiki.openstreetmap.org/wiki/Map_features#Highway
+    // TODO add support for more road types
+    private WayType? GetRoadType(XmlNode node)
+    {
+        switch (node.Attributes["v"].Value)
+        {
+            case "motorway":
+                return WayType.Motorway;
+            case "residential":
+                return WayType.Residential;
+            case "tertiary":
+                return WayType.Tertiary;
+            case "secondary":
+                return WayType.Secondary;
+            case "primary":
+                return WayType.Primary;
+            case "trunk":
+                return WayType.Trunk;
+            case "unclassified":
+                return WayType.Unclassified;
+            
+            default:
+                return null;
+        }
     }
     private void LoadOSMMap(XmlDocument document)
     {
@@ -247,7 +255,7 @@ public class MapGenerator : MonoBehaviour
     }
 
     // https://wiki.openstreetmap.org/wiki/Map_features#Highway
-    void GenerateRoad(IEnumerator ienum, Dictionary<string, XmlNode> nodesDict, string roadName, double minLat = 0, double minLon = 0) {
+    void GenerateRoad(IEnumerator ienum, Dictionary<string, XmlNode> nodesDict, WayData wayData, double minLat = 0, double minLon = 0) {
         bool firstNode = true;
         Vector3 previousPoint = new Vector3(0,0,0);
         List <Vector3> roadPoints = new List<Vector3>();
@@ -283,7 +291,7 @@ public class MapGenerator : MonoBehaviour
         List<Vector3> roadPoints2 = new List<Vector3>();
         roadPoints2.Add(roadPoints[0]);
         roadPoints2.Add(roadPoints[1]);
-        Road road = spawnRoad(roadPoints2, roadName);
+        Road road = spawnRoad(roadPoints2, wayData.Name);
         PathCreator pathCreator = road.GetComponent<PathCreator>();
         // Roads with only two points will not render properly, this is a hack to render them
         // TODO update the roads correctly
@@ -318,9 +326,6 @@ public class MapGenerator : MonoBehaviour
     }
     Road spawnRoad(List<Vector3> points, string roadName)
     {
-            foreach (Vector3 point in points) {
-                Debug.Log(point);
-            }
             roadSystem.Setup();
           // Instantiate a new road prefab
             GameObject roadObj = Instantiate(roadPrefab, points[0], Quaternion.identity);
