@@ -484,6 +484,7 @@ namespace RoadGenerator
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
+            Debug.Log("OnChange" + this);
             if(RoadSystem == null)
                 return;
 
@@ -495,20 +496,13 @@ namespace RoadGenerator
 
         protected void UpdateRoad()
         {
-            Debug.Log("Update road");
             UpdateRoadNodes();
-            Debug.Log("Update road nodes");
             UpdateLanes();
-            Debug.Log("Update lanes");
             UpdateMesh();
-            Debug.Log("Update mesh");
-            foreach(Intersection intersection in Intersections)
-                intersection.UpdateMesh();
-            Debug.Log("Update intersection mesh");
-            RoadSystem.UpdateRoadSystemGraph();
-            Debug.Log("Update road system graph");
-            PlaceTrafficSigns();
-            Debug.Log("Place traffic signs");
+        //    foreach(Intersection intersection in Intersections)
+        //        intersection.UpdateMesh();
+           // RoadSystem.UpdateRoadSystemGraph();
+        //    PlaceTrafficSigns();
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();

@@ -127,9 +127,7 @@ namespace RoadGenerator
 
         public static void CreateIntersectionAtPositionMultipleRoads(Vector3 intersectionPosition, List<Road> roads)
         {
-            Debug.Log("CreateIntersectionAtPositionMultipleRoads");
             IntersectionPointData intersectionPointData = CalculateIntersectionDataMultipleRoads(intersectionPosition, roads);
-            Debug.Log("CreateIntersectionAtPositionMultipleRoads 2");
             if (!roads[0].RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
                 CreateIntersectionAtPosition(intersectionPointData, roads[0].RoadSystem);
         }
@@ -193,20 +191,13 @@ namespace RoadGenerator
             foreach (JunctionEdgeData junctionEdgeData in query.ToList())
                 SplitPathOnPoint(junctionEdgeData.Road.PathCreator, junctionEdgeData.AnchorPoint, junctionEdgeData.SegmentIndex);
 
-            Debug.Log("CreateIntersectionAtPosition 3");
             DeleteAnchorsInsideIntersectionBounds(intersection);
-            Debug.Log("CreateIntersectionAtPosition 4");
             foreach (Road road in roads)
             {
-                Debug.Log("hehe" + road != null + "gfjdoslik loighjfdsjkghloödfs");
-                Debug.Log(intersection != null);
                 road.OnChange();
-                Debug.Log("OnChange HA HA");
             }
 
-            Debug.Log("CreateIntersectionAtPosition 5");
             //intersection.UpdateMesh();
-            Debug.Log("CreateIntersectionAtPosition 6");
         }
 
         /// <summary>Splits a path on a point</summary>

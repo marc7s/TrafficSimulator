@@ -85,7 +85,7 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-        //return;
+        return;
         foreach (var roads in roadsAtNode) {
             Vector3 position = roads.Key;
 
@@ -102,8 +102,6 @@ public class MapGenerator : MonoBehaviour
                     PathCreator pathCreator1 = road1.PathCreator;
                     PathCreator pathCreator2 = road2.PathCreator;
 
-                    Debug.Log("Road 1 length: " + pathCreator1.path.length);
-                    Debug.Log("Road 2 length: " + pathCreator2.path.length);
                     if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15)
                     {
                         continue;
@@ -116,7 +114,7 @@ public class MapGenerator : MonoBehaviour
                     if (!(isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2))
                     {
                         position = position + new Vector3(0, 0, 0.01f);
-                        Debug.Log("Intersection position" + position);
+                       // Debug.Log("Intersection position" + position);
                         IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
                     }
                 }

@@ -210,7 +210,6 @@ namespace RoadGenerator
 
                 foreach(IntersectionArm arm in IntersectionArms)
                 {
-                    Debug.Log(arm.OppositeArmID);
                     if(arm.OppositeArmID == "")
                         bottomArm = arm;
                 }
