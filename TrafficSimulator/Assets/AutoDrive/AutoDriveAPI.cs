@@ -155,8 +155,11 @@ namespace Car
             {
                 (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[node.Intersection.ID];
                 if(node == entry)
-                    return guideStart;   
+                    return guideStart;
             }
+            
+            if (Context.NavigationMode == NavigationMode.Random && node.Type == RoadNodeType.JunctionEdge && node.Intersection)
+                return UpdateAndGetGuideNode(node, true);
 
             if(node.Next == null)
                 return endBehaviour == RoadEndBehaviour.Loop ? _context.EndNextNode : null;
