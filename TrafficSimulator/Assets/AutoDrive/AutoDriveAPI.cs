@@ -158,7 +158,7 @@ namespace Car
                     return guideStart;
             }
             
-            if (Context.NavigationMode == NavigationMode.Random && node.Type == RoadNodeType.JunctionEdge && node.Intersection)
+            if (Context.NavigationMode == NavigationMode.Random && node.Type == RoadNodeType.JunctionEdge && node.Intersection != null)
                 return UpdateAndGetGuideNode(node, true);
 
             if(node.Next == null)
