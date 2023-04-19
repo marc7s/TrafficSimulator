@@ -99,6 +99,40 @@ namespace RoadGenerator
 
             return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
         }
+        
+        static IntersectionPointData CalculateIntersectionDataMultipleRoads(Vector3 intersectionPosition, List<Road> roads)
+        {
+            List<JunctionEdgeData> junctionEdgeDatas = new List<JunctionEdgeData>();
+            // TODO fix
+            float intersectionLength = Intersection.CalculateIntersectionLength(roads[0], roads[1]);
+            // Get the anchor points on either side of the intersection for the two roads
+
+            foreach(Road road in roads)
+            {
+                Debug.Log(road);
+                junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road, intersectionPosition, intersectionLength));
+            }
+
+
+            IntersectionType type = IntersectionType.FourWayIntersection;
+            return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
+        }
+
+        public static void CreateIntersectionAtPosition(Vector3 intersectionPosition, Road road1, Road road2)
+        {
+            IntersectionPointData intersectionPointData = CalculateIntersectionData(intersectionPosition, road1, road2);
+            if (!road1.RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
+                CreateIntersectionAtPosition(intersectionPointData, road1.RoadSystem);
+        }
+
+        public static void CreateIntersectionAtPositionMultipleRoads(Vector3 intersectionPosition, List<Road> roads)
+        {
+            Debug.Log("CreateIntersectionAtPositionMultipleRoads");
+            IntersectionPointData intersectionPointData = CalculateIntersectionDataMultipleRoads(intersectionPosition, roads);
+            Debug.Log("CreateIntersectionAtPositionMultipleRoads 2");
+            if (!roads[0].RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
+                CreateIntersectionAtPosition(intersectionPointData, roads[0].RoadSystem);
+        }
 
         /// <summary>Calculate the positions of the two anchor points to be created on either side of the intersection</summary>
         static List<JunctionEdgeData> GetIntersectionAnchorPoints(Road road, Vector3 intersectionPosition, float intersectionLength)
@@ -159,12 +193,20 @@ namespace RoadGenerator
             foreach (JunctionEdgeData junctionEdgeData in query.ToList())
                 SplitPathOnPoint(junctionEdgeData.Road.PathCreator, junctionEdgeData.AnchorPoint, junctionEdgeData.SegmentIndex);
 
+            Debug.Log("CreateIntersectionAtPosition 3");
             DeleteAnchorsInsideIntersectionBounds(intersection);
-
+            Debug.Log("CreateIntersectionAtPosition 4");
             foreach (Road road in roads)
+            {
+                Debug.Log("hehe" + road != null + "gfjdoslik loighjfdsjkghloödfs");
+                Debug.Log(intersection != null);
                 road.OnChange();
+                Debug.Log("OnChange HA HA");
+            }
 
-            intersection.UpdateMesh();
+            Debug.Log("CreateIntersectionAtPosition 5");
+            //intersection.UpdateMesh();
+            Debug.Log("CreateIntersectionAtPosition 6");
         }
 
         /// <summary>Splits a path on a point</summary>

@@ -12,12 +12,15 @@ public class MapGenerator : MonoBehaviour
     public GameObject roadPrefab;
     public GameObject HousePrefab;
     public RoadSystem roadSystem;
-
+    Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
+    int test = 0;
     void Start()
     {
+        roadSystem.Setup();
         double minLat = 0;
         double minLon = 0;
         Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
+
         XmlDocument doc = new XmlDocument();
         LoadOSMMap(doc);
     
@@ -48,32 +51,112 @@ public class MapGenerator : MonoBehaviour
                     if (IsTagKeyName(currentNode, "highway") &&  currentNode.Attributes["v"].Value != "path") {
                         //isRoad = true;
                     }
+
                     if (IsTagKeyName(currentNode, "junction") && currentNode.Attributes["v"].Value == "roundabout")
                     {
                         // TODO: Add when roundabouts are supported
                         isRoad = false;
                         break;
                     }
+
                     if (IsTagKeyName(currentNode, "name")) {
                         name = currentNode.Attributes["v"].Value;
                     }
+
                     if (IsTagKeyName(currentNode, "maxspeed")) {
                         isRoad = true;
                     }
+
                     if (IsTagKeyName(currentNode, "building")) {
                         isBuilding = true;
                     }
+
                     if (IsTagKeyName(currentNode, "height")) {
                         height = float.Parse(currentNode.Attributes["v"].Value);
                     }
+
                 }
 
                 ienum = node.GetEnumerator();
                 if (isRoad) {
                     GenerateRoad(ienum, nodesDict, name, minLat, minLon);
                     count++;
+
                 }
-            }    
+            }
+        }
+        //return;
+        foreach (var roads in roadsAtNode) {
+            Vector3 position = roads.Key;
+
+            // Find nodes that are shared by more than one road
+            // This will mean it will either be an intersection or a road connection
+            if (roads.Value.Count > 1)
+            {
+
+                if (roads.Value.Count == 2)
+                {
+                    Road road1 = roads.Value[0];
+                    Road road2 = roads.Value[1];
+
+                    PathCreator pathCreator1 = road1.PathCreator;
+                    PathCreator pathCreator2 = road2.PathCreator;
+
+                    Debug.Log("Road 1 length: " + pathCreator1.path.length);
+                    Debug.Log("Road 2 length: " + pathCreator2.path.length);
+                    if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15)
+                    {
+                        continue;
+                    }
+
+                    bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
+                    bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
+                    
+                    // If it is an intersection
+                    if (!(isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2))
+                    {
+                        position = position + new Vector3(0, 0, 0.01f);
+                        Debug.Log("Intersection position" + position);
+                        IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
+                    }
+                }
+                else if (roads.Value.Count == 3 && false)
+                {
+
+                    Road road1 = roads.Value[0];
+                    Road road2 = roads.Value[1];
+                    Road road3 = roads.Value[2];
+
+                    PathCreator pathCreator1 = road1.PathCreator;
+                    PathCreator pathCreator2 = road2.PathCreator;
+                    PathCreator pathCreator3 = road3.PathCreator;
+
+                    Debug.Log("Road 1 length: " + pathCreator1.path.length);
+                    Debug.Log("Road 2 length: " + pathCreator2.path.length);
+                    Debug.Log("Road 3 length: " + pathCreator3.path.length);
+                    if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15 || pathCreator3.path.length < 15)
+                    {
+                        continue;
+                    }
+                    Debug.Log(position + "gdgf");
+
+                    bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
+                    bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
+                    bool isNodeAtEndPointRoad3 = pathCreator3.path.GetPoint(pathCreator3.path.NumPoints - 1) == roads.Key || pathCreator3.path.GetPoint(0) == roads.Key;
+                    
+                    // If it is an intersection
+                    if (!(isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2 && isNodeAtEndPointRoad3))
+                    {
+                        // Temporary hack, TODO fix
+                        position = position + new Vector3(0, 0, 0.0001f);
+                        Debug.Log("Intersection position" + position);
+                        Debug.Log("road1 not null" + road1);
+                        Debug.Log("road2 not null" + road2);
+                        Debug.Log("road3 not null" + road3);
+                        IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3 });
+                    }
+                }
+            }
         }
     }
     private void LoadOSMMap(XmlDocument document)
@@ -111,16 +194,20 @@ public class MapGenerator : MonoBehaviour
         {
             XmlNode currentNode = (XmlNode) ienum.Current; 
 
-            if (currentNode.Name == "nd" && nodesDict.ContainsKey(currentNode.Attributes["ref"].Value)) {
+            if (currentNode.Name == "nd" && nodesDict.ContainsKey(currentNode.Attributes["ref"].Value)) 
+            { 
                 const int scale = 111000;
                 // monka line
                 Vector3 nodePosition = new Vector3((float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lon"].Value.Replace(".", ",")) - minLon)*scale, 0, (float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lat"].Value.Replace(".", ",")) - minLat)*scale);
-                if (firstNode) {
+                if (firstNode) 
+                {
                     firstNode = false;
                     previousPoint = LatLonVector3ToVector3(nodePosition);
                     roadPoints.Add(nodePosition);
 
-                } else {
+                } 
+                else 
+                {
                     //DrawRoad(previousPoint, LatLonVector3ToVector3(nodePosition));
                     previousPoint = LatLonVector3ToVector3(nodePosition);
                     roadPoints.Add(nodePosition);
@@ -144,6 +231,13 @@ public class MapGenerator : MonoBehaviour
             pathCreator.bezierPath.AddSegmentToEnd(roadPoints[i]);
         }
         
+        foreach (Vector3 point in roadPoints) {
+            if (!roadsAtNode.ContainsKey(point))
+                roadsAtNode.Add(point, new List<Road> { road });
+            else
+                roadsAtNode[point].Add(road);
+        }
+
         road.OnChange();
     }
 

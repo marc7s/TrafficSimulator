@@ -299,7 +299,7 @@ namespace RoadGenerator
                 Vector3 i12 = bottomArm.JunctionEdgePosition + bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
 
                 bool isWrongDirection = bottomArmRoadNode.Prev.Type == RoadNodeType.FourWayIntersection;
-
+Debug.Log("gdfhgf");
 
                 IntersectionArm topArm = GetArm(bottomArm.OppositeArmID);
                 RoadNode topArmRoadNode = GetRoadNodeAtIntersectionArm(topArm);
@@ -312,7 +312,7 @@ namespace RoadGenerator
                     (i5, i12) = (i12, i5);
                     (i8, i9) = (i9, i8);
                 }
-
+                Debug.Log("gdfhgf");
                 
                 // Find one of the side arms
                 IntersectionArm sideArm = null;
@@ -324,17 +324,19 @@ namespace RoadGenerator
                         break;
                     }
                 }
-
+Debug.Log("gdfhgf");
                 // Find out which side the side arm is on
                 TurnDirection turnDirection = GetTurnDirection(bottomArmRoadNode.Position - IntersectionPosition, GetRoadNodeAtIntersectionArm(sideArm).Position - IntersectionPosition);
-                
+                Debug.Log("gdfhgf");
                 IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
+                Debug.Log("gdfhgf");
                 RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
+               Debug.Log("gdfhgf");
                 float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
-
+Debug.Log("gdfhgf");
                 Vector3 i11 = rightArm.JunctionEdgePosition - rightArmRoadNode.Normal * rightArmRoadHalfWidth;
                 Vector3 i10 = rightArm.JunctionEdgePosition + rightArmRoadNode.Normal * rightArmRoadHalfWidth;
-
+Debug.Log("gdfhgf");
                 // Since we don't know the normal direction of the side arm, we need switch if they are in the wrong order
                 if (Vector3.Distance(i11, i12) > Vector3.Distance(i10, i12))
                     (i11, i10) = (i10, i11);
@@ -348,7 +350,7 @@ namespace RoadGenerator
 
                 if (Vector3.Distance(i6, i5) > Vector3.Distance(i7, i5))
                     (i7, i6) = (i6, i7);
-
+Debug.Log("gdfhgf");
                 Vector3 road1Dir = (bottomArm.JunctionEdgePosition - topArm.JunctionEdgePosition).normalized;
                 Vector3 road2Dir = (leftArm.JunctionEdgePosition - rightArm.JunctionEdgePosition).normalized;
 
@@ -361,7 +363,7 @@ namespace RoadGenerator
                 (Vector3, Vector3) i6RoadLine = (i6, road2Dir);
                 (Vector3, Vector3) i10RoadLine = (i10, -road2Dir);
                 (Vector3, Vector3) i11RoadLine = (i11, -road2Dir);
-
+Debug.Log("gdfhgf");
                 // Mid points
                 Vector3 i1 = GetMidPointCorner(i5RoadLine, i6RoadLine);
                 Vector3 i2 = GetMidPointCorner(i8RoadLine, i7RoadLine);
@@ -988,7 +990,7 @@ namespace RoadGenerator
            foreach (IntersectionArm intersectionArm in IntersectionArms)
             {
                 // Consider angles under 5 degrees as straight
-                float straightAngleThreshHold = 5f;
+                float straightAngleThreshHold = 10f;
                 float minAngle = straightAngleThreshHold;
                 IntersectionArm minAngleArm = null;
                 foreach (IntersectionArm otherIntersectionArm in IntersectionArms)

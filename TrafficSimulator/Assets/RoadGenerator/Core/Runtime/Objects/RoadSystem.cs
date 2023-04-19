@@ -267,10 +267,11 @@ namespace RoadGenerator
                road.UpdateRoadNodes();
                road.UpdateLanes();
             }
+            Debug.Log("Updating road system graph");
 
             // Generate a new graph
             RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
-
+            Debug.Log("Road system graph updated");
             // Display the graph if the setting is active
             if (ShowGraph)
             {

@@ -495,13 +495,20 @@ namespace RoadGenerator
 
         protected void UpdateRoad()
         {
+            Debug.Log("Update road");
             UpdateRoadNodes();
+            Debug.Log("Update road nodes");
             UpdateLanes();
+            Debug.Log("Update lanes");
             UpdateMesh();
+            Debug.Log("Update mesh");
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
+            Debug.Log("Update intersection mesh");
             RoadSystem.UpdateRoadSystemGraph();
+            Debug.Log("Update road system graph");
             PlaceTrafficSigns();
+            Debug.Log("Place traffic signs");
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();
@@ -514,8 +521,8 @@ namespace RoadGenerator
                 UpdateRoadNodes();
                 UpdateLanes();
                 UpdateMesh();
-                foreach(Intersection intersection in Intersections)
-                    intersection.UpdateMesh();
+               // foreach(Intersection intersection in Intersections)
+               //     intersection.UpdateMesh();
                 PlaceTrafficSigns();
         }
 
@@ -862,7 +869,6 @@ namespace RoadGenerator
         {
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
-
             foreach(Intersection intersection in Intersections)
             {
                 List<IntersectionArm> armsFromThisRoad = intersection.GetArms(this);
@@ -879,7 +885,7 @@ namespace RoadGenerator
                 else if (armsFromThisRoad.Count == 1)
                 {
                     bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
-                    bool junctionEdgeEndsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
+                    bool junctionEdgeEndsIntersection = intersection.Type != IntersectionType.ThreeWayIntersectionAtEnd;
                     float anchorDistance = _path.GetClosestDistanceAlongPath(armsFromThisRoad[0].JunctionEdgePosition);
                     queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistance, armsFromThisRoad[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
                     queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
