@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99d3254aebf865b4bae3f8ccb1ed178e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _roadContainer: {fileID: 2382052090468904982}
+  RoadContainer: {fileID: 2382052090468904982}
   _intersectionContainer: {fileID: 2768285544214366368}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
@@ -58,8 +58,8 @@ MonoBehaviour:
   DefaultStopSignPrefab: {fileID: 100000, guid: ea4cde724487aa243bac09bf2da74d99, type: 3}
   ShowGraph: 0
   SpawnRoadsAtOrigin: 0
-  _roads: []
-  _rails: []
+  _defaultRoads: []
+  _tramRails: []
   _intersections: []
   GraphContainer: {fileID: 0}
 --- !u!1 &2382052090468904982

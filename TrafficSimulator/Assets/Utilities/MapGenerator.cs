@@ -5,6 +5,18 @@ using System.Xml;
 
 namespace RoadGenerator
 {
+public enum RoadType
+{
+    Road,
+    ResidentialRoad,
+    Path,
+    Footway,
+    Cycleway,
+    Steps,
+    RailTrain,
+    RailTram,
+    Unknown
+}
 
 
 public class MapGenerator : MonoBehaviour
@@ -38,18 +50,19 @@ public class MapGenerator : MonoBehaviour
         int count = 0;
         foreach(XmlNode node in doc.DocumentElement.ChildNodes){
             if (node.Name == "way") {
+
                 IEnumerator ienum = node.GetEnumerator();
                 bool isRoad = false;
                 bool isBuilding = false;
-
+                RoadType type;
                 float height = 10f;
                 string name = "";
                 // search for type of way
                 while (ienum.MoveNext())
                 {
                     XmlNode currentNode = (XmlNode) ienum.Current;
-                    if (IsTagKeyName(currentNode, "highway") &&  currentNode.Attributes["v"].Value != "path") {
-                        //isRoad = true;
+                    if (IsTagKeyName(currentNode, "highway") &&  currentNode.Attributes["v"].Value == "residential") {
+                        type = RoadType.ResidentialRoad;
                     }
 
                     if (IsTagKeyName(currentNode, "junction") && currentNode.Attributes["v"].Value == "roundabout")
@@ -59,24 +72,27 @@ public class MapGenerator : MonoBehaviour
                         break;
                     }
 
-                    if (IsTagKeyName(currentNode, "name")) {
+                    if (IsTagKeyName(currentNode, "name")) 
+                    {
                         name = currentNode.Attributes["v"].Value;
                     }
 
-                    if (IsTagKeyName(currentNode, "maxspeed")) {
+                    if (IsTagKeyName(currentNode, "maxspeed")) 
+                    {
                         isRoad = true;
                     }
 
-                    if (IsTagKeyName(currentNode, "building")) {
+                    if (IsTagKeyName(currentNode, "building")) 
+                    {
                         isBuilding = true;
                     }
 
-                    if (IsTagKeyName(currentNode, "height")) {
+                    if (IsTagKeyName(currentNode, "height")) 
+                    {
                         height = float.Parse(currentNode.Attributes["v"].Value);
                     }
 
                 }
-
                 ienum = node.GetEnumerator();
                 if (isRoad) {
                     GenerateRoad(ienum, nodesDict, name, minLat, minLon);
@@ -157,9 +173,56 @@ public class MapGenerator : MonoBehaviour
             }
         }
     }
+
+    private RoadType IdentifyWayType(XmlNode node)
+    {
+        IEnumerator ienum = node.GetEnumerator();
+        bool isRoad = false;
+        bool isBuilding = false;
+        RoadType type;
+        float height = 10f;
+        string name = "";
+        // search for type of way
+        while (ienum.MoveNext())
+        {
+            XmlNode currentNode = (XmlNode) ienum.Current;
+            if (IsTagKeyName(currentNode, "highway") &&  currentNode.Attributes["v"].Value == "residential") {
+                type = RoadType.ResidentialRoad;
+            }
+
+            if (IsTagKeyName(currentNode, "junction") && currentNode.Attributes["v"].Value == "roundabout")
+            {
+                // TODO: Add when roundabouts are supported
+                isRoad = false;
+                break;
+            }
+
+            if (IsTagKeyName(currentNode, "name")) 
+            {
+                name = currentNode.Attributes["v"].Value;
+            }
+
+            if (IsTagKeyName(currentNode, "maxspeed")) 
+            {
+                isRoad = true;
+            }
+
+            if (IsTagKeyName(currentNode, "building")) 
+            {
+                isBuilding = true;
+            }
+
+            if (IsTagKeyName(currentNode, "height")) 
+            {
+                height = float.Parse(currentNode.Attributes["v"].Value);
+            }
+
+        }
+        return RoadType.Unknown;
+    }
     private void LoadOSMMap(XmlDocument document)
     {
-        document.Load("Assets/map2.osm");
+        document.Load("Assets/map4.osm");
     }
 
     private bool IsTagKeyName(XmlNode node, string value)
@@ -212,7 +275,11 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
-
+        // Currently get error when roads have same start and end point, TODO fix
+        if (roadPoints[0] == roadPoints[roadPoints.Count - 1])
+        {
+            return;
+        }
         List<Vector3> roadPoints2 = new List<Vector3>();
         roadPoints2.Add(roadPoints[0]);
         roadPoints2.Add(roadPoints[1]);
@@ -261,7 +328,7 @@ public class MapGenerator : MonoBehaviour
             // Set the name of the road
             roadObj.name = roadName;
             
-            //roadObj.transform.parent = roadSystem.RoadContainer.transform;
+            roadObj.transform.parent = roadSystem.RoadContainer.transform;
             // Get the road from the prefab
             Road road = roadObj.GetComponent<Road>();
 

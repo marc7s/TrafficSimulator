@@ -501,7 +501,7 @@ namespace RoadGenerator
             UpdateMesh();
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
-        //    PlaceTrafficSigns();
+            //PlaceTrafficSigns();
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();
@@ -1272,7 +1272,10 @@ namespace RoadGenerator
                 Intersections.RemoveAt(0);
                 DestroyImmediate(intersection.gameObject);
             }
-            RoadSystem.UpdateRoadSystemGraph();
+
+            // Only Update in editor mode
+            if (!Application.isPlaying)
+                RoadSystem.UpdateRoadSystemGraph();
         }
     }
 }

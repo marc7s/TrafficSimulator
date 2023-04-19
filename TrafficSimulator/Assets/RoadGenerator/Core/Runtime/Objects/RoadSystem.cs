@@ -15,7 +15,7 @@ namespace RoadGenerator
 	public class RoadSystem : MonoBehaviour
 	{
         [Header("Connections")]       
-        [SerializeField] private GameObject _roadContainer;
+        [SerializeField] public GameObject RoadContainer;
         [SerializeField] private GameObject _intersectionContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
@@ -96,7 +96,7 @@ namespace RoadGenerator
             roadObj.name = GetPathName(pathType) + (pathType == PathType.Road ? RoadCount : TramRailCount);
             
             // Set the road as a child of the road container
-            roadObj.transform.parent = _roadContainer.transform;
+            roadObj.transform.parent = RoadContainer.transform;
             
             // Move the road to the spawn point
             PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
@@ -175,7 +175,7 @@ namespace RoadGenerator
             _isSetup = true;
             
             // Find roads
-            foreach(Transform roadT in _roadContainer.transform)
+            foreach(Transform roadT in RoadContainer.transform)
             {
                 Road road = roadT.GetComponent<Road>();
                 road.RoadSystem = this;
