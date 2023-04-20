@@ -31,7 +31,8 @@ Transform:
   m_Children:
   - {fileID: 1092674945270820322}
   - {fileID: 3350050010001419053}
-  - {fileID: 4123658267410778033}
+  - {fileID: 7312208358962521853}
+  - {fileID: 1980633667098319055}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -49,10 +50,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   RoadContainer: {fileID: 2382052090468904982}
   _intersectionContainer: {fileID: 2768285544214366368}
+  BuildingContainer: {fileID: 2163801758299223360}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   _intersectionPrefab: {fileID: 4601614798071418940, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
-  _mapGenerator: {fileID: 638631384901232301}
+  _mapGenerator: {fileID: 3251158373978459654}
   _roadSystemGraphNodePrefab: {fileID: 6519265059532225654, guid: 454238e3f781fa44fa41bcc016a4e5fd, type: 3}
   DrivingSide: -1
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
@@ -64,6 +66,37 @@ MonoBehaviour:
   _tramRails: []
   _intersections: []
   GraphContainer: {fileID: 0}
+--- !u!1 &2163801758299223360
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7312208358962521853}
+  m_Layer: 0
+  m_Name: Buildings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7312208358962521853
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163801758299223360}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 798415014314360586}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2382052090468904982
 GameObject:
   m_ObjectHideFlags: 0
@@ -126,49 +159,76 @@ Transform:
   m_Father: {fileID: 798415014314360586}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &5972344088316510878
-GameObject:
+--- !u!1001 &7706637533628383206
+PrefabInstance:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4123658267410778033}
-  - component: {fileID: 638631384901232301}
-  m_Layer: 0
-  m_Name: MapGenerator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4123658267410778033
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 798415014314360586}
+    m_Modifications:
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1591.3502
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1964.1558
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1799.952
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9176898902921508192, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: m_Name
+      value: MapGenerator
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+--- !u!4 &1980633667098319055 stripped
 Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+  m_PrefabInstance: {fileID: 7706637533628383206}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5972344088316510878}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 798415014314360586}
-  m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &638631384901232301
+--- !u!114 &3251158373978459654 stripped
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 5182822186109989344, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+  m_PrefabInstance: {fileID: 7706637533628383206}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5972344088316510878}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f878129d6d206d44aabd7b2b1cf20fbe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
-  HousePrefab: {fileID: 0}

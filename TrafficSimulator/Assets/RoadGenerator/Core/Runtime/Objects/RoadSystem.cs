@@ -15,8 +15,9 @@ namespace RoadGenerator
 	public class RoadSystem : MonoBehaviour
 	{
         [Header("Connections")]       
-        [SerializeField] public GameObject RoadContainer;
+        public GameObject RoadContainer;
         [SerializeField] private GameObject _intersectionContainer;
+        public GameObject BuildingContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
         [SerializeField] private GameObject _intersectionPrefab;
@@ -170,15 +171,34 @@ namespace RoadGenerator
         public void GenerateOSMRoads()
         {
             DeleteAllRoads();
+            DeleteAllBuildings();
             _mapGenerator.GenerateMap(this);
         }
 
         public void DeleteAllRoads()
         {
-            int roadCount = RoadCount;
-            for (var i = 0; i < roadCount; i++)
+            List<GameObject> roads = new List<GameObject>();
+            foreach(Transform roadT in RoadContainer.transform)
             {
-                DestroyImmediate(DefaultRoads[0].gameObject);
+                roads.Add(roadT.gameObject);
+            }
+            foreach(GameObject road in roads)
+            {
+                DestroyImmediate(road);
+            }
+            DeleteAllBuildings();
+        }
+
+        public void DeleteAllBuildings()
+        {
+            List<GameObject> buildings = new List<GameObject>();
+            foreach(Transform buildingT in BuildingContainer.transform)
+            {
+                buildings.Add(buildingT.gameObject);
+            }
+            foreach(GameObject building in buildings)
+            {
+                DestroyImmediate(building);
             }
         }
 

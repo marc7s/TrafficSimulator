@@ -27,12 +27,12 @@ public struct WayData
 {
     public WayType WayType;
     // Lane amount for one direction
-    public int LaneAmount;
-    public int Maxspeed;
-    public bool IsLit;
-    public string Name;
-    public SideWalkType SideWalkType;
-    public int Height;
+    public int? LaneAmount;
+    public int? MaxSpeed;
+    public bool? IsLit;
+    public string? Name;
+    public SideWalkType? SideWalkType;
+    public int? Height;
     //
 }
 
@@ -47,19 +47,21 @@ public enum SideWalkType
 public class MapGenerator : MonoBehaviour
 {
     public GameObject roadPrefab;
-    public GameObject HousePrefab;
+    public GameObject BuildingPrefab;
     private RoadSystem roadSystem;
+    public Material BuildingMaterial;
     Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
     double minLat = 0;
     double minLon = 0;
-    int test = 0;
     public void GenerateMap(RoadSystem roadSystem)
     {
+        nodesDict.Clear();
+        roadsAtNode.Clear();
+        minLat = 0;
+        minLon = 0;
+
         this.roadSystem = roadSystem;
-
-
-        
 
         XmlDocument doc = new XmlDocument();
         LoadOSMMap(doc);
@@ -71,7 +73,8 @@ public class MapGenerator : MonoBehaviour
                 minLon = double.Parse(node.Attributes["minlon"].Value.Replace(".", ","));
             }
             if (node.Name == "node") {
-                nodesDict.Add(node.Attributes["id"].Value, node);
+                if (!nodesDict.ContainsKey(node.Attributes["id"].Value))
+                    nodesDict.Add(node.Attributes["id"].Value, node);
             }
         }
 
@@ -80,10 +83,14 @@ public class MapGenerator : MonoBehaviour
             if (node.Name == "way") {
                 WayData? wayData = GetWayData(node);
                 IEnumerator ienum = node.GetEnumerator();
-                if (wayData != null && wayData?.WayType != WayType.Building) {
+                if (wayData == null)
+                    continue;
+                if (wayData?.WayType != WayType.Building) {
                     GenerateRoad(ienum, wayData.Value);
                     count++;
-
+                }
+                if (wayData?.WayType == WayType.Building) {
+                    GenerateBuilding(ienum, wayData.Value);
                 }
             }
         }
@@ -163,11 +170,7 @@ public class MapGenerator : MonoBehaviour
     private WayData? GetWayData(XmlNode node)
     {
         IEnumerator ienum = node.GetEnumerator();
-        bool isRoad = false;
-        bool isBuilding = false;
         WayType? wayType = null;
-        float height = 10f;
-        string name = "";
         WayData wayData = new WayData();
         // search for type of way
         while (ienum.MoveNext())
@@ -188,7 +191,7 @@ public class MapGenerator : MonoBehaviour
                     wayData.Name = currentNode.Attributes["v"].Value;
                     break;
                 case "maxspeed":
-                    wayData.Maxspeed = int.Parse(currentNode.Attributes["v"].Value);
+                    wayData.MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
                     break;
                 case "junction":
                     if (currentNode.Attributes["v"].Value == "roundabout")
@@ -270,6 +273,14 @@ public class MapGenerator : MonoBehaviour
         roadPoints2.Add(roadPoints[0]);
         roadPoints2.Add(roadPoints[1]);
         Road road = spawnRoad(roadPoints2, wayData.Name);
+
+        if (wayData.MaxSpeed != null)
+            road.SpeedLimit = (SpeedLimit)wayData.MaxSpeed;
+
+        // When the speedlimit is not known in residential areas, set it to 30km/h
+        if (wayData.WayType == WayType.Residential && wayData.MaxSpeed == null)
+            road.SpeedLimit = SpeedLimit.ThirtyKPH;
+
         PathCreator pathCreator = road.GetComponent<PathCreator>();
         // Roads with only two points will not render properly, this is a hack to render them
         // TODO update the roads correctly
@@ -311,20 +322,116 @@ public class MapGenerator : MonoBehaviour
         return nodePositions;
     }
 
-    void GenerateBuilding()
+    void GenerateBuilding(IEnumerator ienum, WayData wayData)
     {
+        float defaultHeight = 10f;
+        if (wayData.Height != null)
+            defaultHeight = wayData.Height.Value;
+        List<Vector3> buildingPointsBottom = GetWayNodePositions(ienum);
+        List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
+        foreach (Vector3 point in buildingPointsBottom)
+            buildingPoints.Add(new BuildingPoints(point, new Vector3(point.x, defaultHeight, point.z)));
 
+        Debug.Log(buildingPoints.Count);
+        Debug.Log(buildingPointsBottom[0]);
+        GameObject house = Instantiate(BuildingPrefab, buildingPointsBottom[0], Quaternion.identity);
+        house.name = wayData.Name ?? "Building";
+        house.transform.parent = roadSystem.BuildingContainer.transform;
+        Mesh buildingMesh = AssignMeshComponents(house);
+        CreateBuildingMesh(buildingMesh, buildingPoints);
     }
 
-    void DrawRoad(Vector3 point1, Vector3 point2) {
-        double distance = Vector3.Distance(point1, point2);
-        Vector3 distance3 = point2 - point1;
-        roadPrefab.transform.localScale = new Vector3(5f, 0.01f, (float)distance);
-        Vector3 halfwayCordinates = (point1 + point2) / 2;
-        //roadPrefab.transform.rotation = Quaternion.LookRotation(distance3, Vector3.up);
-        Quaternion rotation = Quaternion.LookRotation(distance3, Vector3.up);
-        roadPrefab.transform.rotation = Quaternion.identity;
-        Instantiate(roadPrefab, halfwayCordinates, Quaternion.LookRotation(distance3, Vector3.up));
+    private struct BuildingPoints
+    {
+        public Vector3 BottomPoint;
+        public Vector3 TopPoint;
+        public BuildingPoints(Vector3 bottomPoint, Vector3 topPoint)
+        {
+            BottomPoint = bottomPoint;
+            TopPoint = topPoint;
+        }
+    }
+    private void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints)
+    {
+        List<Vector3> verts = new List<Vector3>();
+        List<int> tris = new List<int>();
+
+        foreach (BuildingPoints buildingPoint in buildingPoints)
+        {
+            verts.Add(buildingPoint.BottomPoint);
+            verts.Add(buildingPoint.TopPoint);
+        }
+
+        int index = -1;
+        bool isFirstIteration = true;
+        foreach (BuildingPoints buildingPoint in buildingPoints)
+        {
+            if (isFirstIteration)
+            {
+                isFirstIteration = false;
+                index += 2;
+                continue;
+            }
+            index += 2;
+            AddBuildingWall(index, index -1, index - 2, index - 3, tris);
+        }
+
+        buildingMesh.Clear();
+        buildingMesh.vertices = verts.ToArray();
+        buildingMesh.subMeshCount = 1;
+        buildingMesh.SetTriangles(tris.ToArray(), 0);
+        buildingMesh.RecalculateBounds();
+
+    }
+    private void AddBuildingWall(int currentSideTopIndex, int currentSideBottomIndex, int prevSideTopIndex, int prevSideBottomIndex, List<int> triangles)
+    {
+        Debug.Log("Adding wall");
+        triangles.Add(prevSideTopIndex);
+        triangles.Add(currentSideTopIndex);
+        triangles.Add(prevSideBottomIndex);
+
+        // Adding double sided triangles until the roof is done
+        // Remove this when roof is done
+        triangles.Add(prevSideBottomIndex);
+        triangles.Add(currentSideTopIndex);
+        triangles.Add(prevSideTopIndex);
+
+        triangles.Add(currentSideBottomIndex);
+        triangles.Add(prevSideBottomIndex);
+        triangles.Add(currentSideTopIndex);
+
+        // Adding double sided triangles until the roof is done
+        // Remove this when roof is done
+        triangles.Add(currentSideTopIndex);
+        triangles.Add(prevSideBottomIndex);
+        triangles.Add(currentSideBottomIndex);
+    }
+
+    Mesh AssignMeshComponents(GameObject buildingObject)
+    {
+        buildingObject.transform.rotation = Quaternion.identity;
+        buildingObject.transform.position = Vector3.zero;
+        buildingObject.transform.localScale = Vector3.one;
+
+        // Ensure mesh renderer and filter components are assigned
+        if (!buildingObject.gameObject.GetComponent<MeshFilter>()) 
+        {
+            buildingObject.gameObject.AddComponent<MeshFilter>();
+        }
+        if (!buildingObject.GetComponent<MeshRenderer>()) 
+        {
+            buildingObject.gameObject.AddComponent<MeshRenderer>();
+        }
+
+        MeshRenderer _meshRenderer = buildingObject.GetComponent<MeshRenderer>();
+        _meshRenderer.sharedMaterial = BuildingMaterial;
+        MeshFilter _meshFilter = buildingObject.GetComponent<MeshFilter>();
+        
+
+        Mesh mesh = new Mesh();
+    
+        _meshFilter.sharedMesh = mesh;
+        return mesh;
     }
     Road spawnRoad(List<Vector3> points, string roadName)
     {
@@ -351,17 +458,6 @@ public class MapGenerator : MonoBehaviour
             roadSystem.AddRoad(road);
             
             return road;
-    }
-
-    void DrawBuildingWall(Vector3 point1, Vector3 point2, float height = 10f) {
-        double distance = Vector3.Distance(point1, point2);
-        Vector3 distance3 = point2 - point1;
-        roadPrefab.transform.localScale = new Vector3(0.1f, height, (float)distance);
-        Vector3 halfwayCordinates = (point1 + point2) / 2;
-        //roadPrefab.transform.rotation = Quaternion.LookRotation(distance3, Vector3.up);
-        Quaternion rotation = Quaternion.LookRotation(distance3, Vector3.up);
-        roadPrefab.transform.rotation = Quaternion.identity;
-        Instantiate(roadPrefab, halfwayCordinates, Quaternion.LookRotation(distance3, Vector3.up));
     }
 }
 }
