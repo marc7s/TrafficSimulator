@@ -612,6 +612,7 @@ Debug.Log("gdfhgf");
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
+            Debug.Log("Mapping intersection navigation" + this);
             // Map the lane node to take in order to get to the navigation node edge
             _laneNodeFromNavigationNodeEdge.Clear();
 
@@ -849,6 +850,7 @@ Debug.Log("gdfhgf");
             // Pick a random guide path
             System.Random random = new System.Random();
             int randomLaneNodeIndex = random.Next(0, guidePaths.Count);
+            Debug.Log($"Random lane node index: {randomLaneNodeIndex}");
             GuideNode guidePath = guidePaths[randomLaneNodeIndex];
             LaneNode finalNode = guidePath.Last;
 

@@ -489,7 +489,7 @@ namespace RoadGenerator
 
             //ConnectRoadIfEndPointsAreClose();
             // Update the intersections and road when a node is changed
-            IntersectionCreator.UpdateIntersections(this);
+            //IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
         }
 
@@ -1273,8 +1273,8 @@ namespace RoadGenerator
             }
 
             // Only Update in editor mode
-            if (!Application.isPlaying)
-                RoadSystem.UpdateRoadSystemGraph();
+           // if (!Application.isPlaying)
+           //     RoadSystem.UpdateRoadSystemGraph();
         }
     }
 }

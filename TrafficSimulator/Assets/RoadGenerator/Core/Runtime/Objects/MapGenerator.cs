@@ -48,15 +48,18 @@ public class MapGenerator : MonoBehaviour
 {
     public GameObject roadPrefab;
     public GameObject HousePrefab;
-    public RoadSystem roadSystem;
+    private RoadSystem roadSystem;
+    Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
+    double minLat = 0;
+    double minLon = 0;
     int test = 0;
-    void Awake()
+    public void GenerateMap(RoadSystem roadSystem)
     {
-        roadSystem.Setup();
-        double minLat = 0;
-        double minLon = 0;
-        Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
+        this.roadSystem = roadSystem;
+
+
+        
 
         XmlDocument doc = new XmlDocument();
         LoadOSMMap(doc);
@@ -78,7 +81,7 @@ public class MapGenerator : MonoBehaviour
                 WayData? wayData = GetWayData(node);
                 IEnumerator ienum = node.GetEnumerator();
                 if (wayData != null && wayData?.WayType != WayType.Building) {
-                    GenerateRoad(ienum, nodesDict, wayData.Value, minLat, minLon);
+                    GenerateRoad(ienum, wayData.Value);
                     count++;
 
                 }
@@ -255,34 +258,9 @@ public class MapGenerator : MonoBehaviour
     }
 
     // https://wiki.openstreetmap.org/wiki/Map_features#Highway
-    void GenerateRoad(IEnumerator ienum, Dictionary<string, XmlNode> nodesDict, WayData wayData, double minLat = 0, double minLon = 0) {
-        bool firstNode = true;
-        Vector3 previousPoint = new Vector3(0,0,0);
-        List <Vector3> roadPoints = new List<Vector3>();
-        while (ienum.MoveNext())
-        {
-            XmlNode currentNode = (XmlNode) ienum.Current; 
+    void GenerateRoad(IEnumerator ienum, WayData wayData) {
+        List <Vector3> roadPoints = GetWayNodePositions(ienum);
 
-            if (currentNode.Name == "nd" && nodesDict.ContainsKey(currentNode.Attributes["ref"].Value)) 
-            { 
-                const int scale = 111000;
-                // monka line
-                Vector3 nodePosition = new Vector3((float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lon"].Value.Replace(".", ",")) - minLon)*scale, 0, (float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lat"].Value.Replace(".", ",")) - minLat)*scale);
-                if (firstNode) 
-                {
-                    firstNode = false;
-                    previousPoint = LatLonVector3ToVector3(nodePosition);
-                    roadPoints.Add(nodePosition);
-
-                } 
-                else 
-                {
-                    //DrawRoad(previousPoint, LatLonVector3ToVector3(nodePosition));
-                    previousPoint = LatLonVector3ToVector3(nodePosition);
-                    roadPoints.Add(nodePosition);
-                }
-            }
-        }
         // Currently get error when roads have same start and end point, TODO fix
         if (roadPoints[0] == roadPoints[roadPoints.Count - 1])
         {
@@ -314,6 +292,30 @@ public class MapGenerator : MonoBehaviour
         road.OnChange();
     }
 
+    List<Vector3> GetWayNodePositions(IEnumerator ienum)
+    {
+        List <Vector3> nodePositions = new List<Vector3>();
+        while (ienum.MoveNext())
+        {
+            XmlNode currentNode = (XmlNode) ienum.Current; 
+
+            if (currentNode.Name == "nd" && nodesDict.ContainsKey(currentNode.Attributes["ref"].Value)) 
+            { 
+                const int scale = 111000;
+                // monka line
+                Vector3 nodePosition = new Vector3((float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lon"].Value.Replace(".", ",")) - minLon)*scale, 0, (float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lat"].Value.Replace(".", ",")) - minLat)*scale);
+                nodePositions.Add(nodePosition);
+                
+            }
+        }
+        return nodePositions;
+    }
+
+    void GenerateBuilding()
+    {
+
+    }
+
     void DrawRoad(Vector3 point1, Vector3 point2) {
         double distance = Vector3.Distance(point1, point2);
         Vector3 distance3 = point2 - point1;
@@ -326,7 +328,6 @@ public class MapGenerator : MonoBehaviour
     }
     Road spawnRoad(List<Vector3> points, string roadName)
     {
-            roadSystem.Setup();
           // Instantiate a new road prefab
             GameObject roadObj = Instantiate(roadPrefab, points[0], Quaternion.identity);
             

@@ -20,6 +20,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
         [SerializeField] private GameObject _intersectionPrefab;
+        [SerializeField] private MapGenerator _mapGenerator;
 
         [SerializeField] private GameObject _roadSystemGraphNodePrefab;
 
@@ -33,7 +34,7 @@ namespace RoadGenerator
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;
-        [SerializeField][HideInInspector] private List<Road> _defaultRoads = new List<Road>();
+        [SerializeField] private List<Road> _defaultRoads = new List<Road>();
         [SerializeField][HideInInspector] private List<TramRail> _tramRails = new List<TramRail>();
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
@@ -47,6 +48,7 @@ namespace RoadGenerator
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
         public void AddRoad(Road road) => _defaultRoads.Add(road);
         public void AddRail(TramRail rail) => _tramRails.Add(rail);
+
 
         public void RemoveRoad(Road road)
         {
@@ -165,13 +167,28 @@ namespace RoadGenerator
             return collides;
         }
 
+        public void GenerateOSMRoads()
+        {
+            DeleteAllRoads();
+            _mapGenerator.GenerateMap(this);
+        }
+
+        public void DeleteAllRoads()
+        {
+            int roadCount = RoadCount;
+            for (var i = 0; i < roadCount; i++)
+            {
+                DestroyImmediate(DefaultRoads[0].gameObject);
+            }
+        }
+
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {
             // Making sure this is only called once
             if (_isSetup) 
                 return;
-            
+
             _isSetup = true;
             
             // Find roads
