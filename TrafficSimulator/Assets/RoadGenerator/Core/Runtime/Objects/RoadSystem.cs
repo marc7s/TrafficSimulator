@@ -32,6 +32,7 @@ namespace RoadGenerator
         public GameObject DefaultTrafficLightPrefab;
         public GameObject DefaultTrafficLightControllerPrefab;
         public GameObject DefaultStopSignPrefab;
+        public GameObject DefaultBusStopPrefab;
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;
@@ -178,28 +179,23 @@ namespace RoadGenerator
         public void DeleteAllRoads()
         {
             List<GameObject> roads = new List<GameObject>();
+
             foreach(Transform roadT in RoadContainer.transform)
-            {
                 roads.Add(roadT.gameObject);
-            }
+
             foreach(GameObject road in roads)
-            {
                 DestroyImmediate(road);
-            }
-            DeleteAllBuildings();
+            DefaultRoads.Clear();
         }
 
         public void DeleteAllBuildings()
         {
             List<GameObject> buildings = new List<GameObject>();
+
             foreach(Transform buildingT in BuildingContainer.transform)
-            {
                 buildings.Add(buildingT.gameObject);
-            }
             foreach(GameObject building in buildings)
-            {
                 DestroyImmediate(building);
-            }
         }
 
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
@@ -211,6 +207,7 @@ namespace RoadGenerator
 
             _isSetup = true;
             
+            DefaultRoads.Clear();
             // Find roads
             foreach(Transform roadT in RoadContainer.transform)
             {
@@ -227,6 +224,7 @@ namespace RoadGenerator
                 }
             }
 
+            Intersections.Clear();
             // Find intersections
             foreach(Transform intersectionT in _intersectionContainer.transform)
             {

@@ -19,8 +19,22 @@ public enum WayType
     RailTrain,
     RailTram,
     Tertiary,
+    Service,
     Building,
     Unclassified
+}
+
+public struct BuildingData
+{
+    public string? StreetName;
+    public string? StreetAddress;
+    public int? Height;
+}
+
+public enum ServiceType
+{
+    DriveWay,
+    Alley
 }
 
 public struct WayData
@@ -32,8 +46,8 @@ public struct WayData
     public bool? IsLit;
     public string? Name;
     public SideWalkType? SideWalkType;
-    public int? Height;
-    //
+    public ServiceType? ServiceType;
+    public BuildingData BuildingData;
 }
 
 public enum SideWalkType
@@ -52,12 +66,14 @@ public class MapGenerator : MonoBehaviour
     public Material BuildingMaterial;
     Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
+    List<XmlNode> busStops = new List<XmlNode>();
     double minLat = 0;
     double minLon = 0;
     public void GenerateMap(RoadSystem roadSystem)
     {
         nodesDict.Clear();
         roadsAtNode.Clear();
+        busStops.Clear();
         minLat = 0;
         minLon = 0;
 
@@ -67,15 +83,35 @@ public class MapGenerator : MonoBehaviour
         LoadOSMMap(doc);
     
         // Finding the bounds of the map and adding all nodes to a dictionary
-        foreach(XmlNode node in doc.DocumentElement.ChildNodes){
-            if (node.Name == "bounds") {
+        foreach(XmlNode node in doc.DocumentElement.ChildNodes)
+        {
+            if (node.Name == "bounds") 
+            {
                 minLat = double.Parse(node.Attributes["minlat"].Value.Replace(".", ","));
                 minLon = double.Parse(node.Attributes["minlon"].Value.Replace(".", ","));
             }
-            if (node.Name == "node") {
+            if (node.Name == "node") 
+            {
                 if (!nodesDict.ContainsKey(node.Attributes["id"].Value))
                     nodesDict.Add(node.Attributes["id"].Value, node);
             }
+            foreach(XmlNode childNode in node.ChildNodes)
+            {
+                if (childNode.Name == "tag")
+                {
+                    switch (childNode.Attributes["k"].Value)
+                    {
+                        case "highway":
+                            if (childNode.Attributes["v"].Value == "bus_stop")
+                            {
+                                busStops.Add(node);
+                            }
+                            break;
+                    }
+                }
+            }
+
+
         }
 
         int count = 0;
@@ -105,6 +141,7 @@ public class MapGenerator : MonoBehaviour
 
                 if (roads.Value.Count == 2)
                 {
+                   // continue;
                     Road road1 = roads.Value[0];
                     Road road2 = roads.Value[1];
 
@@ -127,8 +164,9 @@ public class MapGenerator : MonoBehaviour
                         IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
                     }
                 }
-                else if (roads.Value.Count == 3 && false)
+                else if (roads.Value.Count == 3)
                 {
+                    continue;
 
                     Road road1 = roads.Value[0];
                     Road road2 = roads.Value[1];
@@ -165,12 +203,20 @@ public class MapGenerator : MonoBehaviour
                 }
             }
         }
+
+
+    }
+
+    public void AddBusStops()
+    {
+        GameObject busStopPrefab = roadSystem.DefaultBusStopPrefab;
     }
 
     private WayData? GetWayData(XmlNode node)
     {
         IEnumerator ienum = node.GetEnumerator();
         WayType? wayType = null;
+        BuildingData buildingData = new BuildingData();
         WayData wayData = new WayData();
         // search for type of way
         while (ienum.MoveNext())
@@ -178,34 +224,52 @@ public class MapGenerator : MonoBehaviour
             XmlNode currentNode = (XmlNode) ienum.Current;
             if (currentNode.Name != "tag") 
                 continue;
+                try
+                {
+                    switch (currentNode.Attributes["k"].Value)
+                    {
 
-            switch (currentNode.Attributes["k"].Value)
-            {
-                case "highway":
-                    wayType = GetRoadType(currentNode);
-                    break;
-                case "building":
-                    wayType = WayType.Building;
-                    break;
-                case "name":
-                    wayData.Name = currentNode.Attributes["v"].Value;
-                    break;
-                case "maxspeed":
-                    wayData.MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
-                    break;
-                case "junction":
-                    if (currentNode.Attributes["v"].Value == "roundabout")
-                        return null;
-                    break;
-                case "height":
-                    wayData.Height = int.Parse(currentNode.Attributes["v"].Value);
-                    break;
-            }
+                        case "highway":
+                            wayType = GetRoadType(currentNode);
+                            break;
+                        case "building":
+                            wayType = WayType.Building;
+                            break;
+                        case "name":
+                            wayData.Name = currentNode.Attributes["v"].Value;
+                            break;
+                        case "maxspeed":
+                            wayData.MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
+                            break;
+                        case "junction":
+                            if (currentNode.Attributes["v"].Value == "roundabout")
+                                return null;
+                            break;
+                        case "height":
+                            buildingData.Height = int.Parse(currentNode.Attributes["v"].Value);
+                            break;
+                        case "addr:housenumber":
+                            buildingData.StreetAddress = currentNode.Attributes["v"].Value;
+                            break;
+                        case "addr:street":
+                            buildingData.StreetName = currentNode.Attributes["v"].Value;
+                            break;
+                        case "service":
+                            if (currentNode.Attributes["v"].Value == "driveway")
+                                wayData.ServiceType = ServiceType.DriveWay;
+                            break;
+                    }
+                }
+                catch
+                {
+                    Debug.Log("Error parsing way data");
+                }
         }
         if (wayType == null)
             return null;
 
-        wayData.WayType = wayType.Value;        
+        wayData.WayType = wayType.Value;
+        wayData.BuildingData = buildingData;
         return wayData;
     }
 
@@ -227,6 +291,8 @@ public class MapGenerator : MonoBehaviour
                 return WayType.Primary;
             case "trunk":
                 return WayType.Trunk;
+            case "service":
+                return WayType.Service;
             case "unclassified":
                 return WayType.Unclassified;
             
@@ -324,21 +390,33 @@ public class MapGenerator : MonoBehaviour
 
     void GenerateBuilding(IEnumerator ienum, WayData wayData)
     {
-        float defaultHeight = 10f;
-        if (wayData.Height != null)
-            defaultHeight = wayData.Height.Value;
+        float defaultBuildingHeight = 10;
+        float height = wayData.BuildingData.Height ?? defaultBuildingHeight;
+
         List<Vector3> buildingPointsBottom = GetWayNodePositions(ienum);
         List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
         foreach (Vector3 point in buildingPointsBottom)
-            buildingPoints.Add(new BuildingPoints(point, new Vector3(point.x, defaultHeight, point.z)));
+            buildingPoints.Add(new BuildingPoints(point, new Vector3(point.x, height, point.z)));
 
-        Debug.Log(buildingPoints.Count);
-        Debug.Log(buildingPointsBottom[0]);
         GameObject house = Instantiate(BuildingPrefab, buildingPointsBottom[0], Quaternion.identity);
-        house.name = wayData.Name ?? "Building";
+
+
+        house.name = GetBuildingName(wayData);
+
         house.transform.parent = roadSystem.BuildingContainer.transform;
         Mesh buildingMesh = AssignMeshComponents(house);
         CreateBuildingMesh(buildingMesh, buildingPoints);
+    }
+
+    private string GetBuildingName(WayData wayData)
+    {
+        string defaultBuildingName = "Building";
+        if (wayData.Name != null)
+            return wayData.Name;
+        
+        if(wayData.BuildingData.StreetName == null || wayData.BuildingData.StreetAddress == null)
+            return defaultBuildingName;
+        return wayData.BuildingData.StreetName + " " + wayData.BuildingData.StreetAddress;
     }
 
     private struct BuildingPoints
@@ -385,7 +463,6 @@ public class MapGenerator : MonoBehaviour
     }
     private void AddBuildingWall(int currentSideTopIndex, int currentSideBottomIndex, int prevSideTopIndex, int prevSideBottomIndex, List<int> triangles)
     {
-        Debug.Log("Adding wall");
         triangles.Add(prevSideTopIndex);
         triangles.Add(currentSideTopIndex);
         triangles.Add(prevSideBottomIndex);
@@ -448,6 +525,7 @@ public class MapGenerator : MonoBehaviour
             // Move the road to the spawn point
             PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
             pathCreator.bezierPath = new BezierPath(points, false, PathSpace.xz);
+            pathCreator.bezierPath.autoControlLength = 0.1f;
 
             // Set the road pointers
             road.RoadObject = roadObj;

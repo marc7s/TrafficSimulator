@@ -100,7 +100,6 @@ namespace RoadGenerator
 
             foreach(Road road in roads)
             {
-                Debug.Log(road);
                 junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road, intersectionPosition, intersectionLength));
             }
 
@@ -111,6 +110,7 @@ namespace RoadGenerator
 
         public static void CreateIntersectionAtPosition(Vector3 intersectionPosition, Road road1, Road road2)
         {
+         //   Debug.Log("Creating intersection at position: " + intersectionPosition);
             IntersectionPointData intersectionPointData = CalculateIntersectionData(intersectionPosition, road1, road2);
             if (!road1.RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
                 CreateIntersectionAtPosition(intersectionPointData, road1.RoadSystem);
@@ -126,6 +126,11 @@ namespace RoadGenerator
         /// <summary>Calculate the positions of the two anchor points to be created on either side of the intersection</summary>
         static List<JunctionEdgeData> GetIntersectionAnchorPoints(Road road, Vector3 intersectionPosition, float intersectionLength)
         {
+            if (road == null)
+            {
+                Debug.LogError("Road is null");
+                return new List<JunctionEdgeData>();
+            }
             float intersectionExtendCoef = 1.2f;
             float intersectionExtension = intersectionLength * 0.5f * intersectionExtendCoef;
             VertexPath vertexPath = road.PathCreator.path;
@@ -236,7 +241,10 @@ namespace RoadGenerator
                 foreach (IntersectionArm arm in intersection.GetArms(road))
                     ignoreAnchors.Add(arm.JunctionEdgePosition);
 
-                ignoreAnchors.Add(intersection.IntersectionPosition);
+                // Only ignore the intersection anchor if it is the first or last anchor on the road
+                if (road.PathCreator.bezierPath[0] == intersection.IntersectionPosition || road.PathCreator.bezierPath[road.PathCreator.bezierPath.NumPoints - 1] == intersection.IntersectionPosition)
+                    ignoreAnchors.Add(intersection.IntersectionPosition);
+
                 DeleteAnchorsInsideBounds(road.PathCreator.bezierPath, intersectionBounds, ignoreAnchors);
             }
         }

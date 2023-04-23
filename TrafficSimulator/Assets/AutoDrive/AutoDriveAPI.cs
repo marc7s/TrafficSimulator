@@ -264,6 +264,7 @@ namespace Car
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathContainer = new GameObject("Navigation Path");
+            NavigationPathContainer.AddComponent<LineRenderer>();
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;

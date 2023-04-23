@@ -91,6 +91,10 @@ namespace RoadSystemGenerator
             {
                 roadSystem.DeleteAllRoads();
             }
+            if(GUILayout.Button("Delete all buildings"))
+            {
+                roadSystem.DeleteAllBuildings();
+            }
 
             serializedObject.ApplyModifiedProperties();
 

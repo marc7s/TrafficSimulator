@@ -196,7 +196,6 @@ namespace RoadGenerator
             Debug.Log("------------------------------------");
 #endif           
 
-            return;
 
             // The mesh code is based on the vertice layout found at TrafficSimulator/Assets/RoadGenerator/Documentation/IntersectionMeshGeneration   
 
@@ -241,6 +240,7 @@ namespace RoadGenerator
                 // Find out which side the side arm is on
                 TurnDirection turnDirection = GetTurnDirection(bottomArmRoadNode.Position - IntersectionPosition, GetRoadNodeAtIntersectionArm(sideArm).Position - IntersectionPosition);
                 IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
+                Debug.Assert(rightArm != null, "No right arm found");
                 RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
                 float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
 
@@ -252,6 +252,7 @@ namespace RoadGenerator
                     (i9, i8) = (i8, i9);
 
                 IntersectionArm leftArm = GetArm(rightArm.OppositeArmID);
+                Debug.Assert(leftArm != null, "No left arm found");
                 RoadNode leftArmRoadNode = GetRoadNodeAtIntersectionArm(leftArm);
                 float leftArmRoadHalfWidth = leftArm.Road.LaneWidth * (int)leftArm.Road.LaneAmount;
 
@@ -290,6 +291,7 @@ namespace RoadGenerator
             }
             else if(Type == IntersectionType.FourWayIntersection)
             {
+                return;
                 // Map out the intersection from the first arms perspective
                 IntersectionArm bottomArm = IntersectionArms[0];
 
@@ -612,7 +614,7 @@ Debug.Log("gdfhgf");
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
-            Debug.Log("Mapping intersection navigation" + this);
+            Debug.Log("Mapping intersection navigation" + this + this.IntersectionPosition);
             // Map the lane node to take in order to get to the navigation node edge
             _laneNodeFromNavigationNodeEdge.Clear();
 
@@ -684,6 +686,8 @@ Debug.Log("gdfhgf");
                     _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
                 }
             }
+           // if (_laneNodeFromNavigationNodeEdge.Keys.Count != 4)
+           //     Debug.LogError("ERRORRRRRR " + this);
         }
 
         /// <summary> Get a list of all nodes a path going between these sections needs to yield to </summary>
@@ -847,10 +851,15 @@ Debug.Log("gdfhgf");
         {
             List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
             
+            if (guidePaths.Count == 0)
+            {
+                Debug.Log($"No guide paths found for lane node {current.Position}" + current.Type);
+                return (current.Last, current);
+            }
+
             // Pick a random guide path
             System.Random random = new System.Random();
             int randomLaneNodeIndex = random.Next(0, guidePaths.Count);
-            Debug.Log($"Random lane node index: {randomLaneNodeIndex}");
             GuideNode guidePath = guidePaths[randomLaneNodeIndex];
             LaneNode finalNode = guidePath.Last;
 
@@ -881,18 +890,18 @@ Debug.Log("gdfhgf");
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
-                Debug.LogError("Error, The navigation node edge does not exist in the intersection");
+                Debug.LogError("Error, The navigation node edge does not exist in the intersection" + current.Position);
                 return (null, null);
             }
             LaneNode finalNode = GetClosestIndexExitNode(_laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID], current.LaneIndex);
 
             if (!_intersectionGuidePaths.ContainsKey((current.ID, finalNode.ID)))
             {
-                Debug.LogError("Error, The lane entry node does not exist in the intersection");
+                Debug.LogError("Error, The lane entry node does not exist in the intersection" + current.Position);
                 return (null, null);
             }
 
-            
+
             GuideNode guidePath = _intersectionGuidePaths[(current.ID, finalNode.ID)];
             turnDirection = GetTurnDirection(current, finalNode);
             // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
@@ -998,6 +1007,7 @@ Debug.Log("gdfhgf");
                 IntersectionArm minAngleArm = null;
                 foreach (IntersectionArm otherIntersectionArm in IntersectionArms)
                 {
+
                     // Direction from junctionEdge to intersection position
                     Vector3 intersectionArmDirection = intersectionArm.JunctionEdgePosition - IntersectionPosition;
 
@@ -1006,12 +1016,17 @@ Debug.Log("gdfhgf");
 
                     if (intersectionArm == otherIntersectionArm)
                         continue;
-                    
+
+                    if (intersectionArm.Road == otherIntersectionArm.Road)
+                    {
+                        minAngleArm = otherIntersectionArm;
+                        break;
+                    }
                     float angle = Vector3.Angle(intersectionArmDirection, directionBetweenTheJunctionEdges);
                     if (angle < minAngle)
                     {
-                        minAngle = angle;
-                        minAngleArm = otherIntersectionArm;
+                    //    minAngle = angle;
+                    //    minAngleArm = otherIntersectionArm;
                     }
                 }
                 if (minAngleArm != null)
