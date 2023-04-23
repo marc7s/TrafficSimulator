@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+
 namespace RoadGenerator
 {
     /// <summary>The amount of lanes in each direction of a road. In total the road will have twice as many lanes</summary>
@@ -106,6 +107,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] protected GameObject _laneContainer;
         [SerializeField][HideInInspector] protected GameObject _roadNodeContainer;
         [SerializeField][HideInInspector] protected GameObject _laneNodeContainer;
+        [SerializeField][HideInInspector] protected GameObject _busStopContainer;
         [SerializeField][HideInInspector] protected VertexPath _path;
         [SerializeField][HideInInspector] public PathCreator PathCreator;
         [SerializeField][HideInInspector] protected EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
@@ -974,6 +976,21 @@ namespace RoadGenerator
             if(data.TrafficSignType == TrafficSignType.TrafficLight)
                 AssignTrafficLightController(data.RoadNode, trafficSign);
             return trafficSign;
+        }
+
+        public void SpawnBusStop(RoadNode roadNode, bool IsForward, GameObject busStopPrefab, string busStopName)
+        {
+            Quaternion rotation = roadNode.Rotation * (IsForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
+            rotation *= busStopPrefab.transform.rotation;
+            GameObject busStop = Instantiate(busStopPrefab, roadNode.Position, rotation);
+            busStop.name = busStopName;
+            bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
+            Vector3 offsetDirection =  roadNode.Normal * (isDrivingRight ? 1 : -1) * (IsForward ? 1 : -1);
+            float distanceFromRoad = 1f;
+            busStop.transform.position += (distanceFromRoad + LaneCount / 2 * LaneWidth) * offsetDirection;
+            TextMesh text = busStop.GetComponentInChildren<TextMesh>();
+            text.text = busStopName;
+            busStop.transform.parent = RoadSystem.BusStopContainer.transform;
         }
 
         protected void AssignTrafficLightController(RoadNode roadNode, GameObject trafficLightObject)

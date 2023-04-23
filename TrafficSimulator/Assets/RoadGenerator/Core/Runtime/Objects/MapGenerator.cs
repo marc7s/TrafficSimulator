@@ -131,6 +131,13 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
+        AddRoads();
+        AddBusStops();
+
+    }
+
+    private void AddRoads()
+    {
         foreach (var roads in roadsAtNode) {
             Vector3 position = roads.Key;
 
@@ -202,14 +209,63 @@ public class MapGenerator : MonoBehaviour
                     }
                 }
             }
-        }
-
-
+        }        
     }
 
     public void AddBusStops()
     {
         GameObject busStopPrefab = roadSystem.DefaultBusStopPrefab;
+        string name = "";
+        string refName = "";
+        foreach (XmlNode busStopNode in busStops)
+        {
+            foreach (XmlNode tagNode in busStopNode.ChildNodes)
+            {
+                if (tagNode.Name == "tag")
+                {
+                    switch (tagNode.Attributes["k"].Value)
+                    {
+                        case "name":
+                            name = tagNode.Attributes["v"].Value;
+                            break;
+                        case "ref":
+                            refName = tagNode.Attributes["v"].Value;
+                            break;
+                    }
+                }
+            }
+            name = name + " " + refName;
+
+            Vector3 position = GetNodePosition(busStopNode);
+            if (roadsAtNode.ContainsKey(position) == false)
+                continue;
+            List<Road> roads = roadsAtNode[position];
+            if (roads.Count == 0)
+                continue;
+
+            Road road = roads[0];
+
+            RoadNode curr = road.StartRoadNode;
+            
+            float minDistanceToBusStop = float.MaxValue;
+            RoadNode closestRoadNode = null;
+            while (curr != null)
+            {
+                float distanceToBusStop = Vector3.Distance(curr.Position, position);
+                if (distanceToBusStop < minDistanceToBusStop)
+                {
+                    minDistanceToBusStop = distanceToBusStop;
+                    closestRoadNode = curr;
+                }
+                curr = curr.Next;
+            }
+            Debug.Log("Bus stop position: " + closestRoadNode.Position);
+            bool isForward = refName == "A";
+            road.SpawnBusStop(closestRoadNode, isForward, busStopPrefab, name);
+
+            //GameObject busStopObject = Instantiate(busStopPrefab, position, Quaternion.identity);
+            //busStopObject.transform.parent = roadSystem.transform;
+        }
     }
 
     private WayData? GetWayData(XmlNode node)
@@ -302,7 +358,7 @@ public class MapGenerator : MonoBehaviour
     }
     private void LoadOSMMap(XmlDocument document)
     {
-        document.Load("Assets/map4.osm");
+        document.Load("Assets/map5.osm");
     }
 
     private bool IsTagKeyName(XmlNode node, string value)
@@ -378,9 +434,8 @@ public class MapGenerator : MonoBehaviour
 
             if (currentNode.Name == "nd" && nodesDict.ContainsKey(currentNode.Attributes["ref"].Value)) 
             { 
-                const int scale = 111000;
-                // monka line
-                Vector3 nodePosition = new Vector3((float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lon"].Value.Replace(".", ",")) - minLon)*scale, 0, (float)(double.Parse(nodesDict[currentNode.Attributes["ref"].Value].Attributes["lat"].Value.Replace(".", ",")) - minLat)*scale);
+
+                Vector3 nodePosition = GetNodePosition(nodesDict[currentNode.Attributes["ref"].Value]);
                 nodePositions.Add(nodePosition);
                 
             }
@@ -388,6 +443,13 @@ public class MapGenerator : MonoBehaviour
         return nodePositions;
     }
 
+    private Vector3 GetNodePosition(XmlNode node)
+    {
+        const int scale = 111000;
+        float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - minLon)*scale;
+        float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - minLat)*scale;
+        return new Vector3(xPos, 0, zPos);
+    }
     void GenerateBuilding(IEnumerator ienum, WayData wayData)
     {
         float defaultBuildingHeight = 10;

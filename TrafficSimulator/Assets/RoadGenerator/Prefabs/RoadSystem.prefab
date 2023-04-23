@@ -32,6 +32,7 @@ Transform:
   - {fileID: 1092674945270820322}
   - {fileID: 3350050010001419053}
   - {fileID: 7312208358962521853}
+  - {fileID: 3658795453449097011}
   - {fileID: 1980633667098319055}
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -51,6 +52,7 @@ MonoBehaviour:
   RoadContainer: {fileID: 2382052090468904982}
   _intersectionContainer: {fileID: 2768285544214366368}
   BuildingContainer: {fileID: 2163801758299223360}
+  BusStopContainer: {fileID: 2447744149659853018}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   _intersectionPrefab: {fileID: 4601614798071418940, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
@@ -60,6 +62,7 @@ MonoBehaviour:
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 100000, guid: ea4cde724487aa243bac09bf2da74d99, type: 3}
+  DefaultBusStopPrefab: {fileID: 4172526712689242174, guid: 05003485e3fde2e499308490ddc2106d, type: 3}
   ShowGraph: 0
   SpawnRoadsAtOrigin: 0
   _defaultRoads: []
@@ -128,6 +131,37 @@ Transform:
   m_Father: {fileID: 798415014314360586}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2447744149659853018
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3658795453449097011}
+  m_Layer: 0
+  m_Name: Bus Stops
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3658795453449097011
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2447744149659853018}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 798415014314360586}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2768285544214366368
 GameObject:
   m_ObjectHideFlags: 0
@@ -168,7 +202,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
       propertyPath: m_LocalPosition.x

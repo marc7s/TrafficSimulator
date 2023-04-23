@@ -18,6 +18,7 @@ namespace RoadGenerator
         public GameObject RoadContainer;
         [SerializeField] private GameObject _intersectionContainer;
         public GameObject BuildingContainer;
+        public GameObject BusStopContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
         [SerializeField] private GameObject _intersectionPrefab;
@@ -173,7 +174,12 @@ namespace RoadGenerator
         {
             DeleteAllRoads();
             DeleteAllBuildings();
-            _mapGenerator.GenerateMap(this);
+            DeleteAllBusStops();
+           _mapGenerator.GenerateMap(this);
+        }
+        public void SpawnBusStops()
+        {
+            _mapGenerator.AddBusStops();
         }
 
         public void DeleteAllRoads()
@@ -198,6 +204,15 @@ namespace RoadGenerator
                 DestroyImmediate(building);
         }
 
+        public void DeleteAllBusStops()
+        {
+            List<GameObject> busStops = new List<GameObject>();
+
+            foreach(Transform busStopT in BusStopContainer.transform)
+                busStops.Add(busStopT.gameObject);
+            foreach(GameObject busStop in busStops)
+                DestroyImmediate(busStop);
+        }
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {
