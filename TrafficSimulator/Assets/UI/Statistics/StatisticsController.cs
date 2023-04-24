@@ -82,6 +82,14 @@ namespace UI
 
         private void UpdatePanels()
         {
+            Length MinHeight = new Length(25, LengthUnit.Pixel);
+            Length MaxHeight = new Length(30, LengthUnit.Pixel);
+            _statsButton.style.height = MinHeight;
+            _infoButton.style.height = MinHeight;
+            _settingsButton.style.height = MinHeight;
+            _statsButton.RemoveFromClassList("panel-button-selected");
+            _infoButton.RemoveFromClassList("panel-button-selected");
+            _settingsButton.RemoveFromClassList("panel-button-selected");
             switch(_tabs)
             {
                 case Tabs.None:
@@ -91,18 +99,27 @@ namespace UI
                     break;
                 case Tabs.Stats:
                     _statsPanel.visible = true;
+                    _statsButton.style.height = MaxHeight;
+                    _statsButton.AddToClassList("panel-button-selected");
+                    _statsButton.SetEnabled(true);
                     _infoPanel.visible = false;
                     _settingsPanel.visible = false;
                     break;
                 case Tabs.Info:
                     _statsPanel.visible = false;
                     _infoPanel.visible = true;
+                    _infoButton.style.height = MaxHeight;
+                    _infoButton.AddToClassList("panel-button-selected");
+                    _infoButton.SetEnabled(true);
                     _settingsPanel.visible = false;
                     break;
                 case Tabs.Settings:
                     _statsPanel.visible = false;
                     _infoPanel.visible = false;
                     _settingsPanel.visible = true;
+                    _settingsButton.style.height = MaxHeight;
+                    _settingsButton.AddToClassList("panel-button-selected");
+                    _settingsButton.SetEnabled(true);
                     break;
             }
         }

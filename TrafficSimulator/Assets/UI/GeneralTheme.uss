@@ -1,0 +1,36 @@
+.unity-button {
+    background-image: url('project://database/Assets/Unity%20Assets/Graph%20And%20Chart%20-%20Lite%20Edition/Textures/backround4.png?fileID=2800000&guid=23f24f7510ca98041a59d3347484ae21&type=3#backround4');
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+}
+
+.panel-button {
+    border-bottom-width: 0;
+    border-left-color: rgb(48, 48, 48);
+    border-right-color: rgb(48, 48, 48);
+    border-top-color: rgb(48, 48, 48);
+    border-bottom-color: rgb(48, 48, 48);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    width: auto;
+    height: 25px;
+    max-height: 30px;
+    min-height: 25px;
+}
+
+.panel-button:hover {
+    border-left-color: rgb(255, 255, 255);
+    border-right-color: rgb(255, 255, 255);
+    border-top-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(255, 255, 255);
+}
+
+.panel-button-selected {
+    border-left-color: rgb(255, 255, 255);
+    border-right-color: rgb(255, 255, 255);
+    border-top-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(255, 255, 255);
+}

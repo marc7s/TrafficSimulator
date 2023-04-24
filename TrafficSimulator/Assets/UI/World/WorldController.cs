@@ -82,6 +82,14 @@ namespace UI
 
         private void UpdatePanels()
         {
+            Length MinHeight = new Length(25, LengthUnit.Pixel);
+            Length MaxHeight = new Length(30, LengthUnit.Pixel);
+            _trafficFlowButton.style.height = MinHeight;
+            _emissionButton.style.height = MinHeight;
+            _vehiclesButton.style.height = MinHeight;
+            _trafficFlowButton.RemoveFromClassList("panel-button-selected");
+            _emissionButton.RemoveFromClassList("panel-button-selected");
+            _vehiclesButton.RemoveFromClassList("panel-button-selected");
             switch(_tabs)
             {
                 case Tabs.None:
@@ -91,18 +99,24 @@ namespace UI
                     break;
                 case Tabs.TrafficFlow:
                     _trafficFlowPanel.visible = true;
+                    _trafficFlowButton.style.height = MaxHeight;
+                    _trafficFlowButton.AddToClassList("panel-button-selected");
                     _emissionPanel.visible = false;
                     _vehiclesPanel.visible = false;
                     break;
                 case Tabs.Emission:
                     _trafficFlowPanel.visible = false;
                     _emissionPanel.visible = true;
+                    _emissionButton.style.height = MaxHeight;
+                    _emissionButton.AddToClassList("panel-button-selected");
                     _vehiclesPanel.visible = false;
                     break;
                 case Tabs.Vehicles:
                     _trafficFlowPanel.visible = false;
                     _emissionPanel.visible = false;
                     _vehiclesPanel.visible = true;
+                    _vehiclesButton.style.height = MaxHeight;
+                    _vehiclesButton.AddToClassList("panel-button-selected");
                     break;
             }
         }

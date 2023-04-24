@@ -54,13 +54,17 @@
 .panel-container {
     width: 100%;
     height: 100%;
-    background-color: rgb(255, 255, 255);
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(0, 0, 0, 255);
-    border-left-color: rgba(0, 0, 0, 255);
-    border-right-color: rgba(0, 0, 0, 255);
-    border-top-color: rgba(0, 0, 0, 255);
+    background-image: url('project://database/Assets/Unity%20Assets/Graph%20And%20Chart%20-%20Lite%20Edition/Textures/backround4.png?fileID=2800000&guid=23f24f7510ca98041a59d3347484ae21&type=3#backround4');
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-color: rgb(48, 48, 48);
+    border-right-color: rgb(48, 48, 48);
+    border-top-color: rgb(48, 48, 48);
+    border-bottom-color: rgb(48, 48, 48);
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
 }

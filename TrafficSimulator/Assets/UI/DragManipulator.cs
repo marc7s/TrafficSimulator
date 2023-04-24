@@ -188,6 +188,7 @@ public class DragManipulator : IManipulator {
     if (! enabled)
       return;
     target.AddToClassList("draggable--dragging");
+    target.BringToFront();
 
     if (removeClassOnDrag != null) {
       removedClass = target.ClassListContains(removeClassOnDrag);
