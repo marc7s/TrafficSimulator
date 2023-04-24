@@ -45,5 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
+  railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   BuildingPrefab: {fileID: 6271160807420945312, guid: 7f65bab3d77170f4aa0f6be406f09110, type: 3}
-  BuildingMaterial: {fileID: 2100000, guid: cd50383f6da566c49bcf656dec3f447d, type: 2}
+  BuildingMaterial: {fileID: 2100000, guid: ddcb4c492c056d446b51b2485a97784d, type: 2}

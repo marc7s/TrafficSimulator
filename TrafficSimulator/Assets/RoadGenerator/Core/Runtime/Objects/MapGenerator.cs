@@ -29,6 +29,7 @@ public struct BuildingData
     public string? StreetName;
     public string? StreetAddress;
     public int? Height;
+    public int? BuildingLevels;
 }
 
 public enum ServiceType
@@ -61,6 +62,7 @@ public enum SideWalkType
 public class MapGenerator : MonoBehaviour
 {
     public GameObject roadPrefab;
+    public GameObject railPrefab;
     public GameObject BuildingPrefab;
     private RoadSystem roadSystem;
     public Material BuildingMaterial;
@@ -259,7 +261,6 @@ public class MapGenerator : MonoBehaviour
                 }
                 curr = curr.Next;
             }
-            Debug.Log("Bus stop position: " + closestRoadNode.Position);
             bool isForward = refName == "A";
             road.SpawnBusStop(closestRoadNode, isForward, busStopPrefab, name);
 
@@ -314,6 +315,18 @@ public class MapGenerator : MonoBehaviour
                             if (currentNode.Attributes["v"].Value == "driveway")
                                 wayData.ServiceType = ServiceType.DriveWay;
                             break;
+                        case "lit":
+                            if (currentNode.Attributes["v"].Value == "yes")
+                                wayData.IsLit = true;
+                            else 
+                                wayData.IsLit = false;
+                            break;
+                        case "railway":
+                            wayType = WayType.RailTram;
+                            break;
+                        case "building:levels":
+                            buildingData.BuildingLevels = int.Parse(currentNode.Attributes["v"].Value);
+                            break;
                     }
                 }
                 catch
@@ -358,7 +371,7 @@ public class MapGenerator : MonoBehaviour
     }
     private void LoadOSMMap(XmlDocument document)
     {
-        document.Load("Assets/map5.osm");
+        document.Load("Assets/Masthugget.osm");
     }
 
     private bool IsTagKeyName(XmlNode node, string value)
@@ -384,6 +397,13 @@ public class MapGenerator : MonoBehaviour
 
     // https://wiki.openstreetmap.org/wiki/Map_features#Highway
     void GenerateRoad(IEnumerator ienum, WayData wayData) {
+
+        if (wayData.Name == null && wayData.WayType != WayType.RailTram)
+            return;
+
+      //  if (wayData.WayType == WayType.RailTram)
+      //      return;
+
         List <Vector3> roadPoints = GetWayNodePositions(ienum);
 
         // Currently get error when roads have same start and end point, TODO fix
@@ -394,7 +414,7 @@ public class MapGenerator : MonoBehaviour
         List<Vector3> roadPoints2 = new List<Vector3>();
         roadPoints2.Add(roadPoints[0]);
         roadPoints2.Add(roadPoints[1]);
-        Road road = spawnRoad(roadPoints2, wayData.Name);
+        Road road = spawnRoad(roadPoints2, wayData);
 
         if (wayData.MaxSpeed != null)
             road.SpeedLimit = (SpeedLimit)wayData.MaxSpeed;
@@ -402,6 +422,11 @@ public class MapGenerator : MonoBehaviour
         // When the speedlimit is not known in residential areas, set it to 30km/h
         if (wayData.WayType == WayType.Residential && wayData.MaxSpeed == null)
             road.SpeedLimit = SpeedLimit.ThirtyKPH;
+
+        if (wayData.IsLit != null)
+            road.ShouldSpawnLampPoles = wayData.IsLit.Value;
+        else
+            road.ShouldSpawnLampPoles = false;
 
         PathCreator pathCreator = road.GetComponent<PathCreator>();
         // Roads with only two points will not render properly, this is a hack to render them
@@ -452,8 +477,14 @@ public class MapGenerator : MonoBehaviour
     }
     void GenerateBuilding(IEnumerator ienum, WayData wayData)
     {
-        float defaultBuildingHeight = 10;
+        float defaultBuildingHeight = 25;
         float height = wayData.BuildingData.Height ?? defaultBuildingHeight;
+        if (wayData.BuildingData.Height == null && wayData.BuildingData.BuildingLevels != null)
+        {
+          //  height = wayData.BuildingData.BuildingLevels.Value * 3.5f;
+          //  Debug.Log("Building height: " + height);
+        }
+            
 
         List<Vector3> buildingPointsBottom = GetWayNodePositions(ienum);
         List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
@@ -572,13 +603,14 @@ public class MapGenerator : MonoBehaviour
         _meshFilter.sharedMesh = mesh;
         return mesh;
     }
-    Road spawnRoad(List<Vector3> points, string roadName)
+    Road spawnRoad(List<Vector3> points, WayData wayData)
     {
+            GameObject prefab = wayData.WayType == WayType.RailTram ? railPrefab : roadPrefab;
           // Instantiate a new road prefab
-            GameObject roadObj = Instantiate(roadPrefab, points[0], Quaternion.identity);
+            GameObject roadObj = Instantiate(prefab, points[0], Quaternion.identity);
             
             // Set the name of the road
-            roadObj.name = roadName;
+            roadObj.name = wayData.Name;
             
             roadObj.transform.parent = roadSystem.RoadContainer.transform;
             // Get the road from the prefab
