@@ -81,7 +81,7 @@ namespace Car {
         
         private float _originalMaxSpeedForward;
         private float _originalMaxSpeedReverse;
-        private HashSet<LaneNode> _occupiedNodes = new HashSet<LaneNode>();
+        private List<LaneNode> _occupiedNodes = new List<LaneNode>();
         
         private LaneNode _prevTarget;
         private LaneNode _target;
@@ -284,26 +284,37 @@ namespace Car {
         // Update the list of nodes that the vehicle is currently occupying
         private void UpdateOccupiedNodes()
         {
-            foreach(LaneNode node in _occupiedNodes)
-                node.UnsetVehicle(_agent.Setting.Vehicle);
-
             (HashSet<LaneNode> forwardSpanNodes, HashSet<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
-            _occupiedNodes.Clear();
+
+            ClearSpanNodes(forwardSpanNodes, backwardSpanNodes);
             
             // Start adding the nodes behind the car
             AddSpanNodes(backwardSpanNodes);
-            
-            // Since we want them in order and the backward nodes are added from the car outwards, reverse the list
-            _occupiedNodes.Reverse();
 
             // Add the nodes in front of the car
             AddSpanNodes(forwardSpanNodes);
+
+            _occupiedNodes.Sort((x, y) => x.Index.CompareTo(y.Index));
+        }
+
+        private void ClearSpanNodes(HashSet<LaneNode> forwardNodes, HashSet<LaneNode> backwardNodes)
+        {
+            for (int i = _occupiedNodes.Count - 1; i >= 0; i--)
+            {
+                if(!forwardNodes.Contains(_occupiedNodes[i]) && !backwardNodes.Contains(_occupiedNodes[i]))
+                {
+                    _occupiedNodes[i].UnsetVehicle(_agent.Setting.Vehicle);
+                    _occupiedNodes.Remove(_occupiedNodes[i]);
+                }
+            }
         }
 
         private void AddSpanNodes(HashSet<LaneNode> spanNodes)
         {
             foreach (LaneNode node in spanNodes)
             {
+                if(_occupiedNodes.Contains(node))
+                    continue;
                 // Add the span nodes we successfully acquire to the list of occupied nodes until we fail to acquire one, then break
                 // This avoids the vehicle from occupying nodes with gaps between them, which could cause a lockup if the vehicle has acquired nodes in front of and behind another vehicle
                 if(node.SetVehicle(_agent.Setting.Vehicle))
@@ -320,7 +331,9 @@ namespace Car {
             HashSet<LaneNode> backwardNodes = new HashSet<LaneNode>();
             LaneNode node = _agent.Prev(_agent.Context.CurrentNode);
 
-            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
+            Vector3 direction = _agent.Context.CurrentNode.Position - transform.position;
+            float dot = Vector3.Dot(transform.forward, direction.normalized);
+            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position) * dot;
 
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 

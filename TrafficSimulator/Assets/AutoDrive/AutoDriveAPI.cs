@@ -155,8 +155,11 @@ namespace Car
             {
                 (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[node.Intersection.ID];
                 if(node == entry)
-                    return guideStart;   
+                    return guideStart;
             }
+            
+            if (Context.NavigationMode == NavigationMode.Random && node.Type == RoadNodeType.JunctionEdge && node.Intersection != null)
+                return UpdateAndGetGuideNode(node, true);
 
             if(node.Next == null)
                 return endBehaviour == RoadEndBehaviour.Loop ? _context.EndNextNode : null;
@@ -279,7 +282,7 @@ namespace Car
         public void SetLoopNode(LaneNode node)
         {
             EndPrevNode = node.Last;
-            EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.Index && l.Type.Side != node.LaneSide).StartNode;
+            EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.LaneIndex && l.Type.Side != node.LaneSide).StartNode;
         }
     }
 }

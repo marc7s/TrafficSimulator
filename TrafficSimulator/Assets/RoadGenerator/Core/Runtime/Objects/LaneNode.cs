@@ -36,6 +36,7 @@ namespace RoadGenerator
             _distanceToPrevNode = distanceToPrevNode;
             _isSteeringTarget = isSteeringTarget;
             _id = System.Guid.NewGuid().ToString();
+            _index = prev == null ? 0 : prev.Index + 1;
 
             _rotation = laneSide == LaneSide.Primary ? roadNode.Rotation : roadNode.Rotation * Quaternion.Euler(0, 180f, 0);
         }
@@ -46,7 +47,7 @@ namespace RoadGenerator
         {
             return _laneSide == LaneSide.Primary ? _roadNode.PrimaryNavigationNodeEdge : _roadNode.SecondaryNavigationNodeEdge;
         }
-        public int Index => _laneIndex;
+        public int LaneIndex => _laneIndex;
         public LaneSide LaneSide => _laneSide;
         public virtual RoadNode RoadNode => _roadNode;
         public RoadNodeType Type => _roadNode.Type;

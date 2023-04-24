@@ -209,35 +209,38 @@ namespace RoadGenerator
             UpdateRoadSystemGraph();
         }
 
-        public Intersection AddNewIntersection(IntersectionPointData intersectionPointData, Road road1, Road road2)
+        public Intersection AddNewIntersection(IntersectionPointData intersectionPointData)
         {
-            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, intersectionPointData.Rotation);
+            GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, Quaternion.identity);
             intersectionObject.name = "Intersection" + IntersectionCount;
             intersectionObject.transform.parent = _intersectionContainer.transform;
-            
+
             Intersection intersection = intersectionObject.GetComponent<Intersection>();
             intersection.ID = System.Guid.NewGuid().ToString();
             intersection.Type = intersectionPointData.Type;
             intersection.IntersectionObject = intersectionObject;
             intersection.RoadSystem = this;
             intersection.IntersectionPosition = intersectionPointData.Position;
-            intersection.Road1PathCreator = intersectionPointData.Road1PathCreator;
-            intersection.Road2PathCreator = intersectionPointData.Road2PathCreator;
-            intersection.Road1 = road1;
-            intersection.Road2 = road2;
-            intersection.Road1AnchorPoint1 = intersectionPointData.Road1AnchorPoint1;
-            intersection.Road1AnchorPoint2 = intersectionPointData.Road1AnchorPoint2;
-            intersection.Road2AnchorPoint1 = intersectionPointData.Road2AnchorPoint1;
-            intersection.Road2AnchorPoint2 = intersectionPointData.Road2AnchorPoint2;
-            intersection.IntersectionLength = Intersection.CalculateIntersectionLength(road1, road2);
+
+            foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
+                intersection.IntersectionArms.Add(new IntersectionArm(junctionEdgeData));
             
-            road1.AddIntersection(intersection);
-            road2.AddIntersection(intersection);
-            
+            intersection.SetupIntersectionArms();
+
+            foreach (Road road in intersection.GetIntersectionRoads())
+                road.AddIntersection(intersection);
+
+            // Finding roads in the opposide directions to measure the intersection length
+            foreach (IntersectionArm arm in intersection.IntersectionArms)
+            {
+                if (arm != intersection.IntersectionArms[0] && arm.OppositeArmID != intersection.IntersectionArms[0].ID)
+                    intersection.IntersectionLength = Intersection.CalculateIntersectionLength(intersection.IntersectionArms[0].Road, arm.Road);
+            }
+
             AddIntersection(intersection);
-            
             return intersection;
         }
+
         /// <summary> Checks if an intersection already exists at the given position </summary>
         public bool DoesIntersectionExist(Vector3 position)
         {
