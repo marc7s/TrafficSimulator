@@ -169,7 +169,6 @@ namespace RoadGenerator
 
                 // Calculate the number of cars to spawn
                 int carsToSpawn = _mode == SpawnMode.Total ? Mathf.CeilToInt(_ratios[i] * TotalCars) : Mathf.CeilToInt(_maxCarsPerLane[i] * LaneCarRatio);
-                Debug.Log("(LANE) Number of cars: " + carsToSpawn + "/" + _maxCarsPerLane[i] + ", with ratio " + LaneCarRatio + " for lane " + i);
                 
                 // Return if there are no cars to spawn
                 if (carsToSpawn == 0)
@@ -184,7 +183,6 @@ namespace RoadGenerator
                 {
                     // Calculate the number of cars to spawn
                     int carsToSpawnInSection = Mathf.CeilToInt(carsToSpawn * sectionRatios[j]);
-                    Debug.Log("(SECTION) Number of cars: " + carsToSpawnInSection + "/" + carsToSpawn + ", with ratio " + sectionRatios[j] + " for section " + j);
                     SpawnCarsInSection(_lanes[i], i, carsToSpawnInSection, sections[j]);
                 }
             }
@@ -193,15 +191,14 @@ namespace RoadGenerator
         /// <summary>Spawns cars in a section</summary>
         private void SpawnCarsInSection(Lane lane, int laneIndex, int carsToSpawn, float sectionLength)
         {
-            int actualCarsSpawned = 0;
+            // Check if the current node is an intersection
             if (_laneNodeCurrent.RoadNode.IsIntersection())
                 _laneNodeCurrent = _laneNodeCurrent.Next;
 
+            // Add intersection distance to offset
             if (_laneNodeCurrent != lane.StartNode)
-            {
                 _offset += _laneNodeCurrent.DistanceToPrevNode + _laneNodeCurrent.Prev.DistanceToPrevNode;
-                Debug.Log("DistanceToPrevNode: " + _laneNodeCurrent.DistanceToPrevNode + ", Prev: " + _laneNodeCurrent.Prev.DistanceToPrevNode);
-            }
+
             for (int i = 0; i < carsToSpawn; i++)
             {
                 // Check if max cars have been spawned
@@ -212,7 +209,6 @@ namespace RoadGenerator
                 if (IsCarSpawnable(_laneNodeCurrent))
                 {
                     SpawnCar(laneIndex);
-                    actualCarsSpawned++;
                     _carCounter++;
                 }
                 
@@ -220,7 +216,6 @@ namespace RoadGenerator
                 _offset += sectionLength / (carsToSpawn);
                 _laneNodeCurrent = CalculateSpawnNode(_offset, lane);
             }
-            Debug.Log("(IN-SECTION) Cars spawned: " + actualCarsSpawned + "/" + carsToSpawn);
         }
 
         /// <summary>Divides a lane into sections based on intersections</summary>
