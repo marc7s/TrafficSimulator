@@ -1612,7 +1612,7 @@ MonoBehaviour:
   MaxReverseDistance: 20
   BaseTLD: 8
   TLDSpeedDivider: 20
-  VehicleOccupancyOffset: 2
+  VehicleOccupancyOffset: 3
   Speed: 10
   Acceleration: 7
   TotalDistance: 0
