@@ -279,7 +279,22 @@ namespace RoadGenerator
                 
                 // Adding unused vertice to make sure the index is correct
                 verts.Add(Vector3.zero);
+                uvs.Add(Vector2.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10 });
+
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(0, 0f));
+                uvs.Add(new Vector2(1, 0f));
+                uvs.Add(new Vector2(0, 0f));
+                uvs.Add(new Vector2(1, 0f));
+                uvs.Add(new Vector2(0, 0f));
+                uvs.Add(new Vector2(1, 0f));
+
+                foreach(Vector3 vert in verts)
+                    normals.Add(Vector3.up);
 
                 AddTrianglesForRectangle(topTris, 5, 10, 1, 4);
                 AddTrianglesForRectangle(topTris, 7, 6, 2, 1);
@@ -369,7 +384,24 @@ namespace RoadGenerator
                 
                 // Adding unused vertice to make sure the index is correct
                 verts.Add(Vector3.zero);
+                uvs.Add(Vector2.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12 });
+
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(1, 0.99f));
+                uvs.Add(new Vector2(0, 0f));
+                uvs.Add(new Vector2(1, 0f));
+                uvs.Add(new Vector2(0, 0f));
+                uvs.Add(new Vector2(1, 0f));
+                uvs.Add(new Vector2(0, 0f));
+                uvs.Add(new Vector2(1, 0f));
+                uvs.Add(new Vector2(0, 0f));
+                uvs.Add(new Vector2(1, 0f));
+
+                foreach(Vector3 vert in verts)
+                    normals.Add(Vector3.up);
 
                 AddTrianglesForRectangle(topTris, 5, 12, 1, 4);
                 AddTrianglesForRectangle(topTris, 7, 6, 2, 1);
@@ -1001,6 +1033,12 @@ namespace RoadGenerator
                     if (intersectionArm == otherIntersectionArm)
                         continue;
                     
+                    if (intersectionArm.Road == otherIntersectionArm.Road)
+                    {
+                        minAngleArm = otherIntersectionArm;
+                        break;
+                    }
+
                     float angle = Vector3.Angle(intersectionArmDirection, directionBetweenTheJunctionEdges);
                     if (angle < minAngle)
                     {
