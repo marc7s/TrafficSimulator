@@ -282,16 +282,12 @@ namespace RoadGenerator
                 uvs.Add(Vector2.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10 });
 
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(0, 0f));
-                uvs.Add(new Vector2(1, 0f));
-                uvs.Add(new Vector2(0, 0f));
-                uvs.Add(new Vector2(1, 0f));
-                uvs.Add(new Vector2(0, 0f));
-                uvs.Add(new Vector2(1, 0f));
+                uvs.AddRange(CreateUVList(new List<(float, float)>(){
+                    (1, 0.99f),  (1, 0.99f), (1, 0.99f), (1, 0.99f),
+                    (0, 0f),     (1, 0f),
+                    (0, 0f),     (1, 0f),
+                    (0, 0f),     (1, 0f)
+                }));
 
                 foreach(Vector3 vert in verts)
                     normals.Add(Vector3.up);
@@ -387,18 +383,11 @@ namespace RoadGenerator
                 uvs.Add(Vector2.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12 });
 
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(1, 0.99f));
-                uvs.Add(new Vector2(0, 0f));
-                uvs.Add(new Vector2(1, 0f));
-                uvs.Add(new Vector2(0, 0f));
-                uvs.Add(new Vector2(1, 0f));
-                uvs.Add(new Vector2(0, 0f));
-                uvs.Add(new Vector2(1, 0f));
-                uvs.Add(new Vector2(0, 0f));
-                uvs.Add(new Vector2(1, 0f));
+                uvs.AddRange(CreateUVList(new List<(float, float)>(){
+                    (1, 0.99f), (1, 0.99f),  (1, 0.99f),  (1, 0.99f),
+                    (0, 0f),    (1, 0f),     (0, 0f),     (1, 0f),
+                    (0, 0f),    (1, 0f),     (0, 0f),     (1, 0f)
+                }));
 
                 foreach(Vector3 vert in verts)
                     normals.Add(Vector3.up);
@@ -417,6 +406,17 @@ namespace RoadGenerator
             _mesh.subMeshCount = 2;
 
             _mesh.SetTriangles(topTris.ToArray(), 0);
+        }
+
+        /// <summary> Converts a list of float tuples to a list of Vector2s </summary>
+        private List<Vector2> CreateUVList(List<(float, float)> uvs)
+        {
+            List<Vector2> uvList = new List<Vector2>();
+            
+            foreach((float x, float y) in uvs)
+                uvList.Add(new Vector2(x, y));
+            
+            return uvList;
         }
 
         private void AddTrianglesForRectangle(List<int> tris, int side1Index1, int side1Index2, int side2Index1, int side2Index2)
