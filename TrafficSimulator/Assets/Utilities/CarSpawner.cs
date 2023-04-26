@@ -190,6 +190,9 @@ namespace RoadGenerator
             if (_laneNodeCurrent.RoadNode.IsIntersection())
                 _laneNodeCurrent = _laneNodeCurrent.Next;
 
+            if(_laneNodeCurrent == null)
+                return;
+
             // Add intersection distance to offset
             if (_laneNodeCurrent != lane.StartNode)
                 _offset += _laneNodeCurrent.DistanceToPrevNode + _laneNodeCurrent.Prev.DistanceToPrevNode;
