@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DataModel;
+using POIs;
 
 namespace RoadGenerator
 {
@@ -115,7 +116,15 @@ namespace RoadGenerator
             {
                 System.Random random = new System.Random();
                 int randomIndex = random.Next(0, nodeList.Count);
-                NavigationNode targetNode = nodeList[randomIndex];
+                
+                /*** USED FOR TESTING POIs, CAUSES CARS IN RANDOM NAVIGATION PATH TO ALWAYS DRIVE TO A PARKING IF THE TARGET ROAD HAS ONE ***/
+                NavigationNode originalTargetNode = nodeList[randomIndex];
+                
+                POI parking = originalTargetNode.RoadNode.Road.POIs.Find(x => x is Parking);
+
+                NavigationNode targetNode = parking == null ? originalTargetNode : nodeList.Find(x => x.RoadNode == parking.RoadNode);
+                /*** END OF TESTING CODE ***/
+                
                 nodeToFind = targetNode;
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge, targetNode);
                 if (path == null)
