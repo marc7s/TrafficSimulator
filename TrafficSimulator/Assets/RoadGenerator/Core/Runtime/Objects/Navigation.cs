@@ -122,7 +122,10 @@ namespace RoadGenerator
                 
                 POI parking = originalTargetNode.RoadNode.Road.POIs.Find(x => x is Parking);
 
-                NavigationNode targetNode = parking == null ? originalTargetNode : nodeList.Find(x => x.RoadNode == parking.RoadNode);
+                NavigationNode parkingNode = parking == null ? null : nodeList.Find(x => x.RoadNode == parking.RoadNode);
+                NavigationNode targetNode = parkingNode == null ? originalTargetNode : parkingNode;
+                Debug.Log(targetNode.RoadNode.Position);
+                DebugUtility.MarkPosition(targetNode.RoadNode.Position);
                 /*** END OF TESTING CODE ***/
                 
                 nodeToFind = targetNode;
@@ -144,7 +147,7 @@ namespace RoadGenerator
                     continue;
 
                 // Trying to find a path that is not too short
-                if (path.Count > (MAX_ITERATIONS < MAX_ITERATIONS / 2 ? 1 : 0))
+                if (path.Count > 0)
                     return path;
             }
             nodeToFind = null;
