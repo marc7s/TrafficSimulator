@@ -7,6 +7,7 @@ using RoadGenerator;
 using CustomProperties;
 using DataModel;
 using Simulation;
+using POIs;
 
 namespace Car {
     public enum DrivingMode 
@@ -253,6 +254,23 @@ namespace Car {
 
         private void ResetToNode(LaneNode node)
         {
+            ResetNodeParameters(node);
+            TeleportToNode(node);
+            PostTeleportCleanup(node);
+            
+            if (_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath)
+                _agent.UpdateRandomPath(node, ShowNavigationPath);
+        }
+
+        private void ParkAtNode(POINode node)
+        {
+            ResetNodeParameters(null);
+            TeleportToNode(node);
+            PostTeleportCleanup(node);
+        }
+
+        private void ResetNodeParameters(LaneNode node)
+        {
             _agent.Context.CurrentNode = node;
             _target = node;
             _prevTarget = node;
@@ -260,20 +278,26 @@ namespace Car {
             _agent.Context.BrakeTarget = node;
             _repositioningTarget = node;
             _agent.Context.IsEnteringNetwork = true;
+        }
 
-            if(_agent.Setting.Mode == DrivingMode.Quality)
-                Q_TeleportToLane();
-            else
-                P_TeleportToLane();
-            
+        private void PostTeleportCleanup(LaneNode node)
+        {
             transform.rotation = node.Rotation;
+            PostTeleportNavigationClear();
+        }
+
+        private void PostTeleportCleanup(POINode node)
+        {
+            transform.rotation = node.Rotation;
+            PostTeleportNavigationClear();
+        }
+
+        private void PostTeleportNavigationClear()
+        {
             _agent.Context.NavigationMode = OriginalNavigationMode;
             SetInitialPrevIntersection();
 
             _agent.ClearIntersectionTransitions();
-            
-            if (_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath)
-                _agent.UpdateRandomPath(node, ShowNavigationPath);
         }
 
         public float GetCurrentSpeed()
@@ -373,18 +397,27 @@ namespace Car {
             return (forwardNodes, backwardNodes);
         }
 
-        private void Q_TeleportToLane()
+        private void TeleportToNode<T>(Node<T> node) where T : Node<T>
         {
-            // Rotate it to face the current position
-            _vehicleController.cachedRigidbody.MoveRotation(_agent.Context.CurrentNode.Rotation);
-            
-            // Move it to the current position, offset in the opposite direction of the lane
-            _vehicleController.cachedRigidbody.position = _agent.Context.CurrentNode.Position - (2 * (_agent.Context.CurrentNode.Rotation * Vector3.forward).normalized);
-            transform.position = _vehicleController.cachedRigidbody.position;
+            if(_agent.Setting.Mode == DrivingMode.Performance)
+            {
+                // Move to the first position of the lane
+                transform.position = P_Lift(node.Position);
+                transform.rotation = node.Rotation;
+            }
+            else
+            {
+                // Rotate it to face the current position
+                _vehicleController.cachedRigidbody.MoveRotation(node.Rotation);
+                
+                // Move it to the current position, offset in the opposite direction of the lane
+                _vehicleController.cachedRigidbody.position = node.Position - (2 * (node.Rotation * Vector3.forward).normalized);
+                transform.position = _vehicleController.cachedRigidbody.position;
 
-            // Reset velocity and angular velocity
-            _vehicleController.cachedRigidbody.velocity = Vector3.zero;
-            _vehicleController.cachedRigidbody.angularVelocity = Vector3.zero;
+                // Reset velocity and angular velocity
+                _vehicleController.cachedRigidbody.velocity = Vector3.zero;
+                _vehicleController.cachedRigidbody.angularVelocity = Vector3.zero;
+            }
         }
 
         private void Q_SteerTowardsTarget()
@@ -407,7 +440,7 @@ namespace Car {
             _vehicleController.steerInput = Vector3.MoveTowards(new Vector3(_vehicleController.steerInput, 0, 0), new Vector3(steeringAngle, 0, 0), Time.deltaTime).x;
         }
         private void Q_UpdateTarget()
-        {   
+        {
             LaneNode target = Q_GetTarget();
             
             // Calculate the direction, which is the vector from our current position to the target
@@ -487,6 +520,18 @@ namespace Car {
                 // Set the target to the next point in the lane
                 SetTarget(GetNextLaneNode(_target, 0, false));
             }
+        }
+
+        private void Park(Parking parking)
+        {
+            POINode parkNode = parking.Park(_agent.Setting.Vehicle);
+            if(parkNode == null)
+            {
+                Debug.LogError("Parking full");
+                return;
+            }
+
+            ParkAtNode(parkNode);
         }
 
         private void SetTarget(LaneNode newTarget)
@@ -673,13 +718,6 @@ namespace Car {
             // If the starting node is a junction edge, the previous intersection is set
             if (prevNode != null && prevNode.Intersection != null && prevNode.IsIntersection())
                 _agent.Context.PrevIntersection = prevNode.Intersection;
-        }
-
-        private void P_TeleportToLane()
-        {
-            // Move to the first position of the lane
-            transform.position = P_Lift(_agent.Context.CurrentNode.Position);
-            transform.rotation = _agent.Context.CurrentNode.Rotation;
         }
 
         // Move the vehicle to the target node

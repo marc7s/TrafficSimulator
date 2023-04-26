@@ -131,6 +131,10 @@ namespace RoadGenerator
         void Awake()
         {
             PathCreator = GetComponent<PathCreator>();
+        }
+
+        private void SetupPOIs()
+        {
             if(_POIContainer == null)
             {
                 // Try to find the lane container if it has already been created
@@ -148,6 +152,10 @@ namespace RoadGenerator
             {
                 _POIContainer = new GameObject(POI_CONTAINER_NAME);
                 _POIContainer.transform.parent = transform;
+            } else
+            {
+                foreach(Transform child in _POIContainer.transform)
+                    child.GetComponent<POI>().Setup();
             }
                 
             
@@ -528,6 +536,7 @@ namespace RoadGenerator
                 intersection.UpdateMesh();
             RoadSystem.UpdateRoadSystemGraph();
             PlaceTrafficSigns();
+            SetupPOIs();
             UpdatePOIs();
             ShowLanes();
             ShowRoadNodes();
@@ -1022,13 +1031,34 @@ namespace RoadGenerator
         {
             RoadNode curr = StartNode;
             float distance = 0;
-            POIs.Sort((x, y) => x.DistanceAlongRoad.CompareTo(y.DistanceAlongRoad));
-            while (curr != null)
+            List<POI> toPlace = new List<POI>(POIs);
+            toPlace.Sort((x, y) => x.DistanceAlongRoad.CompareTo(y.DistanceAlongRoad));
+            while (toPlace.Count > 0 && curr != null)
             {
-                
+                while (toPlace.Count > 0 && toPlace[0].DistanceAlongRoad <= distance)
+                {
+                    POI poi = toPlace[0];
+                    toPlace.RemoveAt(0);
+                    poi.RoadNode = curr;
+                    (Vector3 pos, Quaternion rot) = GetPOIOffsetPosition(curr, poi);
+                    poi.transform.position = pos;
+                    poi.transform.rotation = rot;
+                    
+                    poi.Setup();
+                }
                 distance += curr.DistanceToPrevNode;
                 curr = curr.Next;
             }
+        }
+
+        private (Vector3, Quaternion) GetPOIOffsetPosition(RoadNode node, POI poi)
+        {
+            const float sideOffset = 3f;
+            Bounds bounds = poi.gameObject.GetComponent<Renderer>().bounds;
+            Vector3 position = node.Position + node.Normal * (poi.Size.x / 2 + (int)LaneAmount * LaneWidth + sideOffset);
+            Quaternion rotation = node.Rotation * Quaternion.Euler(Vector3.up * 180);
+            
+            return (position, rotation);
         }
 
         /// <summary>Draws the lanes as coloured lines </summary>

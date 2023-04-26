@@ -49,6 +49,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Road: {fileID: 0}
   DistanceAlongRoad: 0
+  Size: {x: 0, y: 0, z: 0}
+  ParkNodePrefab: {fileID: 6519265059532225654, guid: 90597e2f7266e1c4fba95dc8b6517699, type: 3}
+  DrawParkNodes: 0
+  _parkNodeContainer: {fileID: 0}
 --- !u!33 &3515437566898414976
 MeshFilter:
   m_ObjectHideFlags: 0
