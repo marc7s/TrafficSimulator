@@ -357,8 +357,9 @@ namespace Car {
 
             Vector3 direction = _agent.Context.CurrentNode.Position - transform.position;
             float dot = Vector3.Dot(transform.forward, direction.normalized);
-            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position) * dot;
 
+            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position) * -Mathf.Sign(dot);
+            
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 
             // Occupy nodes further ahead in intersections
