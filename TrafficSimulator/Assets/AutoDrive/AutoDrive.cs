@@ -157,7 +157,7 @@ namespace Car {
 
             _agent = new AutoDriveAgent(
                 new AutoDriveSetting(GetComponent<Vehicle>(), Mode, Active, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
-                new AutoDriveContext(Road, currentNode, transform.position, OriginalNavigationMode)
+                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode)
             );
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
@@ -622,9 +622,7 @@ namespace Car {
 
             // If the road ended but we are looping, teleport to the first position
             if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
-            {
                 Q_EndOfRoadTeleport();
-            }
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)

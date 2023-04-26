@@ -225,7 +225,6 @@ namespace Car
 
     public class AutoDriveContext
     {
-        public Road CurrentRoad;
         public LaneNode CurrentNode;
         public LaneNode EndPrevNode;
         public LaneNode EndNextNode;
@@ -246,10 +245,10 @@ namespace Car
         public TurnDirection TurnDirection;
         public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
+        public Road CurrentRoad => CurrentNode.RoadNode.Road;
         
-        public AutoDriveContext(Road currentRoad, LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
+        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
         {
-            CurrentRoad = currentRoad;
             CurrentNode = initialNode;
             VehiclePosition = vehiclePosition;
 
