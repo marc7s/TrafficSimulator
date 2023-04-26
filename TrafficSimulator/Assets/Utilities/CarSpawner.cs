@@ -14,7 +14,14 @@ namespace RoadGenerator
     public class CarSpawner : MonoBehaviour
     {
         [Header("Connections")]
-        [SerializeField] private GameObject _carPrefab;
+        [SerializeField] private GameObject _sedanPrefab;
+        [SerializeField] private GameObject _sportsCar1Prefab;
+        [SerializeField] private GameObject _sportsCar2Prefab;
+        [SerializeField] private GameObject _suv1Prefab;
+        [SerializeField] private GameObject _suv2Prefab;
+        [SerializeField] private GameObject _van1Prefab;
+        [SerializeField] private GameObject _van2Prefab;
+
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
@@ -31,6 +38,8 @@ namespace RoadGenerator
 
         private RoadSystem _roadSystem;
         private List<Road> _roads;
+
+        private List<GameObject> _vehicleTypes;
 
         private List<Lane> _lanes = new List<Lane>(); 
         private List<float> _lengths = new List<float>();
@@ -50,7 +59,9 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _carLength = _carPrefab.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z;
+            _vehicleTypes = new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab };
+
+            _carLength = GetLongestCarLength(_vehicleTypes);
 
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
@@ -75,6 +86,18 @@ namespace RoadGenerator
                     Debug.Log("Total cars spawned: " + _carCounter);
                 }
             }
+        }
+
+        private float GetLongestCarLength(List<GameObject> cars)
+        {
+            float longestCarLength = 0;
+            foreach (GameObject car in cars)
+            {
+                float carLength = car.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z;
+                if (carLength > longestCarLength)
+                    longestCarLength = carLength;
+            }
+            return longestCarLength * 1.25f;
         }
 
         private void AddLanesToList()
@@ -163,6 +186,17 @@ namespace RoadGenerator
         /// <summary>Spawns cars in a section</summary>
         private void SpawnCarsInSection(Lane lane, int laneIndex, int carsToSpawn, float sectionLength)
         {
+            // Check if the current node is an intersection
+            if (_laneNodeCurrent.RoadNode.IsIntersection())
+                _laneNodeCurrent = _laneNodeCurrent.Next;
+
+            if(_laneNodeCurrent == null)
+                return;
+
+            // Add intersection distance to offset
+            if (_laneNodeCurrent != lane.StartNode)
+                _offset += _laneNodeCurrent.DistanceToPrevNode + _laneNodeCurrent.Prev.DistanceToPrevNode;
+
             for (int i = 0; i < carsToSpawn; i++)
             {
                 // Check if max cars have been spawned
@@ -222,7 +256,7 @@ namespace RoadGenerator
         /// <summary>Spawns a car at the current lane node</summary>
         private void SpawnCar(int index)
         {
-            _currentCar = Instantiate(_carPrefab, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+            _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
             _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
             _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
 
@@ -246,6 +280,11 @@ namespace RoadGenerator
             }
             
             return curr;
+        }
+
+        private GameObject GetRandomCar(List<GameObject> cars)
+        {
+            return cars[Random.Range(0, cars.Count)];
         }
     }
 }
