@@ -51,14 +51,7 @@ MonoBehaviour:
   IntersectionObject: {fileID: 4601614798071418940}
   RoadSystem: {fileID: 0}
   IntersectionPosition: {x: 0, y: 0, z: 0}
-  Road1: {fileID: 0}
-  Road2: {fileID: 0}
-  Road1PathCreator: {fileID: 0}
-  Road2PathCreator: {fileID: 0}
-  Road1AnchorPoint1: {x: 0, y: 0, z: 0}
-  Road1AnchorPoint2: {x: 0, y: 0, z: 0}
-  Road2AnchorPoint1: {x: 0, y: 0, z: 0}
-  Road2AnchorPoint2: {x: 0, y: 0, z: 0}
+  IntersectionArms: []
   Type: 0
   TrafficLightController: {fileID: 3194208644826295019}
   ID: 
@@ -66,10 +59,11 @@ MonoBehaviour:
   _guideLaneNodePrefab: {fileID: 6519265059532225654, guid: cd0b879c858f97b499405ab9f1cfcb01, type: 3}
   _stretchFactor: 0.2
   FlowType: 0
-  _material: {fileID: 2100000, guid: f4b3387b0279cfc4d8c42c039b55d140, type: 2}
+  _material: {fileID: 2100000, guid: 2161ab460ccad274aa9dd88a46008371, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: ac13cd34ea241854f9dc39260c81716b, type: 2}
   _drawGuideNodes: 0
   _guideNodeContainer: {fileID: 0}
+  IntersectionLength: 20
 --- !u!33 &9193119221568891823
 MeshFilter:
   m_ObjectHideFlags: 0
