@@ -371,7 +371,7 @@ public class MapGenerator : MonoBehaviour
     }
     private void LoadOSMMap(XmlDocument document)
     {
-        document.Load("Assets/Masthugget.osm");
+        document.Load("Assets/MastHugget.osm");
     }
 
     private bool IsTagKeyName(XmlNode node, string value)
@@ -630,6 +630,11 @@ public class MapGenerator : MonoBehaviour
             roadSystem.AddRoad(road);
             
             return road;
+    }
+
+    private void AddRoofs(List<BuildingPoints> buildingPoints, List<int> triangles)
+    {
+        
     }
 }
 }
