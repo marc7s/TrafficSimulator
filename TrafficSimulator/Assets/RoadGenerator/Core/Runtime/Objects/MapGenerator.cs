@@ -401,10 +401,19 @@ public class MapGenerator : MonoBehaviour
         if (wayData.Name == null && wayData.WayType != WayType.RailTram)
             return;
 
-      //  if (wayData.WayType == WayType.RailTram)
-      //      return;
+        if (wayData.WayType == WayType.RailTram)
+            return;
 
         List <Vector3> roadPoints = GetWayNodePositions(ienum);
+
+        // TotatlLenght of road
+        float totalLength = 0;
+        for (int i = 0; i < roadPoints.Count - 1; i++)
+        {
+            totalLength += Vector3.Distance(roadPoints[i], roadPoints[i + 1]);
+        }
+        if (totalLength < 5)
+            return;
 
         // Currently get error when roads have same start and end point, TODO fix
         if (roadPoints[0] == roadPoints[roadPoints.Count - 1])
@@ -415,6 +424,7 @@ public class MapGenerator : MonoBehaviour
         roadPoints2.Add(roadPoints[0]);
         roadPoints2.Add(roadPoints[1]);
         Road road = spawnRoad(roadPoints2, wayData);
+
 
         if (wayData.MaxSpeed != null)
             road.SpeedLimit = (SpeedLimit)wayData.MaxSpeed;
