@@ -88,7 +88,7 @@ namespace RoadGenerator
                 if (curr.Road != this.Road)
                     break;
                 
-                if (curr.IsIntersection())
+                if (curr.IsIntersection() || curr.IsNavigationNode)
                 {
                     // We do not want to skip the first node of the road
                     if (curr.Position == startNavigationNode.RoadNode.Position)
@@ -97,7 +97,7 @@ namespace RoadGenerator
                         continue;
                     }
                     // If the intersection only have one edge, then it is a three way intersection the last node of the road
-                    if (nextNavigationNode.Edges.Count < 2)
+                    if (curr.IsIntersection() && nextNavigationNode.Edges.Count < 2)
                     {
                         curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                         curr = curr.Next;

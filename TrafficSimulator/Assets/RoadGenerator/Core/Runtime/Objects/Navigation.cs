@@ -143,7 +143,7 @@ namespace RoadGenerator
                     continue;
 
                 // Avoid getting navigation nodes as the target node
-                if (targetNode.RoadNode.IsNavigationNode)
+                if (targetNode.RoadNode.Type == RoadNodeType.RoadConnection)
                     continue;
 
                 // Trying to find a path that is not too short
