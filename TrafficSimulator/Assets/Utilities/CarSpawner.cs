@@ -14,13 +14,13 @@ namespace RoadGenerator
     public class CarSpawner : MonoBehaviour
     {
         [Header("Connections")]
-        [SerializeField] private GameObject _carPrefab;
-        [SerializeField] private GameObject _sportCarPrefab;
-        [SerializeField] private GameObject _sportCar1Prefab;
-        [SerializeField] private GameObject _suvCarPrefab;
-        [SerializeField] private GameObject _suvCar1Prefab;
-        [SerializeField] private GameObject _vanCarPrefab;
-        [SerializeField] private GameObject _vanCar1Prefab;
+        [SerializeField] private GameObject _sedanPrefab;
+        [SerializeField] private GameObject _sportsCar1Prefab;
+        [SerializeField] private GameObject _sportsCar2Prefab;
+        [SerializeField] private GameObject _suv1Prefab;
+        [SerializeField] private GameObject _suv2Prefab;
+        [SerializeField] private GameObject _van1Prefab;
+        [SerializeField] private GameObject _van2Prefab;
 
         [SerializeField] private GameObject _roadSystemObject;
 
@@ -59,7 +59,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _vehicleTypes = new List<GameObject>(){ _carPrefab, _sportCarPrefab, _sportCar1Prefab, _suvCarPrefab, _suvCar1Prefab, _vanCarPrefab, _vanCar1Prefab };
+            _vehicleTypes = new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab };
 
             _carLength = GetLongestCarLength(_vehicleTypes);
 

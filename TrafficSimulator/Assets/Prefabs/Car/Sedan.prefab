@@ -1833,7 +1833,7 @@ GameObject:
   - component: {fileID: 6997793727484486664}
   - component: {fileID: 8740552995654376748}
   m_Layer: 0
-  m_Name: Car
+  m_Name: Sedan
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
