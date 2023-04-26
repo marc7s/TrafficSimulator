@@ -532,12 +532,15 @@ namespace RoadGenerator
             UpdateRoadNodes();
             UpdateLanes();
             UpdateMesh();
+            
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
-            RoadSystem.UpdateRoadSystemGraph();
-            PlaceTrafficSigns();
+            
             SetupPOIs();
             UpdatePOIs();
+            
+            RoadSystem.UpdateRoadSystemGraph();
+            PlaceTrafficSigns();
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();
