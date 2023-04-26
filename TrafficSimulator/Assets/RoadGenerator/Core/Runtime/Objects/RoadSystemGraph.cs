@@ -131,22 +131,18 @@ namespace RoadGenerator
         {
             // The road system graph, key is the positions string representation
             List<NavigationNode> roadSystemGraph = new List<NavigationNode>();
+            
+            // Map the road into the graph
             foreach (Road road in roadSystem.DefaultRoads)
-            {
-                // Map the road into the graph
                 road.UpdateRoadNoGraphUpdate();
-            }
-            // Loop through all roads in the road system
+
+            // Map the roads into the graph
             foreach(Road road in roadSystem.DefaultRoads)
-            {   
-                // Map the road into the graph
                 UpdateGraphForRoad(road, roadSystemGraph);
-            }
+
+            // Map the intersections navigation
             foreach (Intersection intersection in roadSystem.Intersections)
-            {
-                // Map the intersections navigation
                 intersection.MapIntersectionNavigation(); 
-            }
 
             return roadSystemGraph;
         }

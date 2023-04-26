@@ -135,6 +135,7 @@ namespace RoadGenerator
 
         private void SetupPOIs()
         {
+            POIs.Clear();
             if(_POIContainer == null)
             {
                 // Try to find the lane container if it has already been created
@@ -536,10 +537,8 @@ namespace RoadGenerator
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
             
-            SetupPOIs();
-            UpdatePOIs();
-
             PlaceTrafficSigns();
+
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();
@@ -552,8 +551,10 @@ namespace RoadGenerator
             UpdateRoadNodes();
             UpdateLanes();
             UpdateMesh();
+            
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
+            
             PlaceTrafficSigns();
         }
 
@@ -731,9 +732,13 @@ namespace RoadGenerator
 
             EndRoadNode = roadBuilder.Curr;
             ConnectRoadNodesForConnectedRoads();
+
+            SetupPOIs();
+            UpdatePOIs();
+
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(StartRoadNode);
-            StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
+            StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, PathCreator.bezierPath.IsClosed);
         
             // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
@@ -1040,6 +1045,7 @@ namespace RoadGenerator
             {
                 while (toPlace.Count > 0 && toPlace[0].DistanceAlongRoad <= distance)
                 {
+                    curr.IsNavigationNode = true;
                     POI poi = toPlace[0];
                     toPlace.RemoveAt(0);
                     poi.RoadNode = curr;
