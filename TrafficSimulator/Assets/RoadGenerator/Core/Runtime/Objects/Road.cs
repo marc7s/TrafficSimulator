@@ -1047,6 +1047,7 @@ namespace RoadGenerator
                 {
                     curr.IsNavigationNode = true;
                     POI poi = toPlace[0];
+                    curr.POI = poi;
                     toPlace.RemoveAt(0);
                     poi.RoadNode = curr;
                     (Vector3 pos, Quaternion rot) = GetPOIOffsetPosition(curr, poi);

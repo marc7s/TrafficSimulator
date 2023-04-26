@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using POIs;
 
 namespace RoadGenerator
 {
@@ -25,6 +26,7 @@ namespace RoadGenerator
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
         public NavigationNodeEdge SecondaryNavigationNodeEdge;
         public bool IsNavigationNode = false;
+        public POI POI = null;
         private Vector3 _tangent;
         private Vector3 _normal;
         private RoadNodeType _type;

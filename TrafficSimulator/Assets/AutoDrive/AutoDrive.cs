@@ -267,6 +267,8 @@ namespace Car {
             ResetNodeParameters(null);
             TeleportToNode(node);
             PostTeleportCleanup(node);
+            _agent.Context.CurrentThrottleInput = 0;
+            _agent.Context.CurrentBrakeInput = 1;
         }
 
         private void ResetNodeParameters(LaneNode node)
@@ -585,7 +587,8 @@ namespace Car {
         {
             LaneNode nextNode = Q_GetNextCurrentNode();
             LaneNode nextNextNode = GetNextLaneNode(nextNode, 0, false);
-            bool reachedEnd = !_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End;
+            
+            bool reachedEnd = HasReachedTarget() || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
 
             // Move the current node forward while we are closer to the next node than the current. Also check the node after the next as the next may be further away in intersections where the current road is switched
             // Note: only updates while driving. During repositioning the vehicle will be closer to the next node (the repositioning target) halfway through the repositioning
@@ -617,16 +620,31 @@ namespace Car {
                 
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
-                reachedEnd = reachedEnd || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
+                reachedEnd = HasReachedTarget() || reachedEnd || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
             }
 
-            // If the road ended but we are looping, teleport to the first position
-            if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
-                Q_EndOfRoadTeleport();
+            if(reachedEnd)
+            {
+                if(_agent.Context.CurrentNode.POI != null)
+                {
+                    if(_agent.Context.CurrentNode.POI is Parking)
+                    {
+                        Park(_agent.Context.CurrentNode.POI as Parking);
+                    }
+                }
+                // If the road ended but we are looping, teleport to the first position
+                if(EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
+                    Q_EndOfRoadTeleport();
+            }
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)
                 _agent.Context.IsEnteringNetwork = false;
+        }
+
+        private bool HasReachedTarget()
+        {
+            return _agent.Context.NavigationMode == NavigationMode.RandomNavigationPath ? _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode : true;
         }
 
         private void Q_EndOfRoadTeleport()

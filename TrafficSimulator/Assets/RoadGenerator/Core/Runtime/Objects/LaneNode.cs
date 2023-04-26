@@ -1,6 +1,7 @@
 using UnityEngine;
 using DataModel;
 using System.Collections.Generic;
+using POIs;
 
 namespace RoadGenerator 
 {
@@ -54,6 +55,7 @@ namespace RoadGenerator
         public virtual RoadNode RoadNode => _roadNode;
         public RoadNodeType Type => _roadNode.Type;
         public TrafficLight TrafficLight => _roadNode.TrafficLight;
+        public POI POI => _roadNode.POI;
         public virtual Intersection Intersection => _roadNode.Intersection;
         public virtual Vehicle Vehicle => _vehicle;
         public virtual bool IsSteeringTarget => _isSteeringTarget;

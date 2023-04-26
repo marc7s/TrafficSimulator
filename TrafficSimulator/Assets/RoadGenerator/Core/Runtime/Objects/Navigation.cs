@@ -124,8 +124,6 @@ namespace RoadGenerator
 
                 NavigationNode parkingNode = parking == null ? null : nodeList.Find(x => x.RoadNode == parking.RoadNode);
                 NavigationNode targetNode = parkingNode == null ? originalTargetNode : parkingNode;
-                Debug.Log(targetNode.RoadNode.Position);
-                DebugUtility.MarkPosition(targetNode.RoadNode.Position);
                 /*** END OF TESTING CODE ***/
                 
                 nodeToFind = targetNode;
