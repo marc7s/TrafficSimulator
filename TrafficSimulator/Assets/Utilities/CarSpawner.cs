@@ -59,7 +59,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _vehicleTypes = new List<GameObject>(){_carPrefab, _sportCarPrefab, _sportCar1Prefab, _suvCarPrefab, _suvCar1Prefab, _vanCarPrefab, _vanCar1Prefab};
+            _vehicleTypes = new List<GameObject>(){ _carPrefab, _sportCarPrefab, _sportCar1Prefab, _suvCarPrefab, _suvCar1Prefab, _vanCarPrefab, _vanCar1Prefab };
 
             _carLength = GetLongestCarLength(_vehicleTypes);
 
@@ -93,11 +93,11 @@ namespace RoadGenerator
             float longestCarLength = 0;
             foreach (GameObject car in cars)
             {
-                float carLength = car.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z * 1.25f;
+                float carLength = car.transform.GetChild(1).GetComponent<MeshRenderer>().bounds.size.z;
                 if (carLength > longestCarLength)
                     longestCarLength = carLength;
             }
-            return longestCarLength;
+            return longestCarLength * 1.25f;
         }
 
         private void AddLanesToList()
@@ -152,13 +152,8 @@ namespace RoadGenerator
         /// <summary>Calculates the max capacity of cars for a lane</summary>
         private void CalculateMaxCarsForLanes()
         {
-            int mCars = 0;
             foreach (float length in _lengths)
-            {
                 _maxCarsPerLane.Add(Mathf.FloorToInt(length / _carLength));
-                mCars += Mathf.FloorToInt(length / _carLength);
-            }
-            Debug.Log("Max cars: " + mCars);
         }
 
         private void SpawnCars()

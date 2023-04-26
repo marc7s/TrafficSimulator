@@ -336,7 +336,6 @@ namespace Car {
 
             float distanceToCurrentNode = (dot < 0) ? -direction.magnitude : direction.magnitude;
             
-
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
 
             // Occupy nodes further ahead in intersections
