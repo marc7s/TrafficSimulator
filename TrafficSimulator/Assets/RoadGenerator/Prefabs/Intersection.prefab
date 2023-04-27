@@ -59,7 +59,7 @@ MonoBehaviour:
   _guideLaneNodePrefab: {fileID: 6519265059532225654, guid: cd0b879c858f97b499405ab9f1cfcb01, type: 3}
   _stretchFactor: 0.2
   FlowType: 0
-  _material: {fileID: 2100000, guid: f4b3387b0279cfc4d8c42c039b55d140, type: 2}
+  _material: {fileID: 2100000, guid: 2161ab460ccad274aa9dd88a46008371, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: ac13cd34ea241854f9dc39260c81716b, type: 2}
   _drawGuideNodes: 0
   _guideNodeContainer: {fileID: 0}
