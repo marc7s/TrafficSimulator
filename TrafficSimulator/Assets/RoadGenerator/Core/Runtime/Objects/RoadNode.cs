@@ -79,7 +79,6 @@ namespace RoadGenerator
         {
             RoadNode curr = this;
             NavigationNode prevNavigationNode = startNavigationNode;
-            Debug.Log(curr.Road + " " + curr.Position);
             NavigationNode nextNavigationNode = startNavigationNode.Edges[0].EndNavigationNode;
 
             // Changing the prev and next navigation node to always be the nodes closest to the current node in each direction

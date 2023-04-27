@@ -19,21 +19,27 @@ namespace RoadGenerator
         [SerializeField] private GameObject _intersectionContainer;
         public GameObject BuildingContainer;
         public GameObject BusStopContainer;
+        public GameObject NatureContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
         [SerializeField] private GameObject _intersectionPrefab;
         [SerializeField] private MapGenerator _mapGenerator;
-
         [SerializeField] private GameObject _roadSystemGraphNodePrefab;
+  
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
+        [Header("OSM Settings")]
+        public bool ShouldGenerateBuildings = true;
+        public bool ShouldGenerateTrees = true;
+        public bool ShouldGenerateBusStops = true;
         
         [Header("Default models")]
         public GameObject DefaultTrafficLightPrefab;
         public GameObject DefaultTrafficLightControllerPrefab;
         public GameObject DefaultStopSignPrefab;
         public GameObject DefaultBusStopPrefab;
+        public GameObject DefaultTreePrefab;
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;
@@ -175,6 +181,7 @@ namespace RoadGenerator
             DeleteAllRoads();
             DeleteAllBuildings();
             DeleteAllBusStops();
+            DeleteAllNature();
            _mapGenerator.GenerateMap(this);
         }
         public void SpawnBusStops()
@@ -202,6 +209,17 @@ namespace RoadGenerator
                 buildings.Add(buildingT.gameObject);
             foreach(GameObject building in buildings)
                 DestroyImmediate(building);
+        }
+
+        public void DeleteAllNature()
+        {
+            List<GameObject> nature = new List<GameObject>();
+
+            foreach(Transform natureT in NatureContainer.transform)
+                nature.Add(natureT.gameObject);
+
+            foreach(GameObject natureObj in nature)
+                DestroyImmediate(natureObj);
         }
 
         public void DeleteAllBusStops()

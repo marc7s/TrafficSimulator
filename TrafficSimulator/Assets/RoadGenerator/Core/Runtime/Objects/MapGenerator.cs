@@ -26,6 +26,7 @@ public enum WayType
 
 public struct BuildingData
 {
+    public bool? IsMultiPolygon;
     public string? StreetName;
     public string? StreetAddress;
     public int? Height;
@@ -67,8 +68,10 @@ public class MapGenerator : MonoBehaviour
     private RoadSystem roadSystem;
     public Material BuildingMaterial;
     Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
+    Dictionary<string, XmlNode> wayDict = new Dictionary<string, XmlNode>();
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
     List<XmlNode> busStops = new List<XmlNode>();
+    List<XmlNode> trees = new List<XmlNode>();
     double minLat = 0;
     double minLon = 0;
     public void GenerateMap(RoadSystem roadSystem)
@@ -97,6 +100,13 @@ public class MapGenerator : MonoBehaviour
                 if (!nodesDict.ContainsKey(node.Attributes["id"].Value))
                     nodesDict.Add(node.Attributes["id"].Value, node);
             }
+
+            if (node.Name == "way")
+            {
+                if (!wayDict.ContainsKey(node.Attributes["id"].Value))
+                    wayDict.Add(node.Attributes["id"].Value, node);
+            }
+
             foreach(XmlNode childNode in node.ChildNodes)
             {
                 if (childNode.Name == "tag")
@@ -105,9 +115,11 @@ public class MapGenerator : MonoBehaviour
                     {
                         case "highway":
                             if (childNode.Attributes["v"].Value == "bus_stop")
-                            {
                                 busStops.Add(node);
-                            }
+                            break;
+                        case "natural":
+                            if (childNode.Attributes["v"].Value == "tree")
+                                trees.Add(node);
                             break;
                     }
                 }
@@ -118,7 +130,8 @@ public class MapGenerator : MonoBehaviour
 
         int count = 0;
         foreach(XmlNode node in doc.DocumentElement.ChildNodes){
-            if (node.Name == "way") {
+            if (node.Name == "way") 
+            {
                 WayData? wayData = GetWayData(node);
                 IEnumerator ienum = node.GetEnumerator();
                 if (wayData == null)
@@ -127,14 +140,45 @@ public class MapGenerator : MonoBehaviour
                     GenerateRoad(ienum, wayData.Value);
                     count++;
                 }
-                if (wayData?.WayType == WayType.Building) {
+                if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings) {
                     GenerateBuilding(ienum, wayData.Value);
+                }
+            }
+
+            if (node.Name == "relation")
+            {
+                WayData? wayData = GetWayData(node);
+                IEnumerator ienum = node.GetEnumerator();
+
+                // When the building is multipolygon
+                if (wayData?.BuildingData.IsMultiPolygon == true && wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings) 
+                {
+                    while (ienum.MoveNext())
+                    {
+                        XmlNode currentNode = (XmlNode) ienum.Current; 
+                        if (currentNode.Name == "member")
+                        {
+                            if (currentNode.Attributes["type"].Value == "way")
+                            {
+                                if (wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
+                                {
+                                    XmlNode wayNode = wayDict[currentNode.Attributes["ref"].Value];
+                                    GenerateBuilding(wayNode.GetEnumerator(), wayData.Value);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
         AddRoads();
-        AddBusStops();
+
+        if (roadSystem.ShouldGenerateBusStops)
+            AddBusStops();
+
+        if (roadSystem.ShouldGenerateTrees)
+            AddTrees();
 
     }
 
@@ -269,6 +313,18 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    private void AddTrees()
+    {
+        GameObject treePrefab = roadSystem.DefaultTreePrefab;
+        foreach (XmlNode treeNode in trees)
+        {
+            Vector3 position = GetNodePosition(treeNode);
+            GameObject tree = Instantiate(treePrefab, position, Quaternion.identity);
+            tree.transform.parent = roadSystem.NatureContainer.transform;
+            tree.name = "Tree";
+        }
+    }
+
     private WayData? GetWayData(XmlNode node)
     {
         IEnumerator ienum = node.GetEnumerator();
@@ -327,6 +383,10 @@ public class MapGenerator : MonoBehaviour
                         case "building:levels":
                             buildingData.BuildingLevels = int.Parse(currentNode.Attributes["v"].Value);
                             break;
+                        case "type":
+                            if (currentNode.Attributes["v"].Value == "multipolygon")
+                                buildingData.IsMultiPolygon = true;
+                            break;
                     }
                 }
                 catch
@@ -362,6 +422,10 @@ public class MapGenerator : MonoBehaviour
                 return WayType.Trunk;
             case "service":
                 return WayType.Service;
+            case "footway":
+                return WayType.Footway;
+            case "path":
+                return WayType.Path;
             case "unclassified":
                 return WayType.Unclassified;
             
@@ -395,16 +459,40 @@ public class MapGenerator : MonoBehaviour
         );
     }
 
+    private void GenerateFootWay(List <Vector3> points, WayData wayData)
+    {
+        return;
+        Debug.Log("Generating footway");
+        FootWayMeshGenerator footWayMeshGenerator = new FootWayMeshGenerator();
+        Mesh footWay = footWayMeshGenerator.GenerateMesh(points, 4, 0.1f);
+        GameObject footWayObject = new GameObject();
+        footWayObject.transform.parent = roadSystem.RoadContainer.transform;
+        MeshFilter meshFilter = footWayObject.AddComponent<MeshFilter>();
+        meshFilter.mesh = footWay;
+        MeshRenderer meshRenderer = footWayObject.AddComponent<MeshRenderer>();
+        //meshRenderer.material = roadSystem.DefaultRoadMaterial;
+        footWayObject.name = "FootWay";
+    }
+
     // https://wiki.openstreetmap.org/wiki/Map_features#Highway
     void GenerateRoad(IEnumerator ienum, WayData wayData) {
+
+        
+
+
+        List <Vector3> roadPoints = GetWayNodePositions(ienum);
+
+        if (wayData.WayType == WayType.Footway || wayData.WayType == WayType.Path)
+        {
+            GenerateFootWay(roadPoints, wayData);
+            return;
+        }
 
         if (wayData.Name == null && wayData.WayType != WayType.RailTram)
             return;
 
         if (wayData.WayType == WayType.RailTram)
             return;
-
-        List <Vector3> roadPoints = GetWayNodePositions(ienum);
 
         // TotatlLenght of road
         float totalLength = 0;
