@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="TrafficFlowPanel" src="project://database/Assets/UI/World/Traffic%20Flow/TrafficFlowPanel.uxml?fileID=9197481963319205126&amp;guid=758ccb5818fe11d47bb6490901b623c4&amp;type=3#TrafficFlowPanel" />
+    <ui:Template name="EmissionPanel" src="project://database/Assets/UI/World/Emission/EmissionPanel.uxml?fileID=9197481963319205126&amp;guid=4ec2a7d4840833e44a54b4a6a2351076&amp;type=3#EmissionPanel" />
+    <ui:Template name="VehiclesPanel" src="project://database/Assets/UI/World/Vehicles/VehiclesPanel.uxml?fileID=9197481963319205126&amp;guid=86265dfe80887f546aa3843503f2c506&amp;type=3#VehiclesPanel" />
+    <ui:VisualElement name="Window" style="width: 350px; height: 450px; flex-shrink: 0; align-items: stretch;">
+        <ui:VisualElement name="Tabs" style="height: auto; flex-direction: row; align-items: flex-end; justify-content: flex-start; left: 10%; width: 200px; margin-left: 0; flex-shrink: 1; flex-grow: 0; margin-right: 0; margin-top: 0; margin-bottom: 0;">
+            <ui:Button text="Traffic Flow" display-tooltip-when-elided="true" name="TrafficFlowButton" style="padding-bottom: 0; margin-bottom: 0; width: auto;" />
+            <ui:Button text="Emission" display-tooltip-when-elided="true" name="EmissionButton" style="margin-bottom: 0; padding-bottom: 0;" />
+            <ui:Button text="Vehicles" display-tooltip-when-elided="true" name="VehiclesButton" style="padding-bottom: 0; margin-bottom: 0;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Panel" style="width: auto; height: auto; padding-left: 0; padding-right: 0; padding-bottom: 0; flex-shrink: 0; padding-top: 0; align-items: stretch; justify-content: flex-start; position: relative; flex-grow: 1;">
+            <ui:Instance template="TrafficFlowPanel" name="TrafficFlowPanel" style="width: 100%; height: 100%; position: absolute;" />
+            <ui:Instance template="EmissionPanel" name="EmissionPanel" style="position: absolute; visibility: visible; width: 100%; height: 100%;" />
+            <ui:Instance template="VehiclesPanel" name="VehiclesPanel" style="position: absolute; visibility: visible; width: 100%; height: 100%;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

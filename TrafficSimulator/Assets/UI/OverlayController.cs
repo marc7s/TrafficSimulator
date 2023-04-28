@@ -14,10 +14,14 @@ namespace UI
         // Overlay Button
         private Button _menuButton;
 
-        // Statistics UI
+        // Car statistics UI
         private VisualElement _statisticsUI;
         public bool _isStatisticsOpen = false;
-        
+
+        // World statistics UI
+        private VisualElement _worldUI;
+        public bool _isWorldOpen = false;
+
         // Camera Buttons
         private StyleSheet _cameraButtonStyles;
         private Button _defaultCameraButton;
@@ -75,10 +79,21 @@ namespace UI
             _statisticsButton = _doc.rootVisualElement.Q<Button>("Statistics");
             _statisticsButton.clicked += StatisticsButtonOnClicked;
 
-            // Get statistics UI visual element
+            // Get car statistics UI visual element
             _statisticsUI = _doc.rootVisualElement.Q<VisualElement>("StatisticsWindow");
             _statisticsUI.pickingMode = PickingMode.Position;
             _statisticsUI.visible = false;
+            // Make draggable
+            _statisticsUI.AddManipulator(new DragManipulator());
+            _statisticsUI.RegisterCallback<DropEvent>(evt => Debug.Log($"{evt.target} dropped on {evt.droppable}"));
+
+            // Get world statistics UI visual element
+            _worldUI = _doc.rootVisualElement.Q<VisualElement>("WorldWindow");
+            _worldUI.pickingMode = PickingMode.Position;
+            _worldUI.visible = false;
+            // Make draggable
+            _worldUI.AddManipulator(new DragManipulator());
+            _worldUI.RegisterCallback<DropEvent>(evt => Debug.Log($"{evt.target} dropped on {evt.droppable}"));
 
             _worldOptionButton = _doc.rootVisualElement.Q<Button>("WorldOptions");
             _worldOptionButton.clicked += WorldOptionButtonOnClicked;
@@ -187,6 +202,7 @@ namespace UI
         private void MenuButtonOnClicked()
         {
             _statisticsUI.visible = false;
+            _worldUI.visible = false;
             _doc.rootVisualElement.visible = false;
             _menuController.Enable();
         }
@@ -214,7 +230,8 @@ namespace UI
 
         private void WorldOptionButtonOnClicked()
         {
-            Debug.Log("WorldOptions");
+            _isWorldOpen = !_isWorldOpen;
+            _worldUI.visible = _isWorldOpen;
         }
 
         private void EditorButtonOnClicked()

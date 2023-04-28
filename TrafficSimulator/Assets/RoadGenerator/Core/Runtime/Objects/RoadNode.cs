@@ -48,6 +48,7 @@ namespace RoadGenerator
             Intersection = intersection;
             _id = System.Guid.NewGuid().ToString();
             _rotation = Quaternion.LookRotation(_tangent, Vector3.up);
+            _index = prev == null ? 0 : prev.Index + 1;
         }
         public override RoadNode Copy()
         {
@@ -86,6 +87,7 @@ namespace RoadGenerator
                 // If the current node is not on the same road as the start node, then we have reached the end of the road
                 if (curr.Road != this.Road)
                     break;
+                
                 if (curr.IsIntersection())
                 {
                     // We do not want to skip the first node of the road
@@ -115,6 +117,7 @@ namespace RoadGenerator
                     curr = curr.Next;
                     continue;
                 }
+                
                 // If the end of the road and the road is closed
                 if (curr.IsNavigationNode && !curr.IsIntersection() && isClosed && curr.Next == null)
                 {
@@ -145,14 +148,13 @@ namespace RoadGenerator
                 {
                     bool isPrimaryEdgePointingToIntersection = curr.PrimaryNavigationNodeEdge.EndNavigationNode.RoadNode.Position == intersection.IntersectionPosition;
                     NavigationNodeEdge edge = isPrimaryEdgePointingToIntersection ? curr.SecondaryNavigationNodeEdge : curr.PrimaryNavigationNodeEdge;
-                    if (curr.Position == intersection.Road1AnchorPoint1)
-                        intersection.Road1AnchorPoint1NavigationEdge = edge;
-                    if (curr.Position == intersection.Road1AnchorPoint2)
-                        intersection.Road1AnchorPoint2NavigationEdge = edge;
-                    if (curr.Position == intersection.Road2AnchorPoint1)
-                        intersection.Road2AnchorPoint1NavigationEdge = edge;
-                    if (curr.Position == intersection.Road2AnchorPoint2)
-                        intersection.Road2AnchorPoint2NavigationEdge = edge;
+                    IntersectionArm arm = intersection.GetIntersectionArmAtJunctionEdge(curr);
+
+                    if (arm == null)
+                        continue;
+
+                    IntersectionArm intersectionArm = arm;
+                    intersectionArm.NavigationNodeEdgeOutwards = edge;
                 }
                 curr = curr.Next;
             }
@@ -165,6 +167,7 @@ namespace RoadGenerator
             {
                 if (current.Road != this.Road)
                     break;
+                
                 distance += current.DistanceToPrevNode;
                 current = current.Next;
             }

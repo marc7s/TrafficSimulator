@@ -58,7 +58,6 @@ namespace UI
             // Set the default tab
             _tabs = Tabs.None;
 
-
         }
 
         void Start()

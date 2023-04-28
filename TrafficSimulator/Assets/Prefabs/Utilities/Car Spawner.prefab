@@ -44,10 +44,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43fc111db83cbab43bcdce7fa73dfffc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _carPrefab: {fileID: 1577973480899275759, guid: fe053947ba87ff247978453be24b8da2, type: 3}
+  _sedanPrefab: {fileID: 1577973480899275759, guid: fe053947ba87ff247978453be24b8da2, type: 3}
+  _sportsCar1Prefab: {fileID: 6380633828477897570, guid: 9bc5ae1e9360d8f42bf60e5ac73a9293, type: 3}
+  _sportsCar2Prefab: {fileID: 6380633828477897570, guid: d73f8b51dc8809d4b8af8971dd5999d5, type: 3}
+  _suv1Prefab: {fileID: 1577973480899275759, guid: 8961dc1dbddc28e4aa714f34d78c7bf0, type: 3}
+  _suv2Prefab: {fileID: 1577973480899275759, guid: a3412c8b77a71e348add1b51666e2839, type: 3}
+  _van1Prefab: {fileID: 1577973480899275759, guid: d23a5414a3e46ec44a579fa7aed7382d, type: 3}
+  _van2Prefab: {fileID: 1577973480899275759, guid: fa2e2d3446835b0488de0c1ac9da54e9, type: 3}
   _roadSystemObject: {fileID: 0}
   _mode: 0
   TotalCars: 5
   LaneCarRatio: 0.5
-  CarLength: 4
   SpawnDelay: 3
