@@ -13,6 +13,16 @@ namespace Cam
     /// </summary>
     public class CameraManager : MonoBehaviour
     {
+        public enum CustomCameraType
+        {
+            Default,
+            Focus,
+            FirstPersonDriver
+        }
+        
+        public delegate void CameraChangedEventHandler(CustomCameraType newCustomCameraType);
+        public event CameraChangedEventHandler OnCameraChanged;
+        
         [SerializeField] private CameraState[] _cameras;
         [SerializeField] private int _currentActiveCameraIndex = 0;
         [SerializeField] private int _previousActiveCameraIndex;
@@ -41,9 +51,10 @@ namespace Cam
             InputHandler.Dispose();
         }
         
-        public void ToggleThirdPersonCamera()
+        public void ToggleFocusCamera()
         {
             SwitchActiveCamera(1);
+            OnCameraChanged?.Invoke(CustomCameraType.Focus);
         }
 
         private void SwitchActiveCamera(int newIndex)
@@ -71,11 +82,13 @@ namespace Cam
         public void ToggleFirstPersonDriverCamera()
         {
             SwitchActiveCamera(2);
+            OnCameraChanged?.Invoke(CustomCameraType.FirstPersonDriver);
         }
 
         public void ToggleDefaultCamera()
         {
             SwitchActiveCamera(0);
+            OnCameraChanged?.Invoke(CustomCameraType.Default);
         }
     }
 }
