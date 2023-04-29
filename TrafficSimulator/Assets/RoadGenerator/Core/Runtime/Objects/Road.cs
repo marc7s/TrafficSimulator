@@ -670,6 +670,8 @@ namespace RoadGenerator
             {
                 Vector3 lastPosition = roadBuilder.Curr.Position;
                 Vector3 currPosition = _path.GetPoint(i);
+                if(i == 0 && queuedNodes.Count > 0 && queuedNodes.Peek().Distance == 0)
+                    insideIntersections.TryAdd(queuedNodes.Peek().Reference, 0);
                 
                 // Add an intersection node if there is an intersection between the previous node and the current node
                 QueuedNode? possibleNextIntersectionNode = queuedNodes.Count > 0 ? queuedNodes.Peek() : null;
