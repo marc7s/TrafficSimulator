@@ -50,7 +50,7 @@ namespace UI
             _doc = GetComponent<UIDocument>();
             _cameraButtonStyles = Resources.Load<StyleSheet>("CameraButtonStyle");
             _doc.rootVisualElement.styleSheets.Add(_cameraButtonStyles);
-            //_menuController = GameObject.Find("UIMenu").GetComponent<MenuController>();
+            _menuController = GameObject.Find("UIMenu").GetComponent<MenuController>();
 
             // Labels
             _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
