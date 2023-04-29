@@ -28,6 +28,9 @@ namespace RoadGenerator
         /// <summary> assesses if a lamp post should be placed at the current road node </summary>
         private void AssessSpeedSignForRoadNode(RoadNodeData data, ref List<TrafficSignData> signsToBePlaced)
         {
+            if (!data.Road.GenerateSpeedSigns)
+                return;
+
             DefaultRoad carRoad = data.Road as DefaultRoad;
             if (data.RoadNode.Type == RoadNodeType.JunctionEdge || data.RoadNode.IsIntersection())
                 return;
