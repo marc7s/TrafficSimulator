@@ -914,7 +914,7 @@ namespace RoadGenerator
 
             if (!_intersectionGuidePaths.ContainsKey((current.ID, finalNode.ID)))
             {
-                Debug.LogError("Error, The lane entry node does not exist in the intersection" + current.Position);
+                Debug.LogError("Error, The lane entry node does not exist in the intersection: " + current.Position);
                 return (null, null);
             }
 
