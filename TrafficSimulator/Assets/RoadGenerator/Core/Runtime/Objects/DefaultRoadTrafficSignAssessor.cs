@@ -22,6 +22,7 @@ namespace RoadGenerator
             AssessStopSignForRoadNode(data, ref signsToBePlaced);
             AssessSpeedSignForRoadNode(data, ref signsToBePlaced);
             AssesLampPostForRoadNode(data, ref signsToBePlaced);
+            AssesNoEntryOneDirectionForRoadNode(data, ref signsToBePlaced);
             return signsToBePlaced;
         }
 
@@ -40,7 +41,7 @@ namespace RoadGenerator
                 return;
 
             // Place a speed sign before each intersection
-            if (data.DistanceToNextIntersection < data.Road.SpeedSignDistanceFromIntersectionEdge && !_havePlacedSpeedSignAtStartOfIntersection.ContainsKey(data.NextIntersection.ID))
+            if (data.DistanceToNextIntersection < data.Road.SpeedSignDistanceFromIntersectionEdge && !_havePlacedSpeedSignAtStartOfIntersection.ContainsKey(data.NextIntersection.ID) && !data.Road.IsOneWay)
              {
                 signsToBePlaced.Add(new TrafficSignData(carRoad.GetSpeedSignType(), data.RoadNode, carRoad.GetSpeedSignPrefab(), false, data.Road.DefaultTrafficSignOffset));
                 _havePlacedSpeedSignAtStartOfIntersection[data.NextIntersection.ID] = true;
@@ -61,7 +62,7 @@ namespace RoadGenerator
             }
 
             // Place a speed sign at the end of the road
-            if (!_havePlacedSpeedSignAtEnd && data.DistanceToEnd < data.Road.SpeedSignDistanceFromRoadEnd && data.NextIntersection?.Type != IntersectionType.ThreeWayIntersectionAtEnd)
+            if (!_havePlacedSpeedSignAtEnd && data.DistanceToEnd < data.Road.SpeedSignDistanceFromRoadEnd && data.NextIntersection?.Type != IntersectionType.ThreeWayIntersectionAtEnd && !data.Road.IsOneWay)
             {
                signsToBePlaced.Add(new TrafficSignData(carRoad.GetSpeedSignType(), data.RoadNode, carRoad.GetSpeedSignPrefab(), false, data.Road.DefaultTrafficSignOffset));
                _havePlacedSpeedSignAtEnd = true;
@@ -109,6 +110,18 @@ namespace RoadGenerator
                 signsToBePlaced.Add(new TrafficSignData(TrafficSignType.LampPost, data.RoadNode, carRoad.LampPostPrefab, true, data.Road.LampPoleSideDistanceOffset));
                 _distanceToPreviousLampPost = 0;
             }
-        }        
+        } 
+
+        private void AssesNoEntryOneDirectionForRoadNode(RoadNodeData data, ref List<TrafficSignData> signsToBePlaced)
+        {
+            if (!data.Road.IsOneWay)
+                return;
+
+            if (data.RoadNode.Type == RoadNodeType.JunctionEdge && data.RoadNode.Next?.IsIntersection() == true)
+            {
+                DefaultRoad road = data.Road as DefaultRoad;
+                signsToBePlaced.Add(new TrafficSignData(TrafficSignType.NoEntryOneDirection, data.RoadNode, road.NoEntryOneDirectionSignPrefab, false, 0));
+            }
+        }       
     }
 }

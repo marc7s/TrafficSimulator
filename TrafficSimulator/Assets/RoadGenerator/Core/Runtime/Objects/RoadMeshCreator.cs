@@ -43,16 +43,11 @@ namespace RoadGenerator
 
             // Create a copy of the lane material if it is not set, or the material is updated
             // This makes the material independent from other roads
-            if((_laneMaterialCopy == null && _laneMaterial != null) || (_laneMaterialCopy != null && _laneMaterial != null && _laneMaterialCopy.name != _laneMaterial.name))
+            if((_laneMaterialCopy == null && _laneMaterial != null) || (_laneMaterialCopy != null && _laneMaterial != null && _laneMaterialCopy.name != _laneMaterial.name) || _road.IsOneWay)
             {
                 _laneMaterialCopy = new Material(_road.IsOneWay ? _oneWayRoadLaneMaterial : _laneMaterial);
             }
-            else if (_road.IsOneWay)
-            {
-                _laneMaterialCopy = new Material(_road.IsOneWay ? _oneWayRoadLaneMaterial : _laneMaterial);
-            }
-                
-            
+
             if (pathCreator != null) 
             {
                 AssignMeshComponents();
