@@ -54,6 +54,7 @@ MonoBehaviour:
   autoUpdate: 1
   _flattenSurface: 0
   _laneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
+  _oneWayRoadLaneMaterial: {fileID: 2100000, guid: c85e5f1ac4d11b14686aa29abf3df3e5, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
   _textureTilingScale: 100
   _mesh: {fileID: 0}
@@ -204,6 +205,7 @@ MonoBehaviour:
   SpeedLimit: 50
   GenerateSpeedSigns: 1
   ConnectionDistanceThreshold: 3
+  IsOneWay: 0
   SpeedSignDistanceFromIntersectionEdge: 5
   SpeedSignDistanceFromRoadEnd: 5
   ShouldSpawnLampPoles: 1
