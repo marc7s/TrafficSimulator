@@ -120,7 +120,7 @@ namespace RoadGenerator
             if (data.RoadNode.Type == RoadNodeType.JunctionEdge && data.RoadNode.Next?.IsIntersection() == true)
             {
                 DefaultRoad road = data.Road as DefaultRoad;
-                signsToBePlaced.Add(new TrafficSignData(TrafficSignType.NoEntryOneDirection, data.RoadNode, road.NoEntryOneDirectionSignPrefab, false, 0));
+                signsToBePlaced.Add(new TrafficSignData(TrafficSignType.NoEntry, data.RoadNode, road.NoEntryOneDirectionSignPrefab, false, 0));
             }
         }       
     }
