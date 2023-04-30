@@ -11,6 +11,13 @@ namespace RoadGenerator
         LaneRatio
     }
 
+    public enum CarSpawnerNavigationMode
+    {
+        FollowPrefabs,
+        Random,
+        RandomPath
+    }
+
     public class CarSpawner : MonoBehaviour
     {
         [Header("Connections")]
@@ -27,6 +34,7 @@ namespace RoadGenerator
         [Header("Settings")]
         [SerializeField] private bool _randomVehicleTypes = true;
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
+        [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
 
         // Total number of cars to spawn in mode Total
         public int TotalCars = 5;
@@ -258,14 +266,27 @@ namespace RoadGenerator
         private void SpawnCar(int index)
         {
             _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-            _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
-            _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
+            AutoDrive autoDrive = _currentCar.GetComponent<AutoDrive>();
+            autoDrive.Road = _lanes[index].Road;
+            autoDrive.LaneIndex = _indexes[index];
 
             // If a custom car is being used as a spawn prefab it should be deactivated to not interfere, so activate this car
             _currentCar.SetActive(true);
 
-            _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent;
-            _currentCar.GetComponent<AutoDrive>().Setup();
+            autoDrive.CustomStartNode = _laneNodeCurrent;
+            
+            // Overwrite the navigation mode if a custom one is set
+            switch(_navigationMode)
+            {
+                case CarSpawnerNavigationMode.Random:
+                    autoDrive.OriginalNavigationMode = NavigationMode.Random;
+                    break;
+                case CarSpawnerNavigationMode.RandomPath:
+                    autoDrive.OriginalNavigationMode = NavigationMode.RandomNavigationPath;
+                    break;
+            }
+
+            autoDrive.Setup();
         }
 
         /// <summary>Finds next LaneNode in lane after a certain distance</summary>
