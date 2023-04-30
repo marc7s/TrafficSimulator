@@ -670,6 +670,8 @@ namespace RoadGenerator
             {
                 Vector3 lastPosition = roadBuilder.Curr.Position;
                 Vector3 currPosition = _path.GetPoint(i);
+
+                // Handle if the road has a three way intersection at the start
                 if(i == 0 && queuedNodes.Count > 0 && queuedNodes.Peek().Distance == 0)
                     insideIntersections.TryAdd(queuedNodes.Peek().Reference, 0);
                 

@@ -100,6 +100,7 @@ namespace Car
         public void UpdateRandomPath(LaneNode node, bool showNavigationPath)
         {
             Context.VisitedNavigationNodes.Clear();
+            
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetRandomPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), out Context.NavigationPathEndNode);
 
@@ -132,11 +133,14 @@ namespace Car
             _context.NavigationPathPositions.Clear();
             while(current != null)
             {
-                _context.NavigationPathPositions.Add(current.Position);
+                // Only add steering targets to the navigation path
+                if(current.IsSteeringTarget)
+                    _context.NavigationPathPositions.Add(current.Position);
+                
                 if (current.RoadNode == Context.NavigationPathEndNode.RoadNode && Context.NavigationPath.Count == 0)
                     break;
 
-                if( (current.Type == RoadNodeType.JunctionEdge && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(current.Intersection.ID)) || current.RoadNode.IsNavigationNode)
+                if((current.Type == RoadNodeType.JunctionEdge && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(current.Intersection.ID)) || current.RoadNode.IsNavigationNode)
                     current = UpdateAndGetGuideNode(current, true);
                 else
                     current = Next(current, RoadEndBehaviour.Stop);
@@ -188,7 +192,6 @@ namespace Car
     {
         private Vehicle _vehicle;
         private DrivingMode _mode;
-        private Activity _active;
         private RoadEndBehaviour _endBehaviour;
         private VehicleController _vehicleController;
         private float _brakeOffset;
@@ -199,7 +202,6 @@ namespace Car
         
         public Vehicle Vehicle => _vehicle;
         public DrivingMode Mode => _mode;
-        public Activity Active => _active;
         public RoadEndBehaviour EndBehaviour => _endBehaviour;
         public VehicleController VehicleController => _vehicleController;
         public float BrakeOffset => _brakeOffset;
@@ -208,11 +210,10 @@ namespace Car
         public GameObject NavigationTargetMarker => _navigationTargetMarker;
         public Material NavigationPathMaterial => _navigationPathMaterial;
         
-        public AutoDriveSetting(Vehicle vehicle, DrivingMode mode, Activity active, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
+        public AutoDriveSetting(Vehicle vehicle, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
             _vehicle = vehicle;
             _mode = mode;
-            _active = active;
             _endBehaviour = endBehaviour;
             _vehicleController = vehicleController;
             _brakeOffset = brakeOffset;
@@ -243,6 +244,7 @@ namespace Car
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
+        public VehicleActivity Activity;
         public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         public Road CurrentRoad => CurrentNode.RoadNode.Road;
@@ -267,6 +269,7 @@ namespace Car
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;
             BrakeUndershoot = 0;
+            Activity = VehicleActivity.Driving;
 
             SetLoopNode(initialNode);
         }

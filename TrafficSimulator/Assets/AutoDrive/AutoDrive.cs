@@ -24,7 +24,7 @@ namespace Car {
         OccupiedNodes,
         All
     }
-    public enum Activity 
+    public enum VehicleActivity 
     {
         Driving,
         Parked
@@ -48,7 +48,6 @@ namespace Car {
 
         [Header("Settings")]
         public DrivingMode Mode = DrivingMode.Quality;
-        public Activity Active = Activity.Driving;
         public RoadEndBehaviour EndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
         public NavigationMode OriginalNavigationMode = NavigationMode.Disabled;
@@ -156,7 +155,7 @@ namespace Car {
             _targetLineRenderer.endWidth = targetLineWidth;
 
             _agent = new AutoDriveAgent(
-                new AutoDriveSetting(GetComponent<Vehicle>(), Mode, Active, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
+                new AutoDriveSetting(GetComponent<Vehicle>(), Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
                 new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode)
             );
 
@@ -194,10 +193,7 @@ namespace Car {
 
         void Update()
         {
-            UpdateContext();
-            UpdateOccupiedNodes();
-            SetActivity();
-            UpdateIndicators();
+            HandleActivity();
             
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
@@ -225,11 +221,14 @@ namespace Car {
             _agent.Context.TurnDirection = TurnDirection.Straight;
         }
 
-        private void SetActivity()
+        private void HandleActivity()
         {
-            switch (Active)
+            switch (_agent.Context.Activity)
             {
-                case Activity.Driving:
+                case VehicleActivity.Driving:
+                    UpdateContext();
+                    UpdateOccupiedNodes();
+
                     if (Mode == DrivingMode.Quality)
                     {
                         Q_Brake();
@@ -243,9 +242,12 @@ namespace Car {
                         // Brake if needed
                         P_UpdateTargetAndCurrent();
                     }
+                    
                     _brakeLightController.SetBrakeLights(_agent.Context.IsBrakingOrStopped ?  BrakeLightState.On : BrakeLightState.Off);
+                    UpdateIndicators();
+                    
                     break;
-                case Activity.Parked:
+                case VehicleActivity.Parked:
                     break;
                 default:
                     break;
@@ -265,10 +267,24 @@ namespace Car {
         private void ParkAtNode(POINode node)
         {
             ResetNodeParameters(null);
-            TeleportToNode(node);
+            TeleportToNode(node, false);
             PostTeleportCleanup(node);
-            _agent.Context.CurrentThrottleInput = 0;
-            _agent.Context.CurrentBrakeInput = 1;
+            SetVehicleMovement(false);
+            
+            // Unset all occupied nodes
+            for(int i = _occupiedNodes.Count - 1; i >= 0; i--)
+            {
+                _occupiedNodes[i].UnsetVehicle(_agent.Setting.Vehicle);
+                _occupiedNodes.RemoveAt(i);
+            }
+            
+            _agent.Context.Activity = VehicleActivity.Parked;
+        }
+
+        private void SetVehicleMovement(bool enabled)
+        {
+            RigidbodyPause rigidbodyPause = _vehicleController.GetComponent<RigidbodyPause>();
+            rigidbodyPause.pause = !enabled;
         }
 
         private void ResetNodeParameters(LaneNode node)
@@ -400,7 +416,7 @@ namespace Car {
             return (forwardNodes, backwardNodes);
         }
 
-        private void TeleportToNode<T>(Node<T> node) where T : Node<T>
+        private void TeleportToNode<T>(Node<T> node, bool backwardOffset = true) where T : Node<T>
         {
             if(_agent.Setting.Mode == DrivingMode.Performance)
             {
@@ -414,7 +430,7 @@ namespace Car {
                 _vehicleController.cachedRigidbody.MoveRotation(node.Rotation);
                 
                 // Move it to the current position, offset in the opposite direction of the lane
-                _vehicleController.cachedRigidbody.position = node.Position - (2 * (node.Rotation * Vector3.forward).normalized);
+                _vehicleController.cachedRigidbody.position = backwardOffset ? node.Position - (2 * (node.Rotation * Vector3.forward).normalized) : node.Position;
                 transform.position = _vehicleController.cachedRigidbody.position;
 
                 // Reset velocity and angular velocity
@@ -530,7 +546,7 @@ namespace Car {
             POINode parkNode = parking.Park(_agent.Setting.Vehicle);
             if(parkNode == null)
             {
-                Debug.LogError("Parking full");
+                Debug.Log("Parking full");
                 return;
             }
 
@@ -588,13 +604,14 @@ namespace Car {
             LaneNode nextNode = Q_GetNextCurrentNode();
             LaneNode nextNextNode = GetNextLaneNode(nextNode, 0, false);
             
-            bool reachedEnd = HasReachedTarget() || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
+            bool reachedEnd = !_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End;
+            bool reachedTarget = HasReachedTarget();
 
             // Move the current node forward while we are closer to the next node than the current. Also check the node after the next as the next may be further away in intersections where the current road is switched
             // Note: only updates while driving. During repositioning the vehicle will be closer to the next node (the repositioning target) halfway through the repositioning
             // This would cause our current position to skip ahead so repositioning is handled separately
             
-            while(!reachedEnd && _status == Status.Driving)
+            while(!reachedEnd && !reachedTarget && _status == Status.Driving)
             {
                 bool isCloserToNextThanCurrentNode = Vector3.Distance(transform.position, nextNode.Position) <= Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
                 bool isCloserToNextNextThanCurrentNode = Vector3.Distance(transform.position, nextNextNode.Position) <= Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
@@ -612,7 +629,7 @@ namespace Car {
                 _navigationController.ShouldAct(ref _agent);
                 
                 // When the current node is updated, it needs to redraw the navigation path
-                if (_agent.Context.NavigationPathPositions.Count > 0)
+                if (_agent.Context.CurrentNode.IsSteeringTarget && _agent.Context.NavigationPathPositions.Count > 0)
                     _agent.Context.NavigationPathPositions.RemoveAt(0);
 
                 if (ShowNavigationPath)
@@ -620,25 +637,33 @@ namespace Car {
                 
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
-                reachedEnd = HasReachedTarget() || reachedEnd || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
+                reachedEnd = reachedEnd || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
+                reachedTarget = HasReachedTarget() || reachedTarget;
             }
 
-            if(reachedEnd)
+            bool parked = false;
+            if(reachedTarget)
             {
                 if(_agent.Context.CurrentNode.POI != null)
                 {
                     if(_agent.Context.CurrentNode.POI is Parking)
                     {
                         Park(_agent.Context.CurrentNode.POI as Parking);
+                        parked = _agent.Context.Activity == VehicleActivity.Parked;
                     }
                 }
+                
+            }
+
+            if(reachedEnd)
+            {
                 // If the road ended but we are looping, teleport to the first position
-                if(EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
+                if(!parked && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
                     Q_EndOfRoadTeleport();
             }
 
             // After the first increment of the current node, we are no longer entering the network
-            if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)
+            if(parked || (_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End))
                 _agent.Context.IsEnteringNetwork = false;
         }
 
@@ -653,12 +678,11 @@ namespace Car {
 
             // Since there is an issue with the car spinning after teleporting, we pause the rigidbody for a second
             // This is a temporary fix until the real issue is resolved
-            RigidbodyPause pause = _vehicleController.GetComponent<RigidbodyPause>();
             ResetToNode(_agent.Context.CurrentNode);
-            pause.pause = true;
+            SetVehicleMovement(false);
             TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
             TimeManager.Instance.AddEvent(unPauseEvent);
-            unPauseEvent.OnEvent += () => pause.pause = false;
+            unPauseEvent.OnEvent += () => SetVehicleMovement(true);
         }
 
         private LaneNode Q_GetTarget()
@@ -719,6 +743,9 @@ namespace Car {
         private void SetInitialPrevIntersection()
         {
             _agent.Context.PrevIntersection = null;
+            
+            if(_target == null)
+                return;
             
             // If the starting node is an intersection, the previous intersection is set 
             if (_target.Intersection != null)

@@ -25,6 +25,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
+        [SerializeField] private bool _randomVehicleTypes = true;
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
 
         // Total number of cars to spawn in mode Total
@@ -59,7 +60,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _vehicleTypes = new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab };
+            _vehicleTypes = _randomVehicleTypes ? new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab } : new List<GameObject>(){ _sedanPrefab };
 
             _carLength = GetLongestCarLength(_vehicleTypes);
 

@@ -45,7 +45,8 @@ namespace POIs
                     Vector3 sideOffsetVector = transform.forward * (sideOffset + sideCoef * parkingSize / 2);
                     Vector3 forwardOffsetVector = -transform.right * Size.x + transform.right * i;
                     
-                    POINode parkingSpot = new POINode(startPos + sideOffsetVector + forwardOffsetVector, transform.rotation);
+                    Quaternion rotation = transform.rotation * (side == 0 ? Quaternion.Euler(Vector3.up * 180) : Quaternion.identity);
+                    POINode parkingSpot = new POINode(startPos + sideOffsetVector + forwardOffsetVector, rotation);
                     _parkingSpots.Add(parkingSpot);
                 }
                 sideOffset *= -1;
