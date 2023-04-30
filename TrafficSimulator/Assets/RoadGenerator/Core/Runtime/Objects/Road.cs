@@ -83,6 +83,7 @@ namespace RoadGenerator
         public bool GenerateSpeedSigns = true;
         // If two road endpoints are within this distance of each other, they will be connected
         public float ConnectionDistanceThreshold = 3f;
+        public bool IsOneWay = false;
 
         [Header ("Traffic sign settings")]
         public float SpeedSignDistanceFromIntersectionEdge = 5f;
@@ -790,6 +791,29 @@ namespace RoadGenerator
         /// <summary>Updates the lanes</summary>
         public void UpdateLanes()
         {
+            // If the road is a one way, then we place the LaneNodes on top of the RoadNodes
+            if (IsOneWay)
+            {
+                _lanes.Clear();
+                RoadNode curr = StartRoadNode.Next;
+                LaneNode startLaneNode = new LaneNode(curr.Position, LaneSide.Primary, 0, curr, 0);
+                LaneNode prevLaneNode = startLaneNode;
+
+                // Primary lane node
+                while (curr != null)
+                {
+                    LaneNode currLaneNode = new LaneNode(curr.Position, LaneSide.Primary, 0, curr, prevLaneNode, null, Vector3.Distance(curr.Position, prevLaneNode.Position));
+                    prevLaneNode.Next = currLaneNode;
+                    prevLaneNode = currLaneNode;
+                    curr = curr.Next;
+                }
+
+                Lane primaryLane = new Lane(this, startLaneNode, new LaneType(LaneSide.Primary, 0));
+                _lanes.Add(primaryLane);
+                ConnectRoadNodesForConnectedRoads();
+                return;
+            }
+
             // Get the lane count
             int laneCount = (int)LaneAmount;
 
@@ -970,10 +994,13 @@ namespace RoadGenerator
             data.RoadNode.TrafficSignType = data.TrafficSignType;
             bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
             Vector3 offsetDirection =  data.RoadNode.Normal * (isDrivingRight ? 1 : -1) * (data.IsForward ? 1 : -1);
-            trafficSign.transform.position += (data.DistanceFromRoad + LaneCount / 2 * LaneWidth) * offsetDirection;
+            float laneWidthFromCenter = data.DistanceFromRoad + (LaneCount / (IsOneWay ? 1 : 2) * LaneWidth);
+            trafficSign.transform.position += laneWidthFromCenter * offsetDirection;
             trafficSign.transform.parent = _trafficSignContainer.transform;
+
             if(data.TrafficSignType == TrafficSignType.TrafficLight)
                 AssignTrafficLightController(data.RoadNode, trafficSign);
+
             return trafficSign;
         }
 

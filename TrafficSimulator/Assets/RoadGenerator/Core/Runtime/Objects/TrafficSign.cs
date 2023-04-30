@@ -20,7 +20,8 @@ namespace RoadGenerator
         SpeedSignOneHundredThirtyKPH,
         StopSign,
         TrafficLight,
-        LampPost
+        LampPost,
+        NoEntry
     }
     public enum SpeedLimit
     {
