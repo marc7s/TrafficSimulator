@@ -281,10 +281,28 @@ namespace Car
             SetLoopNode(CurrentNode);
         }
 
+        private void SetLoopNodeAtRandomRoad()
+        {
+            List<Road> twoWayRoads = CurrentRoad.RoadSystem.DefaultRoads.FindAll(r => !r.IsOneWay && (r.StartRoadNode.Next?.IsIntersection() == false || r.EndRoadNode.Prev?.IsIntersection() == false));
+            Road randomRoad = twoWayRoads[Random.Range(0, twoWayRoads.Count)];
+
+            // if there is no intersection at the start of the road, spawn at the start
+            if (randomRoad.StartRoadNode.Next?.IsIntersection() == false)
+                EndNextNode = randomRoad.Lanes.Find(l => l.Type.Side == LaneSide.Primary)?.StartNode;
+            else if (randomRoad.EndRoadNode.Prev?.IsIntersection() == false)
+                EndNextNode = randomRoad.Lanes.Find(l => l.Type.Side == LaneSide.Secondary)?.StartNode;
+            else
+                Debug.LogError("Could not find a valid road to spawn at");
+        }
+
         public void SetLoopNode(LaneNode node)
         {
             EndPrevNode = node.Last;
-            EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.LaneIndex && l.Type.Side != node.LaneSide).StartNode;
+
+            if (node.RoadNode.Road.IsOneWay)
+                SetLoopNodeAtRandomRoad();
+            else
+                EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.LaneIndex && l.Type.Side != node.LaneSide).StartNode;
         }
     }
 }

@@ -262,6 +262,8 @@ namespace Car {
             
             if (_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath)
                 _agent.UpdateRandomPath(node, ShowNavigationPath);
+
+            UpdateOccupiedNodes();
         }
 
         private void ParkAtNode(POINode node)
@@ -314,8 +316,6 @@ namespace Car {
         {
             _agent.Context.NavigationMode = OriginalNavigationMode;
             SetInitialPrevIntersection();
-
-            _agent.ClearIntersectionTransitions();
         }
 
         public float GetCurrentSpeed()
@@ -638,7 +638,7 @@ namespace Car {
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
                 reachedEnd = reachedEnd || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
-                reachedTarget = HasReachedTarget() || reachedTarget;
+                reachedTarget = reachedTarget || HasReachedTarget();
             }
 
             bool parked = false;
@@ -652,13 +652,14 @@ namespace Car {
                         parked = _agent.Context.Activity == VehicleActivity.Parked;
                     }
                 }
-                
             }
 
             if(reachedEnd)
             {
+                bool isLoopNodeNotOccupied = !(_agent.Context.EndNextNode.HasVehicle() && _agent.Context.EndNextNode.Vehicle != _agent.Setting.Vehicle);
+                
                 // If the road ended but we are looping, teleport to the first position
-                if(!parked && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
+                if(!parked && EndBehaviour == RoadEndBehaviour.Loop && !_agent.Context.CurrentNode.RoadNode.Road.IsClosed() && isLoopNodeNotOccupied)
                     Q_EndOfRoadTeleport();
             }
 
@@ -669,7 +670,7 @@ namespace Car {
 
         private bool HasReachedTarget()
         {
-            return _agent.Context.NavigationMode == NavigationMode.RandomNavigationPath ? _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode : true;
+            return _agent.Context.NavigationMode == NavigationMode.RandomNavigationPath ? _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode : false;
         }
 
         private void Q_EndOfRoadTeleport()
