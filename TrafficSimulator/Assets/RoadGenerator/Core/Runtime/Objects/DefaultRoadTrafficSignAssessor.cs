@@ -85,6 +85,10 @@ namespace RoadGenerator
             // Place a traffic light at each junction edge
             if (data.RoadNode.Type == RoadNodeType.JunctionEdge && data.RoadNode.Intersection.FlowType == FlowType.TrafficLights)
             {
+                // Do not spawn traffic lights for the secondary direction if the road is one way
+                if (data.Road.IsOneWay && data.RoadNode.Prev.IsIntersection())
+                    return;
+
                 signsToBePlaced.Add(new TrafficSignData(TrafficSignType.TrafficLight, data.RoadNode, data.Road.RoadSystem.DefaultTrafficLightPrefab, data.IntersectionFound, data.Road.DefaultTrafficSignOffset));
             }
         }
