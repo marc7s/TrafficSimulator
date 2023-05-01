@@ -41,11 +41,13 @@ public enum ServiceType
 
 public struct WayData
 {
+    public string WayID;
     public WayType WayType;
     // Lane amount for one direction
     public int? LaneAmount;
     public int? MaxSpeed;
     public bool? IsLit;
+    public bool? IsOneWay;
     public string? Name;
     public SideWalkType? SideWalkType;
     public ServiceType? ServiceType;
@@ -331,6 +333,8 @@ public class MapGenerator : MonoBehaviour
         WayType? wayType = null;
         BuildingData buildingData = new BuildingData();
         WayData wayData = new WayData();
+
+        wayData.WayID = node.Attributes["id"].Value;
         // search for type of way
         while (ienum.MoveNext())
         {
@@ -386,6 +390,9 @@ public class MapGenerator : MonoBehaviour
                         case "type":
                             if (currentNode.Attributes["v"].Value == "multipolygon")
                                 buildingData.IsMultiPolygon = true;
+                            break;
+                        case "oneway":
+                            wayData.IsOneWay = currentNode.Attributes["v"].Value == "yes";
                             break;
                     }
                 }
@@ -475,11 +482,8 @@ public class MapGenerator : MonoBehaviour
     }
 
     // https://wiki.openstreetmap.org/wiki/Map_features#Highway
-    void GenerateRoad(IEnumerator ienum, WayData wayData) {
-
-        
-
-
+    void GenerateRoad(IEnumerator ienum, WayData wayData) 
+    {
         List <Vector3> roadPoints = GetWayNodePositions(ienum);
 
         if (wayData.WayType == WayType.Footway || wayData.WayType == WayType.Path)
@@ -491,8 +495,8 @@ public class MapGenerator : MonoBehaviour
         if (wayData.Name == null && wayData.WayType != WayType.RailTram)
             return;
 
-        if (wayData.WayType == WayType.RailTram)
-            return;
+        //if (wayData.WayType == WayType.RailTram)
+        //    return;
 
         // TotatlLenght of road
         float totalLength = 0;
@@ -512,6 +516,12 @@ public class MapGenerator : MonoBehaviour
         roadPoints2.Add(roadPoints[0]);
         roadPoints2.Add(roadPoints[1]);
         Road road = spawnRoad(roadPoints2, wayData);
+
+        if (wayData.IsOneWay == true || wayData.WayType == WayType.RailTram)
+        {
+            road.IsOneWay = true;
+            road.LaneWidth /= 2;
+        }
 
 
         if (wayData.MaxSpeed != null)
@@ -538,12 +548,17 @@ public class MapGenerator : MonoBehaviour
             pathCreator.bezierPath.AddSegmentToEnd(roadPoints[i]);
         }
         
-        foreach (Vector3 point in roadPoints) {
-            if (!roadsAtNode.ContainsKey(point))
-                roadsAtNode.Add(point, new List<Road> { road });
-            else
-                roadsAtNode[point].Add(road);
+        if (wayData.WayType != WayType.RailTram)
+        {
+            foreach (Vector3 point in roadPoints) 
+            {
+                if (!roadsAtNode.ContainsKey(point))
+                    roadsAtNode.Add(point, new List<Road> { road });
+                else
+                    roadsAtNode[point].Add(road);
+            }
         }
+
 
         road.OnChange();
     }
@@ -709,6 +724,8 @@ public class MapGenerator : MonoBehaviour
             
             // Set the name of the road
             roadObj.name = wayData.Name;
+
+            roadObj.name = wayData.WayID;
             
             roadObj.transform.parent = roadSystem.RoadContainer.transform;
             // Get the road from the prefab
