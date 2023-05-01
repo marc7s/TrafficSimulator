@@ -36,6 +36,9 @@ namespace RoadGenerator
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
         [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
 
+        [Header("Debug Settings")]
+        [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
+
         // Total number of cars to spawn in mode Total
         public int TotalCars = 5;
         
@@ -274,6 +277,8 @@ namespace RoadGenerator
             _currentCar.SetActive(true);
 
             autoDrive.CustomStartNode = _laneNodeCurrent;
+
+            autoDrive.ShowTargetLines = _showTargetLines;
             
             // Overwrite the navigation mode if a custom one is set
             switch(_navigationMode)
