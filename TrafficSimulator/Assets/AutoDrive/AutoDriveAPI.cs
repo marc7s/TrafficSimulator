@@ -125,10 +125,7 @@ namespace Car
 
             // If the start node is navigation node we use the next node as the start node to avoid popping the first node from the navigation path
             if (node.RoadNode.IsNavigationNode)
-            {
-                _context.NavigationPathPositions.Add(current.Position);
                 current = node.Next;
-            }
 
             _context.NavigationPathPositions.Clear();
             while(current != null)
