@@ -922,14 +922,14 @@ Debug.Log("gdfhgf");
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
-                Debug.LogError("Error, The navigation node edge does not exist in the intersection" + current.Position);
+                Debug.LogError(this + "Error, The navigation node edge does not exist in the intersection: " + navigationNodeEdge.EndNavigationNode.RoadNode.Position);
                 return (null, null);
             }
             LaneNode finalNode = GetClosestIndexExitNode(_laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID], current.LaneIndex);
 
             if (!_intersectionGuidePaths.ContainsKey((current.ID, finalNode.ID)))
             {
-                Debug.LogError("Error, The lane entry node does not exist in the intersection" + current.Position);
+                Debug.LogError("Error, The lane entry node does not exist in the intersection: " + current.Position);
                 return (null, null);
             }
 

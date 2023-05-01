@@ -6,3 +6,4 @@
 6. [Destructible Cars 2 Van](https://assetstore.unity.com/packages/3d/vehicles/land/low-poly-destructible-cars-2-van-69196)
 7. [Real Materials](https://assetstore.unity.com/packages/2d/textures-materials/real-materials-vol-0-free-115597)
 8. [Lowpoly Vintage Streetcar](https://assetstore.unity.com/packages/3d/vehicles/land/lowpoly-vintage-streetcar-183219)
+9. [Graph and Chart - Lite Edition](https://assetstore.unity.com/packages/tools/gui/graph-and-chart-lite-edition-148497)

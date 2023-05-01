@@ -274,6 +274,8 @@ namespace Car {
             
             if (_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath)
                 _agent.UpdateRandomPath(node, ShowNavigationPath);
+
+            UpdateOccupiedNodes();
         }
 
         public float GetCurrentSpeed()
@@ -575,11 +577,11 @@ namespace Car {
                 reachedEnd = reachedEnd || (!_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End);
             }
 
+            bool isLoopNodeNotOccupied = !(_agent.Context.EndNextNode.HasVehicle() && _agent.Context.EndNextNode.Vehicle != _agent.Setting.Vehicle);
+
             // If the road ended but we are looping, teleport to the first position
-            if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed())
-            {
+            if(reachedEnd && EndBehaviour == RoadEndBehaviour.Loop && !_target.RoadNode.Road.IsClosed() && isLoopNodeNotOccupied)
                 Q_EndOfRoadTeleport();
-            }
 
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End)

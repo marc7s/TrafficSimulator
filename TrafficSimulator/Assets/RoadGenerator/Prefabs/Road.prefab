@@ -54,6 +54,7 @@ MonoBehaviour:
   autoUpdate: 1
   _flattenSurface: 0
   _laneMaterial: {fileID: 2100000, guid: 39b3ec9955bb2af4db48e38f3c35464b, type: 2}
+  _oneWayRoadLaneMaterial: {fileID: 2100000, guid: c85e5f1ac4d11b14686aa29abf3df3e5, type: 2}
   _bottomMaterial: {fileID: 2100000, guid: bfced200d5c3564419bfdaa8b01c498a, type: 2}
   _textureTilingScale: 100
   _mesh: {fileID: 0}
@@ -204,6 +205,7 @@ MonoBehaviour:
   SpeedLimit: 50
   GenerateSpeedSigns: 1
   ConnectionDistanceThreshold: 3
+  IsOneWay: 0
   SpeedSignDistanceFromIntersectionEdge: 5
   SpeedSignDistanceFromRoadEnd: 5
   ShouldSpawnLampPoles: 1
@@ -236,6 +238,7 @@ MonoBehaviour:
   _speedSignOneHundredTenKPH: {fileID: 3565943573657930188, guid: e425ff3970112b540a6b32321e7dafd7, type: 3}
   _speedSignOneHundredTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignOneHundredThirtyKPH: {fileID: 1378736042997771929, guid: aa0d07a1b4228624287023f0703d50be, type: 3}
+  NoEntryOneDirectionSignPrefab: {fileID: 100000, guid: 269e9f931d31d5145977872b6045218d, type: 3}
   LampPostPrefab: {fileID: 3558233629873542575, guid: 2eac61f19323a5f41b799d089d0ec797, type: 3}
 --- !u!1 &6099411683997650963
 GameObject:
