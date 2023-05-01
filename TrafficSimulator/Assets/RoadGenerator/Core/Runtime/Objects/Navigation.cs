@@ -117,13 +117,16 @@ namespace RoadGenerator
                 System.Random random = new System.Random();
                 int randomIndex = random.Next(0, nodeList.Count);
                 
-                /*** USED FOR TESTING POIs, CAUSES CARS IN RANDOM NAVIGATION PATH TO ALWAYS DRIVE TO A PARKING IF THE TARGET ROAD HAS ONE ***/
+                /*** USED FOR TESTING POIs, CAUSES CARS IN RANDOM NAVIGATION PATH TO ALWAYS DRIVE TO A SELECTED POI IF THE TARGET ROAD HAS ONE ***/
                 NavigationNode originalTargetNode = nodeList[randomIndex];
                 
                 POI parking = originalTargetNode.RoadNode.Road.POIs.Find(x => x is Parking);
+                POI busStop = originalTargetNode.RoadNode.Road.POIs.Find(x => x is BusStop);
 
-                NavigationNode parkingNode = parking == null ? null : nodeList.Find(x => x.RoadNode == parking.RoadNode);
-                NavigationNode targetNode = parkingNode == null ? originalTargetNode : parkingNode;
+                POI targetPOI = parking;
+
+                NavigationNode poiNode = targetPOI == null ? null : nodeList.Find(x => x.RoadNode == targetPOI.RoadNode);
+                NavigationNode targetNode = poiNode == null ? originalTargetNode : poiNode;
                 /*** END OF TESTING CODE ***/
                 
                 nodeToFind = targetNode;

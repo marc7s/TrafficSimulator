@@ -27,7 +27,8 @@ namespace Car {
     public enum VehicleActivity 
     {
         Driving,
-        Parked
+        Parked,
+        Waiting
     }
     
     public class AutoDrive : MonoBehaviour
@@ -242,12 +243,17 @@ namespace Car {
                         // Brake if needed
                         P_UpdateTargetAndCurrent();
                     }
+
+                    if(_agent.Context.Activity != VehicleActivity.Driving)
+                        break;
                     
                     _brakeLightController.SetBrakeLights(_agent.Context.IsBrakingOrStopped ?  BrakeLightState.On : BrakeLightState.Off);
                     UpdateIndicators();
                     
                     break;
                 case VehicleActivity.Parked:
+                    break;
+                case VehicleActivity.Waiting:
                     break;
                 default:
                     break;
@@ -556,6 +562,26 @@ namespace Car {
             ParkAtNode(parkNode, parking.ParkingLineup);
         }
 
+        private void WaitAtBusStop(BusStop busStop)
+        {
+            _agent.Context.Activity = VehicleActivity.Waiting;
+            
+            // Brake at the bus stop
+            _vehicleController.brakeInput = 0.7f;
+            _vehicleController.throttleInput = 0f;
+            
+            // Indicate to the side of the bus stop and turn on the brake lights
+            _indicatorController.SetIndicator(_agent.Context.CurrentRoad.RoadSystem.DrivingSide == DrivingSide.Right ? IndicatorState.Right : IndicatorState.Left);
+            _brakeLightController.SetBrakeLights(BrakeLightState.On);
+            
+            // Wait at the bus stop
+            TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(7000));
+            TimeManager.Instance.AddEvent(unPauseEvent);
+            
+            // Return to driving after the vehicle is done waiting at the bus stop
+            unPauseEvent.OnEvent += () => _agent.Context.Activity = VehicleActivity.Driving;
+        }
+
         private void SetTarget(LaneNode newTarget)
         {
             _prevTarget = _target;
@@ -644,7 +670,7 @@ namespace Car {
                 reachedTarget = reachedTarget || HasReachedTarget();
             }
 
-            bool parked = false;
+            bool waitWithTeleporting = false;
             if(reachedTarget)
             {
                 if(_agent.Context.CurrentNode.POI != null)
@@ -652,7 +678,11 @@ namespace Car {
                     if(_agent.Context.CurrentNode.POI is Parking)
                     {
                         Park(_agent.Context.CurrentNode.POI as Parking);
-                        parked = _agent.Context.Activity == VehicleActivity.Parked;
+                        waitWithTeleporting = _agent.Context.Activity == VehicleActivity.Parked;
+                    }
+                    else if(_agent.Context.CurrentNode.POI is BusStop)
+                    {
+                        WaitAtBusStop(_agent.Context.CurrentNode.POI as BusStop);
                     }
                 }
             }
@@ -663,7 +693,7 @@ namespace Car {
                 bool isLoopNodeNotOccupied = !(_agent.Context.EndNextNode.HasVehicle() && _agent.Context.EndNextNode.Vehicle != _agent.Setting.Vehicle);
                 
                 // If the road ended but we are looping, teleport to the first position
-                if(!parked && EndBehaviour == RoadEndBehaviour.Loop && !_agent.Context.CurrentNode.RoadNode.Road.IsClosed() && isLoopNodeNotOccupied)
+                if(!waitWithTeleporting && EndBehaviour == RoadEndBehaviour.Loop && !_agent.Context.CurrentNode.RoadNode.Road.IsClosed() && isLoopNodeNotOccupied)
                 {
                     Q_EndOfRoadTeleport();
                     teleported = true;
