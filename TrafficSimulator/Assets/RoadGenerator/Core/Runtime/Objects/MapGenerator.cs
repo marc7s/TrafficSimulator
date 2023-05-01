@@ -504,7 +504,6 @@ public class MapGenerator : MonoBehaviour
 
         house.transform.parent = roadSystem.BuildingContainer.transform;
         Mesh buildingMesh = AssignMeshComponents(house);
-        CreateBuildingMesh(buildingMesh, buildingPoints);
         
         // Create roofs for buildings
         List<Triangle> triangles = new List<Triangle>();
@@ -529,8 +528,9 @@ public class MapGenerator : MonoBehaviour
             Debug.DrawLine(triangle.v2.position, triangle.v3.position, Color.red, 200, false);
             Debug.DrawLine(triangle.v3.position, triangle.v1.position, Color.red, 200, false);
         }
-    }
 
+        CreateBuildingMesh(buildingMesh, buildingPoints, triangles);
+    }
 
     private string GetBuildingName(WayData wayData)
     {
@@ -553,7 +553,8 @@ public class MapGenerator : MonoBehaviour
             TopPoint = topPoint;
         }
     }
-    private void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints)
+
+    private void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints, List<Triangle> triangles)
     {
         List<Vector3> verts = new List<Vector3>();
         List<int> tris = new List<int>();
@@ -585,6 +586,7 @@ public class MapGenerator : MonoBehaviour
         buildingMesh.RecalculateBounds();
 
     }
+
     private void AddBuildingWall(int currentSideTopIndex, int currentSideBottomIndex, int prevSideTopIndex, int prevSideBottomIndex, List<int> triangles)
     {
         triangles.Add(prevSideTopIndex);
