@@ -295,6 +295,7 @@ namespace Car {
             _agent.Context.CurrentNode = node;
             _target = node;
             _prevTarget = node;
+            _agent.Context.PrevTarget = null;
             _lastLerpTime = 0;
             _agent.Context.BrakeTarget = node;
             _repositioningTarget = node;
