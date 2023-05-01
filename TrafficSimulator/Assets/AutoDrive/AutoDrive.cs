@@ -266,11 +266,11 @@ namespace Car {
             UpdateOccupiedNodes();
         }
 
-        private void ParkAtNode(POINode node)
+        private void ParkAtNode(POINode node, ParkingLineup parkingLineup)
         {
             ResetNodeParameters(null);
             TeleportToNode(node, false);
-            PostTeleportCleanup(node);
+            PostTeleportCleanup(node, parkingLineup == ParkingLineup.Random);
             SetVehicleMovement(false);
             
             // Unset all occupied nodes
@@ -281,6 +281,7 @@ namespace Car {
             }
             
             _agent.Context.Activity = VehicleActivity.Parked;
+            _agent.Context.IsEnteringNetwork = false;
         }
 
         private void SetVehicleMovement(bool enabled)
@@ -306,9 +307,9 @@ namespace Car {
             PostTeleportNavigationClear();
         }
 
-        private void PostTeleportCleanup(POINode node)
+        private void PostTeleportCleanup(POINode node, bool randomRotation = false)
         {
-            transform.rotation = node.Rotation;
+            transform.rotation = node.Rotation * (randomRotation && UnityEngine.Random.Range(0, 2) == 0 ? Quaternion.Euler(Vector3.up * 180) : Quaternion.identity);
             PostTeleportNavigationClear();
         }
 
@@ -371,7 +372,7 @@ namespace Car {
         {
             HashSet<LaneNode> forwardNodes = new HashSet<LaneNode>(){ _agent.Context.CurrentNode };
             HashSet<LaneNode> backwardNodes = new HashSet<LaneNode>();
-            LaneNode node = _agent.Prev(_agent.Context.CurrentNode);
+            LaneNode node = _agent.Prev(_agent.Context.CurrentNode, RoadEndBehaviour.Stop);
 
             Vector3 direction = _agent.Context.CurrentNode.Position - transform.position;
             float dot = Vector3.Dot(transform.forward, direction.normalized);
@@ -385,7 +386,7 @@ namespace Car {
             // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
             float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
 
-            // Add all occupied nodes prior to and including the current node
+            // Add all occupied nodes prior to and excluding the current node
             while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
             {
                 backwardNodes.Add(node);
@@ -395,11 +396,12 @@ namespace Car {
             
             nodeDistance = 0;
             
-            // Add all occupied nodes after and excluding the current node
+            // Add all occupied nodes after and including the current node
             node = _agent.Context.CurrentNode;
             if(!(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID))
             {
-                node = _agent.Next(_agent.Context.CurrentNode);
+                node = _agent.Next(_agent.Context.CurrentNode, RoadEndBehaviour.Stop);
+                nodeDistance += node?.DistanceToPrevNode ?? 0;
                 while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + forwardOccupancyOffset)
                 {
                     // Do not occupy nodes in front of a red light
@@ -407,8 +409,8 @@ namespace Car {
                         break;
                     
                     forwardNodes.Add(node);
-                    nodeDistance += node.DistanceToPrevNode;
                     node = _agent.Next(node, RoadEndBehaviour.Stop);
+                    nodeDistance += node?.DistanceToPrevNode ?? 0;
                 }
             }
             
@@ -550,7 +552,7 @@ namespace Car {
                 return;
             }
 
-            ParkAtNode(parkNode);
+            ParkAtNode(parkNode, parking.ParkingLineup);
         }
 
         private void SetTarget(LaneNode newTarget)
@@ -605,7 +607,7 @@ namespace Car {
             LaneNode nextNextNode = GetNextLaneNode(nextNode, 0, false);
             
             bool reachedEnd = !_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type == RoadNodeType.End;
-            bool reachedTarget = HasReachedTarget();
+            bool reachedTarget = false;
 
             // Move the current node forward while we are closer to the next node than the current. Also check the node after the next as the next may be further away in intersections where the current road is switched
             // Note: only updates while driving. During repositioning the vehicle will be closer to the next node (the repositioning target) halfway through the repositioning
@@ -654,17 +656,21 @@ namespace Car {
                 }
             }
 
+            bool teleported = false;
             if(reachedEnd)
             {
                 bool isLoopNodeNotOccupied = !(_agent.Context.EndNextNode.HasVehicle() && _agent.Context.EndNextNode.Vehicle != _agent.Setting.Vehicle);
                 
                 // If the road ended but we are looping, teleport to the first position
                 if(!parked && EndBehaviour == RoadEndBehaviour.Loop && !_agent.Context.CurrentNode.RoadNode.Road.IsClosed() && isLoopNodeNotOccupied)
+                {
                     Q_EndOfRoadTeleport();
+                    teleported = true;
+                }
             }
 
             // After the first increment of the current node, we are no longer entering the network
-            if(parked || (_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End))
+            if(_agent.Context.Activity == VehicleActivity.Driving && !teleported && (_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End))
                 _agent.Context.IsEnteringNetwork = false;
         }
 
@@ -724,11 +730,11 @@ namespace Car {
                     break;
                 case ShowTargetLines.BrakeTarget:
                     _targetLineRenderer.positionCount = 2;
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.BrakeTarget.Position, transform.position });
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.BrakeTarget?.Position ?? transform.position, transform.position });
                     break;
                 case ShowTargetLines.CurrentPosition:
                     _targetLineRenderer.positionCount = 2;
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.CurrentNode.Position, transform.position });
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.CurrentNode?.Position ?? transform.position, transform.position });
                     break;
                 case ShowTargetLines.OccupiedNodes:
                     _targetLineRenderer.positionCount = _occupiedNodes.Count;
@@ -736,7 +742,7 @@ namespace Car {
                     break;
                 case ShowTargetLines.All:
                     _targetLineRenderer.positionCount = 3 + _occupiedNodes.Count;
-                    _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.BrakeTarget.Position, transform.position, _agent.Context.CurrentNode.Position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
+                    _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.BrakeTarget?.Position ?? transform.position, transform.position, _agent.Context.CurrentNode?.Position ?? transform.position, transform.position}.Concat(_occupiedNodes.Select(x => x.Position)).ToArray());
                     break;
             }  
         }

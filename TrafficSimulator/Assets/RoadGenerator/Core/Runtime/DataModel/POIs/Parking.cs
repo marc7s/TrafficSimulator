@@ -2,14 +2,22 @@ using UnityEngine;
 using System.Collections.Generic;
 using DataModel;
 using RoadGenerator;
-using System.Linq;
 
 namespace POIs
 {
+    public enum ParkingLineup
+    {
+        Random,
+        Organized
+    }
+
     public class Parking : POI
     {
         [Header("Connections")]
         public GameObject ParkNodePrefab;
+
+        [Header("Settings")]
+        public ParkingLineup ParkingLineup = ParkingLineup.Random;
 
         [Header("Debug Settings")]
         public bool DrawParkNodes = false;
@@ -91,9 +99,12 @@ namespace POIs
 
         public POINode Park(Vehicle vehicle)
         {
-            POINode freeParkingSpot = _parkingSpots.Find(parkingSpot => !parkingSpot.HasVehicle());
-            if (freeParkingSpot == null)
+            List<POINode> freeParkingSpots = _parkingSpots.FindAll(parkingSpot => !parkingSpot.HasVehicle());
+            if (freeParkingSpots.Count < 1)
                 return null;
+
+            int spotIndex = ParkingLineup == ParkingLineup.Organized ? 0 : Random.Range(0, freeParkingSpots.Count);
+            POINode freeParkingSpot = freeParkingSpots[spotIndex];
             
             freeParkingSpot.SetVehicle(vehicle);
             return freeParkingSpot;

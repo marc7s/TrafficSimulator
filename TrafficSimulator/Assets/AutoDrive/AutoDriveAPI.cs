@@ -297,6 +297,13 @@ namespace Car
 
         public void SetLoopNode(LaneNode node)
         {
+            if(node == null)
+            {
+                EndPrevNode = null;
+                EndNextNode = null;
+                return;
+            }
+
             EndPrevNode = node.Last;
 
             if (node.RoadNode.Road.IsOneWay)

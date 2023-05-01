@@ -907,7 +907,7 @@ namespace RoadGenerator
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
-                Debug.LogError(this + "Error, The navigation node edge does not exist in the intersection: " + navigationNodeEdge.EndNavigationNode.RoadNode.Position);
+                Debug.LogError(this + " Error, The navigation node edge does not exist in the intersection: " + navigationNodeEdge.EndNavigationNode.RoadNode.Position);
                 return (null, null);
             }
             LaneNode finalNode = GetClosestIndexExitNode(_laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID], current.LaneIndex);
