@@ -217,6 +217,7 @@ namespace RoadGenerator
 
                 RoadNode bottomArmRoadNode = GetRoadNodeAtIntersectionArm(bottomArm);
                 float bottomArmRoadHalfWidth = bottomArm.Road.LaneWidth * (int)bottomArm.Road.LaneAmount;
+                bool shouldBottomArmHaveIntersectionLine = !(bottomArmRoadNode.Road.IsOneWay && bottomArmRoadNode.Prev.IsIntersection()); 
 
                 Vector3 i5 = bottomArm.JunctionEdgePosition - bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
                 Vector3 i10 = bottomArm.JunctionEdgePosition + bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
@@ -241,6 +242,7 @@ namespace RoadGenerator
                 IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
                 RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
                 float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
+                bool shouldRightArmHaveIntersectionLine = !(rightArmRoadNode.Road.IsOneWay && rightArmRoadNode.Prev.IsIntersection());
 
                 Vector3 i9 = rightArm.JunctionEdgePosition - rightArmRoadNode.Normal * rightArmRoadHalfWidth;
                 Vector3 i8 = rightArm.JunctionEdgePosition + rightArmRoadNode.Normal * rightArmRoadHalfWidth;
@@ -252,6 +254,7 @@ namespace RoadGenerator
                 IntersectionArm leftArm = GetArm(rightArm.OppositeArmID);
                 RoadNode leftArmRoadNode = GetRoadNodeAtIntersectionArm(leftArm);
                 float leftArmRoadHalfWidth = leftArm.Road.LaneWidth * (int)leftArm.Road.LaneAmount;
+                bool shouldLeftArmHaveIntersectionLine = !(leftArmRoadNode.Road.IsOneWay && leftArmRoadNode.Prev.IsIntersection());
 
                 Vector3 i7 = leftArm.JunctionEdgePosition - leftArmRoadNode.Normal * leftArmRoadHalfWidth;
                 Vector3 i6 = leftArm.JunctionEdgePosition + leftArmRoadNode.Normal * leftArmRoadHalfWidth;
@@ -282,11 +285,21 @@ namespace RoadGenerator
                 uvs.Add(Vector2.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10 });
 
+                // Bottom arm
+                (float, float) i5UV = (bottomArmRoadNode.Road.IsOneWay && shouldBottomArmHaveIntersectionLine ? 1 : 0, 0);
+                (float, float) i10UV = (shouldBottomArmHaveIntersectionLine ? 1 : 0, 0f);
+
+                // Left arm
+                (float, float) i7UV = (leftArmRoadNode.Road.IsOneWay && shouldLeftArmHaveIntersectionLine ? 1 : 0 , 0);
+                (float, float) i6UV = (shouldLeftArmHaveIntersectionLine ? 1 : 0, 0f);
+
+                // Right arm
+                (float, float) i8UV = (rightArmRoadNode.Road.IsOneWay && shouldRightArmHaveIntersectionLine ? 1 : 0 , 0);
+                (float, float) i9UV = (shouldRightArmHaveIntersectionLine ? 1 : 0, 0f);
+
                 uvs.AddRange(CreateUVList(new List<(float, float)>(){
                     (1, 0.99f),  (1, 0.99f), (1, 0.99f), (1, 0.99f),
-                    (0, 0f),     (1, 0f),
-                    (0, 0f),     (1, 0f),
-                    (0, 0f),     (1, 0f)
+                    i5UV, i6UV, i7UV, i8UV, i9UV, i10UV
                 }));
 
                 foreach(Vector3 vert in verts)
@@ -304,6 +317,7 @@ namespace RoadGenerator
 
                 RoadNode bottomArmRoadNode = GetRoadNodeAtIntersectionArm(bottomArm);
                 float bottomArmRoadHalfWidth = bottomArm.Road.LaneWidth * (int)bottomArm.Road.LaneAmount;
+                bool shouldBottomArmHaveIntersectionLine = !(bottomArmRoadNode.Road.IsOneWay && bottomArmRoadNode.Prev.IsIntersection());
 
                 Vector3 i5 = bottomArm.JunctionEdgePosition - bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
                 Vector3 i12 = bottomArm.JunctionEdgePosition + bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
@@ -314,6 +328,7 @@ namespace RoadGenerator
                 IntersectionArm topArm = GetArm(bottomArm.OppositeArmID);
                 RoadNode topArmRoadNode = GetRoadNodeAtIntersectionArm(topArm);
                 float topArmRoadHalfWidth = topArm.Road.LaneWidth * (int)topArm.Road.LaneAmount;
+                bool shouldTopArmHaveIntersectionLine = !(topArmRoadNode.Road.IsOneWay && topArmRoadNode.Prev.IsIntersection());
 
                 Vector3 i8 = topArm.JunctionEdgePosition - topArmRoadNode.Normal * topArmRoadHalfWidth;
                 Vector3 i9 = topArm.JunctionEdgePosition + topArmRoadNode.Normal * topArmRoadHalfWidth;
@@ -341,6 +356,7 @@ namespace RoadGenerator
                 IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
                 RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
                 float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
+                bool shouldRightArmHaveIntersectionLine = !(rightArmRoadNode.Road.IsOneWay && rightArmRoadNode.Prev.IsIntersection());
 
                 Vector3 i11 = rightArm.JunctionEdgePosition - rightArmRoadNode.Normal * rightArmRoadHalfWidth;
                 Vector3 i10 = rightArm.JunctionEdgePosition + rightArmRoadNode.Normal * rightArmRoadHalfWidth;
@@ -352,6 +368,7 @@ namespace RoadGenerator
                 IntersectionArm leftArm = GetArm(rightArm.OppositeArmID);
                 RoadNode leftArmRoadNode = GetRoadNodeAtIntersectionArm(leftArm);
                 float leftArmRoadHalfWidth = leftArm.Road.LaneWidth * (int)leftArm.Road.LaneAmount;
+                bool shouldLeftArmHaveIntersectionLine = !(leftArmRoadNode.Road.IsOneWay && leftArmRoadNode.Prev.IsIntersection());
 
                 Vector3 i7 = leftArm.JunctionEdgePosition - leftArmRoadNode.Normal * leftArmRoadHalfWidth;
                 Vector3 i6 = leftArm.JunctionEdgePosition + leftArmRoadNode.Normal * leftArmRoadHalfWidth;
@@ -383,10 +400,25 @@ namespace RoadGenerator
                 uvs.Add(Vector2.zero);
                 verts.AddRange(new List<Vector3>(){ i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12 });
 
+                // Bottom arm UVs
+                (float, float) i5UV = (bottomArmRoadNode.Road.IsOneWay && shouldBottomArmHaveIntersectionLine ? 1 : 0, 0);
+                (float, float) i12UV = (shouldBottomArmHaveIntersectionLine ? 1 : 0, 0f);
+
+                // Top arm UVs
+                (float, float) i9UV = (topArmRoadNode.Road.IsOneWay && shouldTopArmHaveIntersectionLine ? 1 : 0 , 0);
+                (float, float) i8UV = (shouldTopArmHaveIntersectionLine ? 1 : 0, 0f);
+
+                // Left arm UVs
+                (float, float) i7UV = (leftArmRoadNode.Road.IsOneWay && shouldLeftArmHaveIntersectionLine ? 1 : 0 , 0);
+                (float, float) i6UV = (shouldLeftArmHaveIntersectionLine ? 1 : 0, 0f);
+
+                // Right arm UVs
+                (float, float) i11UV = (rightArmRoadNode.Road.IsOneWay && shouldRightArmHaveIntersectionLine ? 1 : 0 , 0);
+                (float, float) i10UV = (shouldRightArmHaveIntersectionLine ? 1 : 0, 0f);
+
                 uvs.AddRange(CreateUVList(new List<(float, float)>(){
                     (1, 0.99f), (1, 0.99f),  (1, 0.99f),  (1, 0.99f),
-                    (0, 0f),    (1, 0f),     (0, 0f),     (1, 0f),
-                    (0, 0f),    (1, 0f),     (0, 0f),     (1, 0f)
+                    i5UV, i6UV, i7UV, i8UV, i9UV, i10UV, i11UV, i12UV
                 }));
 
                 foreach(Vector3 vert in verts)
