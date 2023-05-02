@@ -83,7 +83,7 @@ namespace Cam
 
         private void HandleGameObjectDoubleClickSelection(Selectable selectable)
         {
-            CameraManager.ToggleThirdPersonCamera();
+            CameraManager.ToggleFocusCamera();
         }
 
         public override void HandlePointInput(Vector2 pointPosition)

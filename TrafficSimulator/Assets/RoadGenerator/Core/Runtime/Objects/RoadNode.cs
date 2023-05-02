@@ -96,8 +96,8 @@ namespace RoadGenerator
                         curr = curr.Next;
                         continue;
                     }
-                    // If the intersection only have one edge, then it is a three way intersection the last node of the road
-                    if (nextNavigationNode.Edges.Count < 2)
+                    // If the intersection is a threeway intersection at the end of the road
+                    if (curr.Type == RoadNodeType.ThreeWayIntersection && (curr.Next?.Type == RoadNodeType.End || curr.Prev?.Type == RoadNodeType.End))
                     {
                         curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                         curr = curr.Next;
@@ -130,7 +130,6 @@ namespace RoadGenerator
                 curr.SecondaryNavigationNodeEdge = nextNavigationNode.SecondaryDirectionEdge;
                 curr = curr.Next;
             }
-
         }
 
         public void UpdateIntersectionJunctionEdgeNavigation(Road road)

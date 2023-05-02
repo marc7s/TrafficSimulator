@@ -48,4 +48,4 @@ MonoBehaviour:
   railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   BuildingPrefab: {fileID: 6271160807420945312, guid: 7f65bab3d77170f4aa0f6be406f09110, type: 3}
   BuildingWallMaterial: {fileID: 2100000, guid: ddcb4c492c056d446b51b2485a97784d, type: 2}
-  BuildingRoofMaterial: {fileID: 2100000, guid: 8664a735c34e5d64181f88ab090f47cc, type: 2}
+  BuildingRoofMaterial: {fileID: 2100000, guid: 83be0eadf8736cc448f4f8d5037ec191, type: 2}
