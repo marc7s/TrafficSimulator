@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.UIElements;
 using User;
 using Car;
@@ -80,16 +81,27 @@ namespace UI
             _tabs = Tabs.Vehicles;
         }
 
+        private void EnablePanel(VisualElement panel, Button button)
+        {
+            List<VisualElement> _panels = new List<VisualElement>{_trafficFlowPanel, _emissionPanel, _vehiclesPanel};
+            List<Button> _buttons = new List<Button>{_trafficFlowButton, _emissionButton, _vehiclesButton};
+            _panels.Remove(panel);
+            _buttons.Remove(button);
+            foreach (VisualElement p in _panels)
+            {
+                p.visible = false;
+            }
+            foreach (Button b in _buttons)
+            {
+                b.style.height = new Length(25, LengthUnit.Pixel);
+                b.RemoveFromClassList("panel-button-selected");
+            }
+            panel.visible = true;
+            button.style.height = new Length(30, LengthUnit.Pixel);
+            button.AddToClassList("panel-button-selected");
+        }
         private void UpdatePanels()
         {
-            Length MinHeight = new Length(25, LengthUnit.Pixel);
-            Length MaxHeight = new Length(30, LengthUnit.Pixel);
-            _trafficFlowButton.style.height = MinHeight;
-            _emissionButton.style.height = MinHeight;
-            _vehiclesButton.style.height = MinHeight;
-            _trafficFlowButton.RemoveFromClassList("panel-button-selected");
-            _emissionButton.RemoveFromClassList("panel-button-selected");
-            _vehiclesButton.RemoveFromClassList("panel-button-selected");
             switch(_tabs)
             {
                 case Tabs.None:
@@ -98,25 +110,13 @@ namespace UI
                     _vehiclesPanel.visible = false;
                     break;
                 case Tabs.TrafficFlow:
-                    _trafficFlowPanel.visible = true;
-                    _trafficFlowButton.style.height = MaxHeight;
-                    _trafficFlowButton.AddToClassList("panel-button-selected");
-                    _emissionPanel.visible = false;
-                    _vehiclesPanel.visible = false;
+                    EnablePanel(_trafficFlowPanel, _trafficFlowButton);
                     break;
                 case Tabs.Emission:
-                    _trafficFlowPanel.visible = false;
-                    _emissionPanel.visible = true;
-                    _emissionButton.style.height = MaxHeight;
-                    _emissionButton.AddToClassList("panel-button-selected");
-                    _vehiclesPanel.visible = false;
+                    EnablePanel(_emissionPanel, _emissionButton);
                     break;
                 case Tabs.Vehicles:
-                    _trafficFlowPanel.visible = false;
-                    _emissionPanel.visible = false;
-                    _vehiclesPanel.visible = true;
-                    _vehiclesButton.style.height = MaxHeight;
-                    _vehiclesButton.AddToClassList("panel-button-selected");
+                    EnablePanel(_vehiclesPanel, _vehiclesButton);
                     break;
             }
         }
