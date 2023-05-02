@@ -747,7 +747,10 @@ namespace RoadGenerator
 
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(StartRoadNode);
-            StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, PathCreator.bezierPath.IsClosed);
+            StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, PathCreator.bezierPath.IsClosed, true);
+
+            if (!IsOneWay)
+                StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.EndNavigationNode, PathCreator.bezierPath.IsClosed, false);
         
             // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
