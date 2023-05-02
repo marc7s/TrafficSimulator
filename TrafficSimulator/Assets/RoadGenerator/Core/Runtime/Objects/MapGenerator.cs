@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Xml;
+using System.Linq;
+using System;
 
 namespace RoadGenerator
 {
@@ -68,7 +70,8 @@ public class MapGenerator : MonoBehaviour
     public GameObject railPrefab;
     public GameObject BuildingPrefab;
     private RoadSystem roadSystem;
-    public Material BuildingMaterial;
+    public Material BuildingWallMaterial;
+    public Material BuildingRoofMaterial;
     Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
     Dictionary<string, XmlNode> wayDict = new Dictionary<string, XmlNode>();
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
@@ -442,7 +445,7 @@ public class MapGenerator : MonoBehaviour
     }
     private void LoadOSMMap(XmlDocument document)
     {
-        document.Load("Assets/Masthugget.osm");
+        document.Load("Assets/MastHugget.osm");
     }
 
     private bool IsTagKeyName(XmlNode node, string value)
@@ -588,22 +591,26 @@ public class MapGenerator : MonoBehaviour
         float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - minLat)*scale;
         return new Vector3(xPos, 0, zPos);
     }
+
     void GenerateBuilding(IEnumerator ienum, WayData wayData)
     {
         float defaultBuildingHeight = 25;
         float height = wayData.BuildingData.Height ?? defaultBuildingHeight;
         if (wayData.BuildingData.Height == null && wayData.BuildingData.BuildingLevels != null)
         {
-          //  height = wayData.BuildingData.BuildingLevels.Value * 3.5f;
+            height = wayData.BuildingData.BuildingLevels.Value * 3.5f;
           //  Debug.Log("Building height: " + height);
         }
             
 
         List<Vector3> buildingPointsBottom = GetWayNodePositions(ienum);
         List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
+        List<Vector3> buildingPointsTop = new List<Vector3>();
+
         foreach (Vector3 point in buildingPointsBottom)
             buildingPoints.Add(new BuildingPoints(point, new Vector3(point.x, height, point.z)));
-
+        foreach (BuildingPoints point in buildingPoints)
+            buildingPointsTop.Add(point.TopPoint);
         GameObject house = Instantiate(BuildingPrefab, buildingPointsBottom[0], Quaternion.identity);
 
 
@@ -611,7 +618,25 @@ public class MapGenerator : MonoBehaviour
 
         house.transform.parent = roadSystem.BuildingContainer.transform;
         Mesh buildingMesh = AssignMeshComponents(house);
-        CreateBuildingMesh(buildingMesh, buildingPoints);
+        
+        // Create roofs for buildings
+        List<Triangle> triangles = new List<Triangle>();
+
+        try
+        {
+            triangles.AddRange(TriangulateConcavePolygon(buildingPointsTop));
+        }
+        catch (Exception e){}
+
+        buildingPointsTop.Reverse();
+
+        try
+        {
+            triangles.AddRange(TriangulateConcavePolygon(buildingPointsTop));
+        }
+        catch (Exception e){}
+
+        CreateBuildingMesh(buildingMesh, buildingPoints, triangles);
     }
 
     private string GetBuildingName(WayData wayData)
@@ -635,15 +660,22 @@ public class MapGenerator : MonoBehaviour
             TopPoint = topPoint;
         }
     }
-    private void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints)
+
+    private void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints, List<Triangle> triangles)
     {
+        Dictionary<Vector3, int> positionToIndex = new Dictionary<Vector3, int>();
         List<Vector3> verts = new List<Vector3>();
-        List<int> tris = new List<int>();
+        List<int> wallTris = new List<int>();
+        List<int> roofTris = new List<int>();
 
         foreach (BuildingPoints buildingPoint in buildingPoints)
         {
             verts.Add(buildingPoint.BottomPoint);
+            if (!positionToIndex.ContainsKey(buildingPoint.BottomPoint))
+                positionToIndex.Add(buildingPoint.BottomPoint, verts.Count - 1);
             verts.Add(buildingPoint.TopPoint);
+            if (!positionToIndex.ContainsKey(buildingPoint.TopPoint))
+                positionToIndex.Add(buildingPoint.TopPoint, verts.Count - 1);
         }
 
         int index = -1;
@@ -657,16 +689,28 @@ public class MapGenerator : MonoBehaviour
                 continue;
             }
             index += 2;
-            AddBuildingWall(index, index -1, index - 2, index - 3, tris);
+            AddBuildingWall(index, index -1, index - 2, index - 3, wallTris);
+        }
+
+        foreach (Triangle triangle in triangles)
+        {
+            if (positionToIndex.ContainsKey(triangle.v1.position) && positionToIndex.ContainsKey(triangle.v2.position) && positionToIndex.ContainsKey(triangle.v3.position))
+            {
+                roofTris.Add(positionToIndex[triangle.v1.position]);
+                roofTris.Add(positionToIndex[triangle.v2.position]);
+                roofTris.Add(positionToIndex[triangle.v3.position]);
+            }
         }
 
         buildingMesh.Clear();
         buildingMesh.vertices = verts.ToArray();
-        buildingMesh.subMeshCount = 1;
-        buildingMesh.SetTriangles(tris.ToArray(), 0);
+        buildingMesh.subMeshCount = 2;
+        buildingMesh.SetTriangles(wallTris.ToArray(), 0);
+        buildingMesh.SetTriangles(roofTris.ToArray(), 1);
         buildingMesh.RecalculateBounds();
 
     }
+
     private void AddBuildingWall(int currentSideTopIndex, int currentSideBottomIndex, int prevSideTopIndex, int prevSideBottomIndex, List<int> triangles)
     {
         triangles.Add(prevSideTopIndex);
@@ -707,7 +751,7 @@ public class MapGenerator : MonoBehaviour
         }
 
         MeshRenderer _meshRenderer = buildingObject.GetComponent<MeshRenderer>();
-        _meshRenderer.sharedMaterial = BuildingMaterial;
+        _meshRenderer.sharedMaterials = new Material[]{ BuildingWallMaterial, BuildingRoofMaterial };
         MeshFilter _meshFilter = buildingObject.GetComponent<MeshFilter>();
         
 
@@ -716,6 +760,7 @@ public class MapGenerator : MonoBehaviour
         _meshFilter.sharedMesh = mesh;
         return mesh;
     }
+
     Road spawnRoad(List<Vector3> points, WayData wayData)
     {
             GameObject prefab = wayData.WayType == WayType.RailTram ? railPrefab : roadPrefab;
@@ -745,6 +790,331 @@ public class MapGenerator : MonoBehaviour
             roadSystem.AddRoad(road);
             
             return road;
+    }
+
+    public static List<Triangle> TriangulateConcavePolygon(List<Vector3> points)
+    {
+        //The list with triangles the method returns
+        List<Triangle> triangles = new List<Triangle>();
+
+        //If we just have three points, then we dont have to do all calculations
+        if (points.Count == 3)
+        {
+            triangles.Add(new Triangle(points[0], points[1], points[2]));
+
+            return triangles;
+        }
+
+
+
+        //Step 1. Store the vertices in a list and we also need to know the next and prev vertex
+        List<Vertex> vertices = new List<Vertex>();
+
+        for (int i = 0; i < points.Count; i++)
+            vertices.Add(new Vertex(points[i]));
+
+        //Find the next and previous vertex
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            int nextPos = ClampListIndex(i + 1, vertices.Count);
+            int prevPos = ClampListIndex(i - 1, vertices.Count);
+
+            vertices[i].prevVertex = vertices[prevPos];
+            vertices[i].nextVertex = vertices[nextPos];
+        }
+
+        //Step 2. Find the reflex (concave) and convex vertices, and ear vertices
+        for (int i = 0; i < vertices.Count; i++)
+            CheckIfReflexOrConvex(vertices[i]);
+
+        //Have to find the ears after we have found if the vertex is reflex or convex
+        List<Vertex> earVertices = new List<Vertex>();
+        
+        for (int i = 0; i < vertices.Count; i++)
+            IsVertexEar(vertices[i], vertices, earVertices);
+
+        //Step 3. Triangulate!
+        while (true)
+        {
+            //This means we have just one triangle left
+            if (vertices.Count == 3)
+            {
+                //The final triangle
+                triangles.Add(new Triangle(vertices[0], vertices[0].prevVertex, vertices[0].nextVertex));
+                break;
+            }
+
+            //Make a triangle of the first ear
+            Vertex earVertex = earVertices[0];
+
+            Vertex earVertexPrev = earVertex.prevVertex;
+            Vertex earVertexNext = earVertex.nextVertex;
+
+            Triangle newTriangle = new Triangle(earVertex, earVertexPrev, earVertexNext);
+
+            triangles.Add(newTriangle);
+
+            //Remove the vertex from the lists
+            earVertices.Remove(earVertex);
+
+            vertices.Remove(earVertex);
+
+            //Update the previous vertex and next vertex
+            earVertexPrev.nextVertex = earVertexNext;
+            earVertexNext.prevVertex = earVertexPrev;
+
+            //...see if we have found a new ear by investigating the two vertices that was part of the ear
+            CheckIfReflexOrConvex(earVertexPrev);
+            CheckIfReflexOrConvex(earVertexNext);
+
+            earVertices.Remove(earVertexPrev);
+            earVertices.Remove(earVertexNext);
+
+            IsVertexEar(earVertexPrev, vertices, earVertices);
+            IsVertexEar(earVertexNext, vertices, earVertices);
+        }
+
+        return triangles;
+    }
+
+    public static int ClampListIndex(int index, int listSize)
+    {
+        index = ((index % listSize) + listSize) % listSize;
+        return index;
+    }
+
+    public static bool IsTriangleOrientedClockwise(Vector2 p1, Vector2 p2, Vector2 p3)
+    {
+        bool isClockWise = true;
+        float determinant = p1.x * p2.y + p3.x * p1.y + p2.x * p3.y - p1.x * p3.y - p3.x * p2.y - p2.x * p1.y;
+
+        if (determinant > 0f)
+            isClockWise = false;
+
+        return isClockWise;
+    }
+
+    public static bool IsPointInTriangle(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p)
+    {
+        bool isWithinTriangle = false;
+
+        //Based on Barycentric coordinates
+        float denominator = ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
+
+        float a = ((p2.y - p3.y) * (p.x - p3.x) + (p3.x - p2.x) * (p.y - p3.y)) / denominator;
+        float b = ((p3.y - p1.y) * (p.x - p3.x) + (p1.x - p3.x) * (p.y - p3.y)) / denominator;
+        float c = 1 - a - b;
+
+        //The point is within the triangle or on the border if 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
+        //if (a >= 0f && a <= 1f && b >= 0f && b <= 1f && c >= 0f && c <= 1f)
+        //{
+        //    isWithinTriangle = true;
+        //}
+
+        //The point is within the triangle
+        if (a > 0f && a < 1f && b > 0f && b < 1f && c > 0f && c < 1f)
+            isWithinTriangle = true;
+
+        return isWithinTriangle;
+    }
+
+    //Check if a vertex if reflex or convex, and add to appropriate list
+    private static void CheckIfReflexOrConvex(Vertex v)
+    {
+        v.isReflex = false;
+        v.isConvex = false;
+
+        //This is a reflex vertex if its triangle is oriented clockwise
+        Vector2 a = v.prevVertex.GetPos2D_XZ();
+        Vector2 b = v.GetPos2D_XZ();
+        Vector2 c = v.nextVertex.GetPos2D_XZ();
+
+        if (IsTriangleOrientedClockwise(a, b, c))
+            v.isReflex = true;
+        else
+            v.isConvex = true;
+    }
+
+    //Check if a vertex is an ear
+    private static void IsVertexEar(Vertex v, List<Vertex> vertices, List<Vertex> earVertices)
+    {
+
+        //A reflex vertex cant be an ear!
+        if (v.isReflex)
+            return;
+
+        //This triangle to check point in triangle
+        Vector2 a = v.prevVertex.GetPos2D_XZ();
+        Vector2 b = v.GetPos2D_XZ();
+        Vector2 c = v.nextVertex.GetPos2D_XZ();
+
+        bool hasPointInside = false;
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            //We only need to check if a reflex vertex is inside of the triangle
+            if (vertices[i].isReflex)
+            {
+                Vector2 p = vertices[i].GetPos2D_XZ();
+
+                //This means inside and not on the hull
+                if (IsPointInTriangle(a, b, c, p))
+                {
+                    hasPointInside = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasPointInside)
+            earVertices.Add(v);
+    }
+
+    public class Vertex
+    {
+        public Vector3 position;
+
+        //The outgoing halfedge (a halfedge that starts at this vertex)
+        //Doesnt matter which edge we connect to it
+        public HalfEdge halfEdge;
+
+        //Which triangle is this vertex a part of?
+        public Triangle triangle;
+
+        //The previous and next vertex this vertex is attached to
+        public Vertex prevVertex;
+        public Vertex nextVertex;
+
+        //Properties this vertex may have
+        //Reflex is concave
+        public bool isReflex; 
+        public bool isConvex;
+        public bool isEar;
+
+        public Vertex(Vector3 position)
+        {
+            this.position = position;
+        }
+
+        //Get 2d pos of this vertex
+        public Vector2 GetPos2D_XZ()
+        {
+            Vector2 pos_2d_xz = new Vector2(position.x, position.z);
+            return pos_2d_xz;
+        }
+    }
+
+    public class HalfEdge
+    {
+        //The vertex the edge points to
+        public Vertex v;
+
+        //The face this edge is a part of
+        public Triangle t;
+
+        //The next edge
+        public HalfEdge nextEdge;
+        //The previous
+        public HalfEdge prevEdge;
+        //The edge going in the opposite direction
+        public HalfEdge oppositeEdge;
+
+        //This structure assumes we have a vertex class with a reference to a half edge going from that vertex
+        //and a face (triangle) class with a reference to a half edge which is a part of this face 
+        public HalfEdge(Vertex v)
+        {
+            this.v = v;
+        }
+    }
+
+    public class Triangle
+    {
+        //Corners
+        public Vertex v1;
+        public Vertex v2;
+        public Vertex v3;
+
+        //If we are using the half edge mesh structure, we just need one half edge
+        public HalfEdge halfEdge;
+
+        public Triangle(Vertex v1, Vertex v2, Vertex v3)
+        {
+            this.v1 = v1;
+            this.v2 = v2;
+            this.v3 = v3;
+        }
+
+        public Triangle(Vector3 v1, Vector3 v2, Vector3 v3)
+        {
+            this.v1 = new Vertex(v1);
+            this.v2 = new Vertex(v2);
+            this.v3 = new Vertex(v3);
+        }
+
+        public Triangle(HalfEdge halfEdge)
+        {
+            this.halfEdge = halfEdge;
+        }
+
+        //Change orientation of triangle from cw -> ccw or ccw -> cw
+        public void ChangeOrientation()
+        {
+            Vertex temp = this.v1;
+
+            this.v1 = this.v2;
+            this.v2 = temp;
+        }
+    }
+
+    public class Edge
+    {
+        public Vertex v1;
+        public Vertex v2;
+
+        //Is this edge intersecting with another edge?
+        public bool isIntersecting = false;
+
+        public Edge(Vertex v1, Vertex v2)
+        {
+            this.v1 = v1;
+            this.v2 = v2;
+        }
+
+        public Edge(Vector3 v1, Vector3 v2)
+        {
+            this.v1 = new Vertex(v1);
+            this.v2 = new Vertex(v2);
+        }
+
+        //Get vertex in 2d space (assuming x, z)
+        public Vector2 GetVertex2D(Vertex v)
+        {
+            return new Vector2(v.position.x, v.position.z);
+        }
+
+        //Flip edge
+        public void FlipEdge()
+        {
+            Vertex temp = v1;
+
+            v1 = v2;
+
+            v2 = temp;
+        }
+    }
+
+    public class Plane
+    { 
+        public Vector3 pos;
+
+        public Vector3 normal;
+
+        public Plane(Vector3 pos, Vector3 normal)
+        {
+            this.pos = pos;
+
+            this.normal = normal;
+        }
     }
 }
 }
