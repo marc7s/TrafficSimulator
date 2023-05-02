@@ -130,6 +130,7 @@ namespace UI
             FuelConsumption fuelConsumption = _selectedCar?.gameObject.GetComponent<FuelConsumption>();
 
             _statsController.UpdateInfo(car, fuelConsumption);
+            _infoController.UpdateInfo(car);
         }
 
         // Update is called once per frame

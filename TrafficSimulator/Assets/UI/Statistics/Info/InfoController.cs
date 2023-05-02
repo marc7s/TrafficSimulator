@@ -11,10 +11,14 @@ namespace UI
         // Labels
         private Label _totalTimeOnRoad;
         private Label _totalDistanceTraveled;
+        private Label _location;
 
         void Awake()
         {
             _doc = GetComponent<UIDocument>();
+
+            // Labels
+            _location = _doc.rootVisualElement.Q<Label>("Location");
             
         }
         
@@ -25,12 +29,12 @@ namespace UI
                 ResetInfo();
                 return;
             }
-
+            _location.text = "Location: " + car.Agent.Context.CurrentRoad.name;
         }
 
         public void ResetInfo()
         {
-
+            _location.text = "Location: N/A";
         }
     }
 }
