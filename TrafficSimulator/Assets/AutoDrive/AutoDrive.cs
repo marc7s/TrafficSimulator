@@ -720,9 +720,10 @@ namespace VehicleBrain
             }
 
             bool waitWithTeleporting = false;
-            if(reachedTarget)
+            if(reachedTarget && _agent.Context.NavigationMode == NavigationMode.Path)
             {
                 _agent.Context.NavigationPathTargets.Pop();
+                
                 if(_agent.Context.CurrentNode.POI != null)
                 {
                     if(_agent.Context.CurrentNode.POI is Parking)
