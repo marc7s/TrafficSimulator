@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Simulation;
 
 namespace Simulation
 {
@@ -14,9 +13,6 @@ namespace Simulation
 
     public class DayNightManager : MonoBehaviour
     {
-        // Sun
-        [SerializeField] private GameObject target;
-
         public SunMode _sunMode = SunMode.Time;
 
         void Start()
