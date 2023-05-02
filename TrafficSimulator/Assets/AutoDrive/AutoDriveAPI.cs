@@ -174,7 +174,7 @@ namespace VehicleBrain
             
             foreach(POI poi in pois)
             {
-                NavigationNode poiNavigationNode = navigationNodes.Find(x => x.RoadNode == poi.RoadNode);
+                NavigationNode poiNavigationNode = navigationNodes.Find(x => x.RoadNode.PrimaryNavigationNode == x && x.RoadNode == poi.RoadNode);
                 
                 if(poiNavigationNode != null && !targets.Contains(poiNavigationNode))
                     targets.Add(poiNavigationNode);

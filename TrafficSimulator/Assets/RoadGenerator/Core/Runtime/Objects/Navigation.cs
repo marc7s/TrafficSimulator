@@ -28,7 +28,7 @@ namespace RoadGenerator
         }
 
         public bool Equals(AStarNode other) {
-            return GraphNode.RoadNode.Position.ToString() == other.GraphNode.RoadNode.Position.ToString();
+            return GraphNode.ID == other.GraphNode.ID;
         }
     }
 
@@ -74,14 +74,14 @@ namespace RoadGenerator
                         continue;
 
                     double costToNode = current.RouteCost + edge.Cost;
-                    string pos = edge.EndNavigationNode.RoadNode.Position.ToString();
+                    string nodeID = edge.EndNavigationNode.ID;
                     
                     // If the cost to the end node is lower than the current cost, update the cost and add the node to the queue
                     // If the node is not in the queue, add it
-                    if (!costMap.ContainsKey(pos) || costToNode < costMap[pos])
+                    if (!costMap.ContainsKey(nodeID) || costToNode < costMap[nodeID])
                     {
                         // Update the cost
-                        costMap[edge.EndNavigationNode.RoadNode.Position.ToString()] = costToNode;
+                        costMap[edge.EndNavigationNode.ID] = costToNode;
                         
                         // Calculate the estimated cost to the target node
                         double estimatedCost = costToNode + Heuristic(edge.EndNavigationNode, target.GraphNode);
@@ -92,6 +92,7 @@ namespace RoadGenerator
                     }
                 }
             }
+
             // If a path is not found, return null
             return null;
         }
@@ -161,7 +162,7 @@ namespace RoadGenerator
                     Stack<NavigationNodeEdge> subPath = GetPathToNode(sourceEdge, target);
                     if(subPath == null)
                     {
-                        Debug.LogError("Could not find path to target node " + target);
+                        Debug.LogError("Could not find path to target node " + target.RoadNode.Position);
                         DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
                         Debug.Log(target.RoadNode.Position);
                         
