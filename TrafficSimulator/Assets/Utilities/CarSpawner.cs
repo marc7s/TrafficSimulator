@@ -15,7 +15,8 @@ namespace RoadGenerator
     {
         FollowPrefabs,
         Random,
-        RandomPath
+        RandomPath,
+        Path
     }
 
     public class CarSpawner : MonoBehaviour
@@ -288,6 +289,9 @@ namespace RoadGenerator
                     break;
                 case CarSpawnerNavigationMode.RandomPath:
                     autoDrive.OriginalNavigationMode = NavigationMode.RandomNavigationPath;
+                    break;
+                case CarSpawnerNavigationMode.Path:
+                    autoDrive.OriginalNavigationMode = NavigationMode.Path;
                     break;
             }
 

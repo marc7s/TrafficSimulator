@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using System.Linq;
 using System;
@@ -329,9 +330,12 @@ namespace VehicleBrain
             _prevTarget = parkingEntry;
         }
 
-        private void Unpark(Parking parking)
+        private IEnumerator Unpark()
         {
-            parking.Unpark(_agent.Setting.Vehicle);
+            // Wait until the exit not is not occupied before unparking
+            yield return new WaitUntil(() => !(_prevTarget.HasVehicle() && _prevTarget.Vehicle != _agent.Setting.Vehicle));
+            
+            _agent.Context.CurrentParking.Unpark(_agent.Setting.Vehicle);
             _agent.Context.CurrentParking = null;
             _agent.Context.Activity = VehicleActivity.Driving;
             SetVehicleMovement(true);
@@ -609,6 +613,7 @@ namespace VehicleBrain
             }
 
             ParkAtNode(parkNode, parking.ParkingLineup);
+            _agent.Context.CurrentParking = parking;
         }
 
         private void WaitAtBusStop(BusStop busStop)
@@ -732,9 +737,10 @@ namespace VehicleBrain
                         Park(parking);
                         waitWithTeleporting = _agent.Context.Activity == VehicleActivity.Parked;
 
+                        // Queue an event to try unparking the vehicle after a random delay
                         TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(5, 30) * 1000));
                         TimeManager.Instance.AddEvent(unParkEvent);
-                        unParkEvent.OnEvent += () => Unpark(parking);
+                        unParkEvent.OnEvent += () => StartCoroutine(Unpark());
                     }
                     else if(_agent.Context.CurrentNode.POI is BusStop)
                     {

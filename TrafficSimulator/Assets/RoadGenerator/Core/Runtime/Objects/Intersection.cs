@@ -875,8 +875,7 @@ namespace RoadGenerator
             List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
             
             // Pick a random guide path
-            System.Random random = new System.Random();
-            int randomLaneNodeIndex = random.Next(0, guidePaths.Count);
+            int randomLaneNodeIndex = UnityEngine.Random.Range(0, guidePaths.Count);
             GuideNode guidePath = guidePaths[randomLaneNodeIndex];
             LaneNode finalNode = guidePath.Last;
 
