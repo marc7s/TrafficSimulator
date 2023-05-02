@@ -3,7 +3,7 @@ using RoadGenerator;
 using System;
 using DataModel;
 
-namespace Car
+namespace VehicleBrain
 {
     public enum BrakeEventType
     { 

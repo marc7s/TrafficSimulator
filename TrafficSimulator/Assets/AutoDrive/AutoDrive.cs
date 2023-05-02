@@ -9,11 +9,19 @@ using DataModel;
 using Simulation;
 using POIs;
 
-namespace Car {
+namespace VehicleBrain 
+{
     public enum DrivingMode 
     {
         Performance,
         Quality
+    }
+    public enum VehicleType
+    {
+        Car,
+        Bus,
+        Tram,
+        Unknown
     }
     public enum ShowTargetLines 
     {
@@ -117,7 +125,7 @@ namespace Car {
         {
             Road.RoadSystem.Setup();
 
-            _vehicleController = GetComponent<VehicleController>();
+            _vehicleController = GetComponent<EVP.VehicleController>();
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
             if (Mode == DrivingMode.Quality)
             {
@@ -155,8 +163,21 @@ namespace Car {
             _targetLineRenderer.startWidth = targetLineWidth;
             _targetLineRenderer.endWidth = targetLineWidth;
 
+
+            VehicleType vehicleType = 
+                GetComponent<Bus>() != null ? VehicleType.Bus
+                : GetComponent<Tram>() != null ? VehicleType.Tram
+                : GetComponent<Car>() != null ? VehicleType.Car
+                : VehicleType.Unknown;
+            
+            if(vehicleType == VehicleType.Unknown)
+            {
+                Debug.LogError("Could not determine vehicle type");
+                return;
+            }
+
             _agent = new AutoDriveAgent(
-                new AutoDriveSetting(GetComponent<Vehicle>(), Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
+                new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
                 new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode)
             );
 
@@ -266,21 +287,26 @@ namespace Car {
             TeleportToNode(node);
             PostTeleportCleanup(node);
             
-            switch(_agent.Context.NavigationMode)
+            if(_agent.Context.Activity == VehicleActivity.Driving)
             {
-                case NavigationMode.RandomNavigationPath:
-                    _agent.UpdateRandomPath(node, ShowNavigationPath);
-                    break;
-                case NavigationMode.Path:
-                    _agent.GeneratePath(node, ShowNavigationPath);
-                    break;
+                switch(_agent.Context.NavigationMode)
+                {
+                    case NavigationMode.RandomNavigationPath:
+                        _agent.UpdateRandomPath(node, ShowNavigationPath);
+                        break;
+                    case NavigationMode.Path:
+                        _agent.GeneratePath(node, ShowNavigationPath);
+                        break;
+                }
             }
-
+            
             UpdateOccupiedNodes();
         }
 
         private void ParkAtNode(POINode node, ParkingLineup parkingLineup)
         {
+            _agent.Context.Activity = VehicleActivity.Parked;
+            LaneNode parkingEntry = _agent.Context.CurrentNode;
             ResetNodeParameters(null);
             TeleportToNode(node, false);
             PostTeleportCleanup(node, parkingLineup == ParkingLineup.Random);
@@ -293,8 +319,19 @@ namespace Car {
                 _occupiedNodes.RemoveAt(i);
             }
             
-            _agent.Context.Activity = VehicleActivity.Parked;
             _agent.Context.IsEnteringNetwork = false;
+            // Use prev target to store the entry node to the parking
+            _prevTarget = parkingEntry;
+        }
+
+        private void Unpark(Parking parking)
+        {
+            parking.Unpark(_agent.Setting.Vehicle);
+            _agent.Context.CurrentParking = null;
+            _agent.Context.Activity = VehicleActivity.Driving;
+            SetVehicleMovement(true);
+            // The entry node to the parking was stored in prev target, so teleport back to that node
+            ResetToNode(_prevTarget);
         }
 
         private void SetVehicleMovement(bool enabled)
@@ -684,8 +721,13 @@ namespace Car {
                 {
                     if(_agent.Context.CurrentNode.POI is Parking)
                     {
-                        Park(_agent.Context.CurrentNode.POI as Parking);
+                        Parking parking = _agent.Context.CurrentNode.POI as Parking;
+                        Park(parking);
                         waitWithTeleporting = _agent.Context.Activity == VehicleActivity.Parked;
+
+                        TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(5, 30) * 1000));
+                        TimeManager.Instance.AddEvent(unParkEvent);
+                        unParkEvent.OnEvent += () => Unpark(parking);
                     }
                     else if(_agent.Context.CurrentNode.POI is BusStop)
                     {

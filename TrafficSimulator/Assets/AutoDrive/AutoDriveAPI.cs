@@ -5,7 +5,7 @@ using EVP;
 using RoadGenerator;
 using POIs;
 
-namespace Car
+namespace VehicleBrain
 {
     public enum DrivingAction
     {
@@ -158,10 +158,19 @@ namespace Car
             List<NavigationNode> targets = new List<NavigationNode>();
             List<NavigationNode> navigationNodes = Context.CurrentRoad.RoadSystem.RoadSystemGraph;
 
-            // Temporary: Generate a path to visit all bus stops. If there are no bus stops, visit all parkings instead
-            List<POI> pois = GetAllBusStops();
-            if(pois.Count == 0)
-                pois = GetAllParkings();
+            // Generate a path to visit different POIs depending on the vehicle type
+            List<POI> pois = new List<POI>();
+            switch(Setting.VehicleType)
+            {
+                case VehicleType.Car:
+                    pois = GetAllParkings();
+                    break;
+                case VehicleType.Bus:
+                    pois = (Setting.Vehicle as Bus).BusRoute.ConvertAll(x => (POI)x);
+                    break;
+                case VehicleType.Tram:
+                    break;
+            }
             
             foreach(POI poi in pois)
             {
@@ -172,9 +181,7 @@ namespace Car
             }
 
             // Save the targets
-            Context.NavigationPathTargets.Clear();
-            foreach(NavigationNode target in targets)
-                Context.NavigationPathTargets.Add(target.RoadNode);
+            Context.NavigationPathTargets = targets.ConvertAll(x => x.RoadNode);
             
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targets, out Context.NavigationPathEndNode);
@@ -263,6 +270,7 @@ namespace Car
     public struct AutoDriveSetting
     {
         private Vehicle _vehicle;
+        private VehicleType _vehicleType;
         private DrivingMode _mode;
         private RoadEndBehaviour _endBehaviour;
         private VehicleController _vehicleController;
@@ -273,6 +281,7 @@ namespace Car
         private Material _navigationPathMaterial;
         
         public Vehicle Vehicle => _vehicle;
+        public VehicleType VehicleType => _vehicleType;
         public DrivingMode Mode => _mode;
         public RoadEndBehaviour EndBehaviour => _endBehaviour;
         public VehicleController VehicleController => _vehicleController;
@@ -282,9 +291,10 @@ namespace Car
         public GameObject NavigationTargetMarker => _navigationTargetMarker;
         public Material NavigationPathMaterial => _navigationPathMaterial;
         
-        public AutoDriveSetting(Vehicle vehicle, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
+        public AutoDriveSetting(Vehicle vehicle, VehicleType vehicleType, DrivingMode mode, RoadEndBehaviour endBehaviour, EVP.VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
             _vehicle = vehicle;
+            _vehicleType = vehicleType;
             _mode = mode;
             _endBehaviour = endBehaviour;
             _vehicleController = vehicleController;
@@ -318,6 +328,7 @@ namespace Car
         public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
         public VehicleActivity Activity;
+        public Parking CurrentParking;
         public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         public Road CurrentRoad => CurrentNode.RoadNode.Road;
@@ -344,6 +355,7 @@ namespace Car
             TurnDirection = TurnDirection.Straight;
             BrakeUndershoot = 0;
             Activity = VehicleActivity.Driving;
+            CurrentParking = null;
 
             SetLoopNode(initialNode);
         }

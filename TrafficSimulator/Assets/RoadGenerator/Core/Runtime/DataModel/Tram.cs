@@ -1,9 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
+using POIs;
 
-namespace DataModel 
+namespace DataModel
 {
-    public class Car : Vehicle
+    public class Tram : Vehicle
     {
+        // TODO: Add TramStops
+        // List<TramStop> tramRoute;
         // Start is called before the first frame update
         void Start()
         {

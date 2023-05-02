@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using System;
 using UnityEngine;
 using EVP;
 
-namespace Car {
+namespace VehicleBrain {
     enum FuelMode
     {
         Realistic,
@@ -55,7 +53,7 @@ namespace Car {
             _lastPosition = transform.position;
             if (_fuelMode == FuelMode.Realistic)
             {
-                Q_calculateIdleFuelConsumption();
+                Q_CalculateIdleFuelConsumption();
             }
         }
 
@@ -64,24 +62,24 @@ namespace Car {
         {
             if (_fuelMode == FuelMode.Realistic)
             {
-                Q_calculateResistance();
-                Q_calculateFuelConsumption();
+                Q_CalculateResistance();
+                Q_CalculateFuelConsumption();
             }
             else
             {
-                P_calculateFuelConsumption();
+                P_CalculateFuelConsumption();
             }
-            updateVariables();
+            UpdateVariables();
         }
 
-        private void updateVariables()
+        private void UpdateVariables()
         {
             _lastSpeed = _vehicleController.speed;
             _lastPosition = transform.position;
         }
 
         // Calculate the fuel consumed since last frame and add it to the total fuel consumed
-        private void P_calculateFuelConsumption()
+        private void P_CalculateFuelConsumption()
         {
             // TODO 
             // calculate the distance more accurately
@@ -106,7 +104,7 @@ namespace Car {
             _totalFuelConsumed += _fuelConsumed;
         }
 
-        private void Q_calculateFuelConsumption()
+        private void Q_CalculateFuelConsumption()
         {
             // TODO
             // Decice wheter to keep the realistic fuel consumption model and if so
@@ -123,13 +121,13 @@ namespace Car {
             _totalFuelConsumed += _fuelConsumed;
         }
 
-        private void Q_calculateIdleFuelConsumption()
+        private void Q_CalculateIdleFuelConsumption()
         {
             // Calculate the idle fuel consumption
             _idleFuelConsumption = (_fuelMeanPressure * _idlingRPM * _engineDisplacement) / (22164 * _numberOfCylinders * _fuelLowerHeatingValue);
         }
 
-        private void Q_calculateResistance()
+        private void Q_CalculateResistance()
         {
             // Calculate the resistance
             _resistance = (float) (_airDensity / 25.92) * _vehicleDragCoeff * _frontalArea * MathF.Pow(_vehicleController.speed, 2) + _vehicleWeight * 9.81f * (0.01f / 1000) * (0.0328f * _vehicleController.speed + 4.575f) + _vehicleWeight * 9.81f * transform.rotation.x;

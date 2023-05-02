@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
-using Car;
+using VehicleBrain;
 
 namespace CarGenerator
 {

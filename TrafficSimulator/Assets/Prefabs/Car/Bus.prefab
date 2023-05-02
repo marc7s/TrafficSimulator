@@ -1175,7 +1175,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 9251e20ab7ba62c4ebf2437bc9eb9de6, type: 2}
-  - {fileID: 2100000, guid: 31d7845f285045a40a389382fb7feca6, type: 2}
+  - {fileID: 2100000, guid: 6f8ec1737cf80774494e3bac4e7094e0, type: 2}
   - {fileID: 2100000, guid: 66b451af113fca647b2f25dc67fc40b9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -1816,7 +1816,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1577973480899046211}
-  - component: {fileID: 4931130297971086674}
+  - component: {fileID: -3224244942640061436}
   - component: {fileID: 1577973480145491502}
   - component: {fileID: 1577973480894095029}
   - component: {fileID: 1577973480888145871}
@@ -1833,7 +1833,7 @@ GameObject:
   - component: {fileID: 6997793727484486664}
   - component: {fileID: 8740552995654376748}
   m_Layer: 0
-  m_Name: Sedan
+  m_Name: Bus
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1862,7 +1862,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 124.85, z: 0}
---- !u!114 &4931130297971086674
+--- !u!114 &-3224244942640061436
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1871,7 +1871,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1577973480899275759}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5cbd697ee36e504cb3b8ba2931bf140, type: 3}
+  m_Script: {fileID: 11500000, guid: c2580a7b7136a884391ea27188b7c208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &1577973480145491502
@@ -1894,7 +1894,7 @@ MonoBehaviour:
   Mode: 1
   EndBehaviour: 0
   ShowNavigationPath: 0
-  OriginalNavigationMode: 2
+  OriginalNavigationMode: 3
   LogRepositioningInformation: 0
   ShowTargetLines: 4
   BrakeOffset: 3
