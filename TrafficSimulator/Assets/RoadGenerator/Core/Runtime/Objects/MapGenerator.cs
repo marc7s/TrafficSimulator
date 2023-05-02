@@ -67,7 +67,8 @@ public class MapGenerator : MonoBehaviour
     public GameObject railPrefab;
     public GameObject BuildingPrefab;
     private RoadSystem roadSystem;
-    public Material BuildingMaterial;
+    public Material BuildingWallMaterial;
+    public Material BuildingRoofMaterial;
     Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
     List<XmlNode> busStops = new List<XmlNode>();
@@ -556,13 +557,19 @@ public class MapGenerator : MonoBehaviour
 
     private void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints, List<Triangle> triangles)
     {
+        Dictionary<Vector3, int> positionToIndex = new Dictionary<Vector3, int>();
         List<Vector3> verts = new List<Vector3>();
-        List<int> tris = new List<int>();
+        List<int> wallTris = new List<int>();
+        List<int> roofTris = new List<int>();
 
         foreach (BuildingPoints buildingPoint in buildingPoints)
         {
             verts.Add(buildingPoint.BottomPoint);
+            if (!positionToIndex.ContainsKey(buildingPoint.BottomPoint))
+                positionToIndex.Add(buildingPoint.BottomPoint, verts.Count - 1);
             verts.Add(buildingPoint.TopPoint);
+            if (!positionToIndex.ContainsKey(buildingPoint.TopPoint))
+                positionToIndex.Add(buildingPoint.TopPoint, verts.Count - 1);
         }
 
         int index = -1;
@@ -576,13 +583,24 @@ public class MapGenerator : MonoBehaviour
                 continue;
             }
             index += 2;
-            AddBuildingWall(index, index -1, index - 2, index - 3, tris);
+            AddBuildingWall(index, index -1, index - 2, index - 3, wallTris);
+        }
+
+        foreach (Triangle triangle in triangles)
+        {
+            if (positionToIndex.ContainsKey(triangle.v1.position) && positionToIndex.ContainsKey(triangle.v2.position) && positionToIndex.ContainsKey(triangle.v3.position))
+            {
+                roofTris.Add(positionToIndex[triangle.v1.position]);
+                roofTris.Add(positionToIndex[triangle.v2.position]);
+                roofTris.Add(positionToIndex[triangle.v3.position]);
+            }
         }
 
         buildingMesh.Clear();
         buildingMesh.vertices = verts.ToArray();
-        buildingMesh.subMeshCount = 1;
-        buildingMesh.SetTriangles(tris.ToArray(), 0);
+        buildingMesh.subMeshCount = 2;
+        buildingMesh.SetTriangles(wallTris.ToArray(), 0);
+        buildingMesh.SetTriangles(roofTris.ToArray(), 1);
         buildingMesh.RecalculateBounds();
 
     }
@@ -627,7 +645,7 @@ public class MapGenerator : MonoBehaviour
         }
 
         MeshRenderer _meshRenderer = buildingObject.GetComponent<MeshRenderer>();
-        _meshRenderer.sharedMaterial = BuildingMaterial;
+        _meshRenderer.sharedMaterials = new Material[]{ BuildingWallMaterial, BuildingRoofMaterial };
         MeshFilter _meshFilter = buildingObject.GetComponent<MeshFilter>();
         
 
@@ -636,6 +654,7 @@ public class MapGenerator : MonoBehaviour
         _meshFilter.sharedMesh = mesh;
         return mesh;
     }
+
     Road spawnRoad(List<Vector3> points, WayData wayData)
     {
             GameObject prefab = wayData.WayType == WayType.RailTram ? railPrefab : roadPrefab;
