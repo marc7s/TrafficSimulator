@@ -77,9 +77,12 @@ namespace VehicleBrain
 
         [Header("Statistics")]
         [ReadOnly] public float TotalDistance = 0;
+
+        [Header("Debug Settings")]
+        public bool LogNavigationErrors = false;
         
         // Public variables
-        public LaneNode CustomStartNode = null;
+        [HideInInspector] public LaneNode CustomStartNode = null;
 
         // Private variables
         private float _vehicleLength;
@@ -178,7 +181,7 @@ namespace VehicleBrain
 
             _agent = new AutoDriveAgent(
                 new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
-                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode)
+                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, LogNavigationErrors)
             );
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
@@ -295,7 +298,9 @@ namespace VehicleBrain
                         _agent.UpdateRandomPath(node, ShowNavigationPath);
                         break;
                     case NavigationMode.Path:
-                        _agent.GeneratePath(node, ShowNavigationPath);
+                        // Generate a new path if the current one is empty
+                        if(_agent.Context.NavigationPathTargets.Count < 1)
+                            _agent.GeneratePath(node, ShowNavigationPath);
                         break;
                 }
             }
@@ -717,6 +722,7 @@ namespace VehicleBrain
             bool waitWithTeleporting = false;
             if(reachedTarget)
             {
+                _agent.Context.NavigationPathTargets.Pop();
                 if(_agent.Context.CurrentNode.POI != null)
                 {
                     if(_agent.Context.CurrentNode.POI is Parking)
@@ -761,7 +767,7 @@ namespace VehicleBrain
                 case NavigationMode.RandomNavigationPath:
                     return _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode;
                 case NavigationMode.Path:
-                    return  _agent.Context.NavigationPathTargets.Contains(_agent.Context.CurrentNode.RoadNode);
+                    return  _agent.Context.NavigationPathTargets.Count > 0 && _agent.Context.NavigationPathTargets.Peek() == (_agent.Context.CurrentNode.RoadNode, _agent.Context.CurrentNode.LaneSide);
                 default:
                     return false;
             }

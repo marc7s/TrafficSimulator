@@ -8,6 +8,7 @@ namespace POIs
         [HideInInspector] public Road Road;
         [HideInInspector] public RoadNode RoadNode;
         public float DistanceAlongRoad;
+        public LaneSide LaneSide = LaneSide.Primary;
         [HideInInspector] public Vector3 Size;
         
         [Header("Debug Settings")]
@@ -41,7 +42,7 @@ namespace POIs
             _roadNodeContainer.AddComponent<LineRenderer>();
             _roadNodeContainer.transform.parent = transform;
 
-            if(DrawRelatedRoadNode)
+            if(RoadNode != null && DrawRelatedRoadNode)
                 DrawRelatedRoadNodeLine();
             
             CustomSetup();

@@ -149,7 +149,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
-        public static Stack<NavigationNodeEdge> GetPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, List<NavigationNode> targets, out NavigationNode nodeToFind)
+        public static Stack<NavigationNodeEdge> GetPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, List<NavigationNode> targets, bool logSubPathError, out NavigationNode nodeToFind)
         {
             if(targets.Count > 0)
             {
@@ -162,9 +162,11 @@ namespace RoadGenerator
                     Stack<NavigationNodeEdge> subPath = GetPathToNode(sourceEdge, target);
                     if(subPath == null)
                     {
-                        Debug.LogError("Could not find path to target node " + target.RoadNode.Position);
-                        DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
-                        Debug.Log(target.RoadNode.Position);
+                        if(logSubPathError)
+                        {
+                            Debug.LogError("Could not find path to target node " + target.RoadNode.Position + ". Skipping target");
+                            DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
+                        }
                         
                         continue;
                     }
@@ -184,20 +186,6 @@ namespace RoadGenerator
                     
                     sourceEdge = target.PrimaryDirectionEdge.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
                 }
-
-                /** Temporary debug **/
-                Dictionary<string, (Vector3[], Quaternion[])> _groups = new Dictionary<string, (Vector3[], Quaternion[])>();
-                foreach(NavigationNodeEdge edge in path)
-                {
-                    List<Vector3> edgePos = new List<Vector3>();
-                    edgePos.Add(edge.StartNavigationNode.RoadNode.Position);
-                    edgePos.Add(edge.EndNavigationNode.RoadNode.Position);
-                    Quaternion[] rotations = new Quaternion[]{ Quaternion.identity, Quaternion.identity };
-                    
-                    _groups.Add(edge.ID, (edgePos.ToArray(), rotations.ToArray()));
-                }
-                DebugUtility.AddMarkGroups(_groups);
-                /** End of temporary debug **/
 
                 return path;
             }

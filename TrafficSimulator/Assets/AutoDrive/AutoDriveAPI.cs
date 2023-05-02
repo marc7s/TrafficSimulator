@@ -155,7 +155,7 @@ namespace VehicleBrain
         {
             Context.VisitedNavigationNodes.Clear();
 
-            List<NavigationNode> targets = new List<NavigationNode>();
+            List<(NavigationNode, LaneSide)> targets = new List<(NavigationNode, LaneSide)>();
             List<NavigationNode> navigationNodes = Context.CurrentRoad.RoadSystem.RoadSystemGraph;
 
             // Generate a path to visit different POIs depending on the vehicle type
@@ -163,7 +163,9 @@ namespace VehicleBrain
             switch(Setting.VehicleType)
             {
                 case VehicleType.Car:
-                    pois = GetAllParkings();
+                    List<POI> allParkings = GetAllParkings();
+                    if(allParkings.Count > 0)
+                        pois.Add(allParkings[Random.Range(0, allParkings.Count)]);
                     break;
                 case VehicleType.Bus:
                     pois = (Setting.Vehicle as Bus).BusRoute.ConvertAll(x => (POI)x);
@@ -174,17 +176,23 @@ namespace VehicleBrain
             
             foreach(POI poi in pois)
             {
-                NavigationNode poiNavigationNode = navigationNodes.Find(x => x.RoadNode.PrimaryNavigationNode == x && x.RoadNode == poi.RoadNode);
+                NavigationNode poiNavigationNode = navigationNodes.Find(x => x == (poi.LaneSide == LaneSide.Primary ? x.RoadNode.PrimaryNavigationNode : x.RoadNode.SecondaryNavigationNode) && x.RoadNode == poi.RoadNode);
                 
-                if(poiNavigationNode != null && !targets.Contains(poiNavigationNode))
-                    targets.Add(poiNavigationNode);
+                (NavigationNode, LaneSide) target = (poiNavigationNode, poi.LaneSide);
+                if(poiNavigationNode != null && !targets.Contains(target))
+                    targets.Add(target);
             }
 
+            List<NavigationNode> targetList = targets.ConvertAll(x => x.Item1);
+
+            // Since we are converting the list to a stack and we want the targets to be popped in the same order as the sorted list, we need to reverse the list
+            targets.Reverse();
+            
             // Save the targets
-            Context.NavigationPathTargets = targets.ConvertAll(x => x.RoadNode);
+            Context.NavigationPathTargets = new Stack<(RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1.RoadNode, x.Item2)));
             
             // Get a random path from the navigation graph
-            Context.NavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targets, out Context.NavigationPathEndNode);
+            Context.NavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
 
             if (Context.NavigationPath.Count == 0)
                 Context.NavigationMode = NavigationMode.Random;
@@ -322,18 +330,19 @@ namespace VehicleBrain
         public DrivingAction CurrentAction;
         public NavigationNode NavigationPathEndNode;
         public Stack<NavigationNodeEdge> NavigationPath;
-        public List<RoadNode> NavigationPathTargets;
+        public Stack<(RoadNode, LaneSide)> NavigationPathTargets;
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
         public VehicleActivity Activity;
         public Parking CurrentParking;
+        public bool LogNavigationErrors;
         public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         public Road CurrentRoad => CurrentNode.RoadNode.Road;
         
-        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode)
+        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool logNavigationErrors)
         {
             CurrentNode = initialNode;
             VehiclePosition = vehiclePosition;
@@ -348,7 +357,7 @@ namespace VehicleBrain
             CurrentAction = DrivingAction.Stopped;
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
-            NavigationPathTargets = new List<RoadNode>();
+            NavigationPathTargets = new Stack<(RoadNode, LaneSide)>();
             NavigationPathContainer = new GameObject("Navigation Path");
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
@@ -356,6 +365,7 @@ namespace VehicleBrain
             BrakeUndershoot = 0;
             Activity = VehicleActivity.Driving;
             CurrentParking = null;
+            LogNavigationErrors = logNavigationErrors;
 
             SetLoopNode(initialNode);
         }
