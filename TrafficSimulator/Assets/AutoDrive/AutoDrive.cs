@@ -266,8 +266,15 @@ namespace Car {
             TeleportToNode(node);
             PostTeleportCleanup(node);
             
-            if (_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath)
-                _agent.UpdateRandomPath(node, ShowNavigationPath);
+            switch(_agent.Context.NavigationMode)
+            {
+                case NavigationMode.RandomNavigationPath:
+                    _agent.UpdateRandomPath(node, ShowNavigationPath);
+                    break;
+                case NavigationMode.Path:
+                    _agent.GeneratePath(node, ShowNavigationPath);
+                    break;
+            }
 
             UpdateOccupiedNodes();
         }
@@ -707,7 +714,15 @@ namespace Car {
 
         private bool HasReachedTarget()
         {
-            return _agent.Context.NavigationMode == NavigationMode.RandomNavigationPath ? _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode : false;
+            switch(_agent.Context.NavigationMode)
+            {
+                case NavigationMode.RandomNavigationPath:
+                    return _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode;
+                case NavigationMode.Path:
+                    return  _agent.Context.NavigationPathTargets.Contains(_agent.Context.CurrentNode.RoadNode);
+                default:
+                    return false;
+            }
         }
 
         private void Q_EndOfRoadTeleport()

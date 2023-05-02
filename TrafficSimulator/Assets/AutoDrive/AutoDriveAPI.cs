@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DataModel;
 using EVP;
 using RoadGenerator;
+using POIs;
 
 namespace Car
 {
@@ -59,9 +60,13 @@ namespace Car
                 Context.NavigationPath.Pop();
             }
 
-
             if (Context.NavigationPathEndNode != null && Context.NavigationPathEndNode.RoadNode == node.RoadNode && Context.NavigationPath.Count == 0)
-                UpdateRandomPath(node, showNavigationPath);
+            {
+                if(Context.NavigationMode == NavigationMode.RandomNavigationPath)
+                    UpdateRandomPath(node, showNavigationPath);
+                else if(Context.NavigationMode == NavigationMode.Path)
+                    GeneratePath(node, showNavigationPath);
+            }
 
             if (node.Type == RoadNodeType.JunctionEdge && currentTargetNodeNotChecked)
             {
@@ -72,7 +77,7 @@ namespace Car
                 if (intersectionNotChecked)
                 {
                     LaneNode loopNode = null;
-                    if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
+                    if (Context.NavigationMode == NavigationMode.RandomNavigationPath || Context.NavigationMode == NavigationMode.Path)
                     {
                         (loopNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
 
@@ -88,6 +93,7 @@ namespace Car
                     {
                         (loopNode, node) = node.Intersection.GetRandomLaneNode(node, ref Context.TurnDirection);
                     }
+                    
                     SetIntersectionTransition(entryNode.Intersection, entryNode, node);
                     Context.SetLoopNode(loopNode);
                 }
@@ -108,6 +114,75 @@ namespace Car
                 Context.NavigationMode = NavigationMode.Random;
 
             if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
+                MapNavigationPath(node, showNavigationPath);
+        }
+
+        private List<POI> GetAllBusStops()
+        {
+            List<POI> busStops = new List<POI>();
+            
+            foreach(Road road in Context.CurrentRoad.RoadSystem.DefaultRoads)
+            {
+                foreach(POI busStop in road.POIs.FindAll(x => x is BusStop))
+                {
+                    if(!busStops.Contains(busStop))
+                        busStops.Add(busStop);
+                }
+            }
+            
+            busStops.Sort((x, y) => x.name.CompareTo(y.name));
+            return busStops;
+        }
+
+        private List<POI> GetAllParkings()
+        {
+            List<POI> parkings = new List<POI>();
+            
+            foreach(Road road in Context.CurrentRoad.RoadSystem.DefaultRoads)
+            {
+                foreach(POI parking in road.POIs.FindAll(x => x is Parking))
+                {
+                    if(!parkings.Contains(parking))
+                        parkings.Add(parking);
+                }
+            }
+            
+            parkings.Sort((x, y) => x.name.CompareTo(y.name));
+            return parkings;
+        }
+
+        public void GeneratePath(LaneNode node, bool showNavigationPath)
+        {
+            Context.VisitedNavigationNodes.Clear();
+
+            List<NavigationNode> targets = new List<NavigationNode>();
+            List<NavigationNode> navigationNodes = Context.CurrentRoad.RoadSystem.RoadSystemGraph;
+
+            // Temporary: Generate a path to visit all bus stops. If there are no bus stops, visit all parkings instead
+            List<POI> pois = GetAllBusStops();
+            if(pois.Count == 0)
+                pois = GetAllParkings();
+            
+            foreach(POI poi in pois)
+            {
+                NavigationNode poiNavigationNode = navigationNodes.Find(x => x.RoadNode == poi.RoadNode);
+                
+                if(poiNavigationNode != null && !targets.Contains(poiNavigationNode))
+                    targets.Add(poiNavigationNode);
+            }
+
+            // Save the targets
+            Context.NavigationPathTargets.Clear();
+            foreach(NavigationNode target in targets)
+                Context.NavigationPathTargets.Add(target.RoadNode);
+            
+            // Get a random path from the navigation graph
+            Context.NavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targets, out Context.NavigationPathEndNode);
+
+            if (Context.NavigationPath.Count == 0)
+                Context.NavigationMode = NavigationMode.Random;
+
+            if (Context.NavigationMode == NavigationMode.Path)
                 MapNavigationPath(node, showNavigationPath);
         }
 
@@ -237,6 +312,7 @@ namespace Car
         public DrivingAction CurrentAction;
         public NavigationNode NavigationPathEndNode;
         public Stack<NavigationNodeEdge> NavigationPath;
+        public List<RoadNode> NavigationPathTargets;
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
@@ -261,6 +337,7 @@ namespace Car
             CurrentAction = DrivingAction.Stopped;
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
+            NavigationPathTargets = new List<RoadNode>();
             NavigationPathContainer = new GameObject("Navigation Path");
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();

@@ -921,6 +921,7 @@ namespace RoadGenerator
             
             GuideNode guidePath = _intersectionGuidePaths[(current.ID, finalNode.ID)];
             turnDirection = GetTurnDirection(current, finalNode);
+            
             // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
             // never to it, once the vehicle passes the control point and reaches the start point, it can never come back to the control point
             // which is then removed by the garbage collector

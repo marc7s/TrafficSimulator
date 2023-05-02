@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
-using DataModel;
-using POIs;
+using Extensions;
+using System.Linq;
 
 namespace RoadGenerator
 {
@@ -36,7 +36,8 @@ namespace RoadGenerator
     {
         Disabled,
         Random, // Completely random at every intersection
-        RandomNavigationPath // Generates a random path and follows it
+        RandomNavigationPath, // Generates a random path and follows it
+        Path // Follows a specified path, visiting the nodes in order
     }
 
     public static class Navigation
@@ -60,7 +61,7 @@ namespace RoadGenerator
                 AStarNode current = toBeSearched.Dequeue();
                 
                 if (current.Equals(target))
-                    return GetPathToNode(current);
+                    return GetTracedPathFromNode(current);
 
                 // Check all edges from the current node
                 foreach (NavigationNodeEdge edge in current.GraphNode.Edges)
@@ -74,15 +75,17 @@ namespace RoadGenerator
 
                     double costToNode = current.RouteCost + edge.Cost;
                     string pos = edge.EndNavigationNode.RoadNode.Position.ToString();
+                    
                     // If the cost to the end node is lower than the current cost, update the cost and add the node to the queue
                     // If the node is not in the queue, add it
                     if (!costMap.ContainsKey(pos) || costToNode < costMap[pos])
                     {
                         // Update the cost
                         costMap[edge.EndNavigationNode.RoadNode.Position.ToString()] = costToNode;
+                        
                         // Calculate the estimated cost to the target node
                         double estimatedCost = costToNode + Heuristic(edge.EndNavigationNode, target.GraphNode);
-                        // Debug.Log(edge.EndNavigationNode.RoadNode.Position);
+
                         // Add the node to the priority queue
                         AStarNode nextNode = new AStarNode(edge.EndNavigationNode, current, edge, costToNode, estimatedCost);
                         toBeSearched.Enqueue(nextNode);
@@ -98,7 +101,7 @@ namespace RoadGenerator
             return Vector3.Distance(node.RoadNode.Position, targetNode.RoadNode.Position);
         }
         /// <summary> Returns the path from the start node to the target node  </summary>
-        private static Stack<NavigationNodeEdge> GetPathToNode(AStarNode node)
+        private static Stack<NavigationNodeEdge> GetTracedPathFromNode(AStarNode node)
         {
             Stack<NavigationNodeEdge> path = new Stack<NavigationNodeEdge>();
             while (node.NavigationEdge != null)
@@ -116,21 +119,10 @@ namespace RoadGenerator
             {
                 System.Random random = new System.Random();
                 int randomIndex = random.Next(0, nodeList.Count);
-                
-                /*** USED FOR TESTING POIs, CAUSES CARS IN RANDOM NAVIGATION PATH TO ALWAYS DRIVE TO A SELECTED POI IF THE TARGET ROAD HAS ONE ***/
-                NavigationNode originalTargetNode = nodeList[randomIndex];
-                
-                POI parking = originalTargetNode.RoadNode.Road.POIs.Find(x => x is Parking);
-                POI busStop = originalTargetNode.RoadNode.Road.POIs.Find(x => x is BusStop);
-
-                POI targetPOI = parking;
-
-                NavigationNode poiNode = targetPOI == null ? null : nodeList.Find(x => x.RoadNode == targetPOI.RoadNode);
-                NavigationNode targetNode = poiNode == null ? originalTargetNode : poiNode;
-                /*** END OF TESTING CODE ***/
-                
+                NavigationNode targetNode = nodeList[randomIndex];
                 nodeToFind = targetNode;
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge, targetNode);
+                
                 if (path == null)
                     continue;
 
@@ -151,6 +143,64 @@ namespace RoadGenerator
                 if (path.Count > 0)
                     return path;
             }
+            nodeToFind = null;
+            return new Stack<NavigationNodeEdge>();
+        }
+
+        /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
+        public static Stack<NavigationNodeEdge> GetPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, List<NavigationNode> targets, out NavigationNode nodeToFind)
+        {
+            if(targets.Count > 0)
+            {
+                nodeToFind = targets[targets.Count - 1];
+                NavigationNodeEdge sourceEdge = currentEdge;
+                Stack<NavigationNodeEdge> path = new Stack<NavigationNodeEdge>();
+                
+                foreach(NavigationNode target in targets)
+                {
+                    Stack<NavigationNodeEdge> subPath = GetPathToNode(sourceEdge, target);
+                    if(subPath == null)
+                    {
+                        Debug.LogError("Could not find path to target node " + target);
+                        DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
+                        Debug.Log(target.RoadNode.Position);
+                        
+                        continue;
+                    }
+
+                    if(subPath.Count < 1)
+                        continue;
+                    
+                    // Add the source edge to the path if it is not the first target, to bridge between the targets
+                    if(target != targets[0])
+                        subPath.Push(sourceEdge);
+                    
+                    // Append the subpath to the path
+                    path.StackBelow(subPath);
+
+                    List<NavigationNodeEdge> subPathList = subPath.ToList();
+                    NavigationNodeEdge lastSubEdge = subPathList[subPathList.Count - 1];
+                    
+                    sourceEdge = target.PrimaryDirectionEdge.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
+                }
+
+                /** Temporary debug **/
+                Dictionary<string, (Vector3[], Quaternion[])> _groups = new Dictionary<string, (Vector3[], Quaternion[])>();
+                foreach(NavigationNodeEdge edge in path)
+                {
+                    List<Vector3> edgePos = new List<Vector3>();
+                    edgePos.Add(edge.StartNavigationNode.RoadNode.Position);
+                    edgePos.Add(edge.EndNavigationNode.RoadNode.Position);
+                    Quaternion[] rotations = new Quaternion[]{ Quaternion.identity, Quaternion.identity };
+                    
+                    _groups.Add(edge.ID, (edgePos.ToArray(), rotations.ToArray()));
+                }
+                DebugUtility.AddMarkGroups(_groups);
+                /** End of temporary debug **/
+
+                return path;
+            }
+
             nodeToFind = null;
             return new Stack<NavigationNodeEdge>();
         }
