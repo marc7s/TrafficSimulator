@@ -115,7 +115,7 @@ namespace Cam
 
         public override void HandleEscapeInput()
         {
-            CameraManager.ToggleThirdPersonCamera();
+            CameraManager.ToggleFocusCamera();
         }
     }
 }

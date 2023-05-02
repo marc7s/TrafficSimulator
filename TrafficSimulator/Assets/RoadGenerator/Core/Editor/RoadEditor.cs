@@ -27,6 +27,7 @@ namespace RoadEditor
             private SerializedProperty _lampPoleIntervalDistance;
             private SerializedProperty _lampPoleSideDistanceOffset;
             private SerializedProperty _defaultTrafficSignOffset;
+            private SerializedProperty _isOneWay;
         #endregion
 
         private void OnEnable()
@@ -50,6 +51,7 @@ namespace RoadEditor
             _lampPoleIntervalDistance = serializedObject.FindProperty("LampPoleIntervalDistance");
             _lampPoleSideDistanceOffset = serializedObject.FindProperty("LampPoleSideDistanceOffset");
             _defaultTrafficSignOffset = serializedObject.FindProperty("DefaultTrafficSignOffset");
+            _isOneWay = serializedObject.FindProperty("IsOneWay");
         }
         public override void OnInspectorGUI()
         {
@@ -78,6 +80,7 @@ namespace RoadEditor
             EditorGUILayout.PropertyField(_drawLanes);
             EditorGUILayout.PropertyField(_drawRoadNodes);
             EditorGUILayout.PropertyField(_drawLaneNodes);
+            EditorGUILayout.PropertyField(_isOneWay);
 
             
             // Only show the Draw Lane Pointers option if we are drawing lane nodes
@@ -193,7 +196,6 @@ namespace RoadEditor
                 changed = true;
                 road.DrawLaneNodePointers = _drawLaneNodePointers.boolValue;
             }
-            
 
             serializedObject.ApplyModifiedProperties();
 

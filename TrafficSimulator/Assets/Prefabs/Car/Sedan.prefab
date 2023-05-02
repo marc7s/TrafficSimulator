@@ -1833,7 +1833,7 @@ GameObject:
   - component: {fileID: 6997793727484486664}
   - component: {fileID: 8740552995654376748}
   m_Layer: 0
-  m_Name: Car
+  m_Name: Sedan
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1883,15 +1883,15 @@ MonoBehaviour:
   Active: 0
   EndBehaviour: 0
   ShowNavigationPath: 0
-  OriginalNavigationMode: 0
-  LogRepositioningInformation: 1
-  ShowTargetLines: 0
+  OriginalNavigationMode: 2
+  LogRepositioningInformation: 0
+  ShowTargetLines: 4
   BrakeOffset: 3
   MaxRepositioningSpeed: 5
   MaxReverseDistance: 20
   BaseTLD: 8
   TLDSpeedDivider: 20
-  VehicleOccupancyOffset: 2
+  VehicleOccupancyOffset: 3
   Speed: 10
   Acceleration: 7
   TotalDistance: 0

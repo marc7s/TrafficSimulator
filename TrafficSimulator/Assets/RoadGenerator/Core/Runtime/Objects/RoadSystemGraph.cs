@@ -62,7 +62,7 @@ namespace RoadGenerator
                 PrevPrimaryDirectionNode.Edges.Add(edge);
                 PrevPrimaryDirectionNode.PrimaryDirectionEdge = edge;
             }
-            if (PrevSecondaryDirectionNode != null)
+            if (PrevSecondaryDirectionNode != null && newNode.RoadNode.Road.IsOneWay == false)
             {
                 NavigationNodeEdge edge = new NavigationNodeEdge(newNode, PrevSecondaryDirectionNode, cost);
                 newNode.Edges.Add(edge);
@@ -100,7 +100,13 @@ namespace RoadGenerator
                 if (curr.Prev != null)
                     _currentCost += CalculateCost(curr.DistanceToPrevNode);
                 // If the current node is not a node that should be added to the graph, we skip it
-                if (!_roadNodeTypesToAdd.Contains(curr.Type))
+                if (!_roadNodeTypesToAdd.Contains(curr.Type) && !curr.IsNavigationNode)
+                {
+                    curr = curr.Next;
+                    continue;
+                }
+
+                if (curr.Type == RoadNodeType.End && (curr.Next?.Type == RoadNodeType.ThreeWayIntersection || curr.Prev?.Type == RoadNodeType.ThreeWayIntersection))
                 {
                     curr = curr.Next;
                     continue;
