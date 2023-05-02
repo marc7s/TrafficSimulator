@@ -209,6 +209,13 @@ namespace RoadGenerator
             UpdateRoadSystemGraph();
         }
 
+        /// <summary> Setup the POIs for all roads in the road system </summary>
+        public void UpdatePOIs()
+        {
+            foreach(Road road in _defaultRoads)
+                road.UpdateRoadNodes();
+        }
+
         public Intersection AddNewIntersection(IntersectionPointData intersectionPointData)
         {
             GameObject intersectionObject = Instantiate(_intersectionPrefab, intersectionPointData.Position, Quaternion.identity);

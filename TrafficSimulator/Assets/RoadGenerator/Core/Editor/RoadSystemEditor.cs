@@ -50,9 +50,7 @@ namespace RoadSystemGenerator
             }
 
             if(_spawnRoadsAtOrigin.boolValue != roadSystem.SpawnRoadsAtOrigin)
-            {
                 roadSystem.SpawnRoadsAtOrigin = _spawnRoadsAtOrigin.boolValue;
-            }
 
             if(_showGraph.boolValue != roadSystem.ShowGraph)
             {
@@ -61,35 +59,28 @@ namespace RoadSystemGenerator
             }
 
             if(_defaultTrafficLight.objectReferenceValue != (GameObject)roadSystem.DefaultTrafficLightPrefab)
-            {
                 roadSystem.DefaultTrafficLightPrefab = (GameObject)_defaultTrafficLight.objectReferenceValue;
-            }
 
             if(_defaultTrafficLightController.objectReferenceValue != (GameObject)roadSystem.DefaultTrafficLightControllerPrefab)
-            {
                 roadSystem.DefaultTrafficLightControllerPrefab = (GameObject)_defaultTrafficLightController.objectReferenceValue;
-            }
 
             if(_defaultStopSign.objectReferenceValue != (GameObject)roadSystem.DefaultStopSignPrefab)
-            {
                 roadSystem.DefaultStopSignPrefab = (GameObject)_defaultStopSign.objectReferenceValue;
-            }
 
             if(GUILayout.Button("Add new road"))
-            {
                 roadSystem.AddNewRoad(PathType.Road);
-            }
+
             if(GUILayout.Button("Add new rail"))
-            {
                 roadSystem.AddNewRoad(PathType.Rail);
-            }
+
+            if(GUILayout.Button("Update POIs"))
+                roadSystem.UpdatePOIs();
+
 
             serializedObject.ApplyModifiedProperties();
 
             if(changed)
-            {
                 roadSystem.UpdateRoadSystemGraph();
-            }
         }
     }
 }

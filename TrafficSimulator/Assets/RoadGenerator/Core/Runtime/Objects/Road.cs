@@ -154,12 +154,16 @@ namespace RoadGenerator
             {
                 _POIContainer = new GameObject(POI_CONTAINER_NAME);
                 _POIContainer.transform.parent = transform;
-            } else
+            } 
+            else
             {
                 foreach(Transform child in _POIContainer.transform)
-                    child.GetComponent<POI>().Setup();
+                {
+                    POI poi = child.GetComponent<POI>();
+                    poi.Road = this;
+                    poi.Setup();
+                }
             }
-                
             
             foreach(POI poi in POIs)
                 poi.transform.parent = _POIContainer.transform;
