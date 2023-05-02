@@ -3,7 +3,7 @@
     <Style src="project://database/Assets/UI/GeneralTheme.uss?fileID=7433441132597879392&amp;guid=d78cb5c2f4b3da046954bc98f8dde196&amp;type=3#GeneralTheme" />
     <ui:VisualElement style="height: 100%; width: 100%; align-items: center; flex-direction: column; flex-shrink: 0; flex-grow: 1;">
         <ui:VisualElement style="justify-content: center; align-items: center; flex-shrink: 0;">
-            <ui:Label text="Settings" display-tooltip-when-elided="true" style="height: auto; width: auto; font-size: 40px; margin-top: 30px; margin-bottom: 30px; color: rgb(238, 238, 238); padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; margin-left: 30px; margin-right: 30px;" />
+            <ui:Label text="Settings" display-tooltip-when-elided="true" style="height: auto; width: auto; font-size: 40px; margin-top: 30px; margin-bottom: 30px; color: rgb(0, 0, 0); padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; margin-left: 30px; margin-right: 30px;" />
         </ui:VisualElement>
         <ui:VisualElement style="width: 100%; flex-shrink: 0; flex-grow: 1; align-items: center; justify-content: center; height: auto;">
             <ui:VisualElement style="flex-shrink: 0; flex-grow: 0; align-items: center; justify-content: center; width: auto; padding-bottom: 0; top: auto; bottom: 15%;">

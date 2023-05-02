@@ -1,5 +1,5 @@
 .unity-button {
-    background-image: url('project://database/Assets/Unity%20Assets/Graph%20And%20Chart%20-%20Lite%20Edition/Textures/backround4.png?fileID=2800000&guid=23f24f7510ca98041a59d3347484ae21&type=3#backround4');
+    background-image: none;
     border-left-width: 3px;
     border-right-width: 3px;
     border-top-width: 3px;
@@ -33,4 +33,8 @@
     border-right-color: rgb(255, 255, 255);
     border-top-color: rgb(255, 255, 255);
     border-bottom-color: rgb(255, 255, 255);
+}
+
+.unity-text-element {
+    color: rgba(0, 0, 0, 255);
 }

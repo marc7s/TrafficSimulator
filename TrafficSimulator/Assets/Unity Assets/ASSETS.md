@@ -7,3 +7,5 @@
 7. [Real Materials](https://assetstore.unity.com/packages/2d/textures-materials/real-materials-vol-0-free-115597)
 8. [Lowpoly Vintage Streetcar](https://assetstore.unity.com/packages/3d/vehicles/land/lowpoly-vintage-streetcar-183219)
 9. [Graph and Chart - Lite Edition](https://assetstore.unity.com/packages/tools/gui/graph-and-chart-lite-edition-148497)
+10. [Dark Theme UI](https://assetstore.unity.com/packages/2d/gui/dark-theme-ui-199010)
+11. [UX Flat Icons Free](https://assetstore.unity.com/packages/2d/gui/icons/ux-flat-icons-free-202525)
