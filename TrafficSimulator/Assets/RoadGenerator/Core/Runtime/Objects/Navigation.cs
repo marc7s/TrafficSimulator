@@ -153,13 +153,18 @@ namespace RoadGenerator
         {
             if(targets.Count > 0)
             {
+                // The `nodeToFind` is where the final marker will be placed, so place it at the final target
                 nodeToFind = targets[targets.Count - 1];
                 NavigationNodeEdge sourceEdge = currentEdge;
                 Stack<NavigationNodeEdge> path = new Stack<NavigationNodeEdge>();
                 
+                // Go through each target in order, appending the path from the previous target to the current target to the path
                 foreach(NavigationNode target in targets)
                 {
+                    // Get the path from the previous target to the current target
                     Stack<NavigationNodeEdge> subPath = GetPathToNode(sourceEdge, target);
+                    
+                    // Skip the target if no path is found
                     if(subPath == null)
                     {
                         if(logSubPathError)

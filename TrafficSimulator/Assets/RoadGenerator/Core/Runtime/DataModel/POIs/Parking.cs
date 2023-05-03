@@ -26,8 +26,9 @@ namespace POIs
         
         [SerializeField][HideInInspector] protected GameObject _parkNodeContainer;
         private const float PARKING_SIZE = 5f;
-        protected const string PARK_NODE_CONTAINER_NAME = "Park Nodes";
-        protected const string PARK_NODE_NAME = "ParkNode";
+        private const string PARK_NODE_CONTAINER_NAME = "Park Nodes";
+        private const string PARK_NODE_NAME = "ParkNode";
+        
         void Awake()
         {
             Setup();

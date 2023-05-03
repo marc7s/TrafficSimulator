@@ -81,6 +81,7 @@ namespace VehicleBrain
 
         [Header("Debug Settings")]
         public bool LogNavigationErrors = false;
+        [SerializeField] private bool _logParkingFull = false;
         
         // Public variables
         [HideInInspector] public LaneNode CustomStartNode = null;
@@ -129,7 +130,7 @@ namespace VehicleBrain
         {
             Road.RoadSystem.Setup();
 
-            _vehicleController = GetComponent<EVP.VehicleController>();
+            _vehicleController = GetComponent<VehicleController>();
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
             if (Mode == DrivingMode.Quality)
             {
@@ -326,10 +327,12 @@ namespace VehicleBrain
             }
             
             _agent.Context.IsEnteringNetwork = false;
+            
             // Use prev target to store the entry node to the parking
             _prevTarget = parkingEntry;
         }
 
+        /// <summary> Unparks the vehicle from the current parking once it is free to do so </summary>
         private IEnumerator Unpark()
         {
             // Wait until the exit not is not occupied before unparking
@@ -339,6 +342,7 @@ namespace VehicleBrain
             _agent.Context.CurrentParking = null;
             _agent.Context.Activity = VehicleActivity.Driving;
             SetVehicleMovement(true);
+            
             // The entry node to the parking was stored in prev target, so teleport back to that node
             ResetToNode(_prevTarget);
         }
@@ -418,6 +422,7 @@ namespace VehicleBrain
             {
                 if(_occupiedNodes.Contains(node))
                     continue;
+                
                 // Add the span nodes we successfully acquire to the list of occupied nodes until we fail to acquire one, then break
                 // This avoids the vehicle from occupying nodes with gaps between them, which could cause a lockup if the vehicle has acquired nodes in front of and behind another vehicle
                 if(node.SetVehicle(_agent.Setting.Vehicle))
@@ -607,7 +612,8 @@ namespace VehicleBrain
             POINode parkNode = parking.Park(_agent.Setting.Vehicle);
             if(parkNode == null)
             {
-                Debug.Log("Parking full");
+                if(_logParkingFull)
+                    Debug.Log("Parking full");
                 return;
             }
 
@@ -737,7 +743,7 @@ namespace VehicleBrain
                         waitWithTeleporting = _agent.Context.Activity == VehicleActivity.Parked;
 
                         // Queue an event to try unparking the vehicle after a random delay
-                        TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(5, 30) * 1000));
+                        TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(10, 60) * 1000));
                         TimeManager.Instance.AddEvent(unParkEvent);
                         unParkEvent.OnEvent += () => StartCoroutine(Unpark());
                     }

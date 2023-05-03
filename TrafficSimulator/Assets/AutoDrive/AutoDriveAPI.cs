@@ -62,10 +62,15 @@ namespace VehicleBrain
 
             if (Context.NavigationPathEndNode != null && Context.NavigationPathEndNode.RoadNode == node.RoadNode && Context.NavigationPath.Count == 0)
             {
-                if(Context.NavigationMode == NavigationMode.RandomNavigationPath)
-                    UpdateRandomPath(node, showNavigationPath);
-                else if(Context.NavigationMode == NavigationMode.Path)
-                    GeneratePath(node, showNavigationPath);
+                switch(Context.NavigationMode)
+                {
+                    case NavigationMode.RandomNavigationPath:
+                        UpdateRandomPath(node, showNavigationPath);
+                        break;
+                    case NavigationMode.Path:
+                        GeneratePath(node, showNavigationPath);
+                        break;
+                }
             }
 
             if (node.Type == RoadNodeType.JunctionEdge && currentTargetNodeNotChecked)
@@ -110,9 +115,11 @@ namespace VehicleBrain
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetRandomPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), out Context.NavigationPathEndNode);
 
+            // Switch to Random mode if no path could be found
             if (Context.NavigationPath.Count == 0)
                 Context.NavigationMode = NavigationMode.Random;
 
+            // If a path was found we are still in RandomNavigationPath mode, so map the navigation path
             if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
                 MapNavigationPath(node, showNavigationPath);
         }
@@ -162,11 +169,13 @@ namespace VehicleBrain
             List<POI> pois = new List<POI>();
             switch(Setting.VehicleType)
             {
+                // Cars will go to a random parking
                 case VehicleType.Car:
                     List<POI> allParkings = GetAllParkings();
                     if(allParkings.Count > 0)
                         pois.Add(allParkings[Random.Range(0, allParkings.Count)]);
                     break;
+                // Buses will follow their bus route
                 case VehicleType.Bus:
                     pois = (Setting.Vehicle as Bus).BusRoute.ConvertAll(x => (POI)x);
                     break;
@@ -194,9 +203,11 @@ namespace VehicleBrain
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
 
+            // Switch to Random mode if no path could be found
             if (Context.NavigationPath.Count == 0)
                 Context.NavigationMode = NavigationMode.Random;
 
+            // If a path was found we are still in Path mode, so map the navigation path
             if (Context.NavigationMode == NavigationMode.Path)
                 MapNavigationPath(node, showNavigationPath);
         }
@@ -299,7 +310,7 @@ namespace VehicleBrain
         public GameObject NavigationTargetMarker => _navigationTargetMarker;
         public Material NavigationPathMaterial => _navigationPathMaterial;
         
-        public AutoDriveSetting(Vehicle vehicle, VehicleType vehicleType, DrivingMode mode, RoadEndBehaviour endBehaviour, EVP.VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
+        public AutoDriveSetting(Vehicle vehicle, VehicleType vehicleType, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
             _vehicle = vehicle;
             _vehicleType = vehicleType;

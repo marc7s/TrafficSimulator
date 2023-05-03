@@ -79,10 +79,10 @@ namespace RoadGenerator
                 return count;
             }
         }
-        public void AddNavigationEdgeToRoadNodes(NavigationNode startNavigationNode, bool isClosed, bool inPrimaryDirection)
+        public void AddNavigationEdgeToRoadNodes(NavigationNode startNavigationNode, bool isClosed, bool isInPrimaryDirection)
         {
             // Since the start node can be another road if they are connected, we use StartRoadNode and EndRoadNode to get the correct start node
-            RoadNode curr = inPrimaryDirection ? startNavigationNode.RoadNode.Road.StartRoadNode : startNavigationNode.RoadNode.Road.EndRoadNode;
+            RoadNode curr = isInPrimaryDirection ? startNavigationNode.RoadNode.Road.StartRoadNode : startNavigationNode.RoadNode.Road.EndRoadNode;
             NavigationNode prevNavigationNode;
             NavigationNodeEdge currentNavigationNodeEdge = startNavigationNode.Edges[0];
 
@@ -98,17 +98,17 @@ namespace RoadGenerator
                     // We do not want to skip the first node of the road
                     if (curr.Position == startNavigationNode.RoadNode.Position)
                     {
-                        curr = inPrimaryDirection ? curr.Next : curr.Prev;
+                        curr = isInPrimaryDirection ? curr.Next : curr.Prev;
                         continue;
                     }
                     // If the intersection is a threeway intersection at the end of the road
                     if (curr.Type == RoadNodeType.ThreeWayIntersection && (curr.Next?.Type == RoadNodeType.End || curr.Prev?.Type == RoadNodeType.End))
                     {
-                        curr = inPrimaryDirection ? curr.Next : curr.Prev;
+                        curr = isInPrimaryDirection ? curr.Next : curr.Prev;
                         continue;
                     }
 
-                    if (inPrimaryDirection)
+                    if (isInPrimaryDirection)
                     {
                         prevNavigationNode = currentNavigationNodeEdge.EndNavigationNode;
                         currentNavigationNodeEdge = prevNavigationNode.PrimaryDirectionEdge;
@@ -121,7 +121,7 @@ namespace RoadGenerator
                         curr.SecondaryNavigationNodeEdge = currentNavigationNodeEdge;
                     }
 
-                    curr = inPrimaryDirection ? curr.Next : curr.Prev;
+                    curr = isInPrimaryDirection ? curr.Next : curr.Prev;
                     continue;
                 }
 
@@ -129,17 +129,19 @@ namespace RoadGenerator
                 if (curr.IsNavigationNode && !curr.IsIntersection() && isClosed && curr.Next == null)
                 {
                     prevNavigationNode = currentNavigationNodeEdge.EndNavigationNode;
-                    if (inPrimaryDirection)
+                    
+                    if (isInPrimaryDirection)
                         curr.PrimaryNavigationNodeEdge = prevNavigationNode.PrimaryDirectionEdge;
+                    
                     return;
                 }
 
-                if (inPrimaryDirection)
+                if (isInPrimaryDirection)
                     curr.PrimaryNavigationNodeEdge = currentNavigationNodeEdge;
                 else
                     curr.SecondaryNavigationNodeEdge = currentNavigationNodeEdge;
 
-                curr = inPrimaryDirection ? curr.Next : curr.Prev;
+                curr = isInPrimaryDirection ? curr.Next : curr.Prev;
             }
         }
 

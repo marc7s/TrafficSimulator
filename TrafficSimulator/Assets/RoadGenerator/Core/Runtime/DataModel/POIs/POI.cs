@@ -5,10 +5,11 @@ namespace POIs
 {
     abstract public class POI : MonoBehaviour
     {
-        [HideInInspector] public Road Road;
-        [HideInInspector] public RoadNode RoadNode;
+        [Header("Settings")]
         public float DistanceAlongRoad;
         public LaneSide LaneSide = LaneSide.Primary;
+        [HideInInspector] public Road Road;
+        [HideInInspector] public RoadNode RoadNode;
         [HideInInspector] public Vector3 Size;
         
         [Header("Debug Settings")]
@@ -72,6 +73,7 @@ namespace POIs
                 Debug.LogError("Cannot set POI RoadNode to null");
                 return;
             }
+            
             RoadNode = roadNode;
             _moveToRoadNode = moveToRoadNode;
             DistanceAlongRoad = -1;

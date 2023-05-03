@@ -4,6 +4,13 @@ namespace Extensions
 {
     public static class Util
     {
+        /// <summary> Adds a stack on top of this stack. <para />
+        /// <example> 
+        /// Suppose: `stackA` contains 1, 2 and `stackB` contains 3, 4
+        /// <code>stackA.StackOnTop(stackB)</code> will mean `stackA` now looks like 1, 2, 3, 4
+        /// <code>stackB.StackOnTop(stackA)</code> will mean `stackB` now looks like 3, 4, 1, 2
+        /// </example>
+        /// </summary>
         public static void StackOnTop<T>(this Stack<T> stack1, Stack<T> stack2)
         {
             T[] arr = new T[stack2.Count];
@@ -13,6 +20,13 @@ namespace Extensions
                 stack1.Push(arr[i]);
         }
 
+        /// <summary> Adds a stack below this stack. <para />
+        /// <example> 
+        /// Suppose: `stackA` contains 1, 2 and `stackB` contains 3, 4
+        /// <code>stackA.StackBelow(stackB)</code> will mean `stackA` now looks like 3, 4, 1, 2
+        /// <code>stackB.StackOnTop(stackA)</code> will mean `stackB` now looks like 1, 2, 3, 4
+        /// </example>
+        /// </summary>
         public static void StackBelow<T>(this Stack<T> stack1, Stack<T> stack2)
         {
             // Move the original contents of stack1 to a temporary stack

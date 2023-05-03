@@ -164,9 +164,6 @@ namespace RoadGenerator
                     poi.Setup();
                 }
             }
-            
-            foreach(POI poi in POIs)
-                poi.transform.parent = _POIContainer.transform;
         }
 
         public Intersection[] GetIntersections()
@@ -1004,9 +1001,11 @@ namespace RoadGenerator
             float distanceToEndNode = currentNode.GetDistanceToEndOfRoad();
             float? distanceToNextIntersection = DistanceToNextIntersection(currentNode, out Intersection nextIntersection);
             float? distanceToPrevIntersection = null;
+            
             // If the there is an threeway intersection at start
             bool intersectionFound = StartNode.Next.IsIntersection();
             Intersection prevIntersection = null;
+            
             while(currentNode != null)
             {
                 if (currentNode.Road != this)
@@ -1079,6 +1078,7 @@ namespace RoadGenerator
             float distance = 0;
             List<POI> toPlace = new List<POI>(POIs);
             toPlace.Sort((x, y) => x.DistanceAlongRoad.CompareTo(y.DistanceAlongRoad));
+            
             while (toPlace.Count > 0 && curr != null)
             {
                 while (toPlace.Count > 0 && toPlace[0].DistanceAlongRoad <= distance)
@@ -1107,6 +1107,7 @@ namespace RoadGenerator
                     
                     poi.Setup();
                 }
+                
                 distance += curr.DistanceToPrevNode;
                 curr = curr.Next;
             }
