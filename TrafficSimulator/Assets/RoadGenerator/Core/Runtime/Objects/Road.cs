@@ -1083,14 +1083,27 @@ namespace RoadGenerator
             {
                 while (toPlace.Count > 0 && toPlace[0].DistanceAlongRoad <= distance)
                 {
-                    curr.IsNavigationNode = true;
                     POI poi = toPlace[0];
-                    curr.POI = poi;
+                    
+                    // Set the POI's RoadNode depending on if it uses DistanceAlongRoad or not
+                    RoadNode poiNode = poi.UseDistanceAlongRoad ? curr : poi.RoadNode;
+                    
+                    poiNode.IsNavigationNode = true;
+                    
+                    poiNode.POI = poi;
                     toPlace.RemoveAt(0);
-                    poi.RoadNode = curr;
-                    (Vector3 pos, Quaternion rot) = GetPOIOffsetPosition(curr, poi);
-                    poi.transform.position = pos;
-                    poi.transform.rotation = rot;
+                    
+                    // Update the RoadNode if the POI uses DistanceAlongRoad
+                    if(poi.UseDistanceAlongRoad)
+                        poi.RoadNode = poiNode;
+                    
+                    // Only translate the POI if it should be moved
+                    if(poi.MoveToRoadNode)
+                    {
+                        (Vector3 pos, Quaternion rot) = GetPOIOffsetPosition(curr, poi);
+                        poi.transform.position = pos;
+                        poi.transform.rotation = rot;
+                    }
                     
                     poi.Setup();
                 }

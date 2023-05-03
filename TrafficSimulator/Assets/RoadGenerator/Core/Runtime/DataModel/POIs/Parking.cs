@@ -35,7 +35,9 @@ namespace POIs
 
         protected override void CustomSetup()
         {
-            Size = new Vector3(20, 0.1f, 20);
+            if(!_useCustomSize)
+                Size = new Vector3(20, 0.1f, 20);
+            
             GenerateParkingSpots();
             ShowParkNodes();
         }

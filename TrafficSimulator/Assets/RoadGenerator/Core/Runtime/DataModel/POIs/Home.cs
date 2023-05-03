@@ -11,7 +11,8 @@ namespace POIs
 
         protected override void CustomSetup()
         {
-            Size = new Vector3(6, 5, 8);
+            if(!_useCustomSize)
+                Size = new Vector3(6, 5, 8);
         }
     }
 }

@@ -474,7 +474,6 @@ namespace VehicleBrain
                 }
             }
             
-            
             return (forwardNodes, backwardNodes);
         }
 
