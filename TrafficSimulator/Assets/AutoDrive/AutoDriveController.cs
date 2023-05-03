@@ -1,7 +1,7 @@
 using RoadGenerator;
 using System;
 
-namespace Car
+namespace VehicleBrain
 {
     public interface IAutoDriveController<T> where T : System.Enum
     {

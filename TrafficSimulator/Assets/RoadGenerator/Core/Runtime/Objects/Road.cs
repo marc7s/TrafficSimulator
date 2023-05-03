@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using POIs;
 
 
 namespace RoadGenerator
@@ -109,6 +110,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] protected GameObject _roadNodeContainer;
         [SerializeField][HideInInspector] protected GameObject _laneNodeContainer;
         [SerializeField][HideInInspector] protected GameObject _busStopContainer;
+        [SerializeField][HideInInspector] protected GameObject _POIContainer;
         [SerializeField][HideInInspector] protected VertexPath _path;
         [SerializeField][HideInInspector] public PathCreator PathCreator;
         [SerializeField][HideInInspector] protected EndOfPathInstruction _endOfPathInstruction = EndOfPathInstruction.Stop;
@@ -118,7 +120,9 @@ namespace RoadGenerator
         [HideInInspector] public bool IsFirstRoadInClosedLoop = false;
         [HideInInspector] public ConnectedRoad? ConnectedToAtStart;
         [HideInInspector] public ConnectedRoad? ConnectedToAtEnd;
+        [HideInInspector] public List<POI> POIs = new List<POI>();
         [HideInInspector] public bool IsRoadClosed = false;
+        protected const string POI_CONTAINER_NAME = "POIs";
         protected const string LANE_NAME = "Lane";
         protected const string LANE_CONTAINER_NAME = "Lanes";
         protected const string ROAD_NODE_CONTAINER_NAME = "Road Nodes";
@@ -130,6 +134,38 @@ namespace RoadGenerator
         void Awake()
         {
             PathCreator = GetComponent<PathCreator>();
+        }
+
+        private void SetupPOIs()
+        {
+            POIs.Clear();
+            if(_POIContainer == null)
+            {
+                // Try to find the lane container if it has already been created
+                foreach(Transform child in transform)
+                {
+                    if(child.name == POI_CONTAINER_NAME)
+                    {
+                        _POIContainer = child.gameObject;
+                        break;
+                    }
+                }
+            }
+
+            if(_POIContainer == null)
+            {
+                _POIContainer = new GameObject(POI_CONTAINER_NAME);
+                _POIContainer.transform.parent = transform;
+            } 
+            else
+            {
+                foreach(Transform child in _POIContainer.transform)
+                {
+                    POI poi = child.GetComponent<POI>();
+                    poi.Road = this;
+                    poi.Setup();
+                }
+            }
         }
 
         public Intersection[] GetIntersections()
@@ -501,6 +537,7 @@ namespace RoadGenerator
             UpdateRoadNodes();
             UpdateLanes();
             UpdateMesh();
+            
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
             //PlaceTrafficSigns();
@@ -633,6 +670,10 @@ namespace RoadGenerator
             {
                 Vector3 lastPosition = roadBuilder.Curr.Position;
                 Vector3 currPosition = _path.GetPoint(i);
+
+                // Handle if the road has a three way intersection at the start
+                if(i == 0 && queuedNodes.Count > 0 && queuedNodes.Peek().Distance == 0)
+                    insideIntersections.TryAdd(queuedNodes.Peek().Reference, 0);
                 
                 // Add an intersection node if there is an intersection between the previous node and the current node
                 QueuedNode? possibleNextIntersectionNode = queuedNodes.Count > 0 ? queuedNodes.Peek() : null;
@@ -695,9 +736,16 @@ namespace RoadGenerator
 
             EndRoadNode = roadBuilder.Curr;
             ConnectRoadNodesForConnectedRoads();
+
+            SetupPOIs();
+            UpdatePOIs();
+
             // Create a new navigation graph
             _navigationGraph = new RoadNavigationGraph(StartRoadNode);
-            StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, path.IsClosed); 
+            StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.StartNavigationNode, PathCreator.bezierPath.IsClosed, true);
+
+            if (!IsOneWay)
+                StartRoadNode.AddNavigationEdgeToRoadNodes(_navigationGraph.EndNavigationNode, PathCreator.bezierPath.IsClosed, false);
         
             // If an intersection exists on the road, update the intersection junction edge navigation
             if(Intersections.Count > 0)
@@ -950,9 +998,11 @@ namespace RoadGenerator
             float distanceToEndNode = currentNode.GetDistanceToEndOfRoad();
             float? distanceToNextIntersection = DistanceToNextIntersection(currentNode, out Intersection nextIntersection);
             float? distanceToPrevIntersection = null;
+            
             // If the there is an threeway intersection at start
             bool intersectionFound = StartNode.Next.IsIntersection();
             Intersection prevIntersection = null;
+            
             while(currentNode != null)
             {
                 if (currentNode.Road != this)
@@ -1032,6 +1082,58 @@ namespace RoadGenerator
 
             trafficLight.trafficLightController = roadNode.Intersection.TrafficLightController;
             roadNode.TrafficLight = trafficLight;
+        }
+
+        private void UpdatePOIs()
+        {
+            RoadNode curr = StartNode;
+            float distance = 0;
+            List<POI> toPlace = new List<POI>(POIs);
+            toPlace.Sort((x, y) => x.DistanceAlongRoad.CompareTo(y.DistanceAlongRoad));
+            
+            while (toPlace.Count > 0 && curr != null)
+            {
+                while (toPlace.Count > 0 && toPlace[0].DistanceAlongRoad <= distance)
+                {
+                    POI poi = toPlace[0];
+                    
+                    // Set the POI's RoadNode depending on if it uses DistanceAlongRoad or not
+                    RoadNode poiNode = poi.UseDistanceAlongRoad ? curr : poi.RoadNode;
+                    
+                    poiNode.IsNavigationNode = true;
+                    
+                    poiNode.POI = poi;
+                    toPlace.RemoveAt(0);
+                    
+                    // Update the RoadNode if the POI uses DistanceAlongRoad
+                    if(poi.UseDistanceAlongRoad)
+                        poi.RoadNode = poiNode;
+                    
+                    // Only translate the POI if it should be moved
+                    if(poi.MoveToRoadNode)
+                    {
+                        (Vector3 pos, Quaternion rot) = GetPOIOffsetPosition(curr, poi);
+                        poi.transform.position = pos;
+                        poi.transform.rotation = rot;
+                    }
+                    
+                    poi.Setup();
+                }
+                
+                distance += curr.DistanceToPrevNode;
+                curr = curr.Next;
+            }
+        }
+
+        private (Vector3, Quaternion) GetPOIOffsetPosition(RoadNode node, POI poi)
+        {
+            const float sideOffset = 3f;
+            int sideCoef = poi.LaneSide == LaneSide.Primary ? 1 : -1;
+            Bounds bounds = poi.gameObject.GetComponent<Renderer>().bounds;
+            Vector3 position = node.Position + sideCoef * node.Normal * (poi.Size.x / 2 + (int)LaneAmount * LaneWidth + sideOffset);
+            Quaternion rotation = poi.LaneSide == LaneSide.Secondary ? node.Rotation : node.Rotation * Quaternion.Euler(Vector3.up * 180);
+            
+            return (position, rotation);
         }
 
         /// <summary>Draws the lanes as coloured lines </summary>

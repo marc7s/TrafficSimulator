@@ -1,6 +1,7 @@
 using UnityEngine;
 using DataModel;
 using System.Collections.Generic;
+using POIs;
 
 namespace RoadGenerator 
 {
@@ -21,10 +22,12 @@ namespace RoadGenerator
         /// <summary>Creates a new lane node</summary>
         /// <param name="position">The position of the node</param>
         /// <param name="laneSide">The side of the lane this lane node belongs to</param>
+        /// <param name="laneIndex">The index of this lane</param>
         /// <param name="roadNode">The road node this lane node relates to</param>
         /// <param name="prev">The previous lane node. Pass `null` if there is no previous</param>
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
         /// <param name="distanceToPrevNode">The distance to the previous (current end node)</param>
+        /// <param name="isSteeringTarget">If the node should be steered towards or not</param>
         public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode, bool isSteeringTarget = true)
         {
             _position = position;
@@ -52,6 +55,7 @@ namespace RoadGenerator
         public virtual RoadNode RoadNode => _roadNode;
         public RoadNodeType Type => _roadNode.Type;
         public TrafficLight TrafficLight => _roadNode.TrafficLight;
+        public POI POI => _roadNode.POI;
         public virtual Intersection Intersection => _roadNode.Intersection;
         public virtual Vehicle Vehicle => _vehicle;
         public virtual bool IsSteeringTarget => _isSteeringTarget;

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Car
+namespace VehicleBrain
 {
     public class RailFollower : MonoBehaviour
     {
