@@ -907,8 +907,7 @@ namespace RoadGenerator
             List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
             
             // Pick a random guide path
-            System.Random random = new System.Random();
-            int randomLaneNodeIndex = random.Next(0, guidePaths.Count);
+            int randomLaneNodeIndex = UnityEngine.Random.Range(0, guidePaths.Count);
             GuideNode guidePath = guidePaths[randomLaneNodeIndex];
             LaneNode finalNode = guidePath.Last;
 
@@ -939,7 +938,7 @@ namespace RoadGenerator
         {
             if (!_laneNodeFromNavigationNodeEdge.ContainsKey(navigationNodeEdge.ID))
             {
-                Debug.LogError(this + "Error, The navigation node edge does not exist in the intersection: " + navigationNodeEdge.EndNavigationNode.RoadNode.Position);
+                Debug.LogError(this + " Error, The navigation node edge does not exist in the intersection: " + navigationNodeEdge.EndNavigationNode.RoadNode.Position);
                 return (null, null);
             }
             LaneNode finalNode = GetClosestIndexExitNode(_laneNodeFromNavigationNodeEdge[navigationNodeEdge.ID], current.LaneIndex);
@@ -953,6 +952,7 @@ namespace RoadGenerator
             
             GuideNode guidePath = _intersectionGuidePaths[(current.ID, finalNode.ID)];
             turnDirection = GetTurnDirection(current, finalNode);
+            
             // Note that the start node is in fact after the next node, but due to the control point only having pointers from it but
             // never to it, once the vehicle passes the control point and reaches the start point, it can never come back to the control point
             // which is then removed by the garbage collector

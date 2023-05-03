@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Car
+namespace VehicleBrain
 {
     public class PlayerInputController : MonoBehaviour
     {

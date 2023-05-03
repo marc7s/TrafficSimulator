@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Car;
+using VehicleBrain;
 using System.Linq;
 
 namespace RoadGenerator
@@ -9,6 +9,14 @@ namespace RoadGenerator
     {
         Total,
         LaneRatio
+    }
+
+    public enum CarSpawnerNavigationMode
+    {
+        FollowPrefabs,
+        Random,
+        RandomPath,
+        Path
     }
 
     public class CarSpawner : MonoBehaviour
@@ -25,7 +33,12 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
+        [SerializeField] private bool _randomVehicleTypes = true;
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
+        [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
+
+        [Header("Debug Settings")]
+        [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
 
         // Total number of cars to spawn in mode Total
         public int TotalCars = 5;
@@ -59,7 +72,7 @@ namespace RoadGenerator
         
         private void Start()
         {
-            _vehicleTypes = new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab };
+            _vehicleTypes = _randomVehicleTypes ? new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab } : new List<GameObject>(){ _sedanPrefab };
 
             _carLength = GetLongestCarLength(_vehicleTypes);
 
@@ -257,14 +270,32 @@ namespace RoadGenerator
         private void SpawnCar(int index)
         {
             _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-            _currentCar.GetComponent<AutoDrive>().Road = _lanes[index].Road;
-            _currentCar.GetComponent<AutoDrive>().LaneIndex = _indexes[index];
+            AutoDrive autoDrive = _currentCar.GetComponent<AutoDrive>();
+            autoDrive.Road = _lanes[index].Road;
+            autoDrive.LaneIndex = _indexes[index];
 
             // If a custom car is being used as a spawn prefab it should be deactivated to not interfere, so activate this car
             _currentCar.SetActive(true);
 
-            _currentCar.GetComponent<AutoDrive>().CustomStartNode = _laneNodeCurrent;
-            _currentCar.GetComponent<AutoDrive>().Setup();
+            autoDrive.CustomStartNode = _laneNodeCurrent;
+
+            autoDrive.ShowTargetLines = _showTargetLines;
+            
+            // Overwrite the navigation mode if a custom one is set
+            switch(_navigationMode)
+            {
+                case CarSpawnerNavigationMode.Random:
+                    autoDrive.OriginalNavigationMode = NavigationMode.Random;
+                    break;
+                case CarSpawnerNavigationMode.RandomPath:
+                    autoDrive.OriginalNavigationMode = NavigationMode.RandomNavigationPath;
+                    break;
+                case CarSpawnerNavigationMode.Path:
+                    autoDrive.OriginalNavigationMode = NavigationMode.Path;
+                    break;
+            }
+
+            autoDrive.Setup();
         }
 
         /// <summary>Finds next LaneNode in lane after a certain distance</summary>

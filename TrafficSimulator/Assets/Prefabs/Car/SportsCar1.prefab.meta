@@ -1,6 +1,12 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:TrafficSimulator/Assets/Materials/POIs.meta
+guid: d5c235c5236a09d4db4b1a257a4b6995
+folderAsset: yes
+DefaultImporter:
+========
 guid: 9bc5ae1e9360d8f42bf60e5ac73a9293
 PrefabImporter:
+>>>>>>>> main:TrafficSimulator/Assets/Prefabs/Car/SportsCar1.prefab.meta
   externalObjects: {}
   userData: 
   assetBundleName: 

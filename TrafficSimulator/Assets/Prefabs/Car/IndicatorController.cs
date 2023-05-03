@@ -1,7 +1,7 @@
 using UnityEngine;
 using DataModel;
 
-namespace Car
+namespace VehicleBrain
 {
     public enum IndicatorState
     {

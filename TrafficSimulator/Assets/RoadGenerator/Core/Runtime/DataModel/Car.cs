@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using DataModel;
 
-namespace Car 
+namespace DataModel 
 {
     public class Car : Vehicle
     {
@@ -11,12 +8,6 @@ namespace Car
         void Start()
         {
             base.Init();
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            
         }
     }
 }

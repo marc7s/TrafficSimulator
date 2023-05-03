@@ -31,9 +31,11 @@ namespace RoadGenerator
         public NavigationNodeEdge PrimaryDirectionEdge;
 
         public NavigationNodeEdge SecondaryDirectionEdge;
+        public string ID;
         public NavigationNode(RoadNode roadNode)
         {
             this.RoadNode = roadNode;
+            ID = System.Guid.NewGuid().ToString();
         }
     }
     
@@ -48,11 +50,28 @@ namespace RoadGenerator
             if(Nodes.FindAll(x => x.RoadNode.Position == roadNode.Position).Count != 0)
                 return;
 
-            NavigationNode node = new NavigationNode(roadNode);
-            Nodes.Add(node);
-            AddEdges(node, cost);
-            PrevPrimaryDirectionNode = node;
-            PrevSecondaryDirectionNode = node;
+            if (roadNode.IsNavigationNode && roadNode.Type != RoadNodeType.RoadConnection)
+            {
+                NavigationNode nodePrimaryDirection = new NavigationNode(roadNode);
+                NavigationNode nodeSecondaryDirection = new NavigationNode(roadNode);
+                Nodes.Add(nodePrimaryDirection);
+                Nodes.Add(nodeSecondaryDirection);
+                AddEdge(nodePrimaryDirection, cost, true);
+                AddEdge(nodeSecondaryDirection, cost, false);
+                PrevPrimaryDirectionNode = nodePrimaryDirection;
+                PrevSecondaryDirectionNode = nodeSecondaryDirection;
+            }
+            else 
+            {
+                NavigationNode node = new NavigationNode(roadNode);
+                Nodes.Add(node);
+                AddEdges(node, cost);
+                PrevPrimaryDirectionNode = node;
+                PrevSecondaryDirectionNode = node;
+            }
+
+            roadNode.PrimaryNavigationNode = PrevPrimaryDirectionNode;
+            roadNode.SecondaryNavigationNode = PrevSecondaryDirectionNode;
         }
         private void AddEdges(NavigationNode newNode, float cost)
         {
@@ -67,6 +86,28 @@ namespace RoadGenerator
                 NavigationNodeEdge edge = new NavigationNodeEdge(newNode, PrevSecondaryDirectionNode, cost);
                 newNode.Edges.Add(edge);
                 newNode.SecondaryDirectionEdge = edge;
+            }
+        }
+
+        private void AddEdge(NavigationNode newNode, float cost, bool isPrimaryDirection)
+        {
+            if (isPrimaryDirection)
+            {
+                if (PrevPrimaryDirectionNode != null)
+                {
+                    NavigationNodeEdge edge = new NavigationNodeEdge(PrevPrimaryDirectionNode, newNode, cost);
+                    PrevPrimaryDirectionNode.Edges.Add(edge);
+                    PrevPrimaryDirectionNode.PrimaryDirectionEdge = edge;
+                }
+            }
+            else
+            {
+                if (PrevSecondaryDirectionNode != null && newNode.RoadNode.Road.IsOneWay == false)
+                {
+                    NavigationNodeEdge edge = new NavigationNodeEdge(newNode, PrevSecondaryDirectionNode, cost);
+                    newNode.Edges.Add(edge);
+                    newNode.SecondaryDirectionEdge = edge;
+                }
             }
         }
     }
@@ -137,22 +178,18 @@ namespace RoadGenerator
         {
             // The road system graph, key is the positions string representation
             List<NavigationNode> roadSystemGraph = new List<NavigationNode>();
+            
+            // Map the road into the graph
             foreach (Road road in roadSystem.DefaultRoads)
-            {
-                // Map the road into the graph
                 road.UpdateRoadNoGraphUpdate();
-            }
-            // Loop through all roads in the road system
+
+            // Map the roads into the graph
             foreach(Road road in roadSystem.DefaultRoads)
-            {   
-                // Map the road into the graph
                 UpdateGraphForRoad(road, roadSystemGraph);
-            }
+
+            // Map the intersections navigation
             foreach (Intersection intersection in roadSystem.Intersections)
-            {
-                // Map the intersections navigation
                 intersection.MapIntersectionNavigation(); 
-            }
 
             return roadSystemGraph;
         }
@@ -173,9 +210,14 @@ namespace RoadGenerator
                     if (addedFromThisRoad.Find(x => x.RoadNode.Position == node.RoadNode.Position) != null)
                         continue;
                     
-                    node.Edges.AddRange(roadNavigationGraph[i].Edges);
-                    UpdateEdgeEndNode(roadNavigationGraph[i], node.RoadNode.Position, node);
-                    roadNavigationGraph[i] = node;
+                    // For nodes that span over multiple roads, we want to add the edges from the other roads to the node
+                    if (node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.RoadConnection)
+                    {
+                        node.Edges.AddRange(roadNavigationGraph[i].Edges);
+                        UpdateEdgeEndNode(roadNavigationGraph[i], node);
+                        roadNavigationGraph[i] = node;
+                    }
+
 
                     continue;
                 }
@@ -184,14 +226,14 @@ namespace RoadGenerator
             }
         }
 
-        private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, Vector3 oldNodePosition, NavigationNode newNode)
+        private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, NavigationNode newNode)
         {
             foreach (NavigationNodeEdge edge1 in navigationNodeToUpdate.Edges)
             {
                 // Finding the edges with the old node as the end node and updating them to the new node
                 foreach (NavigationNodeEdge edge2 in edge1.EndNavigationNode.Edges)
                 {
-                    if (edge2.EndNavigationNode.RoadNode.Position == oldNodePosition)
+                    if (edge2.EndNavigationNode.ID == navigationNodeToUpdate.ID)
                         edge2.EndNavigationNode = newNode;
                 }
             }

@@ -3,7 +3,7 @@ using RoadGenerator;
 using System;
 using DataModel;
 
-namespace Car
+namespace VehicleBrain
 {
     public enum BrakeEventType
     { 
@@ -46,7 +46,10 @@ namespace Car
 
         private static float GetNodeDistance(LaneNode curr, LaneNode prev)
         {
-            return curr.Type == RoadNodeType.JunctionEdge && curr.Prev.IsIntersection() ? Vector3.Distance(curr.Position, prev.Position) : curr.DistanceToPrevNode;
+            if(curr == null || prev == null)
+                return 0;
+            else
+                return curr.Type == RoadNodeType.JunctionEdge && curr.Prev.IsIntersection() ? Vector3.Distance(curr.Position, prev.Position) : curr.DistanceToPrevNode;
         }
 
         private static float GetBrakeDistance(ref AutoDriveAgent agent)

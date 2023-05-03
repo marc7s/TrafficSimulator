@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
-using Car;
+using VehicleBrain;
 
 namespace CarGenerator
 {
@@ -12,7 +12,6 @@ namespace CarGenerator
             private SerializedProperty _road;
             private SerializedProperty _laneIndex;
             private SerializedProperty _mode;
-            private SerializedProperty _active;
             private SerializedProperty _endBehaviour;
             private SerializedProperty _showNavigationPath;
             private SerializedProperty _originalNavigationMode;
@@ -35,7 +34,6 @@ namespace CarGenerator
             _road = serializedObject.FindProperty("Road");
             _laneIndex = serializedObject.FindProperty("LaneIndex");
             _mode = serializedObject.FindProperty("Mode");
-            _active = serializedObject.FindProperty("Active");
             _endBehaviour = serializedObject.FindProperty("EndBehaviour");
             _showNavigationPath = serializedObject.FindProperty("ShowNavigationPath");
             _originalNavigationMode = serializedObject.FindProperty("OriginalNavigationMode");
@@ -65,7 +63,6 @@ namespace CarGenerator
                 EditorGUILayout.PropertyField(_road);
                 EditorGUILayout.PropertyField(_laneIndex);
                 EditorGUILayout.PropertyField(_mode);
-                EditorGUILayout.PropertyField(_active);
                 EditorGUILayout.PropertyField(_endBehaviour);
             }
 
