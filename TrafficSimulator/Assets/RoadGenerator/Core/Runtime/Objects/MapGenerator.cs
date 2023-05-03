@@ -35,6 +35,7 @@ public struct BuildingData
     public int? BuildingLevels;
 }
 
+
 public enum ServiceType
 {
     DriveWay,
@@ -199,7 +200,7 @@ public class MapGenerator : MonoBehaviour
 
                 if (roads.Value.Count == 2)
                 {
-                   // continue;
+                    continue;
                     Road road1 = roads.Value[0];
                     Road road2 = roads.Value[1];
 
@@ -224,7 +225,7 @@ public class MapGenerator : MonoBehaviour
                 }
                 else if (roads.Value.Count == 3)
                 {
-                    continue;
+
 
                     Road road1 = roads.Value[0];
                     Road road2 = roads.Value[1];
@@ -234,30 +235,42 @@ public class MapGenerator : MonoBehaviour
                     PathCreator pathCreator2 = road2.PathCreator;
                     PathCreator pathCreator3 = road3.PathCreator;
 
-                    Debug.Log("Road 1 length: " + pathCreator1.path.length);
-                    Debug.Log("Road 2 length: " + pathCreator2.path.length);
-                    Debug.Log("Road 3 length: " + pathCreator3.path.length);
-                    if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15 || pathCreator3.path.length < 15)
+                    if (pathCreator1.path.length < 10 || pathCreator2.path.length < 10 || pathCreator3.path.length < 10)
                     {
+                        Debug.Log("Road too short");
                         continue;
                     }
-                    Debug.Log(position + "gdgf");
 
-                    bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
-                    bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
-                    bool isNodeAtEndPointRoad3 = pathCreator3.path.GetPoint(pathCreator3.path.NumPoints - 1) == roads.Key || pathCreator3.path.GetPoint(0) == roads.Key;
+
+                    // Temporary hack, TODO fix
+                    position = position + new Vector3(0, 0, 0.0001f);
+
+                    IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3 });
                     
-                    // If it is an intersection
-                    if (!(isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2 && isNodeAtEndPointRoad3))
+                }
+                else if (roads.Value.Count == 4)
+                {
+         
+                    Road road1 = roads.Value[0];
+                    Road road2 = roads.Value[1];
+                    Road road3 = roads.Value[2];
+                    Road road4 = roads.Value[3];
+
+                    PathCreator pathCreator1 = road1.PathCreator;
+                    PathCreator pathCreator2 = road2.PathCreator;
+                    PathCreator pathCreator3 = road3.PathCreator;
+                    PathCreator pathCreator4 = road4.PathCreator;
+
+                    if (pathCreator1.path.length < 10 || pathCreator2.path.length < 10 || pathCreator3.path.length < 10 || pathCreator4.path.length < 10)
                     {
-                        // Temporary hack, TODO fix
-                        position = position + new Vector3(0, 0, 0.0001f);
-                        Debug.Log("Intersection position" + position);
-                        Debug.Log("road1 not null" + road1);
-                        Debug.Log("road2 not null" + road2);
-                        Debug.Log("road3 not null" + road3);
-                        IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3 });
+                        Debug.Log("Road too short");
+                        continue;
                     }
+
+                    // Temporary hack, TODO fix
+                    position = position + new Vector3(0, 0, 0.0001f);
+
+                    IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3, road4 });
                 }
             }
         }        
@@ -498,8 +511,8 @@ public class MapGenerator : MonoBehaviour
         if (wayData.Name == null && wayData.WayType != WayType.RailTram)
             return;
 
-        //if (wayData.WayType == WayType.RailTram)
-        //    return;
+        if (wayData.WayType == WayType.RailTram)
+            return;
 
         // TotatlLenght of road
         float totalLength = 0;
@@ -507,7 +520,7 @@ public class MapGenerator : MonoBehaviour
         {
             totalLength += Vector3.Distance(roadPoints[i], roadPoints[i + 1]);
         }
-        if (totalLength < 5)
+        if (totalLength < 10)
             return;
 
         // Currently get error when roads have same start and end point, TODO fix

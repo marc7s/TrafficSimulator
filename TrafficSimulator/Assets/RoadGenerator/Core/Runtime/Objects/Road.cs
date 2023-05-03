@@ -904,7 +904,7 @@ namespace RoadGenerator
                 else if (armsFromThisRoad.Count == 1)
                 {
                     bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
-                    bool junctionEdgeEndsIntersection = intersection.Type != IntersectionType.ThreeWayIntersectionAtEnd;
+                    bool junctionEdgeEndsIntersection = intersection.IntersectionPosition == PathCreator.bezierPath.GetFirstAnchorPos();
                     float anchorDistance = _path.GetClosestDistanceAlongPath(armsFromThisRoad[0].JunctionEdgePosition);
                     queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistance, armsFromThisRoad[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
                     queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));

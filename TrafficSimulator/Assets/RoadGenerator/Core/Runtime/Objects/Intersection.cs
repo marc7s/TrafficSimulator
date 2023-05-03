@@ -196,6 +196,7 @@ namespace RoadGenerator
             Debug.Log("------------------------------------");
 #endif           
 
+            Debug.Log("Creating intersection mesh for: " + IntersectionPosition);
 
             // The mesh code is based on the vertice layout found at TrafficSimulator/Assets/RoadGenerator/Documentation/IntersectionMeshGeneration   
 
@@ -315,7 +316,7 @@ namespace RoadGenerator
             }
             else if(Type == IntersectionType.FourWayIntersection)
             {
-                return;
+                
                 // Map out the intersection from the first arms perspective
                 IntersectionArm bottomArm = IntersectionArms[0];
 
@@ -327,7 +328,6 @@ namespace RoadGenerator
                 Vector3 i12 = bottomArm.JunctionEdgePosition + bottomArmRoadNode.Normal * bottomArmRoadHalfWidth;
 
                 bool isWrongDirection = bottomArmRoadNode.Prev.Type == RoadNodeType.FourWayIntersection;
-Debug.Log("gdfhgf");
 
                 IntersectionArm topArm = GetArm(bottomArm.OppositeArmID);
                 RoadNode topArmRoadNode = GetRoadNodeAtIntersectionArm(topArm);
@@ -341,7 +341,6 @@ Debug.Log("gdfhgf");
                     (i5, i12) = (i12, i5);
                     (i8, i9) = (i9, i8);
                 }
-                Debug.Log("gdfhgf");
                 
                 // Find one of the side arms
                 IntersectionArm sideArm = null;
@@ -353,25 +352,24 @@ Debug.Log("gdfhgf");
                         break;
                     }
                 }
-Debug.Log("gdfhgf");
+
                 // Find out which side the side arm is on
                 TurnDirection turnDirection = GetTurnDirection(bottomArmRoadNode.Position - IntersectionPosition, GetRoadNodeAtIntersectionArm(sideArm).Position - IntersectionPosition);
-                Debug.Log("gdfhgf");
                 IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
-                Debug.Log("gdfhgf");
                 RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
-               Debug.Log("gdfhgf");
+
                 float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
                 bool shouldRightArmHaveIntersectionLine = !(rightArmRoadNode.Road.IsOneWay && rightArmRoadNode.Prev.IsIntersection());
 
                 Vector3 i11 = rightArm.JunctionEdgePosition - rightArmRoadNode.Normal * rightArmRoadHalfWidth;
                 Vector3 i10 = rightArm.JunctionEdgePosition + rightArmRoadNode.Normal * rightArmRoadHalfWidth;
-Debug.Log("gdfhgf");
+
                 // Since we don't know the normal direction of the side arm, we need switch if they are in the wrong order
                 if (Vector3.Distance(i11, i12) > Vector3.Distance(i10, i12))
                     (i11, i10) = (i10, i11);
 
                 IntersectionArm leftArm = GetArm(rightArm.OppositeArmID);
+                Debug.Assert(leftArm != null, "Left arm is null" + "Left arm ID:" + rightArm.OppositeArmID);
                 RoadNode leftArmRoadNode = GetRoadNodeAtIntersectionArm(leftArm);
                 float leftArmRoadHalfWidth = leftArm.Road.LaneWidth * (int)leftArm.Road.LaneAmount;
                 bool shouldLeftArmHaveIntersectionLine = !(leftArmRoadNode.Road.IsOneWay && leftArmRoadNode.Prev.IsIntersection());
@@ -381,7 +379,7 @@ Debug.Log("gdfhgf");
 
                 if (Vector3.Distance(i6, i5) > Vector3.Distance(i7, i5))
                     (i7, i6) = (i6, i7);
-Debug.Log("gdfhgf");
+
                 Vector3 road1Dir = (bottomArm.JunctionEdgePosition - topArm.JunctionEdgePosition).normalized;
                 Vector3 road2Dir = (leftArm.JunctionEdgePosition - rightArm.JunctionEdgePosition).normalized;
 
@@ -394,7 +392,7 @@ Debug.Log("gdfhgf");
                 (Vector3, Vector3) i6RoadLine = (i6, road2Dir);
                 (Vector3, Vector3) i10RoadLine = (i10, -road2Dir);
                 (Vector3, Vector3) i11RoadLine = (i11, -road2Dir);
-Debug.Log("gdfhgf");
+
                 // Mid points
                 Vector3 i1 = GetMidPointCorner(i5RoadLine, i6RoadLine);
                 Vector3 i2 = GetMidPointCorner(i8RoadLine, i7RoadLine);
@@ -1063,39 +1061,74 @@ Debug.Log("gdfhgf");
         /// <summary> Sets the opposite arm and the flow group for the arms </summary>
         public void SetupIntersectionArms()
         {
+            List<(float, IntersectionArm)> minDistanceForArm = new List<(float, IntersectionArm)>();
            foreach (IntersectionArm intersectionArm in IntersectionArms)
             {
-                // Consider angles under 5 degrees as straight
-                float straightAngleThreshHold = 5f;
-                float minAngle = straightAngleThreshHold;
+                float minDistance = float.MaxValue;
                 IntersectionArm minAngleArm = null;
+                List<IntersectionArm> usedIntersectionArms = new List<IntersectionArm>();
                 foreach (IntersectionArm otherIntersectionArm in IntersectionArms)
                 {
-
-                    // Direction from junctionEdge to intersection position
-                    Vector3 intersectionArmDirection = intersectionArm.JunctionEdgePosition - IntersectionPosition;
-
-                    // Direction between the two junction edges
-                    Vector3 directionBetweenTheJunctionEdges = intersectionArm.JunctionEdgePosition - otherIntersectionArm.JunctionEdgePosition;
-
                     if (intersectionArm == otherIntersectionArm)
+                        continue;
+
+                    if (usedIntersectionArms.Contains(otherIntersectionArm))
                         continue;
 
                     if (intersectionArm.Road == otherIntersectionArm.Road)
                     {
-                        minAngleArm = otherIntersectionArm;
-                        break;
+                   //     minAngleArm = otherIntersectionArm;
+                   //     break;
                     }
 
-                    float angle = Vector3.Angle(intersectionArmDirection, directionBetweenTheJunctionEdges);
-                    if (angle < minAngle)
+                    Vector3 positionAtHalfWay = Vector3.Lerp(intersectionArm.JunctionEdgePosition, otherIntersectionArm.JunctionEdgePosition, 0.5f);
+                    float distance = Vector3.Distance(positionAtHalfWay, IntersectionPosition);
+                    if (distance < minDistance)
                     {
-                    //    minAngle = angle;
-                    //    minAngleArm = otherIntersectionArm;
+                        minDistance = distance;
+                        minAngleArm = otherIntersectionArm;
+
                     }
                 }
                 if (minAngleArm != null)
+                {
+                    if (minAngleArm.ID == "")
+                        Debug.LogError("Cfdhdfyhttfrdhdrtfyhgfd" + IntersectionPosition);
                     intersectionArm.OppositeArmID = minAngleArm.ID;
+                    minDistanceForArm.Add((minDistance, minAngleArm));
+                    usedIntersectionArms.Add(minAngleArm);
+                }
+                else if (Type == IntersectionType.FourWayIntersection)
+                {
+                    Debug.LogError("Could not find opposite arm for arm " + IntersectionPosition);
+                }
+
+                
+            }
+
+            // Special case for three way intersections
+            // We need to find the arm that should not have a opposite arm and set it to null
+            if (IsThreeWayIntersection())
+            {
+                foreach ((float, IntersectionArm) distanceForArm in minDistanceForArm)
+                {
+                    bool isValidArm = false;
+                    foreach ((float, IntersectionArm) otherDistanceForArm in minDistanceForArm)
+                    {
+                        if (distanceForArm.Item2 == otherDistanceForArm.Item2)
+                            continue;
+
+                        if (distanceForArm.Item1 - otherDistanceForArm.Item1 < 0.01f)
+                        {
+                            isValidArm = true;
+                            break;
+                        }
+                    }
+                    if (!isValidArm)
+                    {
+                        distanceForArm.Item2.OppositeArmID = "";
+                    }
+                }
             }
 
             bool isFirstIteration = true;
