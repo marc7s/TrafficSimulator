@@ -36,6 +36,7 @@ namespace POIs
                 if(!Road.POIs.Contains(this))
                     Road.POIs.Add(this);
             }
+            
             // Try to find the road node container if it has already been created
             foreach(Transform child in transform)
             {

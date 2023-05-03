@@ -23,9 +23,9 @@ namespace POIs
         public bool DrawParkNodes = false;
         
         private List<POINode> _parkingSpots = new List<POINode>();
-        private const float parkingSize = 5f;
         
         [SerializeField][HideInInspector] protected GameObject _parkNodeContainer;
+        private const float PARKING_SIZE = 5f;
         protected const string PARK_NODE_CONTAINER_NAME = "Park Nodes";
         protected const string PARK_NODE_NAME = "ParkNode";
         void Awake()
@@ -47,12 +47,13 @@ namespace POIs
             _parkingSpots.Clear();
             float sideOffset = Size.z / 2;
             Vector3 startPos = transform.position + transform.right * sideOffset;
+            
             for(int side = 0; side < 2; side++)
             {
-                for(float i = parkingSize / 2; i < Size.z; i += parkingSize)
+                for(float i = PARKING_SIZE / 2; i < Size.z; i += PARKING_SIZE)
                 {
                     int sideCoef = side == 0 ? -1 : 1;
-                    Vector3 sideOffsetVector = transform.forward * (sideOffset + sideCoef * parkingSize / 2);
+                    Vector3 sideOffsetVector = transform.forward * (sideOffset + sideCoef * PARKING_SIZE / 2);
                     Vector3 forwardOffsetVector = -transform.right * Size.x + transform.right * i;
                     
                     Quaternion rotation = transform.rotation * (side == 0 ? Quaternion.Euler(Vector3.up * 180) : Quaternion.identity);

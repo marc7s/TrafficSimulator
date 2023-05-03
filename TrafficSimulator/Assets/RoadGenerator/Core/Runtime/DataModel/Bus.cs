@@ -12,12 +12,6 @@ namespace DataModel
         {
             base.Init();
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-            
-        }
     }
 }
 

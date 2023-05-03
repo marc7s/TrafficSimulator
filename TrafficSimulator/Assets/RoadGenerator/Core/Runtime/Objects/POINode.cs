@@ -33,6 +33,7 @@ namespace RoadGenerator
                 _vehicle = vehicle;
                 return true;
             }
+            
             return false;
         }
 
@@ -44,6 +45,7 @@ namespace RoadGenerator
                 _vehicle = null;
                 return true;
             }
+            
             Debug.LogError("Trying to unset a different vehicle");
             return false;
         }
