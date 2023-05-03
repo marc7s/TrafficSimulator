@@ -17,6 +17,7 @@ namespace Simulation
         public SunMode _sunMode = SunMode.Day;
 
         private Quaternion _currentSunRotation;
+        private const int SUN_INCREMENT_ROTATION_BY_HOUR = 360 / 24;
 
         void Start()
         {
@@ -48,7 +49,7 @@ namespace Simulation
         {
             // Increment sun position by 15 degrees (1 hour)
             if (_sunMode == SunMode.Time)
-                _currentSunRotation *= Quaternion.Euler(15, 0, 0);
+                _currentSunRotation *= Quaternion.Euler(SUN_INCREMENT_ROTATION_BY_HOUR, 0, 0);
             
             transform.rotation = _currentSunRotation;
         }
