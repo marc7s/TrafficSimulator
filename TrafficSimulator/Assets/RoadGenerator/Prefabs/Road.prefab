@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: -8363121987229429450}
   - component: {fileID: 2968229505203983963}
   - component: {fileID: 7630693440652114141}
+  - component: {fileID: 6545850279213937790}
   m_Layer: 6
   m_Name: Road
   m_TagString: Untagged
@@ -255,6 +256,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c10b2344861a73409651f16c69784b9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <CurrentFuelConsumption>k__BackingField: 0
+  _totalFuelConsumption: 0
+--- !u!114 &6545850279213937790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 459f7424166e2034e913845c8b81615f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ColorChangeSensitivityFactor: 1
+  EmissionEnabled: 0
+  ColorTransitionDuration: 0.5
+  MaxRedValue: 1
 --- !u!1 &6099411683997650963
 GameObject:
   m_ObjectHideFlags: 0

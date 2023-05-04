@@ -1444,6 +1444,7 @@ GameObject:
   - component: {fileID: 412107769271382469}
   - component: {fileID: 6997793727484486664}
   - component: {fileID: 8740552995654376748}
+  - component: {fileID: -7087031283184997306}
   m_Layer: 0
   m_Name: Van2
   m_TagString: Untagged
@@ -1488,13 +1489,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed2077f9a1d00454da03e178dd2ee3f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Road: {fileID: 0}
+  _road: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
   NavigationPathMaterial: {fileID: 0}
   LaneIndex: 0
   _mesh: {fileID: 9195729851751745324}
   Mode: 1
-  Active: 0
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 2
@@ -1509,6 +1509,8 @@ MonoBehaviour:
   Speed: 10
   Acceleration: 7
   TotalDistance: 0
+  LogNavigationErrors: 0
+  _logParkingFull: 0
 --- !u!54 &1577973480894095029
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1988,6 +1990,7 @@ MonoBehaviour:
   _idlingRPM: 650
   _maxFuelCapacity: 60
   _totalFuelConsumed: 0
+  FuelConsumedSinceLastFrame: 0
 --- !u!114 &6997793727484486664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2022,6 +2025,18 @@ MonoBehaviour:
   - {fileID: 1107469039499343399}
   - {fileID: 6371984343124634957}
   _intervalTime: 0.5
+--- !u!114 &-7087031283184997306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577973480899275759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f24a7555773d9b44bb21c544c9557941, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1577973480899420503
 GameObject:
   m_ObjectHideFlags: 0
