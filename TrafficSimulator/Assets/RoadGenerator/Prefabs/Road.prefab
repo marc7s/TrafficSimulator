@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: -7222773781664253429}
   - component: {fileID: -8363121987229429450}
   - component: {fileID: 2968229505203983963}
+  - component: {fileID: 7630693440652114141}
   m_Layer: 6
   m_Name: Road
   m_TagString: Untagged
@@ -78,11 +79,13 @@ MonoBehaviour:
   _laneContainer: {fileID: 0}
   _roadNodeContainer: {fileID: 0}
   _laneNodeContainer: {fileID: 0}
+  _POIContainer: {fileID: 0}
   PathCreator: {fileID: 4211003387211000974}
   _endOfPathInstruction: 2
   Intersections: []
   _length: 0
   IsFirstRoadInClosedLoop: 0
+  POIs: []
   IsRoadClosed: 0
   _speedSignTenKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
@@ -240,6 +243,18 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &7630693440652114141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c10b2344861a73409651f16c69784b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6099411683997650963
 GameObject:
   m_ObjectHideFlags: 0
