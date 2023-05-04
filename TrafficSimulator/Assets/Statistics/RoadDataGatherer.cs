@@ -21,7 +21,6 @@ public class RoadDataGatherer : MonoBehaviour
         if (!_registeredVehicles.Contains(vehicle))
         {
             _registeredVehicles.Add(vehicle);
-            Debug.Log("Vehicle registered: " + vehicle.name);
         }
     }
 
@@ -30,7 +29,6 @@ public class RoadDataGatherer : MonoBehaviour
         if (_registeredVehicles.Contains(vehicle))
         {
             _registeredVehicles.Remove(vehicle);
-            Debug.Log("Vehicle unregistered: " + vehicle.name);
         }
     }
 
