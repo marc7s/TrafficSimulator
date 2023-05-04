@@ -49,8 +49,19 @@ namespace VehicleBrain
             Repositioning
         }
 
+        // Used for road registration
+        public delegate void RoadChangedDelegate(Road newRoad);
+        public RoadChangedDelegate OnRoadChanged;
+        
         [Header("Connections")]
-        public Road Road;
+        [SerializeField]
+        private Road _road;
+        
+        public Road Road
+        {
+            get => _road;
+            set => SetRoad(value);
+        }
         public GameObject NavigationTargetMarker;
         public Material NavigationPathMaterial;
         public int LaneIndex = 0;
@@ -224,6 +235,15 @@ namespace VehicleBrain
             
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
+        }
+        
+        private void SetRoad(Road newRoad)
+        {
+            if (_road != newRoad)
+            {
+                _road = newRoad;
+                OnRoadChanged?.Invoke(_road);
+            }
         }
 
         private void UpdateIndicators()
