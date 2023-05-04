@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using System;
 using UnityEngine;
 using EVP;
@@ -29,7 +31,7 @@ namespace VehicleBrain {
         private Rigidbody _rigidbody;
         public float _maxFuelCapacity = 60; // L
         public double _totalFuelConsumed = 0;
-        private float _fuelConsumed = 0;
+        public float FuelConsumedSinceLastFrame = 0;
         private Vector3 _lastPosition = Vector3.zero;
 
         // Vehicle specific values used in the fuel consumption calculation
@@ -53,7 +55,7 @@ namespace VehicleBrain {
             _lastPosition = transform.position;
             if (_fuelMode == FuelMode.Realistic)
             {
-                Q_CalculateIdleFuelConsumption();
+                Q_calculateIdleFuelConsumption();
             }
         }
 
@@ -62,24 +64,24 @@ namespace VehicleBrain {
         {
             if (_fuelMode == FuelMode.Realistic)
             {
-                Q_CalculateResistance();
-                Q_CalculateFuelConsumption();
+                Q_calculateResistance();
+                Q_calculateFuelConsumption();
             }
             else
             {
-                P_CalculateFuelConsumption();
+                P_calculateFuelConsumption();
             }
-            UpdateVariables();
+            updateVariables();
         }
 
-        private void UpdateVariables()
+        private void updateVariables()
         {
             _lastSpeed = _vehicleController.speed;
             _lastPosition = transform.position;
         }
 
         // Calculate the fuel consumed since last frame and add it to the total fuel consumed
-        private void P_CalculateFuelConsumption()
+        private void P_calculateFuelConsumption()
         {
             // TODO 
             // calculate the distance more accurately
@@ -87,24 +89,24 @@ namespace VehicleBrain {
             // If the vehicle is not moving, calculate the fuel consumed at idle per second
             if (_vehicleController.speed < 0.1f)
             {
-                _fuelConsumed = _fuelConsumptionAtIdle * Time.deltaTime / 3600;
+                FuelConsumedSinceLastFrame = _fuelConsumptionAtIdle * Time.deltaTime / 3600;
             }
             // If the vehicle is moving at a low speed, calculate the fuel consumed at city speed per 100km
             else if (_vehicleController.speed < 20)
             {
                 float distance = Vector3.Distance(_lastPosition, transform.position);
-                _fuelConsumed = _fuelConsumptionCity * distance / 100000;
+                FuelConsumedSinceLastFrame = _fuelConsumptionCity * distance / 100000;
             }
             // If the vehicle is moving at a high speed, calculate the fuel consumed at highway speed per 100km
             else
             {
                 float distance = Vector3.Distance(_lastPosition, transform.position);
-                _fuelConsumed = _fuelConsumptionHighway * distance / 100000;
+                FuelConsumedSinceLastFrame = _fuelConsumptionHighway * distance / 100000;
             }
-            _totalFuelConsumed += _fuelConsumed;
+            _totalFuelConsumed += FuelConsumedSinceLastFrame;
         }
 
-        private void Q_CalculateFuelConsumption()
+        private void Q_calculateFuelConsumption()
         {
             // TODO
             // Decice wheter to keep the realistic fuel consumption model and if so
@@ -117,17 +119,18 @@ namespace VehicleBrain {
             _averageAcceleration = MathF.Max((_vehicleController.speed - _lastSpeed) /Time.deltaTime, 0);
 
             // Calculate the fuel consumed since last frame and add it to the total fuel consumed
-            _fuelConsumed = MathF.Max(_averageAcceleration * Time.deltaTime / 1000, _idleFuelConsumption * Time.deltaTime);
-            _totalFuelConsumed += _fuelConsumed;
+            FuelConsumedSinceLastFrame = MathF.Max(_averageAcceleration * Time.deltaTime / 1000, _idleFuelConsumption * Time.deltaTime);
+            _totalFuelConsumed += FuelConsumedSinceLastFrame;
+            
         }
 
-        private void Q_CalculateIdleFuelConsumption()
+        private void Q_calculateIdleFuelConsumption()
         {
             // Calculate the idle fuel consumption
             _idleFuelConsumption = (_fuelMeanPressure * _idlingRPM * _engineDisplacement) / (22164 * _numberOfCylinders * _fuelLowerHeatingValue);
         }
 
-        private void Q_CalculateResistance()
+        private void Q_calculateResistance()
         {
             // Calculate the resistance
             _resistance = (float) (_airDensity / 25.92) * _vehicleDragCoeff * _frontalArea * MathF.Pow(_vehicleController.speed, 2) + _vehicleWeight * 9.81f * (0.01f / 1000) * (0.0328f * _vehicleController.speed + 4.575f) + _vehicleWeight * 9.81f * transform.rotation.x;
