@@ -84,7 +84,7 @@ namespace RoadGenerator
         public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
         public bool GenerateSpeedSigns = true;
         // If two road endpoints are within this distance of each other, they will be connected
-        public float ConnectionDistanceThreshold = 3f;
+        public float ConnectionDistanceThreshold = 0f;
         public bool IsOneWay = false;
 
         [Header ("Traffic sign settings")]
@@ -194,8 +194,9 @@ namespace RoadGenerator
             // Do nothing when nodes are moved
         }
         /// <summary>Connects this road with any other roads that have their endpoint close to this roads end points </summary>
-        protected void ConnectRoadIfEndPointsAreClose()
+        public void ConnectRoadIfEndPointsAreClose()
         {
+            Debug.Log("ConnectRoadIfEndPointsAreClose" + this);
             // Find and map the connected roads
             MapConnectedRoads();
 
@@ -242,6 +243,9 @@ namespace RoadGenerator
                 foreach (Road road in roadsToCheck)
                 {
                     if (road == currentRoad)
+                        continue;
+
+                    if (road.IsOneWay != currentRoad.IsOneWay)
                         continue;
 
                     currentRoad.UpdateStartConnectionRoad(road);
@@ -951,8 +955,9 @@ namespace RoadGenerator
                 }
                 else if (armsFromThisRoad.Count == 1)
                 {
-                    bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
                     bool junctionEdgeEndsIntersection = intersection.IntersectionPosition == PathCreator.bezierPath.GetFirstAnchorPos();
+                    bool endsIntersection = !junctionEdgeEndsIntersection;
+
                     float anchorDistance = _path.GetClosestDistanceAlongPath(armsFromThisRoad[0].JunctionEdgePosition);
                     queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistance, armsFromThisRoad[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
                     queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));

@@ -197,10 +197,8 @@ public class MapGenerator : MonoBehaviour
             // This will mean it will either be an intersection or a road connection
             if (roads.Value.Count > 1)
             {
-
                 if (roads.Value.Count == 2)
                 {
-                    continue;
                     Road road1 = roads.Value[0];
                     Road road2 = roads.Value[1];
 
@@ -225,8 +223,6 @@ public class MapGenerator : MonoBehaviour
                 }
                 else if (roads.Value.Count == 3)
                 {
-
-
                     Road road1 = roads.Value[0];
                     Road road2 = roads.Value[1];
                     Road road3 = roads.Value[2];
@@ -250,7 +246,7 @@ public class MapGenerator : MonoBehaviour
                 }
                 else if (roads.Value.Count == 4)
                 {
-         
+
                     Road road1 = roads.Value[0];
                     Road road2 = roads.Value[1];
                     Road road3 = roads.Value[2];
@@ -273,7 +269,25 @@ public class MapGenerator : MonoBehaviour
                     IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3, road4 });
                 }
             }
-        }        
+        }
+
+        foreach (var roads in roadsAtNode) 
+        {
+            if (roads.Value.Count == 2)
+            {
+                Road road1 = roads.Value[0];
+                Road road2 = roads.Value[1];
+                PathCreator pathCreator1 = road1.PathCreator;
+                PathCreator pathCreator2 = road2.PathCreator;
+
+                bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
+                bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
+                if (isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2)
+                {
+                //    road1.ConnectRoadIfEndPointsAreClose();
+                }
+            }
+        }
     }
 
     public void AddBusStops()

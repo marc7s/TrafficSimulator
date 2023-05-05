@@ -195,7 +195,6 @@ namespace RoadGenerator
             PrintRoadNodes(Road2.StartNode);
             Debug.Log("------------------------------------");
 #endif           
-
             Debug.Log("Creating intersection mesh for: " + IntersectionPosition);
 
             // The mesh code is based on the vertice layout found at TrafficSimulator/Assets/RoadGenerator/Documentation/IntersectionMeshGeneration   
@@ -227,7 +226,7 @@ namespace RoadGenerator
                 // If the intersection is at the start of the road, the vertices needs to be swapped as the normal will be in the opposite direction
                 if (Type == IntersectionType.ThreeWayIntersectionAtStart)
                     (i5, i10) = (i10, i5);
-                
+     
                 // Find one of the side arms
                 IntersectionArm sideArm = null;
                 foreach(IntersectionArm intersectionArm in IntersectionArms)
@@ -298,8 +297,8 @@ namespace RoadGenerator
                 (float, float) i6UV = (shouldLeftArmHaveIntersectionLine ? 1 : 0, 0f);
 
                 // Right arm
-                (float, float) i8UV = (rightArmRoadNode.Road.IsOneWay && shouldRightArmHaveIntersectionLine ? 1 : 0 , 0);
-                (float, float) i9UV = (shouldRightArmHaveIntersectionLine ? 1 : 0, 0f);
+                (float, float) i8UV = (shouldRightArmHaveIntersectionLine ? 1 : 0, 0f);
+                (float, float) i9UV = (rightArmRoadNode.Road.IsOneWay && shouldRightArmHaveIntersectionLine ? 1 : 0 , 0);
 
                 uvs.AddRange(CreateUVList(new List<(float, float)>(){
                     (1, 0.99f),  (1, 0.99f), (1, 0.99f), (1, 0.99f),
@@ -308,6 +307,7 @@ namespace RoadGenerator
 
                 foreach(Vector3 vert in verts)
                     normals.Add(Vector3.up);
+
 
                 AddTrianglesForRectangle(topTris, 5, 10, 1, 4);
                 AddTrianglesForRectangle(topTris, 7, 6, 2, 1);
@@ -676,7 +676,6 @@ namespace RoadGenerator
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
-            Debug.Log("Mapping intersection navigation" + this + this.IntersectionPosition);
             // Map the lane node to take in order to get to the navigation node edge
             _laneNodeFromNavigationNodeEdge.Clear();
 
@@ -1061,8 +1060,8 @@ namespace RoadGenerator
         /// <summary> Sets the opposite arm and the flow group for the arms </summary>
         public void SetupIntersectionArms()
         {
-            List<(float, IntersectionArm)> minDistanceForArm = new List<(float, IntersectionArm)>();
-           foreach (IntersectionArm intersectionArm in IntersectionArms)
+            Debug.Log("Setting up intersection arms for intersection: " + this);
+            foreach (IntersectionArm intersectionArm in IntersectionArms)
             {
                 float minDistance = float.MaxValue;
                 IntersectionArm minAngleArm = null;
@@ -1077,8 +1076,8 @@ namespace RoadGenerator
 
                     if (intersectionArm.Road == otherIntersectionArm.Road)
                     {
-                   //     minAngleArm = otherIntersectionArm;
-                   //     break;
+                        minAngleArm = otherIntersectionArm;
+                        break;
                     }
 
                     Vector3 positionAtHalfWay = Vector3.Lerp(intersectionArm.JunctionEdgePosition, otherIntersectionArm.JunctionEdgePosition, 0.5f);
@@ -1092,10 +1091,7 @@ namespace RoadGenerator
                 }
                 if (minAngleArm != null)
                 {
-                    if (minAngleArm.ID == "")
-                        Debug.LogError("Cfdhdfyhttfrdhdrtfyhgfd" + IntersectionPosition);
                     intersectionArm.OppositeArmID = minAngleArm.ID;
-                    minDistanceForArm.Add((minDistance, minAngleArm));
                     usedIntersectionArms.Add(minAngleArm);
                 }
                 else if (Type == IntersectionType.FourWayIntersection)
@@ -1106,27 +1102,40 @@ namespace RoadGenerator
                 
             }
 
+            if (Type == IntersectionType.FourWayIntersection)
+            {
+                foreach (IntersectionArm intersectionArm in IntersectionArms)
+                {
+                    if (intersectionArm.OppositeArmID == "")
+                    {
+                        Debug.LogError("Could not find opposite arm for arm " + IntersectionPosition);
+                    }
+                }
+            }
+
             // Special case for three way intersections
             // We need to find the arm that should not have a opposite arm and set it to null
             if (IsThreeWayIntersection())
             {
-                foreach ((float, IntersectionArm) distanceForArm in minDistanceForArm)
+                foreach(IntersectionArm intersectionArm in IntersectionArms)
                 {
-                    bool isValidArm = false;
-                    foreach ((float, IntersectionArm) otherDistanceForArm in minDistanceForArm)
+                    if (intersectionArm.OppositeArmID == "")
+                        continue;
+                    
+                    if (GetArm(intersectionArm.OppositeArmID).OppositeArmID != intersectionArm.ID)
                     {
-                        if (distanceForArm.Item2 == otherDistanceForArm.Item2)
-                            continue;
-
-                        if (distanceForArm.Item1 - otherDistanceForArm.Item1 < 0.01f)
-                        {
-                            isValidArm = true;
-                            break;
-                        }
+                        intersectionArm.OppositeArmID = "";
                     }
-                    if (!isValidArm)
+                }
+            }
+
+            if (IsThreeWayIntersection())
+            {
+                foreach (IntersectionArm intersectionArm in IntersectionArms)
+                {
+                    if (intersectionArm.OppositeArmID == "")
                     {
-                        distanceForArm.Item2.OppositeArmID = "";
+                        Type = IntersectionCreator.GetThreeWayIntersectionType(intersectionArm.Road.PathCreator, intersectionArm.Road.PathCreator.path.GetClosestDistanceAlongPath(IntersectionPosition));
                     }
                 }
             }
@@ -1149,7 +1158,46 @@ namespace RoadGenerator
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
                 }
                 isFirstIteration = false;
-            }           
+            }   
+
+
+
+            GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = IntersectionPosition;
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            IntersectionArm arm0 = IntersectionArms[0];
+            cube.transform.position = arm0.JunctionEdgePosition;
+            Vector3 pos = arm0.JunctionEdgePosition;
+            IntersectionArm arm2 = null;
+            foreach (IntersectionArm intersectionArm in IntersectionArms)
+            {
+                if (intersectionArm == arm0)
+                    continue;
+                
+                if (intersectionArm.OppositeArmID == "")
+                    continue;
+                
+                if (intersectionArm.OppositeArmID == arm0.ID)
+                {
+                    GameObject cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cube2.transform.position = intersectionArm.JunctionEdgePosition;
+                    cube2.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                    continue;
+                }
+                else if (arm2 == null)
+                {
+                    GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = intersectionArm.JunctionEdgePosition;
+                    arm2 = intersectionArm;
+                }
+                if (arm2 != null &&  intersectionArm.OppositeArmID == arm2.ID)
+                {
+                    GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = intersectionArm.JunctionEdgePosition;
+
+                    continue;
+                }
+            }
+
+
         }
 
         private List<Vector3> GetJunctionEdgesPositionForRoad(Road road)

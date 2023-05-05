@@ -64,7 +64,7 @@ namespace RoadGenerator
             return intersectionPointDatas;
         }
 
-        static IntersectionType GetThreeWayIntersectionType(PathCreator pathCreator, float distanceAlongPath)
+        public static IntersectionType GetThreeWayIntersectionType(PathCreator pathCreator, float distanceAlongPath)
         {
             bool isAtEnd = Mathf.Abs(pathCreator.path.length - distanceAlongPath) < distanceAlongPath;
             
@@ -87,6 +87,9 @@ namespace RoadGenerator
                 else
                     type = GetThreeWayIntersectionType(road1.PathCreator, road1.PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition));
             }
+            if (junctionEdgeDatas.Count < 3)
+                Debug.LogError("Intersection has less than 3 junction edges" + intersectionPosition);
+
 
             return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
         }
@@ -105,6 +108,10 @@ namespace RoadGenerator
 
 
             IntersectionType type = IntersectionType.FourWayIntersection;
+            if (junctionEdgeDatas.Count == 3)
+            {
+                type = IntersectionType.ThreeWayIntersectionAtStart;
+            }
             return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
         }
 
