@@ -19,7 +19,15 @@ namespace RoadGenerator
     public enum FlowType
     {
         TrafficLights,
-        StopSigns
+        StopSigns,
+        YieldSigns
+    }
+
+    public enum YieldType
+    {
+        TrafficLights,
+        RightPriority,
+        Yielding
     }
 
     [Serializable]
@@ -57,7 +65,48 @@ namespace RoadGenerator
         [HideInInspector] public LaneNode _intersectionCenterLaneNode;
         [HideInInspector] private Dictionary<string, Section> _intersectionExitSections = new Dictionary<string, Section>();
         [HideInInspector] private Dictionary<string, RoadNode> _intersectionGuideRoadNodes = new Dictionary<string, RoadNode>();
-        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths = new Dictionary<(string, string), GuideNode>();
+        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePathsTrafficLights = new Dictionary<(string, string), GuideNode>();
+        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePathsRightPriority = new Dictionary<(string, string), GuideNode>();
+        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePathsYielding = new Dictionary<(string, string), GuideNode>();
+        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths
+        {
+            get {
+                switch(YieldType)
+                {
+                    case YieldType.TrafficLights:
+                        return _intersectionGuidePathsTrafficLights;
+                    case YieldType.RightPriority:
+                        return _intersectionGuidePathsRightPriority;
+                    case YieldType.Yielding:
+                        return _intersectionGuidePathsYielding;
+                    default:
+                        return _intersectionGuidePathsRightPriority;
+                }
+            }
+        }
+
+        public YieldType YieldType
+        {
+            get {
+                switch(FlowType)
+                {
+                    case FlowType.TrafficLights:
+                        return YieldType.TrafficLights;
+                    case FlowType.StopSigns:
+                        return YieldType.Yielding;
+                    case FlowType.YieldSigns:
+                        return YieldType.Yielding;
+                    default:
+                        Debug.LogError("Error, could not convert FlowType to YieldType");
+                        return YieldType.RightPriority;
+                }
+            }
+        }
+
+        public bool YieldAtJunctionEdge
+        {
+            get => YieldType == YieldType.Yielding || YieldType == YieldType.RightPriority;
+        }
 
         [ReadOnly] public IntersectionType Type;
         [HideInInspector] public TrafficLightController TrafficLightController;
@@ -542,7 +591,8 @@ namespace RoadGenerator
             _meshFilter.sharedMesh = _mesh;
         }
 
-        private void AssignMaterials() {
+        private void AssignMaterials()
+        {
             if (_material != null && _bottomMaterial != null) 
             {              
                 // Create an array of materials for the mesh renderer
@@ -679,7 +729,9 @@ namespace RoadGenerator
             _intersectionExitSections.Clear();
 
             _intersectionGuideRoadNodes.Clear();
-            _intersectionGuidePaths.Clear();
+            _intersectionGuidePathsTrafficLights.Clear();
+            _intersectionGuidePathsRightPriority.Clear();
+            _intersectionGuidePathsYielding.Clear();
 
             List<Lane> lanes = new List<Lane>();
 
@@ -740,7 +792,10 @@ namespace RoadGenerator
                     // Do not compute guide paths for U turns
                     if(entrySection.EdgeID == exitSection.EdgeID)
                         continue;
-                    _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
+                    
+                    _intersectionGuidePathsTrafficLights.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
+                    _intersectionGuidePathsRightPriority.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
+                    _intersectionGuidePathsYielding.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
                 }
             }
         }
@@ -749,9 +804,10 @@ namespace RoadGenerator
         private List<(LaneNode, LaneNode)> GetYieldToNodes(Section entrySection, Section exitSection)
         {
             List<(LaneNode, LaneNode)> yieldNodes = new List<(LaneNode, LaneNode)>();
+            YieldType yieldType = YieldType;
             
             // Do not yield if you are staying on the same road
-            if(entrySection.Road == exitSection.Road)
+            if(entrySection.Road == exitSection.Road && yieldType != YieldType.Yielding)
                 return yieldNodes;
 
             foreach(Section section in _intersectionEntrySections.Values)
@@ -759,8 +815,26 @@ namespace RoadGenerator
                 // Do not yield to vehicles in your own entry section
                 if(section == entrySection)
                     continue;
+
+                TurnDirection turnDirection = GetTurnDirection(entrySection.Start, section.End);
                 
-                yieldNodes.Add((section.End, section.JunctionNode));
+                if(yieldType == YieldType.TrafficLights || yieldType == YieldType.Yielding || (yieldType == YieldType.RightPriority && turnDirection == TurnDirection.Right))
+                    yieldNodes.Add((section.End, section.JunctionNode));
+            }
+
+            if(yieldType == YieldType.Yielding || yieldType == YieldType.RightPriority)
+            {
+                foreach(Section section in _intersectionExitSections.Values)
+                {
+                    // Do not yield to vehicles in your own exit section
+                    if(section == exitSection && false)
+                        continue;
+
+                    TurnDirection turnDirection = GetTurnDirection(entrySection.Start, section.End);
+                    
+                    if(yieldType == YieldType.Yielding || (yieldType == YieldType.RightPriority && turnDirection == TurnDirection.Right))
+                        yieldNodes.Add((section.End, section.JunctionNode));
+                }
             }
 
             return yieldNodes;
@@ -773,6 +847,8 @@ namespace RoadGenerator
             List<LaneNode> sourceNodes = new List<LaneNode>();
 
             sourceNodes.Add(entrySection.End);
+            if(YieldAtJunctionEdge)
+                sourceNodes.Add(entrySection.Start);
 
             foreach(LaneNode source in sourceNodes)
             {
@@ -785,7 +861,6 @@ namespace RoadGenerator
 
                     blockingNodes[source.ID].AddRange(GetSectionBlockingNodes(section, source, true));
                 }
-                
 
                 foreach(Section section in _intersectionExitSections.Values)
                     blockingNodes[source.ID].AddRange(GetSectionBlockingNodes(section, source, false));
@@ -799,6 +874,7 @@ namespace RoadGenerator
             float maxBlockingDistance = Mathf.Sqrt(2) * section.Road.LaneWidth / 2;
             List<LaneNode> sectionBlockingNodes = new List<LaneNode>();
             LaneNode curr = isEntry ? section.End : section.Start;
+            
             while(curr != null && Vector3.Distance(curr.Position, source.Position) <= maxBlockingDistance)
             {
                 sectionBlockingNodes.Add(curr);
@@ -826,6 +902,7 @@ namespace RoadGenerator
         {
             float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
             int laneNodeDirection = laneSide == LaneSide.Primary ? 1 : -1;
+            
             // Important: In order to get the correct direction of the lane nodes, we need to reverse the road nodes if the lane is secondary
             // Since reverse creates copies of the nodes, this means that logic that relies on the road nodes being the same instance between entry and exit will not work
             RoadNode currRoadNode = roadNode;
@@ -836,10 +913,11 @@ namespace RoadGenerator
             {
                 Vector3 position = currRoadNode.Position + currRoadNode.Normal * laneNodeOffset * laneNodeDirection;
                 
-                curr = curr == null ? new LaneNode(position, laneSide, start.LaneIndex, currRoadNode, 0) : new LaneNode(position, laneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position));
+                curr = curr == null ? new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, 0) : new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position));
                 
                 if(prev != null)
                     prev.Next = curr;
+                
                 prev = curr;
                 currRoadNode = currRoadNode.Next;
             }
@@ -853,6 +931,7 @@ namespace RoadGenerator
         {
             // Offset the nodes from the intersection so they do not overlap with other section nodes
             float endOffset = 0.8f * road.LaneWidth / 2;
+            
             // Check if this road node has already been generated
             if(_intersectionGuideRoadNodes.ContainsKey(start.ID))
                 return _intersectionGuideRoadNodes[start.ID];
@@ -875,6 +954,7 @@ namespace RoadGenerator
 
             RoadNode curr = null;
             RoadNode prev = null;
+            
             for(int i = 0; i < nodesToCreate; i++)
             {
                 Vector3 position = Vector3.Lerp(start, end, (float)(i + 1) / (nodesToCreate + 1));
@@ -889,6 +969,7 @@ namespace RoadGenerator
 
                 if(prev != null)
                     prev.Next = curr;
+                
                 prev = curr;
             }
             return curr?.First;
@@ -922,7 +1003,7 @@ namespace RoadGenerator
         public List<(string, string, GuideNode)> GetGuidePaths(LaneNode entry)
         {
             List<(string, string, GuideNode)> guidePaths = new List<(string, string, GuideNode)>();
-            
+
             // Add all guide paths that start at the current lane node to the list
             foreach((string entryID, string exitID) in _intersectionGuidePaths.Keys)
             {
@@ -961,6 +1042,7 @@ namespace RoadGenerator
 
         private GuideNode CreateGuidePath(Section entrySection, Section exitSection, List<(LaneNode, LaneNode)> yieldNodes, Dictionary<string, List<LaneNode>> yieldBlockingNodes)
         {
+            LaneNode entryFirst = entrySection.Start;
             LaneNode entryLast = entrySection.End;
 
             LaneNode currLaneNode = entrySection.Start;
@@ -970,7 +1052,7 @@ namespace RoadGenerator
             while(currLaneNode != null)
             {
                 Vector3 position = currLaneNode.Position;
-                curr = new GuideNode(position, currLaneNode, currLaneNode.LaneSide, currLaneNode.LaneIndex, currLaneNode.RoadNode, prev, null, prev == null ? 0 : Vector3.Distance(prev.Position, position));
+                curr = new GuideNode(position, currLaneNode, currLaneNode.LaneSide, currLaneNode.LaneIndex, currLaneNode.RoadNode, prev, null, Vector3.Distance(prev == null ? entrySection.JunctionNode.Position : prev.Position, position));
 
                 if(prev != null)
                     prev.Next = curr;
@@ -980,11 +1062,15 @@ namespace RoadGenerator
                 if(yieldBlockingNodes.ContainsKey(currLaneNode.ID))
                     curr.YieldBlockingNodes = yieldBlockingNodes[currLaneNode.ID];
 
+                if(currLaneNode == entryFirst && YieldAtJunctionEdge)
+                    curr.YieldNodes = yieldNodes;
+
                 // If we have reached the end of the entry section
                 if(currLaneNode == entryLast)
                 {
                     // Set the GuideNode at the end of the entry section to yield to the yield nodes
-                    curr.YieldNodes = yieldNodes;
+                    if(!YieldAtJunctionEdge)
+                        curr.YieldNodes = yieldNodes;
 
                     // Go through the intersection center node for paths passing through the middle of the intersection
                     if(Vector3.Distance(curr.Position, IntersectionPosition) < Vector3.Distance(curr.Position, exitSection.Start.Position))
@@ -1006,7 +1092,7 @@ namespace RoadGenerator
 
             return guidePath;
         }
-        /// <summary> Returns the turn direction for the intersection path. Returns 1, 0 or -1. 1 Is right turn, 0 is straight, -1 is left </summary>
+        /// <summary> Returns the turn direction for the intersection path </summary>
         private TurnDirection GetTurnDirection(LaneNode entry, LaneNode exit)
         {
             // If the entry and exit nodes share the same first node it means that the entry and exit nodes are on the same road

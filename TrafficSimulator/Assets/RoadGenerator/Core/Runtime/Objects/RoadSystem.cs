@@ -30,6 +30,7 @@ namespace RoadGenerator
         public GameObject DefaultTrafficLightPrefab;
         public GameObject DefaultTrafficLightControllerPrefab;
         public GameObject DefaultStopSignPrefab;
+        public GameObject DefaultYieldSignPrefab;
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;

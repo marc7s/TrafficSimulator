@@ -1054,8 +1054,26 @@ namespace RoadGenerator
 
             if(data.TrafficSignType == TrafficSignType.TrafficLight)
                 AssignTrafficLightController(data.RoadNode, trafficSign);
-
+            else if(data.TrafficSignType == TrafficSignType.StopSign)
+                AssignStopSign(data.RoadNode, data.IsForward ? LaneSide.Primary : LaneSide.Secondary, trafficSign);
+            else if(data.TrafficSignType == TrafficSignType.YieldSign)
+                AssignYieldSign(data.RoadNode, data.IsForward ? LaneSide.Primary : LaneSide.Secondary, trafficSign);
+            
             return trafficSign;
+        }
+
+        protected void AssignStopSign(RoadNode roadNode, LaneSide laneSide, GameObject stopSignObject)
+        {
+            StopSign stopSign = stopSignObject.GetComponent<StopSign>();
+            stopSign.LaneSide = laneSide;
+            roadNode.StopSign = stopSign;
+        }
+
+        protected void AssignYieldSign(RoadNode roadNode, LaneSide laneSide, GameObject yieldSignObject)
+        {
+            YieldSign yieldSign = yieldSignObject.GetComponent<YieldSign>();
+            yieldSign.LaneSide = laneSide;
+            roadNode.YieldSign = yieldSign;
         }
 
         protected void AssignTrafficLightController(RoadNode roadNode, GameObject trafficLightObject)

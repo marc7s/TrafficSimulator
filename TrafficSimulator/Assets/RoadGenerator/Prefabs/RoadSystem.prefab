@@ -55,11 +55,12 @@ MonoBehaviour:
   DrivingSide: -1
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
-  DefaultStopSignPrefab: {fileID: 100000, guid: ea4cde724487aa243bac09bf2da74d99, type: 3}
+  DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
+  DefaultYieldSignPrefab: {fileID: 4811144999697380177, guid: a02e087aa1f5e43499891fd70fefc5ba, type: 3}
   ShowGraph: 0
   SpawnRoadsAtOrigin: 0
-  _roads: []
-  _rails: []
+  _defaultRoads: []
+  _tramRails: []
   _intersections: []
   GraphContainer: {fileID: 0}
 --- !u!1 &2382052090468904982

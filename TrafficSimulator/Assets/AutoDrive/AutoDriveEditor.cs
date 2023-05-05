@@ -15,8 +15,10 @@ namespace CarGenerator
             private SerializedProperty _endBehaviour;
             private SerializedProperty _showNavigationPath;
             private SerializedProperty _originalNavigationMode;
-            private SerializedProperty _logRepositioningInformation;
             private SerializedProperty _showTargetLines;
+            private SerializedProperty _logRepositioningInformation;
+            private SerializedProperty _logNavigationErrors;
+            private SerializedProperty _logBrakeReason;
             private SerializedProperty _brakeOffset;
             private SerializedProperty _maxRepositioningSpeed;
             private SerializedProperty _maxReverseDistance;
@@ -37,8 +39,10 @@ namespace CarGenerator
             _endBehaviour = serializedObject.FindProperty("EndBehaviour");
             _showNavigationPath = serializedObject.FindProperty("ShowNavigationPath");
             _originalNavigationMode = serializedObject.FindProperty("OriginalNavigationMode");
-            _logRepositioningInformation = serializedObject.FindProperty("LogRepositioningInformation");
             _showTargetLines = serializedObject.FindProperty("ShowTargetLines");
+            _logRepositioningInformation = serializedObject.FindProperty("LogRepositioningInformation");
+            _logNavigationErrors = serializedObject.FindProperty("LogNavigationErrors");
+            _logBrakeReason = serializedObject.FindProperty("LogBrakeReason");
             _brakeOffset = serializedObject.FindProperty("BrakeOffset");
             _maxRepositioningSpeed = serializedObject.FindProperty("MaxRepositioningSpeed");
             _maxReverseDistance = serializedObject.FindProperty("MaxReverseDistance");
@@ -71,8 +75,10 @@ namespace CarGenerator
             if(!Application.isPlaying)
             {
                 EditorGUILayout.PropertyField(_originalNavigationMode);
-                EditorGUILayout.PropertyField(_logRepositioningInformation);
                 EditorGUILayout.PropertyField(_showTargetLines);
+                EditorGUILayout.PropertyField(_logRepositioningInformation);
+                EditorGUILayout.PropertyField(_logNavigationErrors);
+                EditorGUILayout.PropertyField(_logBrakeReason);
                 EditorGUILayout.PropertyField(_brakeOffset);
                 EditorGUILayout.PropertyField(_maxRepositioningSpeed);
                 EditorGUILayout.PropertyField(_maxReverseDistance);

@@ -275,6 +275,7 @@ namespace VehicleBrain
             if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(node.Intersection.ID))
             {
                 (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[node.Intersection.ID];
+                
                 if(node == guideStart)
                     return entry;
             }
@@ -348,12 +349,14 @@ namespace VehicleBrain
         public TurnDirection TurnDirection;
         public VehicleActivity Activity;
         public Parking CurrentParking;
+        public bool IsInsideIntersection;
         public bool LogNavigationErrors;
+        public bool LogBrakeReason;
         public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
         public Road CurrentRoad => CurrentNode.RoadNode.Road;
         
-        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool logNavigationErrors)
+        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool logNavigationErrors, bool logBrakeReason)
         {
             CurrentNode = initialNode;
             VehiclePosition = vehiclePosition;
@@ -376,7 +379,9 @@ namespace VehicleBrain
             BrakeUndershoot = 0;
             Activity = VehicleActivity.Driving;
             CurrentParking = null;
+            IsInsideIntersection = false;
             LogNavigationErrors = logNavigationErrors;
+            LogBrakeReason = logBrakeReason;
 
             SetLoopNode(initialNode);
         }
