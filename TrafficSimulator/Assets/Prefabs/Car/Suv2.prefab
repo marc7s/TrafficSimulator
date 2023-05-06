@@ -1680,7 +1680,6 @@ MonoBehaviour:
   LaneIndex: 0
   _mesh: {fileID: 6007785991127523366}
   Mode: 1
-  Active: 0
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 2
@@ -1695,6 +1694,8 @@ MonoBehaviour:
   Speed: 10
   Acceleration: 7
   TotalDistance: 0
+  LogNavigationErrors: 0
+  _logParkingFull: 0
 --- !u!54 &1577973480894095029
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5977,7 +5978,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2257618801542782498, guid: 8dd36a96783b31445bea3915a249c3c3, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5236906934314691291, guid: 8dd36a96783b31445bea3915a249c3c3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.536
+      objectReference: {fileID: 0}
+    - target: {fileID: 5236906934314691291, guid: 8dd36a96783b31445bea3915a249c3c3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.417
+      objectReference: {fileID: 0}
+    - target: {fileID: 6537377804383098625, guid: 8dd36a96783b31445bea3915a249c3c3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.023
+      objectReference: {fileID: 0}
+    - target: {fileID: 6537377804383098625, guid: 8dd36a96783b31445bea3915a249c3c3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.417
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: -2770588500405245510, guid: 8dd36a96783b31445bea3915a249c3c3, type: 3}

@@ -273,7 +273,7 @@ namespace VehicleBrain
                     if(_agent.Context.Activity != VehicleActivity.Driving)
                         break;
                     
-                    _brakeLightController.SetBrakeLights(_agent.Context.IsBrakingOrStopped ?  BrakeLightState.On : BrakeLightState.Off);
+                    _brakeLightController.SetBrakeLights(_agent.Context.IsBrakingOrStopped ?  BrakeLightState.On : BrakeLightState.On);
                     UpdateIndicators();
                     
                     break;

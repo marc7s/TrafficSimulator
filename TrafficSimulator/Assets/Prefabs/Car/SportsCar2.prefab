@@ -1973,7 +1973,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5651280767392292247}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.117, y: 0.072, z: -0.125}
+  m_LocalPosition: {x: -0.137, y: -0.06, z: -0.717}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2588,7 +2588,6 @@ MonoBehaviour:
   LaneIndex: 0
   _mesh: {fileID: 3911706954980388769}
   Mode: 1
-  Active: 0
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 2
@@ -2603,6 +2602,8 @@ MonoBehaviour:
   Speed: 10
   Acceleration: 7
   TotalDistance: 0
+  LogNavigationErrors: 0
+  _logParkingFull: 0
 --- !u!54 &6380633828474830392
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4987,7 +4988,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &8261372849323518755
 Transform:
   m_ObjectHideFlags: 0
@@ -5448,7 +5449,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9022444489993136730}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.361, y: 0.095, z: -0.181}
+  m_LocalPosition: {x: -1.313, y: -0.06, z: -0.717}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
