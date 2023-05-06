@@ -10,13 +10,23 @@ namespace VehicleBrain
         Vehicle, 
         RoadEnd, 
         TrafficLight,
+        StopSign,
+        YieldSign,
         Yield,
         YieldBlocking
     }
 
     public class BrakeController : AutoDriveController<BrakeEventType>
     {
-        public override bool ShouldAct(ref AutoDriveAgent agent)
+        public BrakeController(ref AutoDriveAgent agent)
+        {
+            if(agent.Context.LogBrakeReason)
+            {
+                OnEvent += type => Debug.Log($"Brake reason: {type}");
+                OnEventClear += () => Debug.Log("Stopped braking");
+            }
+        }
+        public override (BrakeEventType, bool) ShouldActImplementation(ref AutoDriveAgent agent)
         {
             agent.Context.BrakeUndershoot = 0;
             LaneNode curr = agent.Context.CurrentNode;
@@ -32,16 +42,18 @@ namespace VehicleBrain
             {
                 agent.Context.BrakeTarget = curr;
                 agent.Context.BrakeUndershoot = Mathf.Max(0, brakeDistance - distance);
+
+                (BrakeEventType actingType, bool shouldActAtNode) = ShouldActAtNode(ref agent, curr);
                     
-                if(ShouldActAtNode(ref agent, curr))
-                    return true;
+                if(shouldActAtNode)
+                    return (actingType, true);
 
                 prev = curr;
                 curr = agent.Next(curr);
                 distance += GetNodeDistance(curr, prev);
             }
 
-            return false;
+            return (default, false);
         }
 
         private static float GetNodeDistance(LaneNode curr, LaneNode prev)
@@ -49,7 +61,7 @@ namespace VehicleBrain
             if(curr == null || prev == null)
                 return 0;
             else
-                return curr.Type == RoadNodeType.JunctionEdge && curr.Prev.IsIntersection() ? Vector3.Distance(curr.Position, prev.Position) : curr.DistanceToPrevNode;
+                return Vector3.Distance(curr.Position, prev.Position);
         }
 
         private static float GetBrakeDistance(ref AutoDriveAgent agent)
@@ -114,6 +126,8 @@ namespace VehicleBrain
             const float maxSpeed = 20f;
             const float maxDistance = maxSpeed * yieldTime;
 
+            bool yieldAtJunctionEdge = yieldStart.Intersection != null && yieldStart.Intersection.YieldAtJunctionEdge;
+
             while(curr != null && distanceToCurrNode < maxDistance + distanceToYieldNode)
             {
                 if(curr.Type == RoadNodeType.End)
@@ -123,13 +137,17 @@ namespace VehicleBrain
                 {
                     float maxSpeedOtherVehicle = distanceToCurrNode / yieldTime;
                     
-                    float currentSpeed = Mathf.Max(1, agent.Setting.Vehicle.CurrentSpeed);
-                    float otherSpeed = Mathf.Max(1, curr.Vehicle.CurrentSpeed);
+                    float currentSpeed = agent.Setting.Vehicle.CurrentSpeed;
+                    float otherSpeed = curr.Vehicle.CurrentSpeed;
                     
                     float timeToNode = distanceToCurrNode / currentSpeed;
                     float otherTimeToNode = distanceToCurrNode / otherSpeed;
 
-                    if(currentSpeed > maxSpeedOtherVehicle && otherTimeToNode < timeToNode)
+                    bool bothStationary = currentSpeed == 0 && otherSpeed == 0;
+                    bool shouldYieldJunctionEdge = currentSpeed < otherSpeed || (bothStationary && UnityEngine.Random.Range(1, 10) == 1);
+                    bool shouldYield = currentSpeed > maxSpeedOtherVehicle && otherTimeToNode < timeToNode;
+
+                    if(yieldAtJunctionEdge ? shouldYieldJunctionEdge : shouldYield)
                         return true;
                 }
 
@@ -138,7 +156,7 @@ namespace VehicleBrain
                 prev = curr;
                 curr = agent.Prev(curr, RoadEndBehaviour.Stop);
 
-                if(curr == null)
+                if(curr == null && !yieldAtJunctionEdge)
                 {
                     curr = yieldTransition;
                     
@@ -149,11 +167,12 @@ namespace VehicleBrain
 
             return false;
         }
-        public override Func<LaneNode, bool> EventAssessor(ref AutoDriveAgent agent, BrakeEventType type)
+        public override Func<LaneNode, (BrakeEventType, bool)> EventAssessor(ref AutoDriveAgent agent, BrakeEventType type)
         {
             Vehicle vehicle = agent.Setting.Vehicle;
             RoadEndBehaviour endBehaviour = agent.Setting.EndBehaviour;
             bool isEntering = agent.Context.IsEnteringNetwork;
+            bool isInsideIntersection = agent.Context.IsInsideIntersection;
             string prevIntersectionID = agent.Context.PrevIntersection?.ID;
             AutoDriveAgent agentInstance = agent;
             LaneNode currentNode = agent.Context.CurrentNode;
@@ -161,17 +180,21 @@ namespace VehicleBrain
             switch(type)
             {
                 case BrakeEventType.Vehicle:
-                    return (LaneNode node) => node.HasVehicle() && node.Vehicle != vehicle;
+                    return (LaneNode node) => (BrakeEventType.Vehicle, node.HasVehicle() && node.Vehicle != vehicle);
                 case BrakeEventType.RoadEnd:
-                    return (LaneNode node) => endBehaviour == RoadEndBehaviour.Stop && node.Type == RoadNodeType.End && !(node.First == node && isEntering);
+                    return (LaneNode node) => (BrakeEventType.RoadEnd, endBehaviour == RoadEndBehaviour.Stop && node.Type == RoadNodeType.End && !(node.First == node && isEntering));
                 case BrakeEventType.TrafficLight:
-                    return (LaneNode node) => node.TrafficLight != null && node.TrafficLight.CurrentState != TrafficLightState.Green && node.Intersection?.ID != prevIntersectionID;
+                    return (LaneNode node) => (BrakeEventType.TrafficLight, node.TrafficLight != null && node.TrafficLight.CurrentState != TrafficLightState.Green && node.Intersection?.ID != prevIntersectionID);
+                case BrakeEventType.StopSign:
+                    return (LaneNode node) => (BrakeEventType.StopSign, node.StopSign != null && node.StopSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && vehicle.CurrentSpeed > 1.5f);
+                case BrakeEventType.YieldSign:
+                    return (LaneNode node) => (BrakeEventType.YieldSign, node.YieldSign != null && node.YieldSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && vehicle.CurrentSpeed > 1.5f);
                 case BrakeEventType.Yield:
-                    return (LaneNode node) => node != currentNode && ShouldYield(agentInstance, ref node);
+                    return (LaneNode node) => (BrakeEventType.Yield, node != currentNode && ShouldYield(agentInstance, ref node));
                 case BrakeEventType.YieldBlocking:
-                    return (LaneNode node) => node != currentNode && ShouldYieldBlocking(agentInstance, ref node);
+                    return (LaneNode node) => (BrakeEventType.YieldBlocking, node != currentNode && ShouldYieldBlocking(agentInstance, ref node));
                 default:
-                    return (LaneNode _) => false;
+                    return (LaneNode _) => (default, false);
             }
         }
     }

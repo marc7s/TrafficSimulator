@@ -20,6 +20,7 @@ namespace RoadGenerator
             List<TrafficSignData> signsToBePlaced = new List<TrafficSignData>();
             AssessTrafficLightForRoadNode(data, ref signsToBePlaced);
             AssessStopSignForRoadNode(data, ref signsToBePlaced);
+            AssessYieldSignForRoadNode(data, ref signsToBePlaced);
             AssessSpeedSignForRoadNode(data, ref signsToBePlaced);
             AssesLampPostForRoadNode(data, ref signsToBePlaced);
             AssesNoEntryOneDirectionForRoadNode(data, ref signsToBePlaced);
@@ -69,17 +70,23 @@ namespace RoadGenerator
             }
         }
 
-        /// <summary> assesses if a lamp post should be placed at the current road node </summary>
+        /// <summary> Assesses if a stop sign should be placed at the current road node </summary>
         private void AssessStopSignForRoadNode(RoadNodeData data, ref List<TrafficSignData> signsToBePlaced)
         {
             // Place a stop sign at each junction edge
             if (data.RoadNode.Type == RoadNodeType.JunctionEdge && data.RoadNode.Intersection.FlowType == FlowType.StopSigns)
-            {
                 signsToBePlaced.Add(new TrafficSignData(TrafficSignType.StopSign, data.RoadNode, data.Road.RoadSystem.DefaultStopSignPrefab, data.IntersectionFound, data.Road.DefaultTrafficSignOffset));
-            }
         }
 
-        /// <summary> assesses if a trafficd light should be placed at the current road node </summary>
+        /// <summary> Assesses if a yield sign should be placed at the current road node </summary>
+        private void AssessYieldSignForRoadNode(RoadNodeData data, ref List<TrafficSignData> signsToBePlaced)
+        {
+            // Place a stop sign at each junction edge
+            if (data.RoadNode.Type == RoadNodeType.JunctionEdge && data.RoadNode.Intersection.FlowType == FlowType.YieldSigns)
+                signsToBePlaced.Add(new TrafficSignData(TrafficSignType.YieldSign, data.RoadNode, data.Road.RoadSystem.DefaultYieldSignPrefab, data.IntersectionFound, data.Road.DefaultTrafficSignOffset));
+        }
+
+        /// <summary> Assesses if a traffic light should be placed at the current road node </summary>
         private void AssessTrafficLightForRoadNode(RoadNodeData data, ref List<TrafficSignData> signsToBePlaced)
         {
             // Place a traffic light at each junction edge

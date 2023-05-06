@@ -13,14 +13,14 @@ namespace VehicleBrain
     {
         public Action<Intersection> OnIntersectionEntry;
         public Action<Intersection> OnIntersectionExit;
-        public override bool ShouldAct(ref AutoDriveAgent agent)
+        public override (NavigationEventType, bool) ShouldActImplementation(ref AutoDriveAgent agent)
         {
             LaneNode curr = agent.Context.CurrentNode;
             ShouldActAtNode(ref agent, curr);
-            return false;
+            return (default, false);
         }
 
-        public override Func<LaneNode, bool> EventAssessor(ref AutoDriveAgent agent, NavigationEventType type)
+        public override Func<LaneNode, (NavigationEventType, bool)> EventAssessor(ref AutoDriveAgent agent, NavigationEventType type)
         {
             switch(type)
             {
@@ -29,17 +29,17 @@ namespace VehicleBrain
                         { 
                             if(node.Type == RoadNodeType.JunctionEdge && node.Next?.IsIntersection() == true)
                                 OnIntersectionEntry?.Invoke(node.Intersection);
-                            return false;
+                            return (NavigationEventType.IntersectionEntry, false);
                         };
                 case NavigationEventType.IntersectionExit:
                     return (LaneNode node) =>
                         { 
                             if(node.Type == RoadNodeType.JunctionEdge && node.Prev?.IsIntersection() == true)
                                 OnIntersectionExit?.Invoke(node.Intersection);
-                            return false;
+                            return (NavigationEventType.IntersectionExit, false);
                         };
                 default:
-                    return (LaneNode node) => false;
+                    return (LaneNode node) => (default, false);
             }
         }
     }

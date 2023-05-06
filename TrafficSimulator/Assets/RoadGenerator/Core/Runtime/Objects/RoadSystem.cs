@@ -40,6 +40,7 @@ namespace RoadGenerator
         public GameObject DefaultStopSignPrefab;
         public GameObject DefaultBusStopPrefab;
         public GameObject DefaultTreePrefab;
+        public GameObject DefaultYieldSignPrefab;
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;

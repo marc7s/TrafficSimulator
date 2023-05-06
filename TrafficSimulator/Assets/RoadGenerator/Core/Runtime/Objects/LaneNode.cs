@@ -55,6 +55,8 @@ namespace RoadGenerator
         public virtual RoadNode RoadNode => _roadNode;
         public RoadNodeType Type => _roadNode.Type;
         public TrafficLight TrafficLight => _roadNode.TrafficLight;
+        public StopSign StopSign => _roadNode.StopSign;
+        public YieldSign YieldSign => _roadNode.YieldSign;
         public POI POI => _roadNode.POI;
         public virtual Intersection Intersection => _roadNode.Intersection;
         public virtual Vehicle Vehicle => _vehicle;
