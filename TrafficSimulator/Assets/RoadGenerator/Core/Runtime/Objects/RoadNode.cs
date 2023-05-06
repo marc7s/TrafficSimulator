@@ -93,7 +93,7 @@ namespace RoadGenerator
                 if (curr.Road != this.Road)
                     break;
                 
-                if (curr.IsIntersection() || curr.IsNavigationNode)
+                if (curr.IsIntersection() || (curr.IsNavigationNode && curr.Type != RoadNodeType.RoadConnection))
                 {
                     // We do not want to skip the first node of the road
                     if (curr.Position == startNavigationNode.RoadNode.Position)

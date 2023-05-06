@@ -86,6 +86,7 @@ namespace RoadGenerator
         // If two road endpoints are within this distance of each other, they will be connected
         public float ConnectionDistanceThreshold = 0f;
         public bool IsOneWay = false;
+        public bool IsGeneratingOSM = true;
 
         [Header ("Traffic sign settings")]
         public float SpeedSignDistanceFromIntersectionEdge = 5f;
@@ -247,6 +248,9 @@ namespace RoadGenerator
 
                     if (road.IsOneWay != currentRoad.IsOneWay)
                         continue;
+
+                   // if (road.IsOneWay)
+                   //     continue;
 
                     currentRoad.UpdateStartConnectionRoad(road);
                     currentRoad.UpdateEndConnectionRoad(road);
@@ -457,15 +461,27 @@ namespace RoadGenerator
             Vector3 startPos = bezierPath.GetFirstAnchorPos();
             BezierPath bezierPathOtherRoad = road.RoadObject.GetComponent<PathCreator>().bezierPath;
             Vector3 startPosOtherRoad = bezierPathOtherRoad.GetFirstAnchorPos();
-            Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();   
+            Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();
+
+            bool isStartPosOtherRoadIntersection = false;
+            bool isEndPosOtherRoadIntersection = false;
+
+            foreach (Intersection intersection in road.Intersections)
+            {
+                if (intersection.IntersectionPosition == startPosOtherRoad)
+                    isStartPosOtherRoadIntersection = true;
+
+                if (intersection.IntersectionPosition == endPosOtherRoad)
+                    isEndPosOtherRoadIntersection = true;
+            }
             
-            if (Vector3.Distance(startPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
+            if (!isStartPosOtherRoadIntersection && Vector3.Distance(startPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
             {
                 bezierPath.SetFirstAnchorPos(startPosOtherRoad);
                 ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.Start);
                 road.ConnectedToAtStart = new ConnectedRoad(this, EndOfRoadType.Start);
             }
-            else if (Vector3.Distance(endPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
+            else if (!isEndPosOtherRoadIntersection && Vector3.Distance(endPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
             {
                 bezierPath.SetFirstAnchorPos(endPosOtherRoad);
                 ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.End);
@@ -483,13 +499,26 @@ namespace RoadGenerator
             BezierPath bezierPathOtherRoad = road.RoadObject.GetComponent<PathCreator>().bezierPath;
             Vector3 startPosOtherRoad = bezierPathOtherRoad.GetFirstAnchorPos();
             Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();
-            if (Vector3.Distance(startPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
+
+            bool isStartPosOtherRoadIntersection = false;
+            bool isEndPosOtherRoadIntersection = false;
+
+            foreach (Intersection intersection in road.Intersections)
+            {
+                if (intersection.IntersectionPosition == startPosOtherRoad)
+                    isStartPosOtherRoadIntersection = true;
+
+                if (intersection.IntersectionPosition == endPosOtherRoad)
+                    isEndPosOtherRoadIntersection = true;
+            }
+
+            if (!isStartPosOtherRoadIntersection && Vector3.Distance(startPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
             {
                 bezierPath.SetLastAnchorPos(startPosOtherRoad);
                 ConnectedToAtEnd = new ConnectedRoad(road, EndOfRoadType.Start);
                 road.ConnectedToAtStart = new ConnectedRoad(this, EndOfRoadType.End);
             }
-            else if (Vector3.Distance(endPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
+            else if (!isEndPosOtherRoadIntersection && Vector3.Distance(endPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
             {
                 bezierPath.SetLastAnchorPos(endPosOtherRoad);
                 ConnectedToAtEnd = new ConnectedRoad(road, EndOfRoadType.End);
@@ -527,14 +556,22 @@ namespace RoadGenerator
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
+            Debug.Log("OnChange");
             if(RoadSystem == null)
                 return;
 
-            //ConnectRoadIfEndPointsAreClose();
+            if (!IsGeneratingOSM)
+            {
+                Debug.Log(IsGeneratingOSM + "kebab");
+                Debug.Log("sdafhjoiuslfdghkjljkhgsfdlhjkjdslfkgjh");
+                ConnectRoadIfEndPointsAreClose();
+            }
+
             // Update the intersections and road when a node is changed
             //IntersectionCreator.UpdateIntersections(this);
             UpdateRoad();
         }
+        
 
         protected void UpdateRoad()
         {

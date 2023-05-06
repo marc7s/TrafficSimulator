@@ -195,7 +195,6 @@ namespace RoadGenerator
             PrintRoadNodes(Road2.StartNode);
             Debug.Log("------------------------------------");
 #endif           
-            Debug.Log("Creating intersection mesh for: " + IntersectionPosition);
 
             // The mesh code is based on the vertice layout found at TrafficSimulator/Assets/RoadGenerator/Documentation/IntersectionMeshGeneration   
 
@@ -676,6 +675,7 @@ namespace RoadGenerator
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
+            Debug.Log("Mapping intersection navigation" + IntersectionPosition);
             // Map the lane node to take in order to get to the navigation node edge
             _laneNodeFromNavigationNodeEdge.Clear();
 
@@ -1159,45 +1159,6 @@ namespace RoadGenerator
                 }
                 isFirstIteration = false;
             }   
-
-
-
-            GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = IntersectionPosition;
-            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-            IntersectionArm arm0 = IntersectionArms[0];
-            cube.transform.position = arm0.JunctionEdgePosition;
-            Vector3 pos = arm0.JunctionEdgePosition;
-            IntersectionArm arm2 = null;
-            foreach (IntersectionArm intersectionArm in IntersectionArms)
-            {
-                if (intersectionArm == arm0)
-                    continue;
-                
-                if (intersectionArm.OppositeArmID == "")
-                    continue;
-                
-                if (intersectionArm.OppositeArmID == arm0.ID)
-                {
-                    GameObject cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cube2.transform.position = intersectionArm.JunctionEdgePosition;
-                    cube2.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                    continue;
-                }
-                else if (arm2 == null)
-                {
-                    GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = intersectionArm.JunctionEdgePosition;
-                    arm2 = intersectionArm;
-                }
-                if (arm2 != null &&  intersectionArm.OppositeArmID == arm2.ID)
-                {
-                    GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = intersectionArm.JunctionEdgePosition;
-
-                    continue;
-                }
-            }
-
-
         }
 
         private List<Vector3> GetJunctionEdgesPositionForRoad(Road road)

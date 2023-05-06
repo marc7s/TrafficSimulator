@@ -186,6 +186,8 @@ public class MapGenerator : MonoBehaviour
         if (roadSystem.ShouldGenerateTrees)
             AddTrees();
 
+       foreach (Road road in roadSystem.DefaultRoads)
+            road.IsGeneratingOSM = false;
     }
 
     private void AddRoads()
@@ -282,12 +284,14 @@ public class MapGenerator : MonoBehaviour
 
                 bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
                 bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
-                if (isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2)
+                if (isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2 && road1.ConnectedToAtStart == null && road1.ConnectedToAtEnd == null)
                 {
-                //    road1.ConnectRoadIfEndPointsAreClose();
+                 //   road1.ConnectRoadIfEndPointsAreClose();
                 }
             }
         }
+
+
     }
 
     public void AddBusStops()
@@ -546,6 +550,7 @@ public class MapGenerator : MonoBehaviour
         roadPoints2.Add(roadPoints[0]);
         roadPoints2.Add(roadPoints[1]);
         Road road = spawnRoad(roadPoints2, wayData);
+        //road.IsGeneratingOSM = true;
 
         if (wayData.IsOneWay == true || wayData.WayType == WayType.RailTram)
         {
@@ -802,7 +807,7 @@ public class MapGenerator : MonoBehaviour
             roadObj.transform.parent = roadSystem.RoadContainer.transform;
             // Get the road from the prefab
             Road road = roadObj.GetComponent<Road>();
-
+            road.IsGeneratingOSM = true;
             // Move the road to the spawn point
             PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
             pathCreator.bezierPath = new BezierPath(points, false, PathSpace.xz);
