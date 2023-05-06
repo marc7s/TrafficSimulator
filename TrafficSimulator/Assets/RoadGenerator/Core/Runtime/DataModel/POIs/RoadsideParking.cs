@@ -75,6 +75,8 @@ namespace POIs
             List<Vector3> normals = new List<Vector3>();
             List<int> tris = new List<int>();
 
+            int sideCoef = LaneSide == LaneSide.Primary ? 1 : -1;
+
             for(int i = 0; i < _parkingSpots.Count; i++)
             {
                 POINode parkingSpot = _parkingSpots[i];
@@ -84,21 +86,21 @@ namespace POIs
                 bool last = i == _parkingSpots.Count - 1;
 
                 if(first)
-                    pos += RoadNode.Tangent * _parkingSize.y / 2;
+                    pos += sideCoef * RoadNode.Tangent * _parkingSize.y / 2;
                 else if(last)
-                    pos -= RoadNode.Tangent * _parkingSize.y / 2;
+                    pos -= sideCoef * RoadNode.Tangent * _parkingSize.y / 2;
 
-                Vector3 left = pos + RoadNode.Normal * _parkingSize.x / 2;
-                Vector3 right = pos - RoadNode.Normal * _parkingSize.x / 2;
+                Vector3 left = pos + sideCoef * RoadNode.Normal * _parkingSize.x / 2;
+                Vector3 right = pos - sideCoef * RoadNode.Normal * _parkingSize.x / 2;
                 
                 if(first)
-                    verts.Add(right + RoadNode.Tangent * _parkingSize.y / 2);
+                    verts.Add(right + sideCoef * RoadNode.Tangent * _parkingSize.y / 2);
 
                 verts.Add(left);
                 verts.Add(right);
 
                 if(last)
-                    verts.Add(right - RoadNode.Tangent * _parkingSize.y / 2);
+                    verts.Add(right - sideCoef * RoadNode.Tangent * _parkingSize.y / 2);
             }
 
             for(int i = 0; i < verts.Count; i++)
@@ -138,22 +140,18 @@ namespace POIs
 
             // Ensure mesh renderer and filter components are assigned
             if (!_meshHolder.gameObject.GetComponent<MeshFilter>()) 
-            {
                 _meshHolder.gameObject.AddComponent<MeshFilter>();
-            }
+
             if (!_meshHolder.GetComponent<MeshRenderer>()) 
-            {
                 _meshHolder.gameObject.AddComponent<MeshRenderer>();
-            }
 
             _meshRenderer = _meshHolder.GetComponent<MeshRenderer>();
             _meshFilter = _meshHolder.GetComponent<MeshFilter>();
             
             // Create a new mesh if one does not already exist
             if (_mesh == null) 
-            {
                 _mesh = new Mesh();
-            }
+
             _meshFilter.sharedMesh = _mesh;
         }
     }
