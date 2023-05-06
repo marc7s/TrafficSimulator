@@ -75,9 +75,7 @@ namespace RoadGenerator
         {
             // Place a stop sign at each junction edge
             if (data.RoadNode.Type == RoadNodeType.JunctionEdge && data.RoadNode.Intersection.FlowType == FlowType.StopSigns)
-            {
                 signsToBePlaced.Add(new TrafficSignData(TrafficSignType.StopSign, data.RoadNode, data.Road.RoadSystem.DefaultStopSignPrefab, data.IntersectionFound, data.Road.DefaultTrafficSignOffset));
-            }
         }
 
         /// <summary> Assesses if a yield sign should be placed at the current road node </summary>
@@ -85,9 +83,7 @@ namespace RoadGenerator
         {
             // Place a stop sign at each junction edge
             if (data.RoadNode.Type == RoadNodeType.JunctionEdge && data.RoadNode.Intersection.FlowType == FlowType.YieldSigns)
-            {
                 signsToBePlaced.Add(new TrafficSignData(TrafficSignType.YieldSign, data.RoadNode, data.Road.RoadSystem.DefaultYieldSignPrefab, data.IntersectionFound, data.Road.DefaultTrafficSignOffset));
-            }
         }
 
         /// <summary> Assesses if a traffic light should be placed at the current road node </summary>

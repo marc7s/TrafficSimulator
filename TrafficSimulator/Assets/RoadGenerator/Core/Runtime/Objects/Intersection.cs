@@ -65,25 +65,7 @@ namespace RoadGenerator
         [HideInInspector] public LaneNode _intersectionCenterLaneNode;
         [HideInInspector] private Dictionary<string, Section> _intersectionExitSections = new Dictionary<string, Section>();
         [HideInInspector] private Dictionary<string, RoadNode> _intersectionGuideRoadNodes = new Dictionary<string, RoadNode>();
-        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePathsTrafficLights = new Dictionary<(string, string), GuideNode>();
-        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePathsRightPriority = new Dictionary<(string, string), GuideNode>();
-        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePathsYielding = new Dictionary<(string, string), GuideNode>();
-        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths
-        {
-            get {
-                switch(YieldType)
-                {
-                    case YieldType.TrafficLights:
-                        return _intersectionGuidePathsTrafficLights;
-                    case YieldType.RightPriority:
-                        return _intersectionGuidePathsRightPriority;
-                    case YieldType.Yielding:
-                        return _intersectionGuidePathsYielding;
-                    default:
-                        return _intersectionGuidePathsRightPriority;
-                }
-            }
-        }
+        [HideInInspector] private Dictionary<(string, string), GuideNode> _intersectionGuidePaths = new Dictionary<(string, string), GuideNode>();
 
         public YieldType YieldType
         {
@@ -729,9 +711,7 @@ namespace RoadGenerator
             _intersectionExitSections.Clear();
 
             _intersectionGuideRoadNodes.Clear();
-            _intersectionGuidePathsTrafficLights.Clear();
-            _intersectionGuidePathsRightPriority.Clear();
-            _intersectionGuidePathsYielding.Clear();
+            _intersectionGuidePaths.Clear();
 
             List<Lane> lanes = new List<Lane>();
 
@@ -793,9 +773,7 @@ namespace RoadGenerator
                     if(entrySection.EdgeID == exitSection.EdgeID)
                         continue;
                     
-                    _intersectionGuidePathsTrafficLights.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
-                    _intersectionGuidePathsRightPriority.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
-                    _intersectionGuidePathsYielding.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
+                    _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
                 }
             }
         }

@@ -450,10 +450,13 @@ namespace VehicleBrain
             }
         }
 
+        /// <summary> Update the span distances and return whether the node distance is within that. 
+        /// The release distance is greater than the claim distance when moving so that the flickering claim/release behaviour is removed </summary>
         private bool WithinSpanDistance(float nodeDistance, float maxDistance, float currentSpeed, ref bool isWithinClaimDistance, ref bool isWithinReleaseDistance)
         {
             isWithinClaimDistance = nodeDistance < maxDistance;
             isWithinReleaseDistance = nodeDistance < maxDistance + (currentSpeed > 0 ? 1f : 0);
+            
             return isWithinClaimDistance || isWithinReleaseDistance;
         }
 
@@ -532,6 +535,7 @@ namespace VehicleBrain
                     if(isWithinReleaseDistance)
                         forwardReleaseNodes.Add(node);
                     
+                    // Only update the last node if it was a steering target as steering targets are always occupied but do not contribute to the distance
                     if(node.IsSteeringTarget)
                         last = node;
                     
