@@ -390,7 +390,7 @@ namespace VehicleBrain
 
         private void SetLoopNodeAtRandomRoad()
         {
-            List<Road> twoWayRoads = CurrentRoad.RoadSystem.DefaultRoads.FindAll(r => !r.IsOneWay && (r.StartRoadNode.Next?.IsIntersection() == false || r.EndRoadNode.Prev?.IsIntersection() == false));
+            List<DefaultRoad> twoWayRoads = CurrentRoad.RoadSystem.DefaultRoads.FindAll(r => !r.IsOneWay && (r.StartRoadNode.Next?.IsIntersection() == false || r.EndRoadNode.Prev?.IsIntersection() == false));
             Road randomRoad = twoWayRoads[Random.Range(0, twoWayRoads.Count)];
 
             // if there is no intersection at the start of the road, spawn at the start

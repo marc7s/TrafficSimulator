@@ -120,6 +120,7 @@ namespace RoadGenerator
         [HideInInspector] public ConnectedRoad? ConnectedToAtEnd;
         [HideInInspector] public List<POI> POIs = new List<POI>();
         [HideInInspector] public bool IsRoadClosed = false;
+        [HideInInspector] protected bool _isBeingDestroyed = false;
         protected const string POI_CONTAINER_NAME = "POIs";
         protected const string LANE_NAME = "Lane";
         protected const string LANE_CONTAINER_NAME = "Lanes";
@@ -1381,10 +1382,13 @@ namespace RoadGenerator
         }
         void OnDestroy()
         {
+            _isBeingDestroyed = true;
+            
             if(RoadSystem == null) 
                 return;
             
             RoadSystem.RemoveRoad(this);
+            
             // Cleanup connected roads references
             if (ConnectedToAtStart != null)
             {
@@ -1398,14 +1402,15 @@ namespace RoadGenerator
                 road.ConnectedToAtStart = null;
             }
 
-            int count = Intersections.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = Intersections.Count - 1; i >= 0; i--)
             {
-                Intersection intersection = Intersections[0];
-                Intersections.RemoveAt(0);
+                Intersection intersection = Intersections[i];
+                Intersections.RemoveAt(i);
                 DestroyImmediate(intersection.gameObject);
             }
-            RoadSystem.UpdateRoadSystemGraph();
+
+            if(!_isBeingDestroyed)
+                RoadSystem.UpdateRoadSystemGraph();
         }
     }
 }

@@ -79,7 +79,7 @@ namespace RoadGenerator
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
 
-            _roads = _roadSystem.DefaultRoads;
+            _roads = new List<Road>(_roadSystem.DefaultRoads);
 
             AddLanesToList();
             AddLaneLengths();

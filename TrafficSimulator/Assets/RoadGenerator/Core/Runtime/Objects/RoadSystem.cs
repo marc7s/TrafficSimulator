@@ -33,7 +33,7 @@ namespace RoadGenerator
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;
-        [SerializeField][HideInInspector] private List<Road> _defaultRoads = new List<Road>();
+        [SerializeField][HideInInspector] private List<DefaultRoad> _defaultRoads = new List<DefaultRoad>();
         [SerializeField][HideInInspector] private List<TramRail> _tramRails = new List<TramRail>();
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
@@ -45,19 +45,15 @@ namespace RoadGenerator
         private bool _isSetup = false;
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
-        public void AddRoad(Road road) => _defaultRoads.Add(road);
+        public void AddRoad(DefaultRoad road) => _defaultRoads.Add(road);
         public void AddRail(TramRail rail) => _tramRails.Add(rail);
 
         public void RemoveRoad(Road road)
         {
             if (road is DefaultRoad)
-            {
                 _defaultRoads.Remove(road as DefaultRoad);
-            }
             else if (road is TramRail)
-            {
                 _tramRails.Remove(road as TramRail);
-            }
         }
         public void AddNewRoad(PathType pathType)
         {
@@ -105,7 +101,7 @@ namespace RoadGenerator
             if (pathType == PathType.Road)
             {
                 // Get the road from the prefab
-                Road road = roadObj.GetComponent<Road>();
+                DefaultRoad road = roadObj.GetComponent<DefaultRoad>();
                 // Set the road pointers
                 road.RoadObject = roadObj;
                 road.RoadSystem = this;
@@ -182,7 +178,7 @@ namespace RoadGenerator
                 
                 if (road is DefaultRoad)
                 {
-                    AddRoad(road);
+                    AddRoad(road as DefaultRoad);
                 }
                 else if (road is TramRail)
                 {
@@ -295,9 +291,10 @@ namespace RoadGenerator
 
         private void ClearRoadGraph() {
             RoadSystemGraph = null;
-            if(GraphContainer != null) {
+            
+            if(GraphContainer != null)
                 DestroyImmediate(GraphContainer);
-            }
+
             GraphContainer = null;
         }
 
@@ -319,7 +316,7 @@ namespace RoadGenerator
         {
             get => _tramRails.Count;
         }
-        public List<Road> DefaultRoads 
+        public List<DefaultRoad> DefaultRoads 
         {
             get => _defaultRoads;
         }
