@@ -10,7 +10,6 @@ public class RoadDataGatherer : MonoBehaviour
     [field: SerializeField] public float CurrentFuelConsumption { get; private set; }
     [SerializeField] private float _totalFuelConsumption;
     
-
     private void Awake()
     {
         _registeredVehicles = new List<GameObject>();

@@ -54,8 +54,7 @@ namespace VehicleBrain
         public RoadChangedDelegate OnRoadChanged;
         
         [Header("Connections")]
-        [SerializeField]
-        private Road _road;
+        [SerializeField] private Road _road;
         
         public Road Road
         {

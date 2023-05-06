@@ -5,10 +5,12 @@ using RoadGenerator;
 using UnityEngine;
 using VehicleBrain;
 
+[RequireComponent(typeof(AutoDrive))]
 public class RoadRegistrator : MonoBehaviour
 {
     private AutoDrive _autoDrive;
     private Road _currentRoad;
+    
     void Awake()
     {
         _autoDrive = GetComponent<AutoDrive>();
