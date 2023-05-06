@@ -21,7 +21,9 @@ namespace RoadGenerator
 	{
         private Road _road;
         public TrafficSignType? TrafficSignType;
-        public TrafficLight TrafficLight;
+        public TrafficLight TrafficLight = null;
+        public StopSign StopSign = null;
+        public YieldSign YieldSign = null;
         public Intersection Intersection;
         public NavigationNodeEdge PrimaryNavigationNodeEdge;
         public NavigationNodeEdge SecondaryNavigationNodeEdge;

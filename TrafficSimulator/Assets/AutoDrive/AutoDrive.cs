@@ -49,6 +49,21 @@ namespace VehicleBrain
             Repositioning
         }
 
+        private struct SpanNodes
+        {
+            public HashSet<LaneNode> ForwardClaimNodes;
+            public HashSet<LaneNode> ForwardReleaseNodes;
+            public HashSet<LaneNode> BackwardClaimNodes;
+            public HashSet<LaneNode> BackwardReleaseNodes;
+            public SpanNodes(HashSet<LaneNode> forwardClaimNodes, HashSet<LaneNode> forwardReleaseNodes, HashSet<LaneNode> backwardClaimNodes, HashSet<LaneNode> backwardReleaseNodes)
+            {
+                ForwardClaimNodes = forwardClaimNodes;
+                ForwardReleaseNodes = forwardReleaseNodes;
+                BackwardClaimNodes = backwardClaimNodes;
+                BackwardReleaseNodes = backwardReleaseNodes;
+            }
+        }
+
         [Header("Connections")]
         public Road Road;
         public GameObject NavigationTargetMarker;
@@ -61,10 +76,8 @@ namespace VehicleBrain
         public RoadEndBehaviour EndBehaviour = RoadEndBehaviour.Loop;
         public bool ShowNavigationPath = false;
         public NavigationMode OriginalNavigationMode = NavigationMode.Disabled;
-        public bool LogRepositioningInformation = true;
 
         [Header("Quality mode settings")]
-        public ShowTargetLines ShowTargetLines = ShowTargetLines.None;
         [Tooltip("How far from the stopping point the vehicle will come to a full stop at")] public float BrakeOffset = 5f;
         public float MaxRepositioningSpeed = 5f;
         public float MaxReverseDistance = 20f;
@@ -80,7 +93,10 @@ namespace VehicleBrain
         [ReadOnly] public float TotalDistance = 0;
 
         [Header("Debug Settings")]
+        public ShowTargetLines ShowTargetLines = ShowTargetLines.None;
+        public bool LogRepositioningInformation = true;
         public bool LogNavigationErrors = false;
+        public bool LogBrakeReason = false;
         [SerializeField] private bool _logParkingFull = false;
         
         // Public variables
@@ -183,7 +199,7 @@ namespace VehicleBrain
 
             _agent = new AutoDriveAgent(
                 new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
-                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, LogNavigationErrors)
+                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, LogNavigationErrors, LogBrakeReason)
             );
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
@@ -205,7 +221,7 @@ namespace VehicleBrain
             }
 
             // Setup the controller that handles the braking
-            _brakeController = new BrakeController();
+            _brakeController = new BrakeController(ref _agent);
 
             // Setup the controller that handles callbacks for intersection entry and exit
             _navigationController = new NavigationController();
@@ -239,6 +255,7 @@ namespace VehicleBrain
         private void IntersectionEntryHandler(Intersection intersection)
         {
            _agent.Context.PrevIntersection = intersection;
+           _agent.Context.IsInsideIntersection = true;
         }
 
         private void IntersectionExitHandler(Intersection intersection)
@@ -246,6 +263,7 @@ namespace VehicleBrain
             _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
             _agent.UnsetIntersectionTransition(intersection);
             _agent.Context.TurnDirection = TurnDirection.Straight;
+            _agent.Context.IsInsideIntersection = false;
         }
 
         private void HandleActivity()
@@ -391,15 +409,15 @@ namespace VehicleBrain
         // Update the list of nodes that the vehicle is currently occupying
         private void UpdateOccupiedNodes()
         {
-            (HashSet<LaneNode> forwardSpanNodes, HashSet<LaneNode> backwardSpanNodes) = GetVehicleSpanNodes();
+            SpanNodes spanNodes = GetVehicleSpanNodes();
 
-            ClearSpanNodes(forwardSpanNodes, backwardSpanNodes);
+            ClearSpanNodes(spanNodes.ForwardReleaseNodes, spanNodes.BackwardReleaseNodes);
             
             // Start adding the nodes behind the car
-            AddSpanNodes(backwardSpanNodes);
+            AddSpanNodes(spanNodes.BackwardClaimNodes);
 
             // Add the nodes in front of the car
-            AddSpanNodes(forwardSpanNodes);
+            AddSpanNodes(spanNodes.ForwardClaimNodes);
 
             _occupiedNodes.Sort((x, y) => x.Index.CompareTo(y.Index));
         }
@@ -432,54 +450,101 @@ namespace VehicleBrain
             }
         }
 
-        // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
-        private (HashSet<LaneNode>, HashSet<LaneNode>) GetVehicleSpanNodes()
+        /// <summary> Update the span distances and return whether the node distance is within that. 
+        /// The release distance is greater than the claim distance when moving so that the flickering claim/release behaviour is removed </summary>
+        private bool WithinSpanDistance(float nodeDistance, float maxDistance, float currentSpeed, ref bool isWithinClaimDistance, ref bool isWithinReleaseDistance)
         {
-            HashSet<LaneNode> forwardNodes = new HashSet<LaneNode>(){ _agent.Context.CurrentNode };
-            HashSet<LaneNode> backwardNodes = new HashSet<LaneNode>();
+            isWithinClaimDistance = nodeDistance < maxDistance;
+            isWithinReleaseDistance = nodeDistance < maxDistance + (currentSpeed > 0 ? 1f : 0);
+            
+            return isWithinClaimDistance || isWithinReleaseDistance;
+        }
+
+        // Get the list of nodes that the vehicle is currently occupying by moving backwards from the current position until out of vehicle bounds
+        private SpanNodes GetVehicleSpanNodes()
+        {
+            HashSet<LaneNode> forwardClaimNodes = new HashSet<LaneNode>(){ _agent.Context.CurrentNode };
+            HashSet<LaneNode> forwardReleaseNodes = new HashSet<LaneNode>(forwardClaimNodes);
+            
+            HashSet<LaneNode> backwardClaimNodes = new HashSet<LaneNode>();
+            HashSet<LaneNode> backwardReleaseNodes = new HashSet<LaneNode>(backwardClaimNodes);
+            
             LaneNode node = _agent.Prev(_agent.Context.CurrentNode, RoadEndBehaviour.Stop);
+            LaneNode last = node;
 
-            Vector3 direction = _agent.Context.CurrentNode.Position - transform.position;
-            float dot = Vector3.Dot(transform.forward, direction.normalized);
-
-            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position) * -Mathf.Sign(dot);
+            float distanceToCurrentNode = Vector3.Distance(transform.position, _agent.Context.CurrentNode.Position);
             
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
+            float currentSpeed = _agent.Setting.Vehicle.CurrentSpeed;
 
             // Occupy nodes further ahead in intersections
             // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
             // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
-            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
+            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null && _agent.Setting.Vehicle.CurrentSpeed > 0 ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
+
+            bool isWithinClaimDistance = false;
+            bool isWithinReleaseDistance = false;
 
             // Add all occupied nodes prior to and excluding the current node
-            while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset)
+            while (node != null && WithinSpanDistance(nodeDistance, distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
             {
-                backwardNodes.Add(node);
-                nodeDistance += node.DistanceToPrevNode;
+                if(isWithinClaimDistance)
+                    backwardClaimNodes.Add(node);
+
+                if(isWithinReleaseDistance)
+                    backwardReleaseNodes.Add(node);
+                
+                if(node.IsSteeringTarget)
+                    last = node;
+                
                 node = _agent.Prev(node, RoadEndBehaviour.Stop);
+                nodeDistance += node != null && node.IsSteeringTarget ? Vector3.Distance(node.Position, last.Position) : 0;
             }
-            
+
             nodeDistance = 0;
             
             // Add all occupied nodes after and including the current node
             node = _agent.Context.CurrentNode;
             if(!(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID))
             {
+                last = node;
                 node = _agent.Next(_agent.Context.CurrentNode, RoadEndBehaviour.Stop);
-                nodeDistance += node?.DistanceToPrevNode ?? 0;
-                while (node != null && nodeDistance <= distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset + forwardOccupancyOffset)
+                nodeDistance += node != null && node.IsSteeringTarget ? Vector3.Distance(node.Position, last.Position) : 0;
+                
+                while (node != null && WithinSpanDistance(nodeDistance, _vehicleLength / 2 + distanceToCurrentNode + VehicleOccupancyOffset + forwardOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
                 {
                     // Do not occupy nodes in front of a red light
                     if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
                         break;
+
+                    // Do not occupy nodes in front of a yield sign
+                    if(node.YieldSign != null)
+                        break;
+
+                    // Do not occupy nodes in front of a stop sign
+                    if(node.StopSign != null)
+                        break;
+
+                    // Do not occupy nodes in front of the vehicle if it is stationary
+                    if(currentSpeed < 0.1f)
+                        break;
                     
-                    forwardNodes.Add(node);
+                    if(isWithinClaimDistance)
+                        forwardClaimNodes.Add(node);
+
+                    if(isWithinReleaseDistance)
+                        forwardReleaseNodes.Add(node);
+                    
+                    // Only update the last node if it was a steering target as steering targets are always occupied but do not contribute to the distance
+                    if(node.IsSteeringTarget)
+                        last = node;
+                    
                     node = _agent.Next(node, RoadEndBehaviour.Stop);
-                    nodeDistance += node?.DistanceToPrevNode ?? 0;
+                    nodeDistance += node != null && node.IsSteeringTarget ? Vector3.Distance(node.Position, last.Position) : 0;
                 }
             }
             
-            return (forwardNodes, backwardNodes);
+            return new SpanNodes(forwardClaimNodes, forwardReleaseNodes, backwardClaimNodes, backwardReleaseNodes);
         }
 
         private void TeleportToNode<T>(Node<T> node, bool backwardOffset = true) where T : Node<T>
@@ -707,8 +772,6 @@ namespace VehicleBrain
                 // If the next or next next node is further away than our current position, we should not update the current node
                 if(!(isCloserToNextThanCurrentNode || isCloserToNextNextThanCurrentNode))
                     break;
-
-                _agent.UnsetIntersectionTransition(_agent.Context.CurrentNode.Intersection);
                 
                 TotalDistance += _agent.Context.CurrentNode.DistanceToPrevNode;
                 _agent.Context.CurrentNode = nextNode;
@@ -856,25 +919,30 @@ namespace VehicleBrain
         private void SetInitialPrevIntersection()
         {
             _agent.Context.PrevIntersection = null;
+            _agent.Context.IsInsideIntersection = false;
+            Intersection prevIntersection = null;
             
             if(_target == null)
                 return;
             
             // If the starting node is an intersection, the previous intersection is set 
             if (_target.Intersection != null)
-                _agent.Context.PrevIntersection = _target.Intersection;
+                prevIntersection = _target.Intersection;
                 
             LaneNode nextNode = _agent.Next(_target);
             
             // If the starting node is at a three way intersection, the target will be an EndNode but the next will be an intersection node, so we need to set the previous intersection
             if (nextNode != null && nextNode.Intersection != null && nextNode.IsIntersection())
-                _agent.Context.PrevIntersection = nextNode.Intersection;
+                prevIntersection = nextNode.Intersection;
 
             LaneNode prevNode = _agent.Prev(_target);
             
             // If the starting node is a junction edge, the previous intersection is set
             if (prevNode != null && prevNode.Intersection != null && prevNode.IsIntersection())
-                _agent.Context.PrevIntersection = prevNode.Intersection;
+                prevIntersection = prevNode.Intersection;
+
+            _agent.Context.PrevIntersection = prevIntersection;
+            _agent.Context.IsInsideIntersection = prevIntersection != null;
         }
 
         // Move the vehicle to the target node

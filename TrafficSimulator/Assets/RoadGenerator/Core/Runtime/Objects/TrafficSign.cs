@@ -19,6 +19,7 @@ namespace RoadGenerator
         SpeedSignOneHundredTwentyKPH,
         SpeedSignOneHundredThirtyKPH,
         StopSign,
+        YieldSign,
         TrafficLight,
         LampPost,
         NoEntry
@@ -87,9 +88,9 @@ namespace RoadGenerator
         public TrafficSignData(TrafficSignType type, RoadNode roadNode, GameObject prefab, bool isForward, float distanceFromRoad = 0f)
         {
             TrafficSignType = type;
-            this.RoadNode = roadNode;
-            this.SignPrefab = prefab;
-            this.IsForward = isForward;
+            RoadNode = roadNode;
+            SignPrefab = prefab;
+            IsForward = isForward;
             DistanceFromRoad = distanceFromRoad;
         }
     }
