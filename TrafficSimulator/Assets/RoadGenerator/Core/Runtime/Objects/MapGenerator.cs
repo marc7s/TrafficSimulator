@@ -861,7 +861,7 @@ public class MapGenerator : MonoBehaviour
             
             // Update the road to display it
             road.OnChange();
-            roadSystem.AddRoad(road);
+            roadSystem.AddRoad(road as DefaultRoad);
             
             return road;
     }
