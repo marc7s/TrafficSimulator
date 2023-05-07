@@ -311,7 +311,7 @@ public class MapGenerator : MonoBehaviour
                 bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
                 if (isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2 && road1.ConnectedToAtStart == null && road1.ConnectedToAtEnd == null)
                 {
-                 //   road1.ConnectRoadIfEndPointsAreClose();
+                    road1.ConnectRoadIfEndPointsAreClose();
                 }
             }
         }
