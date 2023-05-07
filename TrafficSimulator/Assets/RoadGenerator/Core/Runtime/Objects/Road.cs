@@ -1118,7 +1118,7 @@ namespace RoadGenerator
         {
             const float sideOffset = 3f;
             int sideCoef = poi.LaneSide == LaneSide.Primary ? 1 : -1;
-            Vector3 position = node.Position + sideCoef * node.Normal * (poi.Size.x / 2 + (int)LaneAmount * LaneWidth + sideOffset);
+            Vector3 position = node.Position + sideCoef * node.Normal * (poi.Size.x / 2 + RoadWidth / 2 + sideOffset);
             Quaternion rotation = poi.LaneSide == LaneSide.Secondary ? node.Rotation : node.Rotation * Quaternion.Euler(Vector3.up * 180);
             
             return (position, rotation);
@@ -1362,6 +1362,10 @@ namespace RoadGenerator
         public int LaneCount 
         {
             get => _lanes.Count;
+        }
+        public float RoadWidth 
+        {
+            get => LaneWidth * (int)LaneAmount * 2;
         }
         public RoadNode StartNode
         {

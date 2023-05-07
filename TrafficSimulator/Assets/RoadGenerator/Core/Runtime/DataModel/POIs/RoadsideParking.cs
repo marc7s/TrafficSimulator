@@ -16,6 +16,10 @@ namespace POIs
         [SerializeField, HideInInspector] private GameObject _meshHolder;
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
+        private List<RoadNode> _spanNodes;
+
+        private int _sideCoef => (LaneSide == LaneSide.Primary ? -1 : 1) * (int)RoadNode.Road.RoadSystem.DrivingSide;
+        private float _smoothEdgeOffset => _parkingSize.y / 2f;
 
         protected override void ParkingSetup()
         {
@@ -28,27 +32,39 @@ namespace POIs
 
         protected override void GenerateParkingSpots()
         {
+            if(RoadNode == null)
+                return;
+            
+            CalculateSpanNodes();
             _parkingSpots.Clear();
             
             int parkingSpots = Mathf.FloorToInt(Size.z / _parkingSize.y);
             float forwardOffsetDelta = Size.z / parkingSpots;
-
             float sideOffset = _parkingSize.x / 2;
-            float forwardOffset = 0;
 
-            Vector3 startPos = transform.position - transform.forward * (parkingSpots * forwardOffsetDelta) / 2;
+            RoadNode startNode = _spanNodes[1];
+            Vector3 startPos = GetEdgePosition(startNode, sideOffset);
+            POINode lastParkingSpot = null;
             
-            for(int i = 0; i < parkingSpots; i++, forwardOffset += forwardOffsetDelta)
+            // Go through all span nodes, ignoring the smooth edge nodes
+            for(int i = 1; i < _spanNodes.Count - 1; i++)
             {
-                // The amount to offset from the rear parking
-                Vector3 forwardOffsetVector = transform.forward * (forwardOffset + _parkingSize.y / 2);
+                RoadNode curr = _spanNodes[i];
+
+                Vector3 newPosition = GetEdgePosition(curr, sideOffset);
+                bool first = lastParkingSpot == null;
                 
-                // The amount to offset from the road side
-                Vector3 sideOffsetVector = transform.right * sideOffset;
-                
-                Quaternion rotation = transform.rotation * Quaternion.Euler(Vector3.up * 180);
-                POINode parkingSpot = new POINode(startPos + forwardOffsetVector + sideOffsetVector, rotation);
-                _parkingSpots.Add(parkingSpot);
+                if(first || Vector3.Distance(lastParkingSpot.Position, newPosition) >= forwardOffsetDelta)
+                {
+                    // Do not add the first spot if it is too close to the start
+                    if(first && Vector3.Distance(startPos, newPosition) < _parkingSize.y / 2)
+                        continue;
+                    
+                    Quaternion rotation = curr.Rotation;
+                    POINode parkingSpot = new POINode(newPosition, rotation);
+                    _parkingSpots.Add(parkingSpot);
+                    lastParkingSpot = parkingSpot;
+                }
             }
 
             UpdateMesh();
@@ -56,9 +72,6 @@ namespace POIs
 
         private void UpdateMesh()
         {
-            if(RoadNode == null)
-                return;
-            
             AssignMeshComponents();
             AssignMaterials();
             CreateParkingMesh();
@@ -75,32 +88,24 @@ namespace POIs
             List<Vector3> normals = new List<Vector3>();
             List<int> tris = new List<int>();
 
-            int sideCoef = LaneSide == LaneSide.Primary ? 1 : -1;
-
-            for(int i = 0; i < _parkingSpots.Count; i++)
+            for(int i = 0; i < _spanNodes.Count; i++)
             {
-                POINode parkingSpot = _parkingSpots[i];
-                Vector3 pos = parkingSpot.Position;
+                RoadNode vertNode = _spanNodes[i];
+                Vector3 roadSide = GetEdgePosition(vertNode);
+                Vector3 outside = GetEdgePosition(vertNode, _parkingSize.x);
 
                 bool first = i == 0;
-                bool last = i == _parkingSpots.Count - 1;
-
-                if(first)
-                    pos += sideCoef * RoadNode.Tangent * _parkingSize.y / 2;
-                else if(last)
-                    pos -= sideCoef * RoadNode.Tangent * _parkingSize.y / 2;
-
-                Vector3 left = pos + sideCoef * RoadNode.Normal * _parkingSize.x / 2;
-                Vector3 right = pos - sideCoef * RoadNode.Normal * _parkingSize.x / 2;
+                bool last = i == _spanNodes.Count - 1;
                 
-                if(first)
-                    verts.Add(right + sideCoef * RoadNode.Tangent * _parkingSize.y / 2);
-
-                verts.Add(left);
-                verts.Add(right);
-
-                if(last)
-                    verts.Add(right - sideCoef * RoadNode.Tangent * _parkingSize.y / 2);
+                if(first || last)
+                {
+                    verts.Add(roadSide);
+                }
+                else
+                {
+                    verts.Add(roadSide);
+                    verts.Add(outside);
+                }
             }
 
             for(int i = 0; i < verts.Count; i++)
@@ -110,7 +115,7 @@ namespace POIs
             tris.AddRange(new List<int>{ 0, 1, 2 });
 
             int vertIndex = 1;
-            for(int i = 0; i < _parkingSpots.Count - 1; i++, vertIndex += 2)
+            for(int i = 1; i < _spanNodes.Count - 2; i++, vertIndex += 2)
             {
                 tris.AddRange(new List<int>{ vertIndex, vertIndex + 2, vertIndex + 1 });
                 tris.AddRange(new List<int>{ vertIndex + 1, vertIndex + 2, vertIndex + 3 });
@@ -126,6 +131,78 @@ namespace POIs
             _mesh.normals = normals.ToArray();
             _mesh.subMeshCount = 1;
             _mesh.SetTriangles(tris, 0);
+        }
+
+        /// <summary> Returns the position at the edge of the road </summary>
+        private Vector3 GetEdgePosition(RoadNode node, float offset = 0)
+        {
+            return node.Position + node.Normal * _sideCoef * (offset + node.Road.RoadWidth / 2);
+        }
+
+        private float GetEdgeDistance(RoadNode node1, RoadNode node2)
+        {
+            return Vector3.Distance(GetEdgePosition(node1), GetEdgePosition(node2));
+        }
+
+        private void CalculateSpanNodes()
+        {
+            List<RoadNode> nodes = new List<RoadNode>();
+            RoadNode curr = RoadNode.Prev;
+            RoadNode prev = RoadNode;
+            float distance = 0;
+            const float buffer = 1.5f;
+            float offset = _parkingSize.x / 2 + buffer;
+
+            // Add the nodes behind
+            while(curr != null && distance <= Size.z / 2 + offset)
+            {
+                nodes.Add(curr);
+                distance += GetEdgeDistance(curr, prev);
+                prev = curr;
+                curr = curr.Prev;
+            }
+
+            // Move back until the smooth edge node
+            while(curr != null && distance <= Size.z / 2 + offset + _smoothEdgeOffset)
+            {
+                distance += GetEdgeDistance(curr, prev);
+                prev = curr;
+                curr = curr.Prev;
+            }
+            
+            // Add the smooth edge node
+            nodes.Add(curr);
+            
+            nodes.Reverse();
+            
+            // Add the center node
+            nodes.Add(RoadNode);
+
+            curr = RoadNode.Next;
+            prev = RoadNode;
+            distance = 0;
+            
+            // Add the nodes in front
+            while(curr != null && distance <= Size.z / 2 + offset)
+            {
+                nodes.Add(curr);
+                distance += GetEdgeDistance(curr, prev);
+                prev = curr;
+                curr = curr.Next;
+            }
+
+            // Move forward until the smooth edge node
+            while(curr != null && distance <= Size.z / 2 + offset + _smoothEdgeOffset)
+            {
+                distance += GetEdgeDistance(curr, prev);
+                prev = curr;
+                curr = curr.Next;
+            }
+
+            // Add the smooth edge node
+            nodes.Add(curr);
+
+            _spanNodes = nodes;
         }
 
         private void AssignMeshComponents() 
