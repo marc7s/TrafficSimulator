@@ -260,7 +260,7 @@ namespace VehicleBrain
         private void IntersectionExitHandler(Intersection intersection)
         {
             _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
-            _agent.UnsetIntersectionTransition(intersection);
+            _agent.UnsetIntersectionTransition(intersection, _agent.Context.PrevEntryNode);
             _agent.Context.TurnDirection = TurnDirection.Straight;
             _agent.Context.IsInsideIntersection = false;
         }

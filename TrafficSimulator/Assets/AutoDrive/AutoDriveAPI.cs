@@ -49,13 +49,13 @@ namespace VehicleBrain
 
         public void SetIntersectionTransition(Intersection intersection, LaneNode entry, LaneNode guideStart)
         {
-            _intersectionNodeTransitions[intersection.ID] = (entry, guideStart);
+            _intersectionNodeTransitions[GetIntersectionTransitionKey(intersection, entry)] = (entry, guideStart);
         }
 
-        public void UnsetIntersectionTransition(Intersection intersection)
+        public void UnsetIntersectionTransition(Intersection intersection, LaneNode entry)
         {
             if(intersection != null)
-                _intersectionNodeTransitions.Remove(intersection.ID);
+                _intersectionNodeTransitions.Remove(GetIntersectionTransitionKey(intersection, entry));
         }
 
         public void ClearIntersectionTransitions()
@@ -117,6 +117,7 @@ namespace VehicleBrain
                     }
                     
                     SetIntersectionTransition(entryNode.Intersection, entryNode, node);
+                    Context.PrevEntryNode = entryNode;
                     Context.SetLoopNode(loopNode);
                 }
             }
@@ -233,7 +234,7 @@ namespace VehicleBrain
                     break;
             }
             
-            if(forcePath == null)
+            if(forcePath == null || true)
             {
                 foreach(POI poi in pois)
                 {
@@ -258,7 +259,7 @@ namespace VehicleBrain
             Context.NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1, x.Item2.RoadNode, x.Item3)));
             
             // Get a random path from the navigation graph
-            Context.NavigationPath = forcePath != null ? forcePath.ForcedNavigationPath : Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
+            Context.NavigationPath = forcePath != null && false ? forcePath.ForcedNavigationPath : Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
             Debug.Log(Context.NavigationPath.Count + " " + forcePath?.ForcedNavigationPath.Count);
 
             // Switch to Random mode if no path could be found
@@ -268,6 +269,11 @@ namespace VehicleBrain
             // If a path was found we are still in Path mode, so map the navigation path
             if (Context.NavigationMode == NavigationMode.Path)
                 MapNavigationPath(node, showNavigationPath);
+        }
+
+        private string GetIntersectionTransitionKey(Intersection intersection, LaneNode entry)
+        {
+            return $"{intersection.ID}_{entry.ID}";
         }
 
         private void MapNavigationPath(LaneNode node, bool showNavigationPath)
@@ -296,7 +302,7 @@ namespace VehicleBrain
                 if (current.RoadNode == Context.NavigationPathEndNode.RoadNode && Context.NavigationPath.Count == 0)
                     break;
 
-                if((current.Type == RoadNodeType.JunctionEdge && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(current.Intersection.ID)) || current.RoadNode.IsNavigationNode)
+                if((current.Type == RoadNodeType.JunctionEdge && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(current.Intersection, current))) || current.RoadNode.IsNavigationNode)
                     current = UpdateAndGetGuideNode(current, true);
                 else
                     current = Next(current, RoadEndBehaviour.Stop);
@@ -311,9 +317,9 @@ namespace VehicleBrain
         public LaneNode Next(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
         {
             RoadEndBehaviour endBehaviour = overrideEndBehaviour ?? _setting.EndBehaviour;
-            if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(node.Intersection.ID))
+            if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(node.Intersection, node)))
             {
-                (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[node.Intersection.ID];
+                (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[GetIntersectionTransitionKey(node.Intersection, node)];
                 if(node == entry)
                     return guideStart;
             }
@@ -330,9 +336,9 @@ namespace VehicleBrain
         public LaneNode Prev(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
         {
             RoadEndBehaviour endBehaviour = overrideEndBehaviour ?? _setting.EndBehaviour;
-            if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(node.Intersection.ID))
+            if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(node.Intersection, node)))
             {
-                (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[node.Intersection.ID];
+                (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[GetIntersectionTransitionKey(node.Intersection, node)];
                 
                 if(node == guideStart)
                     return entry;
@@ -407,6 +413,7 @@ namespace VehicleBrain
         public TurnDirection TurnDirection;
         public VehicleActivity Activity;
         public Parking CurrentParking;
+        public LaneNode PrevEntryNode;
         public bool IsInsideIntersection;
         public bool LogNavigationErrors;
         public bool LogBrakeReason;
@@ -437,6 +444,7 @@ namespace VehicleBrain
             BrakeUndershoot = 0;
             Activity = VehicleActivity.Driving;
             CurrentParking = null;
+            PrevEntryNode = null;
             IsInsideIntersection = false;
             LogNavigationErrors = logNavigationErrors;
             LogBrakeReason = logBrakeReason;
