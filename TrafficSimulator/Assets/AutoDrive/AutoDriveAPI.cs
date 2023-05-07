@@ -27,6 +27,17 @@ namespace VehicleBrain
 
         private Dictionary<string, (LaneNode, LaneNode)> _intersectionNodeTransitions = new Dictionary<string, (LaneNode, LaneNode)>();
 
+        private class ForcePath
+        {
+            public Stack<NavigationNodeEdge> ForcedNavigationPath;
+            public List<(POI, NavigationNode, LaneSide)> ForcedTargets;
+            public ForcePath(Stack<NavigationNodeEdge> forcedNavigationPath, List<(POI, NavigationNode, LaneSide)> forcedTargets)
+            {
+                ForcedNavigationPath = forcedNavigationPath;
+                ForcedTargets = forcedTargets;
+            }
+        }
+
         public AutoDriveAgent(AutoDriveSetting setting, AutoDriveContext context)
         {
             _setting = setting;
@@ -175,6 +186,7 @@ namespace VehicleBrain
 
             List<(POI, NavigationNode, LaneSide)> targets = new List<(POI, NavigationNode, LaneSide)>();
             List<NavigationNode> navigationNodes = Context.CurrentRoad.RoadSystem.RoadSystemGraph;
+            ForcePath forcePath = null;
 
             // Generate a path to visit different POIs depending on the vehicle type
             List<POI> pois = new List<POI>();
@@ -186,19 +198,29 @@ namespace VehicleBrain
                     if(parkings.Count > 0)
                     {
                         parkings.Shuffle();
+                        Debug.Log($"Checking {parkings.Count} parkings");
                         while(parkings.Count > 0)
                         {
                             POI parking = parkings[0];
                             parkings.RemoveAt(0);
                             NavigationNode pathEnd = null;
-                            Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), new List<NavigationNode>{ GetPOINavigationNode(parking) }, false, out pathEnd);
+                            Stack<NavigationNodeEdge> forcedNavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), new List<NavigationNode>{ GetPOINavigationNode(parking) }, false, out pathEnd);
                             
                             // Break if a path was found
-                            if(pathEnd != null)
+                            if(pathEnd != null && forcedNavigationPath.Count > 0)
                             {
                                 pois.Add(parking);
+                                NavigationNode poiNavigationNode = GetPOINavigationNode(parking);
+                
+                                forcePath = new ForcePath(forcedNavigationPath, new List<(POI, NavigationNode, LaneSide)>{ (parking, poiNavigationNode, parking.LaneSide) });
+                                Context.NavigationPathEndNode = pathEnd;
                                 break;
                             }
+                        }
+                        if(forcePath == null)
+                        {
+                            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                            cube.transform.position = Setting.Vehicle.transform.position + Vector3.up * 5f;
                         }
                     }
                         
@@ -211,25 +233,33 @@ namespace VehicleBrain
                     break;
             }
             
-            foreach(POI poi in pois)
+            if(forcePath == null)
             {
-                NavigationNode poiNavigationNode = GetPOINavigationNode(poi);
-                
-                (POI, NavigationNode, LaneSide) target = (poi, poiNavigationNode, poi.LaneSide);
-                if(poiNavigationNode != null && !targets.Contains(target))
-                    targets.Add(target);
+                foreach(POI poi in pois)
+                {
+                    NavigationNode poiNavigationNode = GetPOINavigationNode(poi);
+                    
+                    (POI, NavigationNode, LaneSide) target = (poi, poiNavigationNode, poi.LaneSide);
+                    if(poiNavigationNode != null && !targets.Contains(target))
+                        targets.Add(target);
+                }
             }
-
-            List<NavigationNode> targetList = targets.ConvertAll(x => x.Item2);
+            else
+            {
+                targets = forcePath.ForcedTargets;
+            }
 
             // Since we are converting the list to a stack and we want the targets to be popped in the same order as the sorted list, we need to reverse the list
             targets.Reverse();
+            
+            List<NavigationNode> targetList = targets.ConvertAll(x => x.Item2);
             
             // Save the targets
             Context.NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1, x.Item2.RoadNode, x.Item3)));
             
             // Get a random path from the navigation graph
-            Context.NavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
+            Context.NavigationPath = forcePath != null ? forcePath.ForcedNavigationPath : Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
+            Debug.Log(Context.NavigationPath.Count + " " + forcePath?.ForcedNavigationPath.Count);
 
             // Switch to Random mode if no path could be found
             if (Context.NavigationPath.Count == 0)

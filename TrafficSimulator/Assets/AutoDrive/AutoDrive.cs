@@ -135,6 +135,7 @@ namespace VehicleBrain
         private float _targetLerpSpeed = 0;
         private float _timeElapsedSinceLastTarget = 0;
         private float _lastLerpTime = 0;
+        private static int PATHCOUNTER = 0;
 
         void Start()
         {
@@ -203,9 +204,6 @@ namespace VehicleBrain
             );
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
-
-            // Teleport the vehicle to the start of the lane
-            ResetToNode(_agent.Context.CurrentNode);
             
             if (Mode == DrivingMode.Quality)
             {
@@ -229,9 +227,10 @@ namespace VehicleBrain
             _navigationController.OnIntersectionEntry += IntersectionEntryHandler;
             _navigationController.OnIntersectionExit += IntersectionExitHandler;
 
-            _isSetup = true;
-
+            // Teleport the vehicle to the start of the lane
+            ResetToNode(_agent.Context.CurrentNode);
             UpdateOccupiedNodes();
+            _isSetup = true;
         }
 
         void Update()
@@ -320,7 +319,12 @@ namespace VehicleBrain
                     case NavigationMode.Path:
                         // Generate a new path if the current one is empty
                         if(_agent.Context.NavigationPathTargets.Count < 1)
+                        {
+                            PATHCOUNTER++;
+                            Debug.Log($"Finding path {PATHCOUNTER}");
                             _agent.GeneratePath(node, ShowNavigationPath);
+                        }
+                            
                         break;
                 }
             }
