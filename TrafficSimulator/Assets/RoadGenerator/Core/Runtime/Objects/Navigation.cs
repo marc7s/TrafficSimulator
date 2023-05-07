@@ -188,8 +188,8 @@ namespace RoadGenerator
 
                     List<NavigationNodeEdge> subPathList = subPath.ToList();
                     NavigationNodeEdge lastSubEdge = subPathList[subPathList.Count - 1];
-                    
-                    sourceEdge = target.PrimaryDirectionEdge.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
+
+                    sourceEdge = target.PrimaryDirectionEdge?.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
                 }
 
                 return path;

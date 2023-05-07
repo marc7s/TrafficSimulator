@@ -123,6 +123,7 @@ namespace RoadGenerator
         [HideInInspector] public ConnectedRoad? ConnectedToAtEnd;
         [HideInInspector] public List<POI> POIs = new List<POI>();
         [HideInInspector] public bool IsRoadClosed = false;
+        [HideInInspector] protected bool _isBeingDestroyed = false;
         protected const string POI_CONTAINER_NAME = "POIs";
         protected const string LANE_NAME = "Lane";
         protected const string LANE_CONTAINER_NAME = "Lanes";
@@ -1184,12 +1185,15 @@ namespace RoadGenerator
             }
         }
 
+        public void AddLaneParkingPOI(LaneSide laneSide)
+        {
+            
+        }
         private (Vector3, Quaternion) GetPOIOffsetPosition(RoadNode node, POI poi)
         {
             const float sideOffset = 3f;
             int sideCoef = poi.LaneSide == LaneSide.Primary ? 1 : -1;
-            Bounds bounds = poi.gameObject.GetComponent<Renderer>().bounds;
-            Vector3 position = node.Position + sideCoef * node.Normal * (poi.Size.x / 2 + (int)LaneAmount * LaneWidth + sideOffset);
+            Vector3 position = node.Position + sideCoef * node.Normal * (poi.Size.x / 2 + RoadWidth / 2 + sideOffset);
             Quaternion rotation = poi.LaneSide == LaneSide.Secondary ? node.Rotation : node.Rotation * Quaternion.Euler(Vector3.up * 180);
             
             return (position, rotation);
@@ -1434,6 +1438,10 @@ namespace RoadGenerator
         {
             get => _lanes.Count;
         }
+        public float RoadWidth 
+        {
+            get => LaneWidth * (int)LaneAmount * 2;
+        }
         public RoadNode StartNode
         {
             get => StartRoadNode;
@@ -1452,10 +1460,13 @@ namespace RoadGenerator
         }
         void OnDestroy()
         {
+            _isBeingDestroyed = true;
+            
             if(RoadSystem == null) 
                 return;
             
             RoadSystem.RemoveRoad(this);
+            
             // Cleanup connected roads references
             if (ConnectedToAtStart != null)
             {
@@ -1469,16 +1480,14 @@ namespace RoadGenerator
                 road.ConnectedToAtStart = null;
             }
 
-            int count = Intersections.Count;
-            for (int i = 0; i < count; i++)
+            for (int i = Intersections.Count - 1; i >= 0; i--)
             {
-                Intersection intersection = Intersections[0];
-                Intersections.RemoveAt(0);
+                Intersection intersection = Intersections[i];
+                Intersections.RemoveAt(i);
                 DestroyImmediate(intersection.gameObject);
             }
 
-            // Only Update in editor mode
-           // if (!Application.isPlaying)
+           // if(!_isBeingDestroyed)
            //     RoadSystem.UpdateRoadSystemGraph();
         }
     }
