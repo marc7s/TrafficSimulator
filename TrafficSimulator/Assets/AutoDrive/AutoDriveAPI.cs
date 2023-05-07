@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Extensions;
 using DataModel;
 using EVP;
 using RoadGenerator;
@@ -163,6 +164,11 @@ namespace VehicleBrain
             _allParkings = parkings;
         }
 
+        private NavigationNode GetPOINavigationNode(POI poi)
+        {
+            return Context.CurrentRoad.RoadSystem.RoadSystemGraph.Find(x => x == (poi.LaneSide == LaneSide.Primary ? x.RoadNode.PrimaryNavigationNode : x.RoadNode.SecondaryNavigationNode) && x.RoadNode == poi.RoadNode);
+        }
+
         public void GeneratePath(LaneNode node, bool showNavigationPath)
         {
             Context.VisitedNavigationNodes.Clear();
@@ -176,8 +182,26 @@ namespace VehicleBrain
             {
                 // Cars will go to a random parking
                 case VehicleType.Car:
-                    if(_allParkings.Count > 0)
-                        pois.Add(_allParkings[Random.Range(0, _allParkings.Count)]);
+                    List<POI> parkings = new List<POI>(_allParkings);
+                    if(parkings.Count > 0)
+                    {
+                        parkings.Shuffle();
+                        while(parkings.Count > 0)
+                        {
+                            POI parking = parkings[0];
+                            parkings.RemoveAt(0);
+                            NavigationNode pathEnd = null;
+                            Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), new List<NavigationNode>{ GetPOINavigationNode(parking) }, false, out pathEnd);
+                            
+                            // Break if a path was found
+                            if(pathEnd != null)
+                            {
+                                pois.Add(parking);
+                                break;
+                            }
+                        }
+                    }
+                        
                     break;
                 // Buses will follow their bus route
                 case VehicleType.Bus:
@@ -189,7 +213,7 @@ namespace VehicleBrain
             
             foreach(POI poi in pois)
             {
-                NavigationNode poiNavigationNode = navigationNodes.Find(x => x == (poi.LaneSide == LaneSide.Primary ? x.RoadNode.PrimaryNavigationNode : x.RoadNode.SecondaryNavigationNode) && x.RoadNode == poi.RoadNode);
+                NavigationNode poiNavigationNode = GetPOINavigationNode(poi);
                 
                 (POI, NavigationNode, LaneSide) target = (poi, poiNavigationNode, poi.LaneSide);
                 if(poiNavigationNode != null && !targets.Contains(target))

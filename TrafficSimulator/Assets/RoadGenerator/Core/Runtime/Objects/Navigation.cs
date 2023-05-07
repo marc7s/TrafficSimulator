@@ -164,8 +164,8 @@ namespace RoadGenerator
                     // Get the path from the previous target to the current target
                     Stack<NavigationNodeEdge> subPath = GetPathToNode(sourceEdge, target);
                     
-                    // Skip the target if no path is found
-                    if(subPath == null)
+                    // Return if the sub path is null, i.e. it was not possible to navigate between these targets
+                    if(subPath == null || subPath.Count < 1)
                     {
                         if(logSubPathError)
                         {
@@ -173,11 +173,9 @@ namespace RoadGenerator
                             DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
                         }
                         
-                        continue;
+                        nodeToFind = null;
+                        return new Stack<NavigationNodeEdge>();
                     }
-
-                    if(subPath.Count < 1)
-                        continue;
                     
                     // Add the source edge to the path if it is not the first target, to bridge between the targets
                     if(target != targets[0])
