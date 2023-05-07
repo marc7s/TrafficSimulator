@@ -115,19 +115,20 @@ namespace RoadGenerator
             return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
         }
 
-        public static void CreateIntersectionAtPosition(Vector3 intersectionPosition, Road road1, Road road2)
+        public static Intersection CreateIntersectionAtPosition(Vector3 intersectionPosition, Road road1, Road road2)
         {
-         //   Debug.Log("Creating intersection at position: " + intersectionPosition);
             IntersectionPointData intersectionPointData = CalculateIntersectionData(intersectionPosition, road1, road2);
             if (!road1.RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
-                CreateIntersectionAtPosition(intersectionPointData, road1.RoadSystem);
+                return CreateIntersectionAtPosition(intersectionPointData, road1.RoadSystem);
+            return null;
         }
 
-        public static void CreateIntersectionAtPositionMultipleRoads(Vector3 intersectionPosition, List<Road> roads)
+        public static Intersection CreateIntersectionAtPositionMultipleRoads(Vector3 intersectionPosition, List<Road> roads)
         {
             IntersectionPointData intersectionPointData = CalculateIntersectionDataMultipleRoads(intersectionPosition, roads);
             if (!roads[0].RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
-                CreateIntersectionAtPosition(intersectionPointData, roads[0].RoadSystem);
+                return CreateIntersectionAtPosition(intersectionPointData, roads[0].RoadSystem);
+            return null;
         }
 
         /// <summary>Calculate the positions of the two anchor points to be created on either side of the intersection</summary>
@@ -174,7 +175,7 @@ namespace RoadGenerator
         }
 
         /// <summary>Creates an intersection at the given position</summary>
-        static void CreateIntersectionAtPosition(IntersectionPointData intersectionPointData, RoadSystem roadSystem)
+        static Intersection CreateIntersectionAtPosition(IntersectionPointData intersectionPointData, RoadSystem roadSystem)
         {
             List<Road> roads = new List<Road>();
             foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
@@ -199,7 +200,7 @@ namespace RoadGenerator
             {
                 road.OnChange();
             }
-
+            return intersection;
             //intersection.UpdateMesh();
         }
 

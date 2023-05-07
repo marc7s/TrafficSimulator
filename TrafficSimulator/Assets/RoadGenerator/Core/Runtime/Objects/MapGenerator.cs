@@ -53,11 +53,20 @@ public struct WayData
     public bool? IsOneWay;
     public string? Name;
     public SideWalkType? SideWalkType;
+    public ParkingType? ParkingType;
     public ServiceType? ServiceType;
     public BuildingData BuildingData;
 }
 
 public enum SideWalkType
+{
+    None,
+    Left,
+    Right,
+    Both
+}
+
+public enum ParkingType
 {
     None,
     Left,
@@ -76,6 +85,7 @@ public class MapGenerator : MonoBehaviour
     Dictionary<string, XmlNode> nodesDict = new Dictionary<string, XmlNode>();
     Dictionary<string, XmlNode> wayDict = new Dictionary<string, XmlNode>();
     Dictionary<Vector3, List<Road>> roadsAtNode = new Dictionary<Vector3, List<Road>>();
+    Dictionary<Vector3, bool> trafficLightAtJunction = new Dictionary<Vector3, bool>();
     List<XmlNode> busStops = new List<XmlNode>();
     List<XmlNode> trees = new List<XmlNode>();
     double minLat = 0;
@@ -122,6 +132,15 @@ public class MapGenerator : MonoBehaviour
                         case "highway":
                             if (childNode.Attributes["v"].Value == "bus_stop")
                                 busStops.Add(node);
+                            if (childNode.Attributes["v"].Value == "traffic_signals")
+                                trafficLightAtJunction[GetNodePosition(node)] = true;
+                            break;
+                        case "traffic_signals":
+                            trafficLightAtJunction[GetNodePosition(node)] = true;
+                            break;
+                        case "crossing":
+                            if (childNode.Attributes["v"].Value == "traffic_signals")
+                                trafficLightAtJunction[GetNodePosition(node)] = true;
                             break;
                         case "natural":
                             if (childNode.Attributes["v"].Value == "tree")
@@ -219,8 +238,14 @@ public class MapGenerator : MonoBehaviour
                     if (!(isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2))
                     {
                         position = position + new Vector3(0, 0, 0.01f);
-                       // Debug.Log("Intersection position" + position);
-                        IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
+                        Intersection intersection = IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
+                        if (intersection != null)
+                        {
+                            if (trafficLightAtJunction.ContainsKey(position) && trafficLightAtJunction[position])
+                                intersection.FlowType = FlowType.TrafficLights;
+                            else
+                                intersection.FlowType = FlowType.YieldSigns;
+                        }
                     }
                 }
                 else if (roads.Value.Count == 3)
@@ -367,7 +392,7 @@ public class MapGenerator : MonoBehaviour
         WayType? wayType = null;
         BuildingData buildingData = new BuildingData();
         WayData wayData = new WayData();
-
+        ParkingType? parkingType = ParkingType.None;
         wayData.WayID = node.Attributes["id"].Value;
         // search for type of way
         while (ienum.MoveNext())
@@ -428,6 +453,24 @@ public class MapGenerator : MonoBehaviour
                         case "oneway":
                             wayData.IsOneWay = currentNode.Attributes["v"].Value == "yes";
                             break;
+                        case "parking:right":
+                            if (currentNode.Attributes["v"].Value == "lane")    
+                                parkingType = ParkingType.Right;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                parkingType = ParkingType.Right;
+                            break;
+                        case "parking:left":
+                            if (currentNode.Attributes["v"].Value == "lane")    
+                                parkingType = ParkingType.Left;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                parkingType = ParkingType.Left;
+                            break;
+                        case "parking:both":
+                            if (currentNode.Attributes["v"].Value == "lane")    
+                                parkingType = ParkingType.Both;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                parkingType = ParkingType.Both;
+                            break;
                     }
                 }
                 catch
@@ -469,7 +512,6 @@ public class MapGenerator : MonoBehaviour
                 return WayType.Path;
             case "unclassified":
                 return WayType.Unclassified;
-            
             default:
                 return null;
         }
