@@ -12,25 +12,19 @@ namespace POIs
 
     public class RoadsideParking : Parking
     {
-        [Header("Connections")]
-        public Material ParkingMaterial;
-        
         [Header("Settings")]
         public float ParkingLength = _parkingSize.y * 3;
         public RoadSideParkingType ParkingType = RoadSideParkingType.Length;
         public bool AllowStartingSmoothEdge = true;
         public bool AllowEndingSmoothEdge = true;
 
-        [HideInInspector] public Mesh _mesh;
-        [SerializeField, HideInInspector] private GameObject _meshHolder;
-        private MeshFilter _meshFilter;
-        private MeshRenderer _meshRenderer;
-        private List<RoadNode> _spanNodes;
+        private List<RoadNode> _spanNodes = new List<RoadNode>();
 
         private int _sideCoef => (LaneSide == LaneSide.Primary ? -1 : 1) * (int)RoadNode.Road.RoadSystem.DrivingSide;
         private float _smoothEdgeOffset => _parkingSize.y / 2;
         private bool _hasStartingSmoothEdge = true;
         private bool _hasEndingSmoothEdge = true;
+        Dictionary<RoadNode, POINode> _parkingSpaceMap = new Dictionary<RoadNode, POINode>();
 
         protected override void ParkingSetup()
         {
@@ -49,14 +43,19 @@ namespace POIs
             
             CalculateSpanNodes();
             _parkingSpots.Clear();
+            _parkingSpaceMap.Clear();
             
             int parkingSpots = Mathf.FloorToInt(Size.z / _parkingSize.y);
             float forwardOffsetDelta = Size.z / parkingSpots;
             float sideOffset = _parkingSize.x / 2;
 
             RoadNode startNode = _spanNodes[_hasStartingSmoothEdge ? 1 : 0];
+            RoadNode endNode = _spanNodes[_spanNodes.Count - 1 - (_hasEndingSmoothEdge ? 1 : 0)];
             Vector3 startPos = GetEdgePosition(startNode, sideOffset);
+            Vector3 endPos = GetEdgePosition(endNode, sideOffset);
             POINode lastParkingSpot = null;
+
+            //_parkingSpaceEdges.Add(startNode);
             
             // Go through all span nodes, ignoring the smooth edge nodes
             for(int i = 1; i < _spanNodes.Count - 1; i++)
@@ -65,43 +64,47 @@ namespace POIs
 
                 Vector3 newPosition = GetEdgePosition(curr, sideOffset);
                 bool first = lastParkingSpot == null;
+
+                //if(Vector3.Distance(GetEdgePosition(_parkingSpaceEdges[_parkingSpaceEdges.Count - 1], sideOffset), newPosition) >= forwardOffsetDelta)
+                //    _parkingSpaceEdges.Add(curr);
                 
                 if(first || Vector3.Distance(lastParkingSpot.Position, newPosition) >= forwardOffsetDelta)
                 {
                     // Do not add the first spot if it is too close to the start
                     if(first && Vector3.Distance(startPos, newPosition) < _parkingSize.y / 2)
                         continue;
+
+                    // Do not add the spot if it is too close to the end
+                    if(Vector3.Distance(endPos, newPosition) < _parkingSize.y / 2)
+                        continue;
                     
                     Quaternion rotation = curr.Rotation * (LaneSide == LaneSide.Secondary ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
                     POINode parkingSpot = new POINode(newPosition, rotation);
                     _parkingSpots.Add(parkingSpot);
                     lastParkingSpot = parkingSpot;
+
+                    _parkingSpaceMap.Add(curr, parkingSpot);
                 }
             }
-
-            UpdateMesh();
             
             if(ParkingType == RoadSideParkingType.FullRoad)
                 DistanceAlongRoad = RoadNode.Road.Length / 2;
         }
 
-        private void UpdateMesh()
+        protected override void CreateParkingMesh()
         {
-            AssignMeshComponents();
-            AssignMaterials();
-            CreateParkingMesh();
-        }
-
-        private void AssignMaterials()
-        {
-            _meshRenderer.sharedMaterial = ParkingMaterial;
-        }
-
-        private void CreateParkingMesh()
-        {
+            if(_spanNodes.Count == 0)
+                return;
+            
             List<Vector3> verts = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
             List<int> tris = new List<int>();
+            bool parkingStart = true;
+            POINode prevParking = _parkingSpots[0];
+            bool reachedFirstSpot = false;
+            float distance = 0;
+            RoadNode prev = _spanNodes[_hasStartingSmoothEdge ? 1 : 0];
 
             for(int i = 0; i < _spanNodes.Count; i++)
             {
@@ -116,11 +119,44 @@ namespace POIs
                 if((first && _hasStartingSmoothEdge) || (last && _hasEndingSmoothEdge))
                 {
                     verts.Add(roadSide);
+                    float uv = first ? 1 : 1;
+                    uvs.Add(new Vector2(0, uv));
                 }
                 else
                 {
                     verts.Add(roadSide);
                     verts.Add(outside);
+
+                    float forwardUV = (parkingStart ? 0 : -1) + distance / _parkingSize.y;
+                    distance += Vector3.Distance(GetEdgePosition(prev, _parkingSize.x / 2), GetEdgePosition(vertNode, _parkingSize.x / 2));
+
+                    bool parkingEdge = _parkingSpaceMap.ContainsKey(vertNode);
+                    
+                    float uvY;
+                    if(!reachedFirstSpot)
+                        uvY = 0;
+                    else if(parkingEdge && parkingStart)
+                        uvY = 0;
+                    else if(parkingEdge)
+                        uvY = 1;
+                    else
+                        uvY = forwardUV;
+
+                    if(parkingEdge)
+                    {
+                        prevParking = _parkingSpaceMap[vertNode];
+                        parkingStart = !parkingStart;
+                        reachedFirstSpot = true;
+                        distance = 0;
+                    }
+
+                    prev = vertNode;
+                    //float uvY = parkingEdge ? (parkingStart ? 0 : 1) : forwardUV;
+
+                    Debug.Log($"{parkingEdge}: {uvY}");
+
+                    uvs.Add(new Vector2(0, uvY));
+                    uvs.Add(new Vector2(1, uvY));
                 }
             }
 
@@ -150,8 +186,9 @@ namespace POIs
             _mesh.Clear();
             _mesh.vertices = verts.ToArray();
             _mesh.normals = normals.ToArray();
-            _mesh.subMeshCount = 1;
-            _mesh.SetTriangles(tris, 0);
+            _mesh.uv = uvs.ToArray();
+            _mesh.subMeshCount = 2;
+            _mesh.SetTriangles(tris, 1);
         }
 
         /// <summary> Returns the position at the edge of the road </summary>
@@ -315,33 +352,6 @@ namespace POIs
                 nodes.Reverse();
             
             return nodes;
-        }
-
-        private void AssignMeshComponents() 
-        {
-            // Let the parking itself hold the mesh
-            if (_meshHolder == null) 
-                _meshHolder = gameObject;
-
-            _meshHolder.transform.rotation = Quaternion.identity;
-            _meshHolder.transform.position = Vector3.zero;
-            _meshHolder.transform.localScale = Vector3.one;
-
-            // Ensure mesh renderer and filter components are assigned
-            if (!_meshHolder.gameObject.GetComponent<MeshFilter>()) 
-                _meshHolder.gameObject.AddComponent<MeshFilter>();
-
-            if (!_meshHolder.GetComponent<MeshRenderer>()) 
-                _meshHolder.gameObject.AddComponent<MeshRenderer>();
-
-            _meshRenderer = _meshHolder.GetComponent<MeshRenderer>();
-            _meshFilter = _meshHolder.GetComponent<MeshFilter>();
-            
-            // Create a new mesh if one does not already exist
-            if (_mesh == null) 
-                _mesh = new Mesh();
-
-            _meshFilter.sharedMesh = _mesh;
         }
     }
 }

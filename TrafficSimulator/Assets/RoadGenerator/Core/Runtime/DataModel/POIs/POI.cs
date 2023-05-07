@@ -26,6 +26,9 @@ namespace POIs
         // Is used to determine if the POI should assign the size itself or use a provided custom size
         protected bool _useCustomSize = false;
 
+        [HideInInspector] public Vector3 Position;
+        [HideInInspector] public Quaternion Rotation;
+
         // Getters
         public bool MoveToRoadNode => _moveToRoadNode;
         public bool UseDistanceAlongRoad => _useDistanceAlongRoad;
@@ -56,6 +59,9 @@ namespace POIs
             _roadNodeContainer = new GameObject(ROAD_NODE_CONTAINER_NAME);
             _roadNodeContainer.AddComponent<LineRenderer>();
             _roadNodeContainer.transform.parent = transform;
+
+            transform.position = Position;
+            transform.rotation = Rotation;
 
             if(RoadNode != null && DrawRelatedRoadNode)
                 DrawRelatedRoadNodeLine();

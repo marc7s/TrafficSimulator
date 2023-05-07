@@ -1120,8 +1120,8 @@ namespace RoadGenerator
                     if(poi.MoveToRoadNode)
                     {
                         (Vector3 pos, Quaternion rot) = GetPOIOffsetPosition(curr, poi);
-                        poi.transform.position = pos;
-                        poi.transform.rotation = rot;
+                        poi.Position = pos;
+                        poi.Rotation = rot;
                     }
                     
                     poi.Setup();
