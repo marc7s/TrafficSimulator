@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Linq;
+using System.Collections.Generic;
 using POIs;
 
 namespace RoadGenerator
@@ -30,7 +31,7 @@ namespace RoadGenerator
         public bool IsNavigationNode = false;
         public NavigationNode PrimaryNavigationNode;
         public NavigationNode SecondaryNavigationNode;
-        public POI POI = null;
+        public List<POI> POIs = new List<POI>();
         private Vector3 _tangent;
         private Vector3 _normal;
         private RoadNodeType _type;
@@ -188,8 +189,11 @@ namespace RoadGenerator
             return distance;
         }
 
-        /// <summary>Returns `true` if this node is an intersection</summary>
+        /// <summary> Returns `true` if this node is an intersection </summary>
         public bool IsIntersection() => _intersectionTypes.Contains(_type);
+        
+        /// <summary> Returns `true` if this node has at least one POI </summary>
+        public bool HasPOI() => POIs.Count > 0;
 
         public Road Road
         {

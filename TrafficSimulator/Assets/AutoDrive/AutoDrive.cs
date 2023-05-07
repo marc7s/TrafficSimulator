@@ -795,13 +795,13 @@ namespace VehicleBrain
             bool waitWithTeleporting = false;
             if(reachedTarget && _agent.Context.NavigationMode == NavigationMode.Path)
             {
-                _agent.Context.NavigationPathTargets.Pop();
-                
-                if(_agent.Context.CurrentNode.POI != null)
+                (POI targetPOI, _, _) = _agent.Context.NavigationPathTargets.Pop();
+
+                if(targetPOI != null)
                 {
-                    if(_agent.Context.CurrentNode.POI is Parking)
+                    if(targetPOI is Parking)
                     {
-                        Parking parking = _agent.Context.CurrentNode.POI as Parking;
+                        Parking parking = targetPOI as Parking;
                         Park(parking);
                         waitWithTeleporting = _agent.Context.Activity == VehicleActivity.Parked;
 
@@ -810,9 +810,9 @@ namespace VehicleBrain
                         TimeManager.Instance.AddEvent(unParkEvent);
                         unParkEvent.OnEvent += () => StartCoroutine(Unpark());
                     }
-                    else if(_agent.Context.CurrentNode.POI is BusStop)
+                    else if(targetPOI is BusStop)
                     {
-                        WaitAtBusStop(_agent.Context.CurrentNode.POI as BusStop);
+                        WaitAtBusStop(targetPOI as BusStop);
                     }
                 }
             }
@@ -842,7 +842,12 @@ namespace VehicleBrain
                 case NavigationMode.RandomNavigationPath:
                     return _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode;
                 case NavigationMode.Path:
-                    return  _agent.Context.NavigationPathTargets.Count > 0 && _agent.Context.NavigationPathTargets.Peek() == (_agent.Context.CurrentNode.RoadNode, _agent.Context.CurrentNode.LaneSide);
+                    if(_agent.Context.NavigationPathTargets.Count < 1)
+                        return false;
+                    
+                    bool hasTargetPOI = _agent.Context.CurrentNode.POIs.Contains(_agent.Context.NavigationPathTargets.Peek().Item1);
+                    bool isOnRightSide = _agent.Context.NavigationPathTargets.Peek().Item3 == _agent.Context.CurrentNode.LaneSide;
+                    return hasTargetPOI && isOnRightSide;
                 default:
                     return false;
             }

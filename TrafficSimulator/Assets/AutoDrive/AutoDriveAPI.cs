@@ -18,6 +18,8 @@ namespace VehicleBrain
     {
         private AutoDriveSetting _setting;
         private AutoDriveContext _context;
+        private List<POI> _allParkings = new List<POI>();
+        private List<POI> _allBusStops = new List<POI>();
 
         public ref AutoDriveSetting Setting => ref _setting;
         public ref AutoDriveContext Context => ref _context;
@@ -28,6 +30,9 @@ namespace VehicleBrain
         {
             _setting = setting;
             _context = context;
+
+            SetAllParkings();
+            SetAllBusStops();
         }
 
         public void SetIntersectionTransition(Intersection intersection, LaneNode entry, LaneNode guideStart)
@@ -124,7 +129,7 @@ namespace VehicleBrain
                 MapNavigationPath(node, showNavigationPath);
         }
 
-        private List<POI> GetAllBusStops()
+        private void SetAllBusStops()
         {
             List<POI> busStops = new List<POI>();
             
@@ -138,10 +143,10 @@ namespace VehicleBrain
             }
             
             busStops.Sort((x, y) => x.name.CompareTo(y.name));
-            return busStops;
+            _allBusStops = busStops;
         }
 
-        private List<POI> GetAllParkings()
+        private void SetAllParkings()
         {
             List<POI> parkings = new List<POI>();
             
@@ -155,14 +160,14 @@ namespace VehicleBrain
             }
             
             parkings.Sort((x, y) => x.name.CompareTo(y.name));
-            return parkings;
+            _allParkings = parkings;
         }
 
         public void GeneratePath(LaneNode node, bool showNavigationPath)
         {
             Context.VisitedNavigationNodes.Clear();
 
-            List<(NavigationNode, LaneSide)> targets = new List<(NavigationNode, LaneSide)>();
+            List<(POI, NavigationNode, LaneSide)> targets = new List<(POI, NavigationNode, LaneSide)>();
             List<NavigationNode> navigationNodes = Context.CurrentRoad.RoadSystem.RoadSystemGraph;
 
             // Generate a path to visit different POIs depending on the vehicle type
@@ -171,9 +176,8 @@ namespace VehicleBrain
             {
                 // Cars will go to a random parking
                 case VehicleType.Car:
-                    List<POI> allParkings = GetAllParkings();
-                    if(allParkings.Count > 0)
-                        pois.Add(allParkings[Random.Range(0, allParkings.Count)]);
+                    if(_allParkings.Count > 0)
+                        pois.Add(_allParkings[Random.Range(0, _allParkings.Count)]);
                     break;
                 // Buses will follow their bus route
                 case VehicleType.Bus:
@@ -187,18 +191,18 @@ namespace VehicleBrain
             {
                 NavigationNode poiNavigationNode = navigationNodes.Find(x => x == (poi.LaneSide == LaneSide.Primary ? x.RoadNode.PrimaryNavigationNode : x.RoadNode.SecondaryNavigationNode) && x.RoadNode == poi.RoadNode);
                 
-                (NavigationNode, LaneSide) target = (poiNavigationNode, poi.LaneSide);
+                (POI, NavigationNode, LaneSide) target = (poi, poiNavigationNode, poi.LaneSide);
                 if(poiNavigationNode != null && !targets.Contains(target))
                     targets.Add(target);
             }
 
-            List<NavigationNode> targetList = targets.ConvertAll(x => x.Item1);
+            List<NavigationNode> targetList = targets.ConvertAll(x => x.Item2);
 
             // Since we are converting the list to a stack and we want the targets to be popped in the same order as the sorted list, we need to reverse the list
             targets.Reverse();
             
             // Save the targets
-            Context.NavigationPathTargets = new Stack<(RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1.RoadNode, x.Item2)));
+            Context.NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1, x.Item2.RoadNode, x.Item3)));
             
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
@@ -342,7 +346,7 @@ namespace VehicleBrain
         public DrivingAction CurrentAction;
         public NavigationNode NavigationPathEndNode;
         public Stack<NavigationNodeEdge> NavigationPath;
-        public Stack<(RoadNode, LaneSide)> NavigationPathTargets;
+        public Stack<(POI, RoadNode, LaneSide)> NavigationPathTargets;
         public GameObject NavigationPathContainer;
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
@@ -371,7 +375,7 @@ namespace VehicleBrain
             CurrentAction = DrivingAction.Stopped;
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
-            NavigationPathTargets = new Stack<(RoadNode, LaneSide)>();
+            NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>();
             NavigationPathContainer = new GameObject("Navigation Path");
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
