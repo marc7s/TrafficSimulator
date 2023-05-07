@@ -496,7 +496,7 @@ namespace VehicleBrain
                 _vehicleController.cachedRigidbody.MoveRotation(node.Rotation);
                 
                 // Move it to the current position, offset in the opposite direction of the lane
-                _vehicleController.cachedRigidbody.position = backwardOffset ? node.Position - ((node.Rotation * Vector3.forward).normalized) : node.Position;
+                _vehicleController.cachedRigidbody.position = backwardOffset ? node.Position - (node.Rotation * Vector3.forward).normalized : node.Position;
                 transform.position = _vehicleController.cachedRigidbody.position;
 
                 // Reset velocity and angular velocity

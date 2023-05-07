@@ -9,6 +9,7 @@ namespace POIs
         Length,
         FullRoad
     }
+
     public class RoadsideParking : Parking
     {
         [Header("Connections")]
@@ -27,7 +28,7 @@ namespace POIs
         private List<RoadNode> _spanNodes;
 
         private int _sideCoef => (LaneSide == LaneSide.Primary ? -1 : 1) * (int)RoadNode.Road.RoadSystem.DrivingSide;
-        private float _smoothEdgeOffset => _parkingSize.y / 2f;
+        private float _smoothEdgeOffset => _parkingSize.y / 2;
         private bool _hasStartingSmoothEdge = true;
         private bool _hasEndingSmoothEdge = true;
 
@@ -78,6 +79,7 @@ namespace POIs
             }
 
             UpdateMesh();
+            
             if(ParkingType == RoadSideParkingType.FullRoad)
                 DistanceAlongRoad = RoadNode.Road.Length / 2;
         }
@@ -187,6 +189,7 @@ namespace POIs
             }
 
             float smoothEdgeDistance = 0;
+            
             // Move back until the smooth edge node
             while(curr != null && smoothEdgeDistance <= _smoothEdgeOffset)
             {
@@ -264,6 +267,7 @@ namespace POIs
 
                 // Find the last node before the ending smooth edge
                 distance = 0;
+                
                 while(curr != null && distance <= _smoothEdgeOffset)
                 {
                     distance += GetEdgeDistance(curr, prev);

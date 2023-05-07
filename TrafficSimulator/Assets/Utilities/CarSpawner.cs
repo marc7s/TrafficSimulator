@@ -50,7 +50,7 @@ namespace RoadGenerator
         public float SpawnDelay = 1f;
 
         private RoadSystem _roadSystem;
-        private List<Road> _roads;
+        private List<DefaultRoad> _roads;
 
         private List<GameObject> _vehicleTypes;
 
@@ -79,7 +79,7 @@ namespace RoadGenerator
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
 
-            _roads = new List<Road>(_roadSystem.DefaultRoads);
+            _roads = new List<DefaultRoad>(_roadSystem.DefaultRoads);
 
             AddLanesToList();
             AddLaneLengths();
