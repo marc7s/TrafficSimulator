@@ -14,7 +14,7 @@ namespace RoadGenerator
     [Serializable]
 	public class RoadSystem : MonoBehaviour
 	{
-        [Header("Connections")]       
+        [Header("Connections")]
         [SerializeField] private GameObject _roadContainer;
         [SerializeField] private GameObject _intersectionContainer;
         [SerializeField] private GameObject _roadPrefab;
@@ -34,7 +34,7 @@ namespace RoadGenerator
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
         [HideInInspector] public const SpeedLimit DefaultSpeedLimit = SpeedLimit.FiftyKPH;
-        [SerializeField][HideInInspector] private List<Road> _defaultRoads = new List<Road>();
+        [SerializeField][HideInInspector] private List<DefaultRoad> _defaultRoads = new List<DefaultRoad>();
         [SerializeField][HideInInspector] private List<TramRail> _tramRails = new List<TramRail>();
 
         [SerializeField][HideInInspector] private List<Intersection> _intersections = new List<Intersection>();
@@ -46,23 +46,20 @@ namespace RoadGenerator
         private bool _isSetup = false;
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
-        public void AddRoad(Road road) => _defaultRoads.Add(road);
+        public void AddRoad(DefaultRoad road) => _defaultRoads.Add(road);
         public void AddRail(TramRail rail) => _tramRails.Add(rail);
 
         public void RemoveRoad(Road road)
         {
             if (road is DefaultRoad)
-            {
                 _defaultRoads.Remove(road as DefaultRoad);
-            }
             else if (road is TramRail)
-            {
                 _tramRails.Remove(road as TramRail);
-            }
         }
         public void AddNewRoad(PathType pathType)
         {
             Vector3 spawnPoint = Vector3.zero;
+
 #if UNITY_EDITOR
             if(!SpawnRoadsAtOrigin)
             {
@@ -89,7 +86,6 @@ namespace RoadGenerator
             }
 #endif
             
-
             // Instantiate a new road prefab
             GameObject roadObj = Instantiate(GetPathPrefab(pathType), Vector3.zero, Quaternion.identity);
             
@@ -106,7 +102,7 @@ namespace RoadGenerator
             if (pathType == PathType.Road)
             {
                 // Get the road from the prefab
-                Road road = roadObj.GetComponent<Road>();
+                DefaultRoad road = roadObj.GetComponent<DefaultRoad>();
                 // Set the road pointers
                 road.RoadObject = roadObj;
                 road.RoadSystem = this;
@@ -128,7 +124,6 @@ namespace RoadGenerator
 
                 AddRail(rail);
             }
-
         }
 
         private GameObject GetPathPrefab(PathType pathType)
@@ -158,11 +153,13 @@ namespace RoadGenerator
             // We do not want this set too big as there might be roads above or below that do not interfere in the case of bridges and tunnels
             const float collisionDetectionDistance = 10f;
             int layerMask = LayerMask.GetMask("RoadSystem");
+            
             foreach(Vector3 pos in positions)
             {
                 collides = collides || Physics.Raycast(pos, Vector3.up, out RaycastHit upHit, collisionDetectionDistance, layerMask);
                 collides = collides || Physics.Raycast(pos, Vector3.down, out RaycastHit downHit, collisionDetectionDistance, layerMask);
             }
+            
             return collides;
         }
 
@@ -182,13 +179,9 @@ namespace RoadGenerator
                 road.RoadSystem = this;
                 
                 if (road is DefaultRoad)
-                {
-                    AddRoad(road);
-                }
+                    AddRoad(road as DefaultRoad);
                 else if (road is TramRail)
-                {
                     AddRail(road as TramRail);
-                }
             }
 
             // Find intersections
@@ -200,7 +193,7 @@ namespace RoadGenerator
                 AddIntersection(intersection);
             }
 
-            foreach (Road road in _defaultRoads)
+            foreach(DefaultRoad road in _defaultRoads)
                 road.OnChange();
 
             // Find the graph container
@@ -213,7 +206,7 @@ namespace RoadGenerator
         /// <summary> Setup the POIs for all roads in the road system </summary>
         public void UpdatePOIs()
         {
-            foreach(Road road in _defaultRoads)
+            foreach(DefaultRoad road in _defaultRoads)
                 road.UpdateRoadNodes();
         }
 
@@ -257,6 +250,7 @@ namespace RoadGenerator
                 if (Vector3.Distance(position, intersection.IntersectionPosition) < intersection.IntersectionLength)
                     return true;
             }
+            
             return false;
         }
         void Start()
@@ -268,7 +262,7 @@ namespace RoadGenerator
             // Clear the graph
             ClearRoadGraph();
             
-            foreach (Road road in _defaultRoads)
+            foreach (DefaultRoad road in _defaultRoads)
             {
                 // This needs to be called because after script update the scene reloads and the roads don't save their graph correctly
                 // This can be removed if roads serialize the graph correctly
@@ -296,9 +290,10 @@ namespace RoadGenerator
 
         private void ClearRoadGraph() {
             RoadSystemGraph = null;
-            if(GraphContainer != null) {
+            
+            if(GraphContainer != null)
                 DestroyImmediate(GraphContainer);
-            }
+
             GraphContainer = null;
         }
 
@@ -320,7 +315,7 @@ namespace RoadGenerator
         {
             get => _tramRails.Count;
         }
-        public List<Road> DefaultRoads 
+        public List<DefaultRoad> DefaultRoads 
         {
             get => _defaultRoads;
         }

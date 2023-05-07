@@ -128,7 +128,7 @@ namespace VehicleBrain
         {
             List<POI> busStops = new List<POI>();
             
-            foreach(Road road in Context.CurrentRoad.RoadSystem.DefaultRoads)
+            foreach(DefaultRoad road in Context.CurrentRoad.RoadSystem.DefaultRoads)
             {
                 foreach(POI busStop in road.POIs.FindAll(x => x is BusStop))
                 {
@@ -145,7 +145,7 @@ namespace VehicleBrain
         {
             List<POI> parkings = new List<POI>();
             
-            foreach(Road road in Context.CurrentRoad.RoadSystem.DefaultRoads)
+            foreach(DefaultRoad road in Context.CurrentRoad.RoadSystem.DefaultRoads)
             {
                 foreach(POI parking in road.POIs.FindAll(x => x is Parking))
                 {
@@ -395,7 +395,7 @@ namespace VehicleBrain
 
         private void SetLoopNodeAtRandomRoad()
         {
-            List<Road> twoWayRoads = CurrentRoad.RoadSystem.DefaultRoads.FindAll(r => !r.IsOneWay && (r.StartRoadNode.Next?.IsIntersection() == false || r.EndRoadNode.Prev?.IsIntersection() == false));
+            List<DefaultRoad> twoWayRoads = CurrentRoad.RoadSystem.DefaultRoads.FindAll(r => !r.IsOneWay && (r.StartRoadNode.Next?.IsIntersection() == false || r.EndRoadNode.Prev?.IsIntersection() == false));
             Road randomRoad = twoWayRoads[Random.Range(0, twoWayRoads.Count)];
 
             // if there is no intersection at the start of the road, spawn at the start
