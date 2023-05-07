@@ -10,16 +10,18 @@ namespace RoadGenerator
     {
         public NavigationNode GraphNode;
         public AStarNode PreviousNode;
+        public NavigationNodeEdge PreviousEdge;
         public double RouteCost;
         public double EstimatedCost;
         
         public NavigationNodeEdge NavigationEdge;
-        public AStarNode(NavigationNode node, AStarNode previousNode, NavigationNodeEdge navigationNodeEdge, double routeCost, double estimatedCost){
+        public AStarNode(NavigationNode node, AStarNode previousNode, NavigationNodeEdge navigationNodeEdge, double routeCost, double estimatedCost, NavigationNodeEdge previousEdge = null){
             GraphNode = node;
             PreviousNode = previousNode;
             RouteCost = routeCost;
             EstimatedCost = estimatedCost;
             NavigationEdge = navigationNodeEdge;
+            PreviousEdge = previousEdge;
         }
 
         public int CompareTo(AStarNode other)
@@ -47,11 +49,15 @@ namespace RoadGenerator
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
         public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNodeEdge startNode, NavigationNode endNode)
         {
+            Debug.Log("Finding path from " + startNode.EndNavigationNode.RoadNode.Position + " to " + endNode.RoadNode.Position);
             AStarNode start = new AStarNode(startNode.EndNavigationNode, null, null, 0, 0);
             AStarNode target = new AStarNode(endNode, null, null, 0, 0);
             
             Dictionary<string, double> costMap = new Dictionary<string, double>();
+
             
+
+
             PriorityQueue<AStarNode> toBeSearched = new PriorityQueue<AStarNode>();
             toBeSearched.Enqueue(start);
 
@@ -60,39 +66,45 @@ namespace RoadGenerator
                 // Get the node with the lowest estimated cost to the target
                 AStarNode current = toBeSearched.Dequeue();
                 
+                Debug.Log("Checking node " + current.GraphNode.RoadNode.Position + "edges" + current.GraphNode.Edges.Count);
                 if (current.Equals(target))
                     return GetTracedPathFromNode(current);
 
                 // Check all edges from the current node
                 foreach (NavigationNodeEdge edge in current.GraphNode.Edges)
                 {
+                    Debug.Log("Checking edge " + edge.EndNavigationNode.RoadNode.Position);
                     bool isStartNodeUturn = current == start && edge.EndNavigationNode.RoadNode.Position == startNode.StartNavigationNode.RoadNode.Position;
 
-                    bool isUTurn = isStartNodeUturn || edge.EndNavigationNode.RoadNode.Position == current.PreviousNode?.GraphNode.RoadNode.Position;
+                    bool isUTurn = isStartNodeUturn || (edge.EndNavigationNode.RoadNode.Position == current.PreviousNode?.GraphNode.RoadNode.Position && edge.Cost == current.PreviousEdge.Cost);
+
+                    Debug.Log("Is u turn " + isUTurn);
                     // If the edge is a u turn, skip it
                     if (isUTurn)
                         continue;
 
                     double costToNode = current.RouteCost + edge.Cost;
-                    string nodeID = edge.EndNavigationNode.ID;
+                    string nodeID = edge.EndNavigationNode.ID + current.GraphNode.ID;
                     
                     // If the cost to the end node is lower than the current cost, update the cost and add the node to the queue
                     // If the node is not in the queue, add it
                     if (!costMap.ContainsKey(nodeID) || costToNode < costMap[nodeID])
                     {
+                        Debug.Log("Adding edge");
                         // Update the cost
-                        costMap[edge.EndNavigationNode.ID] = costToNode;
+                        costMap[nodeID] = costToNode;
                         
                         // Calculate the estimated cost to the target node
                         double estimatedCost = costToNode + Heuristic(edge.EndNavigationNode, target.GraphNode);
 
                         // Add the node to the priority queue
-                        AStarNode nextNode = new AStarNode(edge.EndNavigationNode, current, edge, costToNode, estimatedCost);
+                        AStarNode nextNode = new AStarNode(edge.EndNavigationNode, current, edge, costToNode, estimatedCost, edge);
                         toBeSearched.Enqueue(nextNode);
                     }
                 }
             }
 
+            Debug.Log("Path not found");
             // If a path is not found, return null
             return null;
         }
@@ -107,9 +119,11 @@ namespace RoadGenerator
             Stack<NavigationNodeEdge> path = new Stack<NavigationNodeEdge>();
             while (node.NavigationEdge != null)
             {
+                Debug.Log(node.NavigationEdge.StartNavigationNode.RoadNode.Position + "grf");
                 path.Push(node.NavigationEdge);
                 node = node.PreviousNode;
             }
+            Debug.Log("Path found " + path.Count);
             return path;
         }
         /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
@@ -172,7 +186,6 @@ namespace RoadGenerator
                             Debug.LogError("Could not find path to target node " + target.RoadNode.Position + ". Skipping target");
                             DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
                         }
-                        
                         nodeToFind = null;
                         return new Stack<NavigationNodeEdge>();
                     }
