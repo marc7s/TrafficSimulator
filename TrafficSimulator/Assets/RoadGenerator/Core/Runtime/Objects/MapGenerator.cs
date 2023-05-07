@@ -392,7 +392,7 @@ public class MapGenerator : MonoBehaviour
         WayType? wayType = null;
         BuildingData buildingData = new BuildingData();
         WayData wayData = new WayData();
-        ParkingType? parkingType = ParkingType.None;
+        ParkingType parkingType = ParkingType.None;
         wayData.WayID = node.Attributes["id"].Value;
         // search for type of way
         while (ienum.MoveNext())
@@ -454,19 +454,19 @@ public class MapGenerator : MonoBehaviour
                             wayData.IsOneWay = currentNode.Attributes["v"].Value == "yes";
                             break;
                         case "parking:right":
-                            if (currentNode.Attributes["v"].Value == "lane")    
+                            if (currentNode.Attributes["v"].Value == "lane")
                                 parkingType = ParkingType.Right;
                             else if (currentNode.Attributes["v"].Value == "street_side")
                                 parkingType = ParkingType.Right;
                             break;
                         case "parking:left":
-                            if (currentNode.Attributes["v"].Value == "lane")    
+                            if (currentNode.Attributes["v"].Value == "lane")
                                 parkingType = ParkingType.Left;
                             else if (currentNode.Attributes["v"].Value == "street_side")
                                 parkingType = ParkingType.Left;
                             break;
                         case "parking:both":
-                            if (currentNode.Attributes["v"].Value == "lane")    
+                            if (currentNode.Attributes["v"].Value == "lane")
                                 parkingType = ParkingType.Both;
                             else if (currentNode.Attributes["v"].Value == "street_side")
                                 parkingType = ParkingType.Both;
@@ -483,6 +483,7 @@ public class MapGenerator : MonoBehaviour
 
         wayData.WayType = wayType.Value;
         wayData.BuildingData = buildingData;
+        wayData.ParkingType = parkingType;
         return wayData;
     }
 
@@ -594,12 +595,26 @@ public class MapGenerator : MonoBehaviour
         Road road = spawnRoad(roadPoints2, wayData);
         //road.IsGeneratingOSM = true;
 
+        road.RoadType = wayData.WayType;
+
         if (wayData.IsOneWay == true || wayData.WayType == WayType.RailTram)
         {
             road.IsOneWay = true;
             road.LaneWidth /= 2;
         }
 
+        if (wayData.ParkingType != null && wayData.ParkingType != ParkingType.None)
+        {
+            Debug.Log("Adding parking" + road);
+            if (wayData.ParkingType == ParkingType.Left || wayData.ParkingType == ParkingType.Both)
+            {
+                road.AddLaneParkingPOI(LaneSide.Secondary);
+            }
+            if (wayData.ParkingType == ParkingType.Right || wayData.ParkingType == ParkingType.Both)
+            {
+                road.AddLaneParkingPOI(LaneSide.Primary);
+            }
+        }
 
         if (wayData.MaxSpeed != null)
             road.SpeedLimit = (SpeedLimit)wayData.MaxSpeed;
@@ -612,6 +627,11 @@ public class MapGenerator : MonoBehaviour
             road.ShouldSpawnLampPoles = wayData.IsLit.Value;
         else
             road.ShouldSpawnLampPoles = false;
+
+        if (wayData.WayType == WayType.Residential)
+        {
+       //     road.LaneWidth = 4f;
+        }
 
         PathCreator pathCreator = road.GetComponent<PathCreator>();
         // Roads with only two points will not render properly, this is a hack to render them

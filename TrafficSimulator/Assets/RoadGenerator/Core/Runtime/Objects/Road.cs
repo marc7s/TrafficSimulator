@@ -87,6 +87,7 @@ namespace RoadGenerator
         public float ConnectionDistanceThreshold = 0f;
         public bool IsOneWay = false;
         public bool IsGeneratingOSM = true;
+        public WayType RoadType;
 
         [Header ("Traffic sign settings")]
         public float SpeedSignDistanceFromIntersectionEdge = 5f;
@@ -198,7 +199,6 @@ namespace RoadGenerator
         /// <summary>Connects this road with any other roads that have their endpoint close to this roads end points </summary>
         public void ConnectRoadIfEndPointsAreClose()
         {
-            Debug.Log("ConnectRoadIfEndPointsAreClose" + this);
             // Find and map the connected roads
             MapConnectedRoads();
 
@@ -557,14 +557,11 @@ namespace RoadGenerator
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
-            Debug.Log("OnChange");
             if(RoadSystem == null)
                 return;
 
             if (!IsGeneratingOSM)
             {
-                Debug.Log(IsGeneratingOSM + "kebab");
-                Debug.Log("sdafhjoiuslfdghkjljkhgsfdlhjkjdslfkgjh");
                 ConnectRoadIfEndPointsAreClose();
             }
 
@@ -1187,7 +1184,11 @@ namespace RoadGenerator
 
         public void AddLaneParkingPOI(LaneSide laneSide)
         {
-            
+            GameObject roadsideParkingObject = Instantiate(RoadSystem.RoadSideParkingPrefab, _POIContainer.transform);
+            RoadsideParking roadsideParking = roadsideParkingObject.GetComponent<RoadsideParking>();
+            roadsideParking.LaneSide = laneSide;
+            roadsideParking.Road = this;
+            roadsideParking.ParkingType = RoadSideParkingType.FullRoad;
         }
         private (Vector3, Quaternion) GetPOIOffsetPosition(RoadNode node, POI poi)
         {

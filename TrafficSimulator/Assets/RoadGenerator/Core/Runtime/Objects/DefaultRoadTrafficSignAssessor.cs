@@ -55,15 +55,17 @@ namespace RoadGenerator
                 _havePlacedSpeedSignAtEndOfIntersection[data.PrevIntersection.ID] = true;
             }
 
+            bool isConnectedAtStartToRoadWithSameSpeed = data.Road.ConnectedToAtStart?.Road.SpeedLimit == data.Road.SpeedLimit;
             // Place a speed sign at the start of the road
-            if (!_havePlacedSpeedSignAtStart && data.DistanceToStart > data.Road.SpeedSignDistanceFromRoadEnd && data.PrevIntersection?.Type != IntersectionType.ThreeWayIntersectionAtStart)
+            if (!_havePlacedSpeedSignAtStart && data.DistanceToStart > data.Road.SpeedSignDistanceFromRoadEnd && data.PrevIntersection?.Type != IntersectionType.ThreeWayIntersectionAtStart && !isConnectedAtStartToRoadWithSameSpeed)
             {
                 signsToBePlaced.Add(new TrafficSignData(carRoad.GetSpeedSignType(), data.RoadNode, carRoad.GetSpeedSignPrefab(), true, data.Road.DefaultTrafficSignOffset));
                 _havePlacedSpeedSignAtStart = true;
             }
 
+            bool isConnectedAtEndToRoadWithSameSpeed = data.Road.ConnectedToAtEnd?.Road.SpeedLimit == data.Road.SpeedLimit;
             // Place a speed sign at the end of the road
-            if (!_havePlacedSpeedSignAtEnd && data.DistanceToEnd < data.Road.SpeedSignDistanceFromRoadEnd && data.NextIntersection?.Type != IntersectionType.ThreeWayIntersectionAtEnd && !data.Road.IsOneWay)
+            if (!_havePlacedSpeedSignAtEnd && data.DistanceToEnd < data.Road.SpeedSignDistanceFromRoadEnd && data.NextIntersection?.Type != IntersectionType.ThreeWayIntersectionAtEnd && !data.Road.IsOneWay && !isConnectedAtEndToRoadWithSameSpeed)
             {
                signsToBePlaced.Add(new TrafficSignData(carRoad.GetSpeedSignType(), data.RoadNode, carRoad.GetSpeedSignPrefab(), false, data.Road.DefaultTrafficSignOffset));
                _havePlacedSpeedSignAtEnd = true;

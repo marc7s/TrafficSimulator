@@ -91,6 +91,8 @@ MonoBehaviour:
   _intersectionPrefab: {fileID: 4601614798071418940, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
   _mapGenerator: {fileID: 3251158373978459654}
   _roadSystemGraphNodePrefab: {fileID: 6519265059532225654, guid: 454238e3f781fa44fa41bcc016a4e5fd, type: 3}
+  _roadSideParkingPrefab: {fileID: 8366617983722215298, guid: 67b0a69f6f70fe346a8ecd3a3e95306f, type: 3}
+  _parkingLotPrefab: {fileID: 3515437566898414979, guid: b09c3367fc5f1834792f19ddf614ea95, type: 3}
   DrivingSide: -1
   ShouldGenerateBuildings: 1
   ShouldGenerateTrees: 1
@@ -98,9 +100,9 @@ MonoBehaviour:
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
-  DefaultYieldSignPrefab: {fileID: 4811144999697380177, guid: a02e087aa1f5e43499891fd70fefc5ba, type: 3}
   DefaultBusStopPrefab: {fileID: 4172526712689242174, guid: 05003485e3fde2e499308490ddc2106d, type: 3}
-  DefaultTreePrefab: {fileID: 1896746309862096, guid: 4063e83aed8f23b4f8f32c28a18ba50a, type: 3}
+  DefaultTreePrefab: {fileID: 9011557119221475123, guid: dafa189ce90adc94e93ddbd2f8bbc1ae, type: 3}
+  DefaultYieldSignPrefab: {fileID: 4811144999697380177, guid: a02e087aa1f5e43499891fd70fefc5ba, type: 3}
   ShowGraph: 0
   SpawnRoadsAtOrigin: 0
   _defaultRoads: []

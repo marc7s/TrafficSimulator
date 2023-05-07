@@ -56,7 +56,7 @@ MonoBehaviour:
   RoadSystem: {fileID: 0}
   _trafficSignContainer: {fileID: 0}
   LaneAmount: 1
-  LaneWidth: 6
+  LaneWidth: 4.5
   Thickness: 0.15
   MaxAngleError: 2
   MinVertexDistance: 0
@@ -65,6 +65,7 @@ MonoBehaviour:
   GenerateSpeedSigns: 1
   ConnectionDistanceThreshold: 3
   IsOneWay: 0
+  IsGeneratingOSM: 1
   SpeedSignDistanceFromIntersectionEdge: 5
   SpeedSignDistanceFromRoadEnd: 5
   ShouldSpawnLampPoles: 1
@@ -78,11 +79,14 @@ MonoBehaviour:
   _laneContainer: {fileID: 0}
   _roadNodeContainer: {fileID: 0}
   _laneNodeContainer: {fileID: 0}
+  _busStopContainer: {fileID: 0}
+  _POIContainer: {fileID: 0}
   PathCreator: {fileID: 4211003387211000974}
   _endOfPathInstruction: 2
   Intersections: []
   _length: 0
   IsFirstRoadInClosedLoop: 0
+  POIs: []
   IsRoadClosed: 0
   _speedSignTenKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}

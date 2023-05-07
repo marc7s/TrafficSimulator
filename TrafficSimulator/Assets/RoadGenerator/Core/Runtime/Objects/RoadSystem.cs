@@ -25,7 +25,8 @@ namespace RoadGenerator
         [SerializeField] private GameObject _intersectionPrefab;
         [SerializeField] private MapGenerator _mapGenerator;
         [SerializeField] private GameObject _roadSystemGraphNodePrefab;
-  
+        [SerializeField] private GameObject _roadSideParkingPrefab;
+        [SerializeField] private GameObject _parkingLotPrefab;
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
@@ -390,9 +391,20 @@ namespace RoadGenerator
         {
             get => _tramRails;
         }
+
         public List<Intersection> Intersections 
         {
             get => _intersections;
+        }
+
+        public GameObject RoadSideParkingPrefab
+        {
+            get => _roadSideParkingPrefab;
+        }
+
+        public GameObject ParkingLotPrefab
+        {
+            get => _parkingLotPrefab;
         }
 
         void OnDestroy()
