@@ -36,6 +36,7 @@ namespace POIs
         {
             _useCustomSize = true;
         }
+
         protected override Vector3 GetSize()
         {
             return new Vector3(2.15f, 0.1f, ParkingType == RoadSideParkingType.Length || RoadNode == null ? ParkingLength : RoadNode.Road.Length);
