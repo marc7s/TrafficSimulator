@@ -115,7 +115,7 @@ namespace RoadGenerator
 
         private void AddLanesToList()
         {
-            foreach (Road road in _roadSystem.DefaultRoads)
+            foreach (DefaultRoad road in _roadSystem.DefaultRoads)
             {
                 foreach (Lane lane in road.Lanes)
                     _lanes.Add(lane);
@@ -154,7 +154,7 @@ namespace RoadGenerator
         private void CalculateLaneIndexes()
         {
             // Loop through all roads
-            foreach (Road road in _roadSystem.DefaultRoads)
+            foreach (DefaultRoad road in _roadSystem.DefaultRoads)
             {
                 // Loop through all lanes
                 for (int i = 0; i < road.LaneCount; i++)

@@ -128,7 +128,7 @@ namespace VehicleBrain
         {
             List<POI> busStops = new List<POI>();
             
-            foreach(Road road in Context.CurrentRoad.RoadSystem.DefaultRoads)
+            foreach(DefaultRoad road in Context.CurrentRoad.RoadSystem.DefaultRoads)
             {
                 foreach(POI busStop in road.POIs.FindAll(x => x is BusStop))
                 {
@@ -145,7 +145,7 @@ namespace VehicleBrain
         {
             List<POI> parkings = new List<POI>();
             
-            foreach(Road road in Context.CurrentRoad.RoadSystem.DefaultRoads)
+            foreach(DefaultRoad road in Context.CurrentRoad.RoadSystem.DefaultRoads)
             {
                 foreach(POI parking in road.POIs.FindAll(x => x is Parking))
                 {
