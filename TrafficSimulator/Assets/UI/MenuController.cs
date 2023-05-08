@@ -174,5 +174,10 @@ namespace UI
         {
             _doc.rootVisualElement.visible = true;
         }
+
+        public bool ShowFPS
+        {
+            get => _showFPS;
+        }
     }
 }

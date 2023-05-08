@@ -42,8 +42,14 @@ namespace UI
         private Button _fastForwardButton;
         public bool _isPaused = false;
 
+        // Labels
         private Label _clockLabel;
+        private Label _fpsLabel;
 
+        private const int _fpsUpdateFrequency = 15;
+        private float _fpsLastUpdateTime = 0;
+
+        private const string FPS_COUNTER = "FPSCounter";
         private const string FULLSCREEN = "Fullscreen";
 
         private CameraManager _cameraManager;
@@ -57,7 +63,7 @@ namespace UI
             // Labels
             _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
             _clockLabel.text = "0000:00:00:00:00:00";
-
+            _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
             
             FindCameraManager();
             // Buttons
@@ -120,6 +126,8 @@ namespace UI
 
         private void Start()
         {
+            // Set FPS visibility
+            _fpsLabel.visible = PlayerPrefsGetBool(FPS_COUNTER);
             UserSelectManager.Instance.OnSelectedGameObject += selectedGameObject =>
             {
                 if (selectedGameObject)
@@ -267,6 +275,21 @@ namespace UI
         void Update()
         {
             _clockLabel.text = TimeManager.Instance.Timestamp;
+            // FPS counter
+            if(PlayerPrefsGetBool(FPS_COUNTER) && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
+                DisplayFPS(1f / Time.unscaledDeltaTime);
+        }
+
+        private void DisplayFPS(float fps)
+        {
+            _fpsLabel.text = "FPS: " + fps.ToString("F0");
+            _fpsLastUpdateTime = Time.time;
+        }
+
+        /// <summary>Wrapper to allow getting bools from PlayerPrefs</summary>
+        private bool PlayerPrefsGetBool(string name)
+        {
+            return PlayerPrefs.GetInt(name, 0) == 1;
         }
 
         public void Enable()
