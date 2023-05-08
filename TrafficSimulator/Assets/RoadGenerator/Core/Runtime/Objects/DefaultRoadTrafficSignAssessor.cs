@@ -57,9 +57,10 @@ namespace RoadGenerator
             }
 
             bool isConnectedAtStartToRoadWithSameSpeed = data.Road.ConnectedToAtStart?.Road.SpeedLimit == data.Road.SpeedLimit;
+            bool isIntersectionAtStart = data.DistanceToPrevIntersection != null;
 
             // Place a speed sign at the start of the road
-            if (!_havePlacedSpeedSignAtStart && data.DistanceToStart > data.Road.SpeedSignDistanceFromRoadEnd && data.PrevIntersection?.Type != IntersectionType.ThreeWayIntersectionAtStart && !isConnectedAtStartToRoadWithSameSpeed)
+            if (!_havePlacedSpeedSignAtStart && data.DistanceToStart > data.Road.SpeedSignDistanceFromRoadEnd && data.PrevIntersection?.Type != IntersectionType.ThreeWayIntersectionAtStart && !isConnectedAtStartToRoadWithSameSpeed && !isIntersectionAtStart)
             {
                 signsToBePlaced.Add(new TrafficSignData(carRoad.GetSpeedSignType(), data.RoadNode, carRoad.GetSpeedSignPrefab(), true, data.Road.DefaultTrafficSignOffset));
                 _havePlacedSpeedSignAtStart = true;
