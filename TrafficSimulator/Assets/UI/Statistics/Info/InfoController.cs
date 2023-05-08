@@ -29,7 +29,7 @@ namespace UI
                 ResetInfo();
                 return;
             }
-            _location.text = "Location: " + car.Agent.Context.CurrentRoad.name;
+            _location.text = "Location: " + car.Agent.Context.CurrentRoad?.name;
         }
 
         public void ResetInfo()

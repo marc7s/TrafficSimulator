@@ -412,7 +412,7 @@ namespace VehicleBrain
         public bool LogBrakeReason;
         public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
-        public Road CurrentRoad => CurrentNode.RoadNode.Road;
+        public Road CurrentRoad => CurrentNode?.RoadNode.Road;
         
         public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool logNavigationErrors, bool logBrakeReason)
         {
