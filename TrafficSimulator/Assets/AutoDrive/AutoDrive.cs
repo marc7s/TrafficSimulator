@@ -135,7 +135,6 @@ namespace VehicleBrain
         private float _targetLerpSpeed = 0;
         private float _timeElapsedSinceLastTarget = 0;
         private float _lastLerpTime = 0;
-        private static int PATHCOUNTER = 0;
 
         void Start()
         {
@@ -255,12 +254,13 @@ namespace VehicleBrain
         {
            _agent.Context.PrevIntersection = intersection;
            _agent.Context.IsInsideIntersection = true;
+           _agent.Context.PrevEntryNodes[intersection] = _agent.Context.CurrentNode;
         }
 
         private void IntersectionExitHandler(Intersection intersection)
         {
             _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
-            _agent.UnsetIntersectionTransition(intersection, _agent.Context.PrevEntryNode);
+            _agent.UnsetIntersectionTransition(intersection, _agent.Context.PrevEntryNodes[intersection]);
             _agent.Context.TurnDirection = TurnDirection.Straight;
             _agent.Context.IsInsideIntersection = false;
         }
@@ -314,17 +314,13 @@ namespace VehicleBrain
                 switch(_agent.Context.NavigationMode)
                 {
                     case NavigationMode.RandomNavigationPath:
+                        // Generate a new random path when resetting to a node
                         _agent.UpdateRandomPath(node, ShowNavigationPath);
                         break;
                     case NavigationMode.Path:
-                        // Generate a new path if the current one is empty
+                        // Generate a new path if the current one is empty since there might be targets left
                         if(_agent.Context.NavigationPathTargets.Count < 1)
-                        {
-                            PATHCOUNTER++;
-                            Debug.Log($"Finding path {PATHCOUNTER}");
                             _agent.GeneratePath(node, ShowNavigationPath);
-                        }
-                            
                         break;
                 }
             }

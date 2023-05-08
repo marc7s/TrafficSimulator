@@ -49,7 +49,6 @@ namespace RoadGenerator
         /// <summary> Finds the shortest path between two nodes in the road graph using A* algorithm </summary>
         public static Stack<NavigationNodeEdge> GetPathToNode(NavigationNodeEdge startEdge, NavigationNode endNode)
         {
-            Debug.Log("Finding path from " + startEdge.EndNavigationNode.RoadNode.Position + " to " + endNode.RoadNode.Position);
             AStarNode start = new AStarNode(startEdge.EndNavigationNode, null, null, 0, 0);
             AStarNode target = new AStarNode(endNode, null, null, 0, 0);
             
@@ -62,21 +61,16 @@ namespace RoadGenerator
             {
                 // Get the node with the lowest estimated cost to the target
                 AStarNode current = toBeSearched.Dequeue();
-                
-                Debug.Log("Checking node " + current.GraphNode.RoadNode.Position + "edges" + current.GraphNode.Edges.Count);
-                Debug.Log("heyo " + current.NavigationEdge);
+
                 if (current.Equals(target))
                     return GetTracedPathFromNode(current);
 
                 // Check all edges from the current node
                 foreach (NavigationNodeEdge edge in current.GraphNode.Edges)
                 {
-                    Debug.Log("Checking edge " + edge.EndNavigationNode.RoadNode.Position);
                     bool isStartNodeUturn = current == start && edge.EndNavigationNode.RoadNode.Position == startEdge.StartNavigationNode.RoadNode.Position;
 
                     bool isUTurn = isStartNodeUturn || (edge.EndNavigationNode.RoadNode.Position == current.PreviousNode?.GraphNode.RoadNode.Position && edge.Cost == current.PreviousEdge.Cost);
-
-                    Debug.Log("Is u turn " + isUTurn);
                     // If the edge is a u turn, skip it
                     if (isUTurn)
                         continue;
@@ -88,7 +82,6 @@ namespace RoadGenerator
                     // If the node is not in the queue, add it
                     if (!costMap.ContainsKey(nodeID) || costToNode < costMap[nodeID])
                     {
-                        Debug.Log("Adding edge");
                         // Update the cost
                         costMap[nodeID] = costToNode;
                         
@@ -102,7 +95,6 @@ namespace RoadGenerator
                 }
             }
 
-            Debug.Log("Path not found");
             // If a path is not found, return null
             return null;
         }
@@ -115,19 +107,13 @@ namespace RoadGenerator
         private static Stack<NavigationNodeEdge> GetTracedPathFromNode(AStarNode node)
         {
             Stack<NavigationNodeEdge> path = new Stack<NavigationNodeEdge>();
-            List<Vector3> pathPos = new List<Vector3>();
             AStarNode curr = node;
             while (curr.NavigationEdge != null)
             {
-                pathPos.Add(curr.GraphNode.RoadNode.Position);
-                Debug.Log(curr.NavigationEdge.StartNavigationNode.RoadNode.Position + "grf");
                 path.Push(curr.NavigationEdge);
                 curr = curr.PreviousNode;
             }
-            Debug.Log("Path found " + path.Count);
-            //DebugUtility.MarkPositions(pathPos.ToArray());
-            Debug.Log(node.NavigationEdge);
-            //DebugUtility.MarkPositions(new Vector3[]{ node.NavigationEdge.StartNavigationNode.RoadNode.Position, node.NavigationEdge.EndNavigationNode.RoadNode.Position });
+
             return path;
         }
         /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
@@ -193,9 +179,7 @@ namespace RoadGenerator
                         nodeToFind = null;
                         return new Stack<NavigationNodeEdge>();
                     }
-                    
 
-                    Debug.Log("DIFFERENT: " + (target != targets[0]));
                     // Add the source edge to the path if it is not the first target, to bridge between the targets
                     if(target != targets[0])
                         subPath.Push(sourceEdge);
@@ -208,19 +192,6 @@ namespace RoadGenerator
 
                     sourceEdge = target.PrimaryDirectionEdge?.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
                 }
-
-                Dictionary<string, (Vector3[], Quaternion[])> _positionGroups = new Dictionary<string, (Vector3[], Quaternion[])>();
-                Stack<NavigationNodeEdge> pathCopy = new Stack<NavigationNodeEdge>(new Stack<NavigationNodeEdge>(path));
-                int i = 0;
-                while(pathCopy.Count > 0)
-                {
-                    NavigationNodeEdge edge = pathCopy.Pop();
-                    Vector3[] positions = new Vector3[]{ edge.StartNavigationNode.RoadNode.Position, edge.EndNavigationNode.RoadNode.Position };
-                    Quaternion[] rotations = new Quaternion[]{ Quaternion.identity, Quaternion.identity };
-                    _positionGroups.Add($"Positions {i}", (positions.ToArray(), rotations.ToArray()));
-                    i++;
-                }
-                DebugUtility.AddMarkGroups(_positionGroups);
 
                 return path;
             }

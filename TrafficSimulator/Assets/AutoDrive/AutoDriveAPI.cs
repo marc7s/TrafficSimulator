@@ -117,7 +117,6 @@ namespace VehicleBrain
                     }
                     
                     SetIntersectionTransition(entryNode.Intersection, entryNode, node);
-                    Context.PrevEntryNode = entryNode;
                     Context.SetLoopNode(loopNode);
                 }
             }
@@ -199,7 +198,7 @@ namespace VehicleBrain
                     if(parkings.Count > 0)
                     {
                         parkings.Shuffle();
-                        Debug.Log($"Checking {parkings.Count} parkings");
+
                         while(parkings.Count > 0)
                         {
                             POI parking = parkings[0];
@@ -234,7 +233,7 @@ namespace VehicleBrain
                     break;
             }
             
-            if(forcePath == null || true)
+            if(forcePath == null)
             {
                 foreach(POI poi in pois)
                 {
@@ -259,9 +258,8 @@ namespace VehicleBrain
             Context.NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1, x.Item2.RoadNode, x.Item3)));
             
             // Get a random path from the navigation graph
-            Context.NavigationPath = forcePath != null && false ? forcePath.ForcedNavigationPath : Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
-            Debug.Log(Context.NavigationPath.Count + " " + forcePath?.ForcedNavigationPath.Count);
-
+            Context.NavigationPath = forcePath != null ? forcePath.ForcedNavigationPath : Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
+            
             // Switch to Random mode if no path could be found
             if (Context.NavigationPath.Count == 0)
                 Context.NavigationMode = NavigationMode.Random;
@@ -300,9 +298,9 @@ namespace VehicleBrain
                     _context.NavigationPathPositions.Add(current.Position);
                 
                 if (current.RoadNode == Context.NavigationPathEndNode.RoadNode && Context.NavigationPath.Count == 0)
-                    break;
+                    break;    
 
-                if((current.Type == RoadNodeType.JunctionEdge && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(current.Intersection, current))) || current.RoadNode.IsNavigationNode)
+                if((current.Type == RoadNodeType.JunctionEdge && current.Next?.IsIntersection() == true && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(current.Intersection, current))) || current.RoadNode.IsNavigationNode)
                     current = UpdateAndGetGuideNode(current, true);
                 else
                     current = Next(current, RoadEndBehaviour.Stop);
@@ -413,7 +411,7 @@ namespace VehicleBrain
         public TurnDirection TurnDirection;
         public VehicleActivity Activity;
         public Parking CurrentParking;
-        public LaneNode PrevEntryNode;
+        public Dictionary<Intersection, LaneNode> PrevEntryNodes;
         public bool IsInsideIntersection;
         public bool LogNavigationErrors;
         public bool LogBrakeReason;
@@ -444,7 +442,7 @@ namespace VehicleBrain
             BrakeUndershoot = 0;
             Activity = VehicleActivity.Driving;
             CurrentParking = null;
-            PrevEntryNode = null;
+            PrevEntryNodes = new Dictionary<Intersection, LaneNode>();
             IsInsideIntersection = false;
             LogNavigationErrors = logNavigationErrors;
             LogBrakeReason = logBrakeReason;
