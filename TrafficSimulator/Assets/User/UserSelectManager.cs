@@ -46,10 +46,10 @@ namespace User
         public static UserSelectManager Instance
         {
             get
-            {   if (applicationIsQuitting)
-                {
+            {   
+                if (applicationIsQuitting)
                     return null;
-                }
+                
                 lock (_lock)
                 {
                     if (_instance == null)
@@ -136,13 +136,9 @@ namespace User
             if(!IsHoveringUIElement)
             {
                 if (_previousClickedSelectable == SelectedGameObject)
-                {
                     OnClickInput(OnDoubleClickedSelectedGameObject);
-                }
                 else
-                {
                     _previousClickedSelectable = null;
-                }
             }
         }
 
@@ -161,15 +157,12 @@ namespace User
         private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke)
         {
             if (_mainCamera == null)
-            {
                 _mainCamera = Camera.main;
-            }
+
             Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
             if (Physics.Raycast(ray, out RaycastHit hitInfo) && CanSelectNewObject)
-            {
                 SelectObjectFromClick(eventToInvoke, hitInfo);
-            }
         }
 
         // Select the object based on the click event and invoke the corresponding event
@@ -185,9 +178,7 @@ namespace User
                 }
 
                 if (_hasSelectedGameObject)
-                {
                     SelectedGameObject.Deselect();
-                }
 
                 hitSelectable.Select();
                 SelectedGameObject = hitSelectable;
