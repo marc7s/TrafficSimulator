@@ -154,23 +154,25 @@ namespace RoadGenerator
             }
 
             int count = 0;
-            foreach(XmlNode node in doc.DocumentElement.ChildNodes){
+            foreach(XmlNode node in doc.DocumentElement.ChildNodes)
+            {
                 if (node.Name == "way") 
                 {
                     WayData? wayData = GetWayData(node);
                     IEnumerator ienum = node.GetEnumerator();
+                    
                     if (wayData == null)
                         continue;
+                    
                     if (wayData?.WayType != WayType.Building) {
                         GenerateRoad(ienum, wayData.Value);
                         count++;
                     }
-                    if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings) {
+                    
+                    if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings)
                         GenerateBuilding(ienum, wayData.Value);
-                    }
                 }
-
-                if (node.Name == "relation")
+                else if (node.Name == "relation")
                 {
                     WayData? wayData = GetWayData(node);
                     IEnumerator ienum = node.GetEnumerator();
@@ -181,15 +183,12 @@ namespace RoadGenerator
                         while (ienum.MoveNext())
                         {
                             XmlNode currentNode = (XmlNode) ienum.Current; 
-                            if (currentNode.Name == "member")
+                            if (currentNode.Name == "member" && currentNode.Attributes["type"].Value == "way")
                             {
-                                if (currentNode.Attributes["type"].Value == "way")
+                                if (_wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
                                 {
-                                    if (_wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
-                                    {
-                                        XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
-                                        GenerateBuilding(wayNode.GetEnumerator(), wayData.Value);
-                                    }
+                                    XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
+                                    GenerateBuilding(wayNode.GetEnumerator(), wayData.Value);
                                 }
                             }
                         }
@@ -205,13 +204,14 @@ namespace RoadGenerator
             if (roadSystem.ShouldGenerateTrees)
                 AddTrees();
 
-        foreach (Road road in roadSystem.DefaultRoads)
+            foreach (Road road in roadSystem.DefaultRoads)
                 road.IsGeneratingOSM = false;
         }
 
         private void AddRoads()
         {
-            foreach (var roads in _roadsAtNode) {
+            foreach (KeyValuePair<Vector3, List<Road>> roads in _roadsAtNode)
+            {
                 Vector3 position = roads.Key;
 
                 // Find nodes that are shared by more than one road
@@ -227,9 +227,7 @@ namespace RoadGenerator
                         PathCreator pathCreator2 = road2.PathCreator;
 
                         if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15)
-                        {
                             continue;
-                        }
 
                         bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
                         bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
@@ -239,13 +237,9 @@ namespace RoadGenerator
                         {
                             position = position + new Vector3(0, 0, 0.01f);
                             Intersection intersection = IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
+                            
                             if (intersection != null)
-                            {
-                                if (_trafficLightAtJunction.ContainsKey(position) && _trafficLightAtJunction[position])
-                                    intersection.FlowType = FlowType.TrafficLights;
-                                else
-                                    intersection.FlowType = FlowType.YieldSigns;
-                            }
+                                intersection.FlowType = _trafficLightAtJunction.ContainsKey(position) && _trafficLightAtJunction[position] ? FlowType.TrafficLights : FlowType.YieldSigns;
                         }
                     }
                     else if (roads.Value.Count == 3)
@@ -298,7 +292,7 @@ namespace RoadGenerator
                 }
             }
 
-            foreach (var roads in _roadsAtNode) 
+            foreach (KeyValuePair<Vector3, List<Road>> roads in _roadsAtNode) 
             {
                 if (roads.Value.Count == 2)
                 {
@@ -309,10 +303,9 @@ namespace RoadGenerator
 
                     bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
                     bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
+                    
                     if (isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2 && road1.ConnectedToAtStart == null && road1.ConnectedToAtEnd == null)
-                    {
                         road1.ConnectRoadIfEndPointsAreClose();
-                    }
                 }
             }
 
@@ -324,6 +317,7 @@ namespace RoadGenerator
             GameObject busStopPrefab = _roadSystem.DefaultBusStopPrefab;
             string name = "";
             string refName = "";
+            
             foreach (XmlNode busStopNode in _busStops)
             {
                 foreach (XmlNode tagNode in busStopNode.ChildNodes)
@@ -344,9 +338,12 @@ namespace RoadGenerator
                 name = name + " " + refName;
 
                 Vector3 position = GetNodePosition(busStopNode);
+                
                 if (_roadsAtNode.ContainsKey(position) == false)
                     continue;
+                
                 List<Road> roads = _roadsAtNode[position];
+                
                 if (roads.Count == 0)
                     continue;
 
@@ -356,27 +353,29 @@ namespace RoadGenerator
                 
                 float minDistanceToBusStop = float.MaxValue;
                 RoadNode closestRoadNode = null;
+                
                 while (curr != null)
                 {
                     float distanceToBusStop = Vector3.Distance(curr.Position, position);
+                    
                     if (distanceToBusStop < minDistanceToBusStop)
                     {
                         minDistanceToBusStop = distanceToBusStop;
                         closestRoadNode = curr;
                     }
+                    
                     curr = curr.Next;
                 }
+                
                 bool isForward = refName == "A";
                 road.SpawnBusStop(closestRoadNode, isForward, busStopPrefab, name);
-
-                //GameObject busStopObject = Instantiate(busStopPrefab, position, Quaternion.identity);
-                //busStopObject.transform.parent = roadSystem.transform;
             }
         }
 
         private void AddTrees()
         {
             GameObject treePrefab = _roadSystem.DefaultTreePrefab;
+            
             foreach (XmlNode treeNode in _trees)
             {
                 Vector3 position = GetNodePosition(treeNode);
@@ -394,96 +393,99 @@ namespace RoadGenerator
             WayData wayData = new WayData();
             ParkingType parkingType = ParkingType.None;
             wayData.WayID = node.Attributes["id"].Value;
-            // search for type of way
+            
+            // Search for type of way
             while (ienum.MoveNext())
             {
                 XmlNode currentNode = (XmlNode) ienum.Current;
                 if (currentNode.Name != "tag") 
                     continue;
-                    try
+                
+                try
+                {
+                    switch (currentNode.Attributes["k"].Value)
                     {
-                        switch (currentNode.Attributes["k"].Value)
-                        {
-
-                            case "highway":
-                                wayType = GetRoadType(currentNode);
-                                break;
-                            case "building":
-                                wayType = WayType.Building;
-                                break;
-                            case "name":
-                                wayData.Name = currentNode.Attributes["v"].Value;
-                                break;
-                            case "maxspeed":
-                                wayData.MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
-                                break;
-                            case "junction":
-                                if (currentNode.Attributes["v"].Value == "roundabout")
-                                    return null;
-                                break;
-                            case "height":
-                                buildingData.Height = int.Parse(currentNode.Attributes["v"].Value);
-                                break;
-                            case "addr:housenumber":
-                                buildingData.StreetAddress = currentNode.Attributes["v"].Value;
-                                break;
-                            case "addr:street":
-                                buildingData.StreetName = currentNode.Attributes["v"].Value;
-                                break;
-                            case "service":
-                                if (currentNode.Attributes["v"].Value == "driveway")
-                                    wayData.ServiceType = ServiceType.DriveWay;
-                                break;
-                            case "lit":
-                                if (currentNode.Attributes["v"].Value == "yes")
-                                    wayData.IsLit = true;
-                                else 
-                                    wayData.IsLit = false;
-                                break;
-                            case "railway":
-                                wayType = WayType.RailTram;
-                                break;
-                            case "building:levels":
-                                buildingData.BuildingLevels = int.Parse(currentNode.Attributes["v"].Value);
-                                break;
-                            case "type":
-                                if (currentNode.Attributes["v"].Value == "multipolygon")
-                                    buildingData.IsMultiPolygon = true;
-                                break;
-                            case "oneway":
-                                wayData.IsOneWay = currentNode.Attributes["v"].Value == "yes";
-                                break;
-                            case "parking:right":
-                                if (currentNode.Attributes["v"].Value == "lane")
-                                    parkingType = ParkingType.Right;
-                                else if (currentNode.Attributes["v"].Value == "street_side")
-                                    parkingType = ParkingType.Right;
-                                break;
-                            case "parking:left":
-                                if (currentNode.Attributes["v"].Value == "lane")
-                                    parkingType = ParkingType.Left;
-                                else if (currentNode.Attributes["v"].Value == "street_side")
-                                    parkingType = ParkingType.Left;
-                                break;
-                            case "parking:both":
-                                if (currentNode.Attributes["v"].Value == "lane")
-                                    parkingType = ParkingType.Both;
-                                else if (currentNode.Attributes["v"].Value == "street_side")
-                                    parkingType = ParkingType.Both;
-                                break;
-                        }
+                        case "highway":
+                            wayType = GetRoadType(currentNode);
+                            break;
+                        case "building":
+                            wayType = WayType.Building;
+                            break;
+                        case "name":
+                            wayData.Name = currentNode.Attributes["v"].Value;
+                            break;
+                        case "maxspeed":
+                            wayData.MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
+                            break;
+                        case "junction":
+                            if (currentNode.Attributes["v"].Value == "roundabout")
+                                return null;
+                            break;
+                        case "height":
+                            buildingData.Height = int.Parse(currentNode.Attributes["v"].Value);
+                            break;
+                        case "addr:housenumber":
+                            buildingData.StreetAddress = currentNode.Attributes["v"].Value;
+                            break;
+                        case "addr:street":
+                            buildingData.StreetName = currentNode.Attributes["v"].Value;
+                            break;
+                        case "service":
+                            if (currentNode.Attributes["v"].Value == "driveway")
+                                wayData.ServiceType = ServiceType.DriveWay;
+                            break;
+                        case "lit":
+                            if (currentNode.Attributes["v"].Value == "yes")
+                                wayData.IsLit = true;
+                            else 
+                                wayData.IsLit = false;
+                            break;
+                        case "railway":
+                            wayType = WayType.RailTram;
+                            break;
+                        case "building:levels":
+                            buildingData.BuildingLevels = int.Parse(currentNode.Attributes["v"].Value);
+                            break;
+                        case "type":
+                            if (currentNode.Attributes["v"].Value == "multipolygon")
+                                buildingData.IsMultiPolygon = true;
+                            break;
+                        case "oneway":
+                            wayData.IsOneWay = currentNode.Attributes["v"].Value == "yes";
+                            break;
+                        case "parking:right":
+                            if (currentNode.Attributes["v"].Value == "lane")
+                                parkingType = ParkingType.Right;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                parkingType = ParkingType.Right;
+                            break;
+                        case "parking:left":
+                            if (currentNode.Attributes["v"].Value == "lane")
+                                parkingType = ParkingType.Left;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                parkingType = ParkingType.Left;
+                            break;
+                        case "parking:both":
+                            if (currentNode.Attributes["v"].Value == "lane")
+                                parkingType = ParkingType.Both;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                parkingType = ParkingType.Both;
+                            break;
                     }
-                    catch
-                    {
-                        Debug.Log("Error parsing way data");
-                    }
+                }
+                catch
+                {
+                    Debug.Log("Error parsing way data");
+                }
             }
+            
             if (wayType == null)
                 return null;
 
             wayData.WayType = wayType.Value;
             wayData.BuildingData = buildingData;
             wayData.ParkingType = parkingType;
+            
             return wayData;
         }
 
@@ -575,24 +577,23 @@ namespace RoadGenerator
             if (wayData.WayType == WayType.RailTram)
                 return;
 
-            // TotatlLenght of road
+            // TotalLength of road
             float totalLength = 0;
+            
             for (int i = 0; i < roadPoints.Count - 1; i++)
-            {
                 totalLength += Vector3.Distance(roadPoints[i], roadPoints[i + 1]);
-            }
+            
             if (totalLength < 10)
                 return;
 
             // Currently get error when roads have same start and end point, TODO fix
             if (roadPoints[0] == roadPoints[roadPoints.Count - 1])
-            {
                 return;
-            }
+            
             List<Vector3> roadPoints2 = new List<Vector3>();
             roadPoints2.Add(roadPoints[0]);
             roadPoints2.Add(roadPoints[1]);
-            Road road = spawnRoad(roadPoints2, wayData);
+            Road road = SpawnRoad(roadPoints2, wayData);
             //road.IsGeneratingOSM = true;
 
             road.RoadType = wayData.WayType;
@@ -607,13 +608,10 @@ namespace RoadGenerator
             {
                 Debug.Log("Adding parking" + road);
                 if (wayData.ParkingType == ParkingType.Left || wayData.ParkingType == ParkingType.Both)
-                {
-                    road.AddLaneParkingPOI(LaneSide.Secondary);
-                }
+                    road.AddFullRoadSideParking(LaneSide.Secondary);
+                
                 if (wayData.ParkingType == ParkingType.Right || wayData.ParkingType == ParkingType.Both)
-                {
-                    road.AddLaneParkingPOI(LaneSide.Primary);
-                }
+                    road.AddFullRoadSideParking(LaneSide.Primary);
             }
 
             if (wayData.MaxSpeed != null)
@@ -623,27 +621,17 @@ namespace RoadGenerator
             if (wayData.WayType == WayType.Residential && wayData.MaxSpeed == null)
                 road.SpeedLimit = SpeedLimit.ThirtyKPH;
 
-            if (wayData.IsLit != null)
-                road.ShouldSpawnLampPoles = wayData.IsLit.Value;
-            else
-                road.ShouldSpawnLampPoles = false;
-
-            if (wayData.WayType == WayType.Residential)
-            {
-        //     road.LaneWidth = 4f;
-            }
+            road.ShouldSpawnLampPoles = wayData.IsLit != null ? wayData.IsLit.Value : false;
 
             PathCreator pathCreator = road.GetComponent<PathCreator>();
             // Roads with only two points will not render properly, this is a hack to render them
             // TODO update the roads correctly
-            if(roadPoints.Count == 2) {
-                // Move point to the same place to rerender the road
+            // Move point to the same place to rerender the road
+            if (roadPoints.Count == 2)
                 pathCreator.bezierPath.MovePoint(0, roadPoints[0]);
-            }
 
-            for (int i = 2; i < roadPoints.Count; i++) {
+            for (int i = 2; i < roadPoints.Count; i++)
                 pathCreator.bezierPath.AddSegmentToEnd(roadPoints[i]);
-            }
             
             if (wayData.WayType != WayType.RailTram)
             {
@@ -655,7 +643,6 @@ namespace RoadGenerator
                         _roadsAtNode[point].Add(road);
                 }
             }
-
 
             road.OnChange();
         }
@@ -672,9 +659,9 @@ namespace RoadGenerator
 
                     Vector3 nodePosition = GetNodePosition(_nodesDict[currentNode.Attributes["ref"].Value]);
                     nodePositions.Add(nodePosition);
-                    
                 }
             }
+           
             return nodePositions;
         }
 
@@ -683,6 +670,7 @@ namespace RoadGenerator
             const int scale = 111000;
             float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon)*scale;
             float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat)*scale;
+            
             return new Vector3(xPos, 0, zPos);
         }
 
@@ -690,11 +678,9 @@ namespace RoadGenerator
         {
             float defaultBuildingHeight = 25;
             float height = wayData.BuildingData.Height ?? defaultBuildingHeight;
+            
             if (wayData.BuildingData.Height == null && wayData.BuildingData.BuildingLevels != null)
-            {
                 height = wayData.BuildingData.BuildingLevels.Value * 3.5f;
-            //  Debug.Log("Building height: " + height);
-            }
                 
 
             List<Vector3> buildingPointsBottom = GetWayNodePositions(ienum);
@@ -703,10 +689,11 @@ namespace RoadGenerator
 
             foreach (Vector3 point in buildingPointsBottom)
                 buildingPoints.Add(new BuildingPoints(point, new Vector3(point.x, height, point.z)));
+            
             foreach (BuildingPoints point in buildingPoints)
                 buildingPointsTop.Add(point.TopPoint);
+            
             GameObject house = Instantiate(BuildingPrefab, buildingPointsBottom[0], Quaternion.identity);
-
 
             house.name = GetBuildingName(wayData);
 
@@ -741,6 +728,7 @@ namespace RoadGenerator
             
             if(wayData.BuildingData.StreetName == null || wayData.BuildingData.StreetAddress == null)
                 return defaultBuildingName;
+            
             return wayData.BuildingData.StreetName + " " + wayData.BuildingData.StreetAddress;
         }
 
@@ -765,15 +753,19 @@ namespace RoadGenerator
             foreach (BuildingPoints buildingPoint in buildingPoints)
             {
                 verts.Add(buildingPoint.BottomPoint);
+                
                 if (!positionToIndex.ContainsKey(buildingPoint.BottomPoint))
                     positionToIndex.Add(buildingPoint.BottomPoint, verts.Count - 1);
+                
                 verts.Add(buildingPoint.TopPoint);
+                
                 if (!positionToIndex.ContainsKey(buildingPoint.TopPoint))
                     positionToIndex.Add(buildingPoint.TopPoint, verts.Count - 1);
             }
 
             int index = -1;
             bool isFirstIteration = true;
+            
             foreach (BuildingPoints buildingPoint in buildingPoints)
             {
                 if (isFirstIteration)
@@ -782,17 +774,18 @@ namespace RoadGenerator
                     index += 2;
                     continue;
                 }
+                
                 index += 2;
                 AddBuildingWall(index, index -1, index - 2, index - 3, wallTris);
             }
 
             foreach (Triangle triangle in triangles)
             {
-                if (positionToIndex.ContainsKey(triangle.v1.position) && positionToIndex.ContainsKey(triangle.v2.position) && positionToIndex.ContainsKey(triangle.v3.position))
+                if (positionToIndex.ContainsKey(triangle.Vertex1.Position) && positionToIndex.ContainsKey(triangle.Vertex2.Position) && positionToIndex.ContainsKey(triangle.Vertex3.Position))
                 {
-                    roofTris.Add(positionToIndex[triangle.v1.position]);
-                    roofTris.Add(positionToIndex[triangle.v2.position]);
-                    roofTris.Add(positionToIndex[triangle.v3.position]);
+                    roofTris.Add(positionToIndex[triangle.Vertex1.Position]);
+                    roofTris.Add(positionToIndex[triangle.Vertex2.Position]);
+                    roofTris.Add(positionToIndex[triangle.Vertex3.Position]);
                 }
             }
 
@@ -802,7 +795,6 @@ namespace RoadGenerator
             buildingMesh.SetTriangles(wallTris.ToArray(), 0);
             buildingMesh.SetTriangles(roofTris.ToArray(), 1);
             buildingMesh.RecalculateBounds();
-
         }
 
         private void AddBuildingWall(int currentSideTopIndex, int currentSideBottomIndex, int prevSideTopIndex, int prevSideBottomIndex, List<int> triangles)
@@ -836,126 +828,123 @@ namespace RoadGenerator
 
             // Ensure mesh renderer and filter components are assigned
             if (!buildingObject.gameObject.GetComponent<MeshFilter>()) 
-            {
                 buildingObject.gameObject.AddComponent<MeshFilter>();
-            }
+            
             if (!buildingObject.GetComponent<MeshRenderer>()) 
-            {
                 buildingObject.gameObject.AddComponent<MeshRenderer>();
-            }
 
             MeshRenderer _meshRenderer = buildingObject.GetComponent<MeshRenderer>();
             _meshRenderer.sharedMaterials = new Material[]{ BuildingWallMaterial, BuildingRoofMaterial };
             MeshFilter _meshFilter = buildingObject.GetComponent<MeshFilter>();
-            
 
             Mesh mesh = new Mesh();
-        
+
             _meshFilter.sharedMesh = mesh;
             return mesh;
         }
 
-        Road spawnRoad(List<Vector3> points, WayData wayData)
+        Road SpawnRoad(List<Vector3> points, WayData wayData)
         {
-                GameObject prefab = wayData.WayType == WayType.RailTram ? RailPrefab : RoadPrefab;
+            GameObject prefab = wayData.WayType == WayType.RailTram ? RailPrefab : RoadPrefab;
+            
             // Instantiate a new road prefab
-                GameObject roadObj = Instantiate(prefab, points[0], Quaternion.identity);
-                
-                // Set the name of the road
-                roadObj.name = wayData.Name;
+            GameObject roadObj = Instantiate(prefab, points[0], Quaternion.identity);
+            
+            // Set the name of the road
+            roadObj.name = wayData.Name;
 
-                roadObj.name = wayData.WayID;
-                
-                roadObj.transform.parent = _roadSystem.RoadContainer.transform;
-                // Get the road from the prefab
-                Road road = roadObj.GetComponent<Road>();
-                road.IsGeneratingOSM = true;
-                // Move the road to the spawn point
-                PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
-                pathCreator.bezierPath = new BezierPath(points, false, PathSpace.xz);
-                pathCreator.bezierPath.autoControlLength = 0.1f;
+            // TEMPORARY
+            roadObj.name = wayData.WayID;
+            
+            roadObj.transform.parent = _roadSystem.RoadContainer.transform;
+            
+            // Get the road from the prefab
+            Road road = roadObj.GetComponent<Road>();
+            road.IsGeneratingOSM = true;
+            
+            // Move the road to the spawn point
+            PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
+            pathCreator.bezierPath = new BezierPath(points, false, PathSpace.xz);
+            pathCreator.bezierPath.autoControlLength = 0.1f;
 
-                // Set the road pointers
-                road.RoadObject = roadObj;
-                road.RoadSystem = _roadSystem;
-                
-                // Update the road to display it
-                road.OnChange();
-                _roadSystem.AddRoad(road as DefaultRoad);
-                
-                return road;
+            // Set the road pointers
+            road.RoadObject = roadObj;
+            road.RoadSystem = _roadSystem;
+            
+            // Update the road to display it
+            road.OnChange();
+            _roadSystem.AddRoad(road as DefaultRoad);
+            
+            return road;
         }
 
         public static List<Triangle> TriangulateConcavePolygon(List<Vector3> points)
         {
-            //The list with triangles the method returns
+            // The list with triangles the method returns
             List<Triangle> triangles = new List<Triangle>();
 
-            //If we just have three points, then we dont have to do all calculations
+            // If we just have three points, then we dont have to do all calculations
             if (points.Count == 3)
             {
                 triangles.Add(new Triangle(points[0], points[1], points[2]));
-
                 return triangles;
             }
 
-
-
-            //Step 1. Store the vertices in a list and we also need to know the next and prev vertex
+            // Step 1. Store the vertices in a list and we also need to know the next and prev vertex
             List<Vertex> vertices = new List<Vertex>();
 
             for (int i = 0; i < points.Count; i++)
                 vertices.Add(new Vertex(points[i]));
 
-            //Find the next and previous vertex
+            // Find the next and previous vertex
             for (int i = 0; i < vertices.Count; i++)
             {
                 int nextPos = ClampListIndex(i + 1, vertices.Count);
                 int prevPos = ClampListIndex(i - 1, vertices.Count);
 
-                vertices[i].prevVertex = vertices[prevPos];
-                vertices[i].nextVertex = vertices[nextPos];
+                vertices[i].PrevVertex = vertices[prevPos];
+                vertices[i].NextVertex = vertices[nextPos];
             }
 
-            //Step 2. Find the reflex (concave) and convex vertices, and ear vertices
+            // Step 2. Find the reflex (concave) and convex vertices, and ear vertices
             for (int i = 0; i < vertices.Count; i++)
                 CheckIfReflexOrConvex(vertices[i]);
 
-            //Have to find the ears after we have found if the vertex is reflex or convex
+            // Have to find the ears after we have found if the vertex is reflex or convex
             List<Vertex> earVertices = new List<Vertex>();
             
             for (int i = 0; i < vertices.Count; i++)
                 IsVertexEar(vertices[i], vertices, earVertices);
 
-            //Step 3. Triangulate!
+            // Step 3. Triangulate!
             while (true)
             {
-                //This means we have just one triangle left
+                // This means we have just one triangle left
                 if (vertices.Count == 3)
                 {
-                    //The final triangle
-                    triangles.Add(new Triangle(vertices[0], vertices[0].prevVertex, vertices[0].nextVertex));
+                    // The final triangle
+                    triangles.Add(new Triangle(vertices[0], vertices[0].PrevVertex, vertices[0].NextVertex));
                     break;
                 }
 
-                //Make a triangle of the first ear
+                // Make a triangle of the first ear
                 Vertex earVertex = earVertices[0];
 
-                Vertex earVertexPrev = earVertex.prevVertex;
-                Vertex earVertexNext = earVertex.nextVertex;
+                Vertex earVertexPrev = earVertex.PrevVertex;
+                Vertex earVertexNext = earVertex.NextVertex;
 
                 Triangle newTriangle = new Triangle(earVertex, earVertexPrev, earVertexNext);
 
                 triangles.Add(newTriangle);
 
-                //Remove the vertex from the lists
+                // Remove the vertex from the lists
                 earVertices.Remove(earVertex);
 
                 vertices.Remove(earVertex);
 
-                //Update the previous vertex and next vertex
-                earVertexPrev.nextVertex = earVertexNext;
-                earVertexNext.prevVertex = earVertexPrev;
+                // Update the previous vertex and next vertex
+                earVertexPrev.NextVertex = earVertexNext;
+                earVertexNext.PrevVertex = earVertexPrev;
 
                 //...see if we have found a new ear by investigating the two vertices that was part of the ear
                 CheckIfReflexOrConvex(earVertexPrev);
@@ -1012,46 +1001,45 @@ namespace RoadGenerator
             return isWithinTriangle;
         }
 
-        //Check if a vertex if reflex or convex, and add to appropriate list
+        // Check if a vertex if reflex or convex, and add to appropriate list
         private static void CheckIfReflexOrConvex(Vertex v)
         {
-            v.isReflex = false;
-            v.isConvex = false;
+            v.IsReflex = false;
+            v.IsConvex = false;
 
-            //This is a reflex vertex if its triangle is oriented clockwise
-            Vector2 a = v.prevVertex.GetPos2D_XZ();
+            // This is a reflex vertex if its triangle is oriented clockwise
+            Vector2 a = v.PrevVertex.GetPos2D_XZ();
             Vector2 b = v.GetPos2D_XZ();
-            Vector2 c = v.nextVertex.GetPos2D_XZ();
+            Vector2 c = v.NextVertex.GetPos2D_XZ();
 
             if (IsTriangleOrientedClockwise(a, b, c))
-                v.isReflex = true;
+                v.IsReflex = true;
             else
-                v.isConvex = true;
+                v.IsConvex = true;
         }
 
-        //Check if a vertex is an ear
+        // Check if a vertex is an ear
         private static void IsVertexEar(Vertex v, List<Vertex> vertices, List<Vertex> earVertices)
         {
-
-            //A reflex vertex cant be an ear!
-            if (v.isReflex)
+            // A reflex vertex cant be an ear!
+            if (v.IsReflex)
                 return;
 
-            //This triangle to check point in triangle
-            Vector2 a = v.prevVertex.GetPos2D_XZ();
+            // This triangle to check point in triangle
+            Vector2 a = v.PrevVertex.GetPos2D_XZ();
             Vector2 b = v.GetPos2D_XZ();
-            Vector2 c = v.nextVertex.GetPos2D_XZ();
+            Vector2 c = v.NextVertex.GetPos2D_XZ();
 
             bool hasPointInside = false;
 
             for (int i = 0; i < vertices.Count; i++)
             {
-                //We only need to check if a reflex vertex is inside of the triangle
-                if (vertices[i].isReflex)
+                // We only need to check if a reflex vertex is inside of the triangle
+                if (vertices[i].IsReflex)
                 {
                     Vector2 p = vertices[i].GetPos2D_XZ();
 
-                    //This means inside and not on the hull
+                    // This means inside and not on the hull
                     if (IsPointInTriangle(a, b, c, p))
                     {
                         hasPointInside = true;
@@ -1066,148 +1054,146 @@ namespace RoadGenerator
 
         public class Vertex
         {
-            public Vector3 position;
+            public Vector3 Position;
 
-            //The outgoing halfedge (a halfedge that starts at this vertex)
-            //Doesnt matter which edge we connect to it
-            public HalfEdge halfEdge;
+            // The outgoing halfedge (a halfedge that starts at this vertex)
+            // Doesnt matter which edge we connect to it
+            public HalfEdge HalfEdge;
 
-            //Which triangle is this vertex a part of?
-            public Triangle triangle;
+            // Which triangle is this vertex a part of?
+            public Triangle Triangle;
 
-            //The previous and next vertex this vertex is attached to
-            public Vertex prevVertex;
-            public Vertex nextVertex;
+            // The previous and next vertex this vertex is attached to
+            public Vertex PrevVertex;
+            public Vertex NextVertex;
 
-            //Properties this vertex may have
-            //Reflex is concave
-            public bool isReflex; 
-            public bool isConvex;
-            public bool isEar;
+            // Properties this vertex may have
+            // Reflex is concave
+            public bool IsReflex; 
+            public bool IsConvex;
+            public bool IsEar;
 
             public Vertex(Vector3 position)
             {
-                this.position = position;
+                this.Position = position;
             }
 
-            //Get 2d pos of this vertex
+            // Get 2d pos of this vertex
             public Vector2 GetPos2D_XZ()
             {
-                Vector2 pos_2d_xz = new Vector2(position.x, position.z);
+                Vector2 pos_2d_xz = new Vector2(Position.x, Position.z);
                 return pos_2d_xz;
             }
         }
 
         public class HalfEdge
         {
-            //The vertex the edge points to
-            public Vertex v;
+            // The vertex the edge points to
+            public Vertex Vertex;
 
-            //The face this edge is a part of
-            public Triangle t;
+            // The face this edge is a part of
+            public Triangle Triangle;
 
-            //The next edge
-            public HalfEdge nextEdge;
-            //The previous
-            public HalfEdge prevEdge;
-            //The edge going in the opposite direction
-            public HalfEdge oppositeEdge;
+            // The next edge
+            public HalfEdge NextEdge;
+            
+            // The previous
+            public HalfEdge PrevEdge;
+            
+            // The edge going in the opposite direction
+            public HalfEdge OppositeEdge;
 
-            //This structure assumes we have a vertex class with a reference to a half edge going from that vertex
-            //and a face (triangle) class with a reference to a half edge which is a part of this face 
-            public HalfEdge(Vertex v)
+            // This structure assumes we have a vertex class with a reference to a half edge going from that vertex
+            // and a face (triangle) class with a reference to a half edge which is a part of this face 
+            public HalfEdge(Vertex vertex)
             {
-                this.v = v;
+                this.Vertex = vertex;
             }
         }
 
         public class Triangle
         {
-            //Corners
-            public Vertex v1;
-            public Vertex v2;
-            public Vertex v3;
+            // Corners
+            public Vertex Vertex1;
+            public Vertex Vertex2;
+            public Vertex Vertex3;
 
-            //If we are using the half edge mesh structure, we just need one half edge
-            public HalfEdge halfEdge;
+            // If we are using the half edge mesh structure, we just need one half edge
+            public HalfEdge HalfEdge;
 
             public Triangle(Vertex v1, Vertex v2, Vertex v3)
             {
-                this.v1 = v1;
-                this.v2 = v2;
-                this.v3 = v3;
+                Vertex1 = v1;
+                Vertex2 = v2;
+                Vertex3 = v3;
             }
 
             public Triangle(Vector3 v1, Vector3 v2, Vector3 v3)
             {
-                this.v1 = new Vertex(v1);
-                this.v2 = new Vertex(v2);
-                this.v3 = new Vertex(v3);
+                Vertex1 = new Vertex(v1);
+                Vertex2 = new Vertex(v2);
+                Vertex3 = new Vertex(v3);
             }
 
             public Triangle(HalfEdge halfEdge)
             {
-                this.halfEdge = halfEdge;
+                this.HalfEdge = halfEdge;
             }
 
-            //Change orientation of triangle from cw -> ccw or ccw -> cw
+            // Change orientation of triangle from cw -> ccw or ccw -> cw
             public void ChangeOrientation()
             {
-                Vertex temp = this.v1;
-
-                this.v1 = this.v2;
-                this.v2 = temp;
+                Vertex temp = Vertex1;
+                Vertex1 = Vertex2;
+                Vertex2 = temp;
             }
         }
 
         public class Edge
         {
-            public Vertex v1;
-            public Vertex v2;
+            public Vertex Vertex1;
+            public Vertex Vertex2;
 
-            //Is this edge intersecting with another edge?
-            public bool isIntersecting = false;
+            // Is this edge intersecting with another edge?
+            public bool IsIntersecting = false;
 
             public Edge(Vertex v1, Vertex v2)
             {
-                this.v1 = v1;
-                this.v2 = v2;
+                Vertex1 = v1;
+                Vertex2 = v2;
             }
 
             public Edge(Vector3 v1, Vector3 v2)
             {
-                this.v1 = new Vertex(v1);
-                this.v2 = new Vertex(v2);
+                Vertex1 = new Vertex(v1);
+                Vertex2 = new Vertex(v2);
             }
 
-            //Get vertex in 2d space (assuming x, z)
+            // Get vertex in 2d space (assuming x, z)
             public Vector2 GetVertex2D(Vertex v)
             {
-                return new Vector2(v.position.x, v.position.z);
+                return new Vector2(v.Position.x, v.Position.z);
             }
 
-            //Flip edge
+            // Flip edge
             public void FlipEdge()
             {
-                Vertex temp = v1;
-
-                v1 = v2;
-
-                v2 = temp;
+                Vertex temp = Vertex1;
+                Vertex1 = Vertex2;
+                Vertex2 = temp;
             }
         }
 
         public class Plane
         { 
-            public Vector3 pos;
+            public Vector3 Position;
 
-            public Vector3 normal;
+            public Vector3 Normal;
 
-            public Plane(Vector3 pos, Vector3 normal)
+            public Plane(Vector3 position, Vector3 normal)
             {
-                this.pos = pos;
-
-                this.normal = normal;
+                Position = position;
+                Normal = normal;
             }
         }
     }

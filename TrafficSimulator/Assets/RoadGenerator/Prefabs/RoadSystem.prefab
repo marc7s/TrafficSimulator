@@ -240,6 +240,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 798415014314360586}
     m_Modifications:
+    - target: {fileID: 5182822186109989344, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: RailPrefab
+      value: 
+      objectReference: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
+    - target: {fileID: 5182822186109989344, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+      propertyPath: RoadPrefab
+      value: 
+      objectReference: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
     - target: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
       propertyPath: m_RootOrder
       value: 5
