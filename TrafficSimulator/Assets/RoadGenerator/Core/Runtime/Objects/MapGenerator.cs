@@ -569,6 +569,8 @@ namespace RoadGenerator
                 
                 if (wayData.ParkingType == ParkingType.Right || wayData.ParkingType == ParkingType.Both)
                     road.AddFullRoadSideParking(LaneSide.Primary);
+                // Avoid spawning lamppoles if there is parking on the road
+                wayData.IsLit = false;
             }
 
             if (wayData.MaxSpeed != null)
