@@ -87,7 +87,7 @@ namespace UI
         {
             _doc.rootVisualElement.visible = false;
             // ------------------------------------- TODO CHANGE TO GAME SCENE ------------------------------------- //
-            SceneManager.LoadScene("Martin", LoadSceneMode.Single);
+            SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex + 1), LoadSceneMode.Single);
         }
 
         private void SettingsButtonOnClicked()

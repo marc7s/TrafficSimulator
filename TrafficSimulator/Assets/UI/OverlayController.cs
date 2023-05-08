@@ -217,7 +217,7 @@ namespace UI
             _statisticsUI.visible = false;
             _worldUI.visible = false;
             _doc.rootVisualElement.visible = false;
-            SceneManager.LoadScene("StartMenu",  LoadSceneMode.Single);
+            SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
         }
 
         private void DefaultCameraButtonClicked()
@@ -251,7 +251,6 @@ namespace UI
         private void EditorButtonOnClicked()
         {
             Debug.Log("Editor");
-            SceneManager.LoadScene("Martin", LoadSceneMode.Single);
         }
 
         private void RewindButtonOnClicked()
