@@ -1159,7 +1159,9 @@ namespace RoadGenerator
                     
                     poiNode.IsNavigationNode = true;
                     
-                    poiNode.POI = poi;
+                    if(!poiNode.POIs.Contains(poi))
+                        poiNode.POIs.Add(poi);
+                    
                     toPlace.RemoveAt(0);
                     
                     // Update the RoadNode if the POI uses DistanceAlongRoad

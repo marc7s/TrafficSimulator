@@ -33,7 +33,7 @@ namespace CarGenerator
         #endregion
         public void OnEnable()
         {
-            _road = serializedObject.FindProperty("Road");
+            _road = serializedObject.FindProperty("_road");
             _laneIndex = serializedObject.FindProperty("LaneIndex");
             _mode = serializedObject.FindProperty("Mode");
             _endBehaviour = serializedObject.FindProperty("EndBehaviour");

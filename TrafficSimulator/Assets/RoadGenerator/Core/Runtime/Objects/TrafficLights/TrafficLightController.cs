@@ -1,38 +1,55 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System;
+using System.Collections;
 
 namespace RoadGenerator
 {
-    enum Mode{FIRST, SECOND, TOFIRST, TOSECOND};
+    enum Mode
+    {
+        FIRST, 
+        SECOND, 
+        TOFIRST, 
+        TOSECOND
+    };
 
     public class TrafficLightController : MonoBehaviour
     {
         [SerializeField] public List<TrafficLight> TrafficLightsGroup1 = new List<TrafficLight>(); // Starts green
         [SerializeField] public List<TrafficLight> TrafficLightsGroup2 = new List<TrafficLight>(); // Starts red
 
-        public float Delay = 10f;
-        public float TransitionDelay = 2f;
-        private float _lastSwitchTime = 0f;
+        public int Delay = 10;
+        public int TransitionDelay = 2;
+        private int _lastSwitchTime = 0;
+        private int _clock = 0;
 
         private Mode _currentMode = Mode.FIRST;
 
-        void Update()
+        IEnumerator Start()
+        {
+            while(true)
+            {
+                UpdateTrafficLight();
+                yield return new WaitForSeconds(1);
+                _clock++;
+            }
+        }
+
+        private void UpdateTrafficLight()
         {
             if (_currentMode == Mode.FIRST || _currentMode == Mode.SECOND)
             {
-                if (Time.time - _lastSwitchTime > Delay)
+                if (_clock - _lastSwitchTime > Delay)
                 {
                     SwitchToTransitionalMode();
-                    _lastSwitchTime = Time.time;
+                    _lastSwitchTime = _clock;
                 }
             } 
             else
             {
-                if (Time.time - _lastSwitchTime > TransitionDelay)
+                if (_clock - _lastSwitchTime > TransitionDelay)
                 {
                     SwitchToFinalMode();
-                    _lastSwitchTime = Time.time;
+                    _lastSwitchTime = _clock;
                 }
             }
         }

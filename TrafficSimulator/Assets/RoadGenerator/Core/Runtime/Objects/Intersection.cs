@@ -742,9 +742,7 @@ namespace RoadGenerator
                     {
                         IntersectionArm arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
                         if (arm != null)
-                        {
                             AddLaneNodeFromNavigationNodeEdge(arm?.NavigationNodeEdgeOutwards, currentNode);
-                        }
                     }
 
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 

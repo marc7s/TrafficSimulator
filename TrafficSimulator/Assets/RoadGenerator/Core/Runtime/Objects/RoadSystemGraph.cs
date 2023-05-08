@@ -50,7 +50,7 @@ namespace RoadGenerator
             if(Nodes.FindAll(x => x.RoadNode.Position == roadNode.Position).Count != 0)
                 return;
 
-            if (roadNode.IsNavigationNode && roadNode.Type != RoadNodeType.RoadConnection)
+            if (!roadNode.IsIntersection())
             {
                 NavigationNode nodePrimaryDirection = new NavigationNode(roadNode);
                 NavigationNode nodeSecondaryDirection = new NavigationNode(roadNode);
