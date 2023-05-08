@@ -72,11 +72,19 @@ namespace RoadSystemGenerator
             if(_defaultYieldSign.objectReferenceValue != (GameObject)roadSystem.DefaultYieldSignPrefab)
                 roadSystem.DefaultYieldSignPrefab = (GameObject)_defaultYieldSign.objectReferenceValue;
 
+            
+            EditorGUILayout.LabelField("Actions", EditorStyles.boldLabel);
+
             if(GUILayout.Button("Add new road"))
                 roadSystem.AddNewRoad(PathType.Road);
 
             if(GUILayout.Button("Add new rail"))
                 roadSystem.AddNewRoad(PathType.Rail);
+
+            if(GUILayout.Button("Update POIs"))
+                roadSystem.UpdatePOIs();
+
+            EditorGUILayout.LabelField("OSM Actions", EditorStyles.boldLabel);
 
             if(GUILayout.Button("Generate OSM roads"))
                 roadSystem.GenerateOSMRoads();
@@ -89,9 +97,6 @@ namespace RoadSystemGenerator
 
             if(GUILayout.Button("Delete all buildings"))
                 roadSystem.DeleteAllBuildings();
-
-            if(GUILayout.Button("Update POIs"))
-                roadSystem.UpdatePOIs();
 
             serializedObject.ApplyModifiedProperties();
 

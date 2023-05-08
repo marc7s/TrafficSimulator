@@ -42,7 +42,7 @@ namespace RoadGenerator
     [Serializable]
 	public class RoadSystem : MonoBehaviour
 	{
-        [Header("Connections")]       
+        [Header("Connections")]
         public GameObject RoadContainer;
         [SerializeField] private GameObject _intersectionContainer;
         public GameObject BuildingContainer;
@@ -87,7 +87,6 @@ namespace RoadGenerator
         public void RemoveIntersection(Intersection intersection) => _intersections.Remove(intersection);
         public void AddRoad(DefaultRoad road) => _defaultRoads.Add(road);
         public void AddRail(TramRail rail) => _tramRails.Add(rail);
-
 
         public void RemoveRoad(Road road)
         {
@@ -228,6 +227,7 @@ namespace RoadGenerator
 
             foreach(GameObject road in roads)
                 DestroyImmediate(road);
+            
             DefaultRoads.Clear();
         }
 
@@ -237,13 +237,13 @@ namespace RoadGenerator
 
             foreach(Transform buildingT in BuildingContainer.transform)
                 buildings.Add(buildingT.gameObject);
+            
             foreach(GameObject building in buildings)
                 DestroyImmediate(building);
         }
 
         public void ChangeBuildingColors()
         {
-
             List<ColorShade> wallColorScheme = new List<ColorShade>();
             List<ColorShade> roofColorScheme = new List<ColorShade>();
 
@@ -283,6 +283,7 @@ namespace RoadGenerator
 
             foreach(Transform busStopT in BusStopContainer.transform)
                 busStops.Add(busStopT.gameObject);
+            
             foreach(GameObject busStop in busStops)
                 DestroyImmediate(busStop);
         }

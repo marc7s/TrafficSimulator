@@ -1,7 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RoadGenerator
@@ -9,7 +6,8 @@ namespace RoadGenerator
 
     public class FootWayMeshBuilder
     {
-        enum VerticeType{
+        enum VerticeType
+        {
             BottomLeft = 0,
             TopLeft = 1,
             BottomRight = 2,
@@ -96,6 +94,7 @@ namespace RoadGenerator
             mesh.triangles = builder.Triangles.ToArray();
             mesh.uv = builder.UVS.ToArray();
             mesh.normals = builder.Normals.ToArray();
+            
             return mesh;
         }
 
@@ -124,6 +123,7 @@ namespace RoadGenerator
             mesh.triangles = builder.Triangles.ToArray();
             mesh.uv = builder.UVS.ToArray();
             mesh.normals = builder.Normals.ToArray();
+            
             return mesh;
         }
     }

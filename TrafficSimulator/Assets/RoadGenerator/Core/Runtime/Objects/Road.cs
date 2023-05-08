@@ -250,9 +250,6 @@ namespace RoadGenerator
                     if (road.IsOneWay != currentRoad.IsOneWay)
                         continue;
 
-                   // if (road.IsOneWay)
-                   //     continue;
-
                     currentRoad.UpdateStartConnectionRoad(road);
                     currentRoad.UpdateEndConnectionRoad(road);
                 }
@@ -561,9 +558,7 @@ namespace RoadGenerator
                 return;
 
             if (!IsGeneratingOSM)
-            {
                 ConnectRoadIfEndPointsAreClose();
-            }
 
             // Update the intersections and road when a node is changed
             //IntersectionCreator.UpdateIntersections(this);
