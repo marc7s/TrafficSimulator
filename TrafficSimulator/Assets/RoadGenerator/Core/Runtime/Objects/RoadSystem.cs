@@ -12,23 +12,35 @@ namespace RoadGenerator
 
     public struct ColorShade
     {
-        public int rMin;
-        public int rMax;
-        public int gMin;
-        public int gMax;
-        public int bMin;
-        public int bMax;
+        public int RedMin;
+        public int RedMax;
+        public int GreenMin;
+        public int GreenMax;
+        public int BlueMin;
+        public int BlueMax;
+        public bool GreyScale;
 
-        public ColorShade((int,int) redRange, (int,int) greenRange, (int,int) blueRange){
-            (rMin, rMax) = redRange;
-            (gMin, gMax) = greenRange;
-            (bMin, bMax) = blueRange;
+        public ColorShade((int, int) redRange, (int, int) greenRange, (int, int) blueRange, bool greyScale)
+        {
+            (RedMin, RedMax) = redRange;
+            (GreenMin, GreenMax) = greenRange;
+            (BlueMin, BlueMax) = blueRange;
+            GreyScale = greyScale;
         }
 
-        public Color GetColor(){
-            int r = UnityEngine.Random.Range(rMin, rMax);
-            int g = UnityEngine.Random.Range(gMin, gMax);
-            int b = UnityEngine.Random.Range(bMin, bMax);
+        public Color GetColor()
+        {
+            int r = UnityEngine.Random.Range(RedMin, RedMax);
+            int g = UnityEngine.Random.Range(GreenMin, GreenMax);
+            int b = UnityEngine.Random.Range(BlueMin, BlueMax);
+
+            if(GreyScale)
+            {
+                int avg = (r + g + b) / 3;
+                r = avg;
+                g = avg;
+                b = avg;
+            }
 
             return new Color(
                 r / 255f,
@@ -247,22 +259,34 @@ namespace RoadGenerator
             List<ColorShade> wallColorScheme = new List<ColorShade>();
             List<ColorShade> roofColorScheme = new List<ColorShade>();
 
-            ColorShade whiteGrey = new ColorShade((125, 225), (123, 222), (111, 211));
-            ColorShade yellow = new ColorShade((255, 255), (180, 200), (1, 73));
+            ColorShade whiteGrey = new ColorShade((60, 200), (60, 200), (60, 200), true);
+            ColorShade yellow = new ColorShade((255, 255), (180, 200), (1, 73), false);
+            ColorShade brown = new ColorShade((80, 160), (60, 120), (30, 40), false);
+            ColorShade red = new ColorShade((100, 130), (50, 60), (50, 40), false);
 
             wallColorScheme.Add(whiteGrey);
+            wallColorScheme.Add(brown);
+            wallColorScheme.Add(red);
+
             roofColorScheme.Add(yellow);
+            roofColorScheme.Add(red);
 
             foreach(Transform buildingT in BuildingContainer.transform)
             {
+                MaterialPropertyBlock wallProperty = new MaterialPropertyBlock();
+                MaterialPropertyBlock roofProperty = new MaterialPropertyBlock();
+                
                 // Get mesh renderer
                 MeshRenderer meshRenderer = buildingT.GetComponent<MeshRenderer>();
 
-                // Walls
-                meshRenderer.materials[0].color = wallColorScheme[UnityEngine.Random.Range(0, wallColorScheme.Count)].GetColor();
+                Color wallColor = wallColorScheme[UnityEngine.Random.Range(0, wallColorScheme.Count)].GetColor();
+                Color roofColor = roofColorScheme[UnityEngine.Random.Range(0, roofColorScheme.Count)].GetColor();
 
-                // Roof
-                meshRenderer.materials[1].color = roofColorScheme[UnityEngine.Random.Range(0, roofColorScheme.Count)].GetColor();
+                wallProperty.SetColor("_Color", wallColor);
+                roofProperty.SetColor("_Color", roofColor);
+                
+                meshRenderer.SetPropertyBlock(wallProperty, 0);
+                meshRenderer.SetPropertyBlock(roofProperty, 1);
             }
         }
 
