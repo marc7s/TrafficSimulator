@@ -109,21 +109,20 @@ namespace RoadGenerator
             // Finding the bounds of the map and adding all nodes to a dictionary
             foreach(XmlNode node in doc.DocumentElement.ChildNodes)
             {
-                if (node.Name == "bounds") 
+                switch(node.Name)
                 {
-                    _minLat = double.Parse(node.Attributes["minlat"].Value.Replace(".", ","));
-                    _minLon = double.Parse(node.Attributes["minlon"].Value.Replace(".", ","));
-                }
-                if (node.Name == "node") 
-                {
-                    if (!_nodesDict.ContainsKey(node.Attributes["id"].Value))
-                        _nodesDict.Add(node.Attributes["id"].Value, node);
-                }
-
-                if (node.Name == "way")
-                {
-                    if (!_wayDict.ContainsKey(node.Attributes["id"].Value))
-                        _wayDict.Add(node.Attributes["id"].Value, node);
+                    case "bounds":
+                        _minLat = double.Parse(node.Attributes["minlat"].Value.Replace(".", ","));
+                        _minLon = double.Parse(node.Attributes["minlon"].Value.Replace(".", ","));
+                        break;
+                    case "node":
+                        if (!_nodesDict.ContainsKey(node.Attributes["id"].Value))
+                            _nodesDict.Add(node.Attributes["id"].Value, node);
+                        break;
+                    case "way":
+                        if (!_wayDict.ContainsKey(node.Attributes["id"].Value))
+                            _wayDict.Add(node.Attributes["id"].Value, node);
+                        break;
                 }
 
                 foreach(XmlNode childNode in node.ChildNodes)
@@ -152,8 +151,6 @@ namespace RoadGenerator
                         }
                     }
                 }
-
-
             }
 
             int count = 0;
