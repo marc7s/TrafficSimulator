@@ -91,16 +91,16 @@ namespace POIs
                 DistanceAlongRoad = RoadNode.Road.Length / 2;
         }
 
-        private float? GetDistanceToNextParkingSpot(RoadNode roadNode)
+        private float? GetDistanceToNextParkingSpot(RoadNode roadNode, bool primaryDirection)
         {
-            RoadNode curr = roadNode.Next;
+            RoadNode curr = primaryDirection ? roadNode.Next : roadNode.Prev;
             float distance = 0;
             while(curr != null)
             {
-                distance += curr.DistanceToPrevNode;
+                distance += Vector3.Distance(curr.Position, primaryDirection ? curr.Prev.Position : curr.Next.Position);
                 if(_parkingSpaceMap.ContainsKey(curr))
                     return distance;
-                curr = curr.Next;
+                curr = primaryDirection ? curr.Next : curr.Prev;
             }
             return null;
         }
@@ -115,9 +115,10 @@ namespace POIs
             List<int> tris = new List<int>();
             bool parkingStart = true;
             POINode prevParking = _parkingSpots[0];
-            bool reachedFirstSpot = false;
+            bool reachedEndSpot = false;
             float distance = 0;
-            float? distanceToNextParkingSpot = GetDistanceToNextParkingSpot(_spanNodes[0]);
+            bool primaryDirection = LaneSide == LaneSide.Primary;
+            float? distanceToNextParkingSpot = GetDistanceToNextParkingSpot(_spanNodes[1], primaryDirection);
             float distanceToNextParkingSpotOriginal = distanceToNextParkingSpot.Value;
             RoadNode prev = _spanNodes[_hasStartingSmoothEdge ? 1 : 0];
 
@@ -134,7 +135,8 @@ namespace POIs
                 if((first && _hasStartingSmoothEdge) || (last && _hasEndingSmoothEdge))
                 {
                     verts.Add(roadSide);
-                    float uv = first ? 1 : 1;
+                    float uv = first && primaryDirection ? 1 : 0;
+
                     uvs.Add(new Vector2(0, uv));
                 }
                 else
@@ -146,14 +148,14 @@ namespace POIs
                     if(i != 0)
                         distanceToNextParkingSpot -= vertNode.DistanceToPrevNode;
 
-                    float forwardUV = (distanceToNextParkingSpot ?? 100) / (distanceToNextParkingSpotOriginal);
+                    float forwardUV = primaryDirection ? 1 : 0;
+                    if (distanceToNextParkingSpot != null)
+                        forwardUV = distanceToNextParkingSpot.Value / distanceToNextParkingSpotOriginal;
                     
 
 
 
                     Debug.Log("Distance to next parking spot: " + distanceToNextParkingSpot);
-                    GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cube.transform.position = GetEdgePosition(vertNode);
 
                    // Debug.Log(forwardUV);
                     float uvY;
@@ -169,14 +171,18 @@ namespace POIs
                     {
                         prevParking = _parkingSpaceMap[vertNode];
                         parkingStart = !parkingStart;
-                        reachedFirstSpot = true;
-                        distanceToNextParkingSpot = GetDistanceToNextParkingSpot(vertNode);
-                        distanceToNextParkingSpotOriginal = distanceToNextParkingSpot ?? 0;
+  
+                        distanceToNextParkingSpot = GetDistanceToNextParkingSpot(vertNode, primaryDirection);
+                        if (distanceToNextParkingSpot == null && !reachedEndSpot)
+                        {
+                            reachedEndSpot = true;
+                            distanceToNextParkingSpot = _parkingSize.y;
+                        }
+
+                        distanceToNextParkingSpotOriginal = distanceToNextParkingSpot ?? -1;
                         //distance = 0;
                     }
-                    cube.name = "forwardUV" + forwardUV + "distance To next" + distanceToNextParkingSpot + "uvY" + uvY;
-                    prev = vertNode;
-                    //float uvY = parkingEdge ? (parkingStart ? 0 : 1) : forwardUV;
+
 
 
                     uvs.Add(new Vector2(0, uvY));
