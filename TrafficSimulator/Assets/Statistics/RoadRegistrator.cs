@@ -5,26 +5,27 @@ using RoadGenerator;
 using UnityEngine;
 using VehicleBrain;
 
-[RequireComponent(typeof(AutoDrive))]
-public class RoadRegistrator : MonoBehaviour
+namespace Statistics
 {
-    private AutoDrive _autoDrive;
-    private Road _currentRoad;
-    
-    void Awake()
+    [RequireComponent(typeof(AutoDrive))]
+    public class RoadRegistrator : MonoBehaviour
     {
-        _autoDrive = GetComponent<AutoDrive>();
-        _autoDrive.OnRoadChanged += OnRoadChanged;
-    }
-    
-    public void OnRoadChanged(Road newRoad)
-    {
-        if (_currentRoad != null)
+        private AutoDrive _autoDrive;
+        private Road _currentRoad;
+        
+        void Awake()
         {
-            _currentRoad.GetComponent<RoadDataGatherer>().UnregisterVehicle(gameObject);
+            _autoDrive = GetComponent<AutoDrive>();
+            _autoDrive.OnRoadChanged += OnRoadChanged;
         }
+        
+        public void OnRoadChanged(Road newRoad)
+        {
+            if (_currentRoad != null)
+                _currentRoad.GetComponent<RoadDataGatherer>().UnregisterVehicle(gameObject);
 
-        _currentRoad = newRoad;
-        _currentRoad.GetComponent<RoadDataGatherer>().RegisterVehicle(gameObject);
+            _currentRoad = newRoad;
+            _currentRoad.GetComponent<RoadDataGatherer>().RegisterVehicle(gameObject);
+        }
     }
 }

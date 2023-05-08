@@ -71,11 +71,6 @@ namespace VehicleBrain
         [Header("Connections")]
         [SerializeField] private Road _road;
         
-        public Road Road
-        {
-            get => _road;
-            set => SetRoad(value);
-        }
         public GameObject NavigationTargetMarker;
         public Material NavigationPathMaterial;
         public int LaneIndex = 0;
@@ -145,6 +140,12 @@ namespace VehicleBrain
         private float _targetLerpSpeed = 0;
         private float _timeElapsedSinceLastTarget = 0;
         private float _lastLerpTime = 0;
+
+        public Road Road
+        {
+            get => _road;
+            set => SetRoad(value);
+        }
 
         void Start()
         {
