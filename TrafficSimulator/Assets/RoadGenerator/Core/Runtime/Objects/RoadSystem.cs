@@ -9,6 +9,34 @@ namespace RoadGenerator
         Left = 1,
         Right = -1
     }
+
+    public struct ColorShade
+    {
+        public int rMin;
+        public int rMax;
+        public int gMin;
+        public int gMax;
+        public int bMin;
+        public int bMax;
+
+        public ColorShade((int,int) redRange, (int,int) greenRange, (int,int) blueRange){
+            (rMin, rMax) = redRange;
+            (gMin, gMax) = greenRange;
+            (bMin, bMax) = blueRange;
+        }
+
+        public Color GetColor(){
+            int r = UnityEngine.Random.Range(rMin, rMax);
+            int g = UnityEngine.Random.Range(gMin, gMax);
+            int b = UnityEngine.Random.Range(bMin, bMax);
+
+            return new Color(
+                r / 255f,
+                g / 255f,
+                b / 255f
+            );
+        }
+    }
     
     [ExecuteInEditMode()]
     [Serializable]
@@ -71,6 +99,7 @@ namespace RoadGenerator
                 _tramRails.Remove(road as TramRail);
             }
         }
+
         public void AddNewRoad(PathType pathType)
         {
             Vector3 spawnPoint = Vector3.zero;
@@ -184,7 +213,9 @@ namespace RoadGenerator
             DeleteAllBusStops();
             DeleteAllNature();
            _mapGenerator.GenerateMap(this);
+           ChangeBuildingColors();
         }
+
         public void SpawnBusStops()
         {
             _mapGenerator.AddBusStops();
@@ -210,6 +241,31 @@ namespace RoadGenerator
                 buildings.Add(buildingT.gameObject);
             foreach(GameObject building in buildings)
                 DestroyImmediate(building);
+        }
+
+        public void ChangeBuildingColors()
+        {
+
+            List<ColorShade> wallColorScheme = new List<ColorShade>();
+            List<ColorShade> roofColorScheme = new List<ColorShade>();
+
+            ColorShade whiteGrey = new ColorShade((125, 225), (123, 222), (111, 211));
+            ColorShade yellow = new ColorShade((255, 255), (180, 200), (1, 73));
+
+            wallColorScheme.Add(whiteGrey);
+            roofColorScheme.Add(yellow);
+
+            foreach(Transform buildingT in BuildingContainer.transform)
+            {
+                // Get mesh renderer
+                MeshRenderer meshRenderer = buildingT.GetComponent<MeshRenderer>();
+
+                // Walls
+                meshRenderer.materials[0].color = wallColorScheme[UnityEngine.Random.Range(0, wallColorScheme.Count)].GetColor();
+
+                // Roof
+                meshRenderer.materials[1].color = roofColorScheme[UnityEngine.Random.Range(0, roofColorScheme.Count)].GetColor();
+            }
         }
 
         public void DeleteAllNature()
