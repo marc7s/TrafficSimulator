@@ -706,6 +706,7 @@ namespace RoadGenerator
 
         private void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints, List<Triangle> triangles)
         {
+            List<Vector3> bottomPoints = new List<Vector3>();
             Dictionary<Vector3, int> positionToIndex = new Dictionary<Vector3, int>();
             List<Vector3> verts = new List<Vector3>();
             List<int> wallTris = new List<int>();
@@ -716,7 +717,10 @@ namespace RoadGenerator
                 verts.Add(buildingPoint.BottomPoint);
 
                 if (!positionToIndex.ContainsKey(buildingPoint.BottomPoint))
+                {
                     positionToIndex.Add(buildingPoint.BottomPoint, verts.Count - 1);
+                    bottomPoints.Add(buildingPoint.BottomPoint);
+                }
 
                 verts.Add(buildingPoint.TopPoint);
 
@@ -724,6 +728,7 @@ namespace RoadGenerator
                     positionToIndex.Add(buildingPoint.TopPoint, verts.Count - 1);
             }
 
+            bool isBuildingClockwise = IsBuildingClockWise(bottomPoints);
             int index = -1;
             bool isFirstIteration = true;
             
@@ -737,7 +742,7 @@ namespace RoadGenerator
                 }
                 
                 index += 2;
-                AddBuildingWall(index, index -1, index - 2, index - 3, wallTris);
+                AddBuildingWall(index, index -1, index - 2, index - 3, wallTris, isBuildingClockwise);
             }
 
             foreach (Triangle triangle in triangles)
@@ -758,27 +763,43 @@ namespace RoadGenerator
             buildingMesh.RecalculateBounds();
         }
 
-        private void AddBuildingWall(int currentSideTopIndex, int currentSideBottomIndex, int prevSideTopIndex, int prevSideBottomIndex, List<int> triangles)
+        private bool IsBuildingClockWise(List<Vector3> buildingPoints)
         {
-            triangles.Add(prevSideTopIndex);
-            triangles.Add(currentSideTopIndex);
-            triangles.Add(prevSideBottomIndex);
+            float sum = 0;
 
-            // Adding double sided triangles until the roof is done
-            // Remove this when roof is done
-            triangles.Add(prevSideBottomIndex);
-            triangles.Add(currentSideTopIndex);
-            triangles.Add(prevSideTopIndex);
+            for (int i = 0; i < buildingPoints.Count; i++)
+            {
+                Vector3 currentPoint = buildingPoints[i];
+                Vector3 nextPoint = buildingPoints[(i + 1) % buildingPoints.Count];
 
-            triangles.Add(currentSideBottomIndex);
-            triangles.Add(prevSideBottomIndex);
-            triangles.Add(currentSideTopIndex);
+                sum += (nextPoint.x - currentPoint.x) * (nextPoint.z + currentPoint.z);
+            }
 
-            // Adding double sided triangles until the roof is done
-            // Remove this when roof is done
-            triangles.Add(currentSideTopIndex);
-            triangles.Add(prevSideBottomIndex);
-            triangles.Add(currentSideBottomIndex);
+            return sum > 0;
+        }
+
+        private void AddBuildingWall(int currentSideTopIndex, int currentSideBottomIndex, int prevSideTopIndex, int prevSideBottomIndex, List<int> triangles, bool isClockWise)
+        {
+            if (isClockWise)
+            {
+                triangles.Add(prevSideBottomIndex);
+                triangles.Add(currentSideTopIndex);
+                triangles.Add(prevSideTopIndex);
+
+                triangles.Add(currentSideTopIndex);
+                triangles.Add(prevSideBottomIndex);
+                triangles.Add(currentSideBottomIndex);
+            }
+            else
+            {
+                triangles.Add(prevSideTopIndex);
+                triangles.Add(currentSideTopIndex);
+                triangles.Add(prevSideBottomIndex);
+
+                triangles.Add(currentSideBottomIndex);
+                triangles.Add(prevSideBottomIndex);
+                triangles.Add(currentSideTopIndex);
+            }
         }
 
         Mesh AssignMeshComponents(GameObject buildingObject)
