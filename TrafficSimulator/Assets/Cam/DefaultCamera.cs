@@ -71,7 +71,8 @@ namespace Cam
 
         private void OnDisable()
         {
-            SetInactive(CameraManager);
+            if (UserSelectManager.Instance != null)
+                SetInactive(CameraManager);
         }
 
         private void HandleNewGameObjectSelection(Selectable selectable)

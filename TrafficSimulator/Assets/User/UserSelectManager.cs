@@ -21,6 +21,8 @@ namespace User
         public delegate void SelectedGameObjectChangedHandler(Selectable newSelectedGameObject);
 
         private static UserSelectManager _instance;
+        private static object _lock = new object();
+        private static bool applicationIsQuitting;
 
         [HideInInspector] public bool CanSelectNewObject;
 
@@ -44,24 +46,30 @@ namespace User
         public static UserSelectManager Instance
         {
             get
-            {
-                if (_instance == null)
+            {   if (applicationIsQuitting)
                 {
-                    _instance = FindObjectOfType<UserSelectManager>();
+                    return null;
+                }
+                lock (_lock)
+                {
                     if (_instance == null)
                     {
-                        GameObject obj = new GameObject();
-                        obj.name = nameof(UserSelectManager);
-                        _instance = obj.AddComponent<UserSelectManager>();
+                        _instance = FindObjectOfType<UserSelectManager>();
+                        if (_instance == null)
+                        {
+                            GameObject obj = new GameObject();
+                            obj.name = nameof(UserSelectManager);
+                            _instance = obj.AddComponent<UserSelectManager>();
+                        }
                     }
                 }
-
                 return _instance;
             }
         }
         
         private void Awake()
         {
+            applicationIsQuitting = false;
             InitializeSingletonInstance();
             _mainCamera = Camera.main;
             CanSelectNewObject = true;
@@ -103,6 +111,7 @@ namespace User
         private void OnDisable()
         {
             UnsubscribeFromInput();
+            applicationIsQuitting = true;
         }
 
         private void UnsubscribeFromInput()
