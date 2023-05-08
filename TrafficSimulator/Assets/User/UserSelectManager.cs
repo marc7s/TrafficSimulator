@@ -53,7 +53,6 @@ namespace User
                         GameObject obj = new GameObject();
                         obj.name = nameof(UserSelectManager);
                         _instance = obj.AddComponent<UserSelectManager>();
-                        DontDestroyOnLoad(obj.transform.root);
                     }
                 }
 
