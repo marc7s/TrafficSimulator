@@ -31,7 +31,7 @@ namespace RoadSystemGenerator
             serializedObject.Update();
             
             // Uncomment this if you want to change the connections to containers and prefabs
-            DrawDefaultInspector();
+            // DrawDefaultInspector();
             
             RoadSystem roadSystem = (RoadSystem)target;
             
@@ -72,7 +72,6 @@ namespace RoadSystemGenerator
             if(_defaultYieldSign.objectReferenceValue != (GameObject)roadSystem.DefaultYieldSignPrefab)
                 roadSystem.DefaultYieldSignPrefab = (GameObject)_defaultYieldSign.objectReferenceValue;
 
-            
             EditorGUILayout.LabelField("Actions", EditorStyles.boldLabel);
 
             if(GUILayout.Button("Add new road"))

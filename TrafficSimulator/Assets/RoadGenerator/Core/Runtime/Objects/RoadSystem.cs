@@ -209,8 +209,8 @@ namespace RoadGenerator
             DeleteAllBuildings();
             DeleteAllBusStops();
             DeleteAllNature();
-           _mapGenerator.GenerateMap(this);
-           ChangeBuildingColors();
+            _mapGenerator.GenerateMap(this);
+            ChangeBuildingColors();
         }
 
         public void SpawnBusStops()
@@ -227,7 +227,7 @@ namespace RoadGenerator
 
             foreach(GameObject road in roads)
                 DestroyImmediate(road);
-            
+
             DefaultRoads.Clear();
         }
 
@@ -287,6 +287,7 @@ namespace RoadGenerator
             foreach(GameObject busStop in busStops)
                 DestroyImmediate(busStop);
         }
+
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {

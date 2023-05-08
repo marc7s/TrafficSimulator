@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Xml;
-using System.Linq;
 using System;
 
 namespace RoadGenerator
@@ -34,7 +33,6 @@ namespace RoadGenerator
         public int? Height;
         public int? BuildingLevels;
     }
-
 
     public enum ServiceType
     {
@@ -82,7 +80,6 @@ namespace RoadGenerator
         public GameObject BuildingPrefab;
         public Material BuildingWallMaterial;
         public Material BuildingRoofMaterial;
-        
         private RoadSystem _roadSystem;
         private Dictionary<string, XmlNode> _nodesDict = new Dictionary<string, XmlNode>();
         private Dictionary<string, XmlNode> _wayDict = new Dictionary<string, XmlNode>();
@@ -92,7 +89,7 @@ namespace RoadGenerator
         private List<XmlNode> _trees = new List<XmlNode>();
         private double _minLat = 0;
         private double _minLon = 0;
-        
+
         public void GenerateMap(RoadSystem roadSystem)
         {
             _nodesDict.Clear();
@@ -153,22 +150,19 @@ namespace RoadGenerator
                 }
             }
 
-            int count = 0;
             foreach(XmlNode node in doc.DocumentElement.ChildNodes)
             {
                 if (node.Name == "way") 
                 {
                     WayData? wayData = GetWayData(node);
                     IEnumerator ienum = node.GetEnumerator();
-                    
+
                     if (wayData == null)
                         continue;
-                    
-                    if (wayData?.WayType != WayType.Building) {
+
+                    if (wayData?.WayType != WayType.Building) 
                         GenerateRoad(ienum, wayData.Value);
-                        count++;
-                    }
-                    
+
                     if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings)
                         GenerateBuilding(ienum, wayData.Value);
                 }
@@ -196,7 +190,7 @@ namespace RoadGenerator
                 }
             }
 
-            AddRoads();
+            AddIntersections();
 
             if (roadSystem.ShouldGenerateBusStops)
                 AddBusStops();
@@ -208,7 +202,7 @@ namespace RoadGenerator
                 road.IsGeneratingOSM = false;
         }
 
-        private void AddRoads()
+        private void AddIntersections()
         {
             foreach (KeyValuePair<Vector3, List<Road>> roads in _roadsAtNode)
             {
@@ -226,18 +220,18 @@ namespace RoadGenerator
                         PathCreator pathCreator1 = road1.PathCreator;
                         PathCreator pathCreator2 = road2.PathCreator;
 
+                        // Currently skipping roads that are shorter than 15m, When the issues with intersections between short roads is fixed this can be removed
                         if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15)
                             continue;
 
                         bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
                         bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
-                        
+
                         // If it is an intersection
                         if (!(isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2))
                         {
-                            position = position + new Vector3(0, 0, 0.01f);
                             Intersection intersection = IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
-                            
+
                             if (intersection != null)
                                 intersection.FlowType = _trafficLightAtJunction.ContainsKey(position) && _trafficLightAtJunction[position] ? FlowType.TrafficLights : FlowType.YieldSigns;
                         }
@@ -258,16 +252,10 @@ namespace RoadGenerator
                             continue;
                         }
 
-
-                        // Temporary hack, TODO fix
-                        position = position + new Vector3(0, 0, 0.0001f);
-
                         IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3 });
-                        
                     }
                     else if (roads.Value.Count == 4)
                     {
-
                         Road road1 = roads.Value[0];
                         Road road2 = roads.Value[1];
                         Road road3 = roads.Value[2];
@@ -283,9 +271,6 @@ namespace RoadGenerator
                             Debug.Log("Road too short");
                             continue;
                         }
-
-                        // Temporary hack, TODO fix
-                        position = position + new Vector3(0, 0, 0.0001f);
 
                         IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3, road4 });
                     }
@@ -303,13 +288,11 @@ namespace RoadGenerator
 
                     bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
                     bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
-                    
+
                     if (isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2 && road1.ConnectedToAtStart == null && road1.ConnectedToAtEnd == null)
                         road1.ConnectRoadIfEndPointsAreClose();
                 }
             }
-
-
         }
 
         public void AddBusStops()
@@ -317,7 +300,7 @@ namespace RoadGenerator
             GameObject busStopPrefab = _roadSystem.DefaultBusStopPrefab;
             string name = "";
             string refName = "";
-            
+
             foreach (XmlNode busStopNode in _busStops)
             {
                 foreach (XmlNode tagNode in busStopNode.ChildNodes)
@@ -335,38 +318,36 @@ namespace RoadGenerator
                         }
                     }
                 }
-                name = name + " " + refName;
 
+                name = name + " " + refName;
                 Vector3 position = GetNodePosition(busStopNode);
-                
+
                 if (_roadsAtNode.ContainsKey(position) == false)
                     continue;
-                
+
                 List<Road> roads = _roadsAtNode[position];
-                
+
                 if (roads.Count == 0)
                     continue;
 
                 Road road = roads[0];
-
                 RoadNode curr = road.StartRoadNode;
-                
                 float minDistanceToBusStop = float.MaxValue;
                 RoadNode closestRoadNode = null;
-                
+
                 while (curr != null)
                 {
                     float distanceToBusStop = Vector3.Distance(curr.Position, position);
-                    
+
                     if (distanceToBusStop < minDistanceToBusStop)
                     {
                         minDistanceToBusStop = distanceToBusStop;
                         closestRoadNode = curr;
                     }
-                    
+
                     curr = curr.Next;
                 }
-                
+
                 bool isForward = refName == "A";
                 road.SpawnBusStop(closestRoadNode, isForward, busStopPrefab, name);
             }
@@ -375,7 +356,7 @@ namespace RoadGenerator
         private void AddTrees()
         {
             GameObject treePrefab = _roadSystem.DefaultTreePrefab;
-            
+
             foreach (XmlNode treeNode in _trees)
             {
                 Vector3 position = GetNodePosition(treeNode);
@@ -400,7 +381,7 @@ namespace RoadGenerator
                 XmlNode currentNode = (XmlNode) ienum.Current;
                 if (currentNode.Name != "tag") 
                     continue;
-                
+
                 try
                 {
                     switch (currentNode.Attributes["k"].Value)
@@ -478,19 +459,18 @@ namespace RoadGenerator
                     Debug.Log("Error parsing way data");
                 }
             }
-            
+
             if (wayType == null)
                 return null;
 
             wayData.WayType = wayType.Value;
             wayData.BuildingData = buildingData;
             wayData.ParkingType = parkingType;
-            
+
             return wayData;
         }
 
         //https://wiki.openstreetmap.org/wiki/Map_features#Highway
-        // TODO add support for more road types
         private WayType? GetRoadType(XmlNode node)
         {
             switch (node.Attributes["v"].Value)
@@ -522,27 +502,6 @@ namespace RoadGenerator
         private void LoadOSMMap(XmlDocument document)
         {
             document.Load("Assets/MastHugget.osm");
-        }
-
-        private bool IsTagKeyName(XmlNode node, string value)
-        {
-            return node.Name == "tag" && node.Attributes["k"].Value == value;
-        }
-
-        double LatitudeToY (double latitude)
-        {
-            return System.Math.Log(System.Math.Tan(
-                (latitude + 90) / 360 * System.Math.PI
-            )) / System.Math.PI * 180;
-        }
-
-        Vector3 LatLonVector3ToVector3 (Vector3 latLonVector3)
-        {
-            return new Vector3(
-                latLonVector3.x,
-                0,
-                latLonVector3.z
-            );
         }
 
         private void GenerateFootWay(List <Vector3> points, WayData wayData)
@@ -577,7 +536,7 @@ namespace RoadGenerator
             if (wayData.WayType == WayType.RailTram)
                 return;
 
-            // TotalLength of road
+            // Total Length of road
             float totalLength = 0;
             
             for (int i = 0; i < roadPoints.Count - 1; i++)
@@ -594,7 +553,6 @@ namespace RoadGenerator
             roadPoints2.Add(roadPoints[0]);
             roadPoints2.Add(roadPoints[1]);
             Road road = SpawnRoad(roadPoints2, wayData);
-            //road.IsGeneratingOSM = true;
 
             road.RoadType = wayData.WayType;
 
@@ -606,7 +564,6 @@ namespace RoadGenerator
 
             if (wayData.ParkingType != null && wayData.ParkingType != ParkingType.None)
             {
-                Debug.Log("Adding parking" + road);
                 if (wayData.ParkingType == ParkingType.Left || wayData.ParkingType == ParkingType.Both)
                     road.AddFullRoadSideParking(LaneSide.Secondary);
                 
@@ -624,6 +581,7 @@ namespace RoadGenerator
             road.ShouldSpawnLampPoles = wayData.IsLit != null ? wayData.IsLit.Value : false;
 
             PathCreator pathCreator = road.GetComponent<PathCreator>();
+
             // Roads with only two points will not render properly, this is a hack to render them
             // TODO update the roads correctly
             // Move point to the same place to rerender the road
@@ -656,12 +614,11 @@ namespace RoadGenerator
 
                 if (currentNode.Name == "nd" && _nodesDict.ContainsKey(currentNode.Attributes["ref"].Value)) 
                 { 
-
                     Vector3 nodePosition = GetNodePosition(_nodesDict[currentNode.Attributes["ref"].Value]);
                     nodePositions.Add(nodePosition);
                 }
             }
-           
+
             return nodePositions;
         }
 
@@ -670,7 +627,7 @@ namespace RoadGenerator
             const int scale = 111000;
             float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon)*scale;
             float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat)*scale;
-            
+
             return new Vector3(xPos, 0, zPos);
         }
 
@@ -678,10 +635,9 @@ namespace RoadGenerator
         {
             float defaultBuildingHeight = 25;
             float height = wayData.BuildingData.Height ?? defaultBuildingHeight;
-            
+
             if (wayData.BuildingData.Height == null && wayData.BuildingData.BuildingLevels != null)
                 height = wayData.BuildingData.BuildingLevels.Value * 3.5f;
-                
 
             List<Vector3> buildingPointsBottom = GetWayNodePositions(ienum);
             List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
@@ -689,17 +645,17 @@ namespace RoadGenerator
 
             foreach (Vector3 point in buildingPointsBottom)
                 buildingPoints.Add(new BuildingPoints(point, new Vector3(point.x, height, point.z)));
-            
+
             foreach (BuildingPoints point in buildingPoints)
                 buildingPointsTop.Add(point.TopPoint);
-            
+
             GameObject house = Instantiate(BuildingPrefab, buildingPointsBottom[0], Quaternion.identity);
 
             house.name = GetBuildingName(wayData);
 
             house.transform.parent = _roadSystem.BuildingContainer.transform;
             Mesh buildingMesh = AssignMeshComponents(house);
-            
+
             // Create roofs for buildings
             List<Triangle> triangles = new List<Triangle>();
 
@@ -723,12 +679,13 @@ namespace RoadGenerator
         private string GetBuildingName(WayData wayData)
         {
             string defaultBuildingName = "Building";
+
             if (wayData.Name != null)
                 return wayData.Name;
-            
+ 
             if(wayData.BuildingData.StreetName == null || wayData.BuildingData.StreetAddress == null)
                 return defaultBuildingName;
-            
+
             return wayData.BuildingData.StreetName + " " + wayData.BuildingData.StreetAddress;
         }
 
@@ -753,12 +710,12 @@ namespace RoadGenerator
             foreach (BuildingPoints buildingPoint in buildingPoints)
             {
                 verts.Add(buildingPoint.BottomPoint);
-                
+
                 if (!positionToIndex.ContainsKey(buildingPoint.BottomPoint))
                     positionToIndex.Add(buildingPoint.BottomPoint, verts.Count - 1);
-                
+
                 verts.Add(buildingPoint.TopPoint);
-                
+
                 if (!positionToIndex.ContainsKey(buildingPoint.TopPoint))
                     positionToIndex.Add(buildingPoint.TopPoint, verts.Count - 1);
             }
@@ -829,7 +786,7 @@ namespace RoadGenerator
             // Ensure mesh renderer and filter components are assigned
             if (!buildingObject.gameObject.GetComponent<MeshFilter>()) 
                 buildingObject.gameObject.AddComponent<MeshFilter>();
-            
+
             if (!buildingObject.GetComponent<MeshRenderer>()) 
                 buildingObject.gameObject.AddComponent<MeshRenderer>();
 
@@ -846,22 +803,22 @@ namespace RoadGenerator
         Road SpawnRoad(List<Vector3> points, WayData wayData)
         {
             GameObject prefab = wayData.WayType == WayType.RailTram ? RailPrefab : RoadPrefab;
-            
+
             // Instantiate a new road prefab
             GameObject roadObj = Instantiate(prefab, points[0], Quaternion.identity);
-            
+
             // Set the name of the road
             roadObj.name = wayData.Name;
 
             // TEMPORARY
             roadObj.name = wayData.WayID;
-            
+
             roadObj.transform.parent = _roadSystem.RoadContainer.transform;
-            
+
             // Get the road from the prefab
             Road road = roadObj.GetComponent<Road>();
             road.IsGeneratingOSM = true;
-            
+
             // Move the road to the spawn point
             PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
             pathCreator.bezierPath = new BezierPath(points, false, PathSpace.xz);
@@ -870,11 +827,11 @@ namespace RoadGenerator
             // Set the road pointers
             road.RoadObject = roadObj;
             road.RoadSystem = _roadSystem;
-            
+
             // Update the road to display it
             road.OnChange();
             _roadSystem.AddRoad(road as DefaultRoad);
-            
+
             return road;
         }
 

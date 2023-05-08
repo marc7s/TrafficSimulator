@@ -66,9 +66,7 @@ namespace CarGenerator
             EditorGUILayout.PropertyField(_laneIndex);
             EditorGUILayout.PropertyField(_mode);
             EditorGUILayout.PropertyField(_endBehaviour);
-
             EditorGUILayout.PropertyField(_showNavigationPath);
-
             EditorGUILayout.PropertyField(_originalNavigationMode);
             EditorGUILayout.PropertyField(_showTargetLines);
             EditorGUILayout.PropertyField(_logRepositioningInformation);
@@ -82,8 +80,6 @@ namespace CarGenerator
             EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
             EditorGUILayout.PropertyField(_speed);
             EditorGUILayout.PropertyField(_acceleration);
-
-
             EditorGUILayout.PropertyField(_totalDistance);
 
             if(_showNavigationPath.boolValue != autoDrive.ShowNavigationPath)

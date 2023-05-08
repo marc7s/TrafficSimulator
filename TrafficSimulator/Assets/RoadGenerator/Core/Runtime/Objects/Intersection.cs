@@ -336,7 +336,6 @@ namespace RoadGenerator
                 foreach(Vector3 vert in verts)
                     normals.Add(Vector3.up);
 
-
                 AddTrianglesForRectangle(topTris, 5, 10, 1, 4);
                 AddTrianglesForRectangle(topTris, 7, 6, 2, 1);
                 AddTrianglesForRectangle(topTris, 9, 8, 4, 3);
@@ -344,7 +343,6 @@ namespace RoadGenerator
             }
             else if(Type == IntersectionType.FourWayIntersection)
             {
-                
                 // Map out the intersection from the first arms perspective
                 IntersectionArm bottomArm = IntersectionArms[0];
 
@@ -364,6 +362,7 @@ namespace RoadGenerator
 
                 Vector3 i8 = topArm.JunctionEdgePosition - topArmRoadNode.Normal * topArmRoadHalfWidth;
                 Vector3 i9 = topArm.JunctionEdgePosition + topArmRoadNode.Normal * topArmRoadHalfWidth;
+
                 if (isWrongDirection)
                 {
                     (i5, i12) = (i12, i5);
@@ -1007,7 +1006,6 @@ namespace RoadGenerator
                 return (null, null);
             }
 
-
             GuideNode guidePath = _intersectionGuidePaths[(current.ID, finalNode.ID)];
             turnDirection = GetTurnDirection(current, finalNode);
             
@@ -1133,12 +1131,14 @@ namespace RoadGenerator
 
                     Vector3 positionAtHalfWay = Vector3.Lerp(intersectionArm.JunctionEdgePosition, otherIntersectionArm.JunctionEdgePosition, 0.5f);
                     float distance = Vector3.Distance(positionAtHalfWay, IntersectionPosition);
+
                     if (distance < minDistance)
                     {
                         minDistance = distance;
                         minAngleArm = otherIntersectionArm;
                     }
                 }
+
                 if (minAngleArm != null)
                 {
                     intersectionArm.OppositeArmID = minAngleArm.ID;
@@ -1202,6 +1202,7 @@ namespace RoadGenerator
                     if (intersectionArm.OppositeArmID != "")
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
                 }
+
                 isFirstIteration = false;
             }   
         }

@@ -3,7 +3,6 @@ using UnityEngine;
 using System;
 using POIs;
 
-
 namespace RoadGenerator
 {
     /// <summary>The amount of lanes in each direction of a road. In total the road will have twice as many lanes</summary>
@@ -55,6 +54,7 @@ namespace RoadGenerator
         Start,
         End
     }
+
     public struct ConnectedRoad
     {
         public Road Road;
@@ -84,7 +84,7 @@ namespace RoadGenerator
         public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
         public bool GenerateSpeedSigns = true;
         // If two road endpoints are within this distance of each other, they will be connected
-        public float ConnectionDistanceThreshold = 0f;
+        public float ConnectionDistanceThreshold = 1f;
         public bool IsOneWay = false;
         public bool IsGeneratingOSM = true;
         public WayType RoadType;
@@ -574,7 +574,8 @@ namespace RoadGenerator
             
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
-            //PlaceTrafficSigns();
+
+            PlaceTrafficSigns();
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();
@@ -587,8 +588,10 @@ namespace RoadGenerator
             UpdateRoadNodes();
             UpdateLanes();
             UpdateMesh();
-            // foreach(Intersection intersection in Intersections)
-            //     intersection.UpdateMesh();
+
+            foreach(Intersection intersection in Intersections)
+                intersection.UpdateMesh();
+
             PlaceTrafficSigns();
         }
 
@@ -993,6 +996,7 @@ namespace RoadGenerator
                     queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
                 }
             } 
+
             return queuedNodes;
         }
 
@@ -1090,7 +1094,7 @@ namespace RoadGenerator
                 AssignStopSign(data.RoadNode, data.IsForward ? LaneSide.Primary : LaneSide.Secondary, trafficSign);
             else if(data.TrafficSignType == TrafficSignType.YieldSign)
                 AssignYieldSign(data.RoadNode, data.IsForward ? LaneSide.Primary : LaneSide.Secondary, trafficSign);
-            
+
             return trafficSign;
         }
 
@@ -1459,12 +1463,12 @@ namespace RoadGenerator
         void OnDestroy()
         {
             _isBeingDestroyed = true;
-            
+
             if(RoadSystem == null) 
                 return;
-            
+
             RoadSystem.RemoveRoad(this);
-            
+
             // Cleanup connected roads references
             if (ConnectedToAtStart != null)
             {
@@ -1484,9 +1488,6 @@ namespace RoadGenerator
                 Intersections.RemoveAt(i);
                 DestroyImmediate(intersection.gameObject);
             }
-
-           // if(!_isBeingDestroyed)
-           //     RoadSystem.UpdateRoadSystemGraph();
         }
     }
 }
