@@ -259,7 +259,7 @@ namespace VehicleBrain
             
             // Get a random path from the navigation graph
             Context.NavigationPath = forcePath != null ? forcePath.ForcedNavigationPath : Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
-            
+
             // Switch to Random mode if no path could be found
             if (Context.NavigationPath.Count == 0)
                 Context.NavigationMode = NavigationMode.Random;
@@ -298,7 +298,7 @@ namespace VehicleBrain
                     _context.NavigationPathPositions.Add(current.Position);
                 
                 if (current.RoadNode == Context.NavigationPathEndNode.RoadNode && Context.NavigationPath.Count == 0)
-                    break;    
+                    break;
 
                 if((current.Type == RoadNodeType.JunctionEdge && current.Next?.IsIntersection() == true && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(current.Intersection, current))) || current.RoadNode.IsNavigationNode)
                     current = UpdateAndGetGuideNode(current, true);
