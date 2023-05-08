@@ -29,7 +29,7 @@ namespace VehicleBrain {
         private Rigidbody _rigidbody;
         public float _maxFuelCapacity = 60; // L
         public double _totalFuelConsumed = 0;
-        private float _fuelConsumed = 0;
+        public float FuelConsumedSinceLastFrame = 0;
         private Vector3 _lastPosition = Vector3.zero;
 
         // Vehicle specific values used in the fuel consumption calculation
@@ -87,21 +87,21 @@ namespace VehicleBrain {
             // If the vehicle is not moving, calculate the fuel consumed at idle per second
             if (_vehicleController.speed < 0.1f)
             {
-                _fuelConsumed = _fuelConsumptionAtIdle * Time.deltaTime / 3600;
+                FuelConsumedSinceLastFrame = _fuelConsumptionAtIdle * Time.deltaTime / 3600;
             }
             // If the vehicle is moving at a low speed, calculate the fuel consumed at city speed per 100km
             else if (_vehicleController.speed < 20)
             {
                 float distance = Vector3.Distance(_lastPosition, transform.position);
-                _fuelConsumed = _fuelConsumptionCity * distance / 100000;
+                FuelConsumedSinceLastFrame = _fuelConsumptionCity * distance / 100000;
             }
             // If the vehicle is moving at a high speed, calculate the fuel consumed at highway speed per 100km
             else
             {
                 float distance = Vector3.Distance(_lastPosition, transform.position);
-                _fuelConsumed = _fuelConsumptionHighway * distance / 100000;
+                FuelConsumedSinceLastFrame = _fuelConsumptionHighway * distance / 100000;
             }
-            _totalFuelConsumed += _fuelConsumed;
+            _totalFuelConsumed += FuelConsumedSinceLastFrame;
         }
 
         private void Q_CalculateFuelConsumption()
@@ -117,8 +117,8 @@ namespace VehicleBrain {
             _averageAcceleration = MathF.Max((_vehicleController.speed - _lastSpeed) /Time.deltaTime, 0);
 
             // Calculate the fuel consumed since last frame and add it to the total fuel consumed
-            _fuelConsumed = MathF.Max(_averageAcceleration * Time.deltaTime / 1000, _idleFuelConsumption * Time.deltaTime);
-            _totalFuelConsumed += _fuelConsumed;
+            FuelConsumedSinceLastFrame = MathF.Max(_averageAcceleration * Time.deltaTime / 1000, _idleFuelConsumption * Time.deltaTime);
+            _totalFuelConsumed += FuelConsumedSinceLastFrame;
         }
 
         private void Q_CalculateIdleFuelConsumption()

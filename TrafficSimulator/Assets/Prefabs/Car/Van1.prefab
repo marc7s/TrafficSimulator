@@ -1694,6 +1694,7 @@ GameObject:
   - component: {fileID: 412107769271382469}
   - component: {fileID: 6997793727484486664}
   - component: {fileID: 8740552995654376748}
+  - component: {fileID: 7759013039122067897}
   m_Layer: 0
   m_Name: Van1
   m_TagString: Untagged
@@ -1738,7 +1739,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed2077f9a1d00454da03e178dd2ee3f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Road: {fileID: 0}
+  _road: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
   NavigationPathMaterial: {fileID: 0}
   LaneIndex: 0
@@ -1747,8 +1748,6 @@ MonoBehaviour:
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 2
-  LogRepositioningInformation: 0
-  ShowTargetLines: 4
   BrakeOffset: 3
   MaxRepositioningSpeed: 5
   MaxReverseDistance: 20
@@ -1758,7 +1757,10 @@ MonoBehaviour:
   Speed: 10
   Acceleration: 7
   TotalDistance: 0
+  ShowTargetLines: 4
+  LogRepositioningInformation: 0
   LogNavigationErrors: 0
+  LogBrakeReason: 0
   _logParkingFull: 0
 --- !u!54 &1577973480894095029
 Rigidbody:
@@ -2239,6 +2241,7 @@ MonoBehaviour:
   _idlingRPM: 650
   _maxFuelCapacity: 60
   _totalFuelConsumed: 0
+  FuelConsumedSinceLastFrame: 0
 --- !u!114 &6997793727484486664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2273,6 +2276,18 @@ MonoBehaviour:
   - {fileID: 4088012803037771231}
   - {fileID: 8036912380573265589}
   _intervalTime: 0.5
+--- !u!114 &7759013039122067897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577973480899275759}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f24a7555773d9b44bb21c544c9557941, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1577973480899420503
 GameObject:
   m_ObjectHideFlags: 0
