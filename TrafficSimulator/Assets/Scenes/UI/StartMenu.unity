@@ -6217,7 +6217,7 @@ GameObject:
   - component: {fileID: 1404677014}
   - component: {fileID: 1404677015}
   m_Layer: 0
-  m_Name: CameraRotator
+  m_Name: CameraRotator(Anchor)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
