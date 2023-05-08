@@ -157,6 +157,7 @@ namespace VehicleBrain
 
             _vehicleController = GetComponent<VehicleController>();
             _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
+            
             if (Mode == DrivingMode.Quality)
             {
                 _originalMaxSpeedForward = _vehicleController.maxSpeedForward;

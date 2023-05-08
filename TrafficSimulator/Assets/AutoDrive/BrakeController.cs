@@ -122,7 +122,7 @@ namespace VehicleBrain
             float distanceToYieldNode = Vector3.Distance(agent.Context.CurrentNode.Position, yieldStart.Position);
             float distanceToCurrNode = distanceToYieldNode;
 
-            const float yieldTime = 2f;
+            const float yieldTime = 2.5f;
             const float maxSpeed = 20f;
             const float maxDistance = maxSpeed * yieldTime;
 
