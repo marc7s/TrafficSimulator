@@ -86,7 +86,6 @@ namespace RoadGenerator
         // If two road endpoints are within this distance of each other, they will be connected
         public float ConnectionDistanceThreshold = 0f;
         public bool IsOneWay = false;
-        public bool IsGeneratingOSM = true;
         public WayType RoadType;
 
         [Header ("Traffic sign settings")]
@@ -557,15 +556,12 @@ namespace RoadGenerator
             if(RoadSystem == null)
                 return;
 
-            if (!IsGeneratingOSM)
+            if (!RoadSystem.UseOSM)
                 ConnectRoadIfEndPointsAreClose();
 
             // Update the intersections and road when a node is changed
-            if (!IsGeneratingOSM && Application.isEditor && !Application.isPlaying)
-            {
-                // IntersectionCreator.UpdateIntersections(this);
-            }
-
+            if (!RoadSystem.UseOSM && Application.isEditor && !Application.isPlaying)
+                IntersectionCreator.UpdateIntersections(this);
 
             UpdateRoad();
         }

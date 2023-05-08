@@ -92,6 +92,7 @@ namespace RoadGenerator
 
         public void GenerateMap(RoadSystem roadSystem)
         {
+            roadSystem.UseOSM = true;
             _nodesDict.Clear();
             _roadsAtNode.Clear();
             _busStops.Clear();
@@ -197,9 +198,6 @@ namespace RoadGenerator
 
             if (roadSystem.ShouldGenerateTrees)
                 AddTrees();
-
-            foreach (Road road in roadSystem.DefaultRoads)
-                road.IsGeneratingOSM = false;
         }
 
         private void AddIntersections()
@@ -823,7 +821,6 @@ namespace RoadGenerator
 
             // Get the road from the prefab
             Road road = roadObj.GetComponent<Road>();
-            road.IsGeneratingOSM = true;
 
             // Move the road to the spawn point
             PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
