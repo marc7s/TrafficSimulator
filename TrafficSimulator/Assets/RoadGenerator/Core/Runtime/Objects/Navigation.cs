@@ -127,7 +127,7 @@ namespace RoadGenerator
                 NavigationNode targetNode = nodeList[randomIndex];
                 nodeToFind = targetNode;
                 Stack<NavigationNodeEdge> path = GetPathToNode(currentEdge, targetNode);
-                
+
                 if (path == null)
                     continue;
 

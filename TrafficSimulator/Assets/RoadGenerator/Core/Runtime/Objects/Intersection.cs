@@ -1071,7 +1071,7 @@ namespace RoadGenerator
         private TurnDirection GetTurnDirection(LaneNode entry, LaneNode exit)
         {
             // If the entry and exit nodes share the same first node it means that the entry and exit nodes are on the same road
-            if (entry.RoadNode.First == exit.RoadNode.First)
+            if (GetIntersectionArmAtJunctionEdge(entry.RoadNode)?.OppositeArmID == GetIntersectionArmAtJunctionEdge(exit.RoadNode)?.ID && GetIntersectionArmAtJunctionEdge(exit.RoadNode)?.ID != "")
                 return TurnDirection.Straight;
 
             Vector3 entryDirection = entry.Position - entry.Next.Position;

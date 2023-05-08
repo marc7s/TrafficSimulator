@@ -76,6 +76,7 @@ namespace RoadGenerator
         public bool ShouldGenerateTrees = true;
         public bool ShouldGenerateBusStops = true;
         public bool UseOSM = false;
+        public bool IsGeneratingOSM = false;
         
         [Header("Default models")]
         public GameObject DefaultTrafficLightPrefab;
