@@ -83,19 +83,21 @@ namespace UI
 
         private void EnablePanel(VisualElement panel, Button button)
         {
-            List<VisualElement> _panels = new List<VisualElement>{_trafficFlowPanel, _emissionPanel, _vehiclesPanel};
-            List<Button> _buttons = new List<Button>{_trafficFlowButton, _emissionButton, _vehiclesButton};
-            _panels.Remove(panel);
-            _buttons.Remove(button);
-            foreach (VisualElement p in _panels)
+            List<VisualElement> panels = new List<VisualElement>{ _trafficFlowPanel, _emissionPanel, _vehiclesPanel };
+            List<Button> buttons = new List<Button>{ _trafficFlowButton, _emissionButton, _vehiclesButton };
+            panels.Remove(panel);
+            buttons.Remove(button);
+
+            foreach (VisualElement p in panels)
             {
                 p.visible = false;
             }
-            foreach (Button b in _buttons)
+            foreach (Button b in buttons)
             {
                 b.style.height = new Length(25, LengthUnit.Pixel);
                 b.RemoveFromClassList("panel-button-selected");
             }
+
             panel.visible = true;
             button.style.height = new Length(30, LengthUnit.Pixel);
             button.AddToClassList("panel-button-selected");
