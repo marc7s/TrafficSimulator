@@ -84,7 +84,7 @@ namespace RoadGenerator
         public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
         public bool GenerateSpeedSigns = true;
         // If two road endpoints are within this distance of each other, they will be connected
-        public float ConnectionDistanceThreshold = 1f;
+        public float ConnectionDistanceThreshold = 0f;
         public bool IsOneWay = false;
         public bool IsGeneratingOSM = true;
         public WayType RoadType;
@@ -561,7 +561,12 @@ namespace RoadGenerator
                 ConnectRoadIfEndPointsAreClose();
 
             // Update the intersections and road when a node is changed
-            //IntersectionCreator.UpdateIntersections(this);
+            if (!IsGeneratingOSM && Application.isEditor && !Application.isPlaying)
+            {
+                // IntersectionCreator.UpdateIntersections(this);
+            }
+
+
             UpdateRoad();
         }
         
