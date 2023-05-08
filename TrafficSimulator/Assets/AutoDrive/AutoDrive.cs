@@ -218,9 +218,13 @@ namespace VehicleBrain
             }
             else if (Mode == DrivingMode.Performance)
             {
-                // In performance mode the vehicle should not be affected by physics or gravity
-                _rigidbody.isKinematic = false;
-                _rigidbody.useGravity = false;
+                if (_rigidbody != null)
+                {
+                    // In performance mode the vehicle should not be affected by physics or gravity
+                    _rigidbody.isKinematic = false;
+                    _rigidbody.useGravity = false;
+                }
+
                 _lerpSpeed = Speed;
                 _targetLerpSpeed = Speed;
             }

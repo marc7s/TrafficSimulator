@@ -93,6 +93,7 @@ namespace RoadGenerator
         public void GenerateMap(RoadSystem roadSystem)
         {
             roadSystem.UseOSM = true;
+            roadSystem.IsGeneratingOSM = true;
             _nodesDict.Clear();
             _roadsAtNode.Clear();
             _busStops.Clear();
@@ -198,6 +199,8 @@ namespace RoadGenerator
 
             if (roadSystem.ShouldGenerateTrees)
                 AddTrees();
+            
+            roadSystem.IsGeneratingOSM = false;
         }
 
         private void AddIntersections()

@@ -556,7 +556,7 @@ namespace RoadGenerator
             if(RoadSystem == null)
                 return;
 
-            if (!RoadSystem.UseOSM)
+           if (!RoadSystem.IsGeneratingOSM)
                 ConnectRoadIfEndPointsAreClose();
 
             // Update the intersections and road when a node is changed
