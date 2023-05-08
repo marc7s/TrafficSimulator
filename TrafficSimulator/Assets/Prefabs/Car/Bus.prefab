@@ -1875,6 +1875,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c2580a7b7136a884391ea27188b7c208, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  VehicleLength: 4.6
   BusRoute: []
 --- !u!114 &1577973480145491502
 MonoBehaviour:
