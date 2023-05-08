@@ -7,3 +7,5 @@
 7. [Real Materials](https://assetstore.unity.com/packages/2d/textures-materials/real-materials-vol-0-free-115597)
 8. [Lowpoly Vintage Streetcar](https://assetstore.unity.com/packages/3d/vehicles/land/lowpoly-vintage-streetcar-183219)
 9. [Graph and Chart - Lite Edition](https://assetstore.unity.com/packages/tools/gui/graph-and-chart-lite-edition-148497)
+10. [AQUAS-Lite](https://assetstore.unity.com/packages/vfx/shaders/aquas-lite-built-in-render-pipeline-53519)
+11. [TerrainSampleAssets](https://assetstore.unity.com/packages/3d/environments/landscapes/terrain-sample-asset-pack-145808)
