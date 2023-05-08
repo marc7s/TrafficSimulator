@@ -55,13 +55,20 @@ namespace RoadGenerator
         public virtual RoadNode RoadNode => _roadNode;
         public RoadNodeType Type => _roadNode.Type;
         public TrafficLight TrafficLight => _roadNode.TrafficLight;
-        public POI POI => _roadNode.POI;
+        public StopSign StopSign => _roadNode.StopSign;
+        public YieldSign YieldSign => _roadNode.YieldSign;
+        public List<POI> POIs => _roadNode.POIs;
         public virtual Intersection Intersection => _roadNode.Intersection;
         public virtual Vehicle Vehicle => _vehicle;
         public virtual bool IsSteeringTarget => _isSteeringTarget;
         public override LaneNode Copy()
         {
             return new LaneNode(_position, _laneSide, _laneIndex, _roadNode, _prev, _next, _distanceToPrevNode);
+        }
+
+        public bool HasPOI()
+        {
+            return _roadNode.HasPOI();
         }
         
         /// <summary>Tries to assign a vehicle to this node. Returns `true` if it succeded, `false` if there is already a vehicle assigned</summary>

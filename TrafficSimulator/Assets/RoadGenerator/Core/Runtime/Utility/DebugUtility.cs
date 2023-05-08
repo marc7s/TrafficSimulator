@@ -11,6 +11,7 @@ namespace RoadGenerator
     {
         [SerializeField] private static GameObject _container;
         [SerializeField] private static GameObject _positionContainer;
+        [SerializeField] private static GameObject _prefabContainer;
         [SerializeField] private static GameObject _lineContainer;
         [SerializeField] private static LineRenderer _lineRenderer;
         [SerializeField] private static GameObject _endPointPrefab;
@@ -22,16 +23,24 @@ namespace RoadGenerator
         private static bool _nextGroupPressed = false;
         private static int _currentGroup = -1;
         private static bool _isSetup = false;
-        private const string _debugUtilityContainer = "Debug Utility";
-        private const string _positionContainerName = "Markers";
-        private const string _lineContainerName = "Line";
+        private const string DEBUG_UTILITY_CONTAINER_NAME = "Debug Utility";
+        private const string POSITION_CONTAINER_NAME = "Markers";
+        private const string LINE_CONTAINER_NAME = "Line";
+        private const string PREFAB_CONTAINER_NAME = "Prefabs";
         
         private static void Setup()
         {
             // Remove an existing container if it is found
-            GameObject existingContainer = GameObject.Find(_debugUtilityContainer);
+            GameObject existingContainer = GameObject.Find(DEBUG_UTILITY_CONTAINER_NAME);
             if(existingContainer != null)
                 GameObject.DestroyImmediate(existingContainer);
+
+            // Create an empty container for all debug utility objects
+            _container = new GameObject(DEBUG_UTILITY_CONTAINER_NAME);
+
+            // Create an empty container for all prefabs
+            _prefabContainer = new GameObject(PREFAB_CONTAINER_NAME);
+            _prefabContainer.transform.parent = _container.transform;
 
             // Since creating game objects cannot be done without spawning them in the scene,
             // this is used to move the "prefabs" out from visibility
@@ -42,10 +51,12 @@ namespace RoadGenerator
             _markerPrefab.GetComponent<BoxCollider>().enabled = false;
             _markerPrefab.transform.localScale = _markerPrefabScale;
             _markerPrefab.transform.position = farAway;
+            _markerPrefab.transform.parent = _prefabContainer.transform;
 
             // Copy the marker prefab to the no rotation version
             _markerPrefabNoRotation = GameObject.Instantiate(_markerPrefab);
             _markerPrefabNoRotation.transform.localScale = Vector3.one * 1.2f;
+            _markerPrefabNoRotation.transform.parent = _prefabContainer.transform;
 
             // Add a pointer to the marker to see which direction it is facing
             GameObject markerPointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -54,12 +65,9 @@ namespace RoadGenerator
             markerPointer.transform.localScale = new Vector3(0.7f, 0.99f, 0.7f);
             markerPointer.transform.localRotation = Quaternion.Euler(0, 45, 0);
             markerPointer.GetComponent<BoxCollider>().enabled = false;
-
-            // Create an empty container for all debug utility objects
-            _container = new GameObject(_debugUtilityContainer);
             
             // Create an empty container for all markers
-            _positionContainer = new GameObject(_positionContainerName);
+            _positionContainer = new GameObject(POSITION_CONTAINER_NAME);
             _positionContainer.transform.parent = _container.transform;
 
             // Create a prefab for line end points that are spheres
@@ -68,9 +76,10 @@ namespace RoadGenerator
             _endPointPrefab.transform.localScale = _endPointPrefabScale;
             _endPointPrefab.transform.position = farAway;
             _endPointPrefab.GetComponent<Renderer>().material = new Material(Shader.Find("Standard"));
+            _endPointPrefab.transform.parent = _prefabContainer.transform;
 
             // Create an empty container for the line
-            _lineContainer = new GameObject(_lineContainerName);
+            _lineContainer = new GameObject(LINE_CONTAINER_NAME);
             _lineRenderer = _lineContainer.AddComponent<LineRenderer>();
             _lineRenderer.positionCount = 0;
             _lineContainer.transform.parent = _container.transform;
@@ -276,7 +285,7 @@ namespace RoadGenerator
             if(_positionContainer != null)
                 GameObject.DestroyImmediate(_positionContainer);
 
-            _positionContainer = new GameObject(_positionContainerName);
+            _positionContainer = new GameObject(POSITION_CONTAINER_NAME);
             _positionContainer.transform.parent = _container.transform;
         }
     }
