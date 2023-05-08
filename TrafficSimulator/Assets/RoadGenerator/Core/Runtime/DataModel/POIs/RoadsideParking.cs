@@ -91,6 +91,19 @@ namespace POIs
                 DistanceAlongRoad = RoadNode.Road.Length / 2;
         }
 
+        private float? GetDistanceToNextParkingSpot(RoadNode roadNode)
+        {
+            RoadNode curr = roadNode.Next;
+            float distance = 0;
+            while(curr != null)
+            {
+                distance += curr.DistanceToPrevNode;
+                if(_parkingSpaceMap.ContainsKey(curr))
+                    return distance;
+                curr = curr.Next;
+            }
+            return null;
+        }
         protected override void CreateParkingMesh()
         {
             if(_spanNodes.Count == 0)
@@ -104,6 +117,8 @@ namespace POIs
             POINode prevParking = _parkingSpots[0];
             bool reachedFirstSpot = false;
             float distance = 0;
+            float? distanceToNextParkingSpot = GetDistanceToNextParkingSpot(_spanNodes[0]);
+            float distanceToNextParkingSpotOriginal = distanceToNextParkingSpot.Value;
             RoadNode prev = _spanNodes[_hasStartingSmoothEdge ? 1 : 0];
 
             for(int i = 0; i < _spanNodes.Count; i++)
@@ -126,34 +141,43 @@ namespace POIs
                 {
                     verts.Add(roadSide);
                     verts.Add(outside);
-
-                    float forwardUV = (parkingStart ? 0 : -1) + distance / _parkingSize.y;
-                    distance += Vector3.Distance(GetEdgePosition(prev, _parkingSize.x / 2), GetEdgePosition(vertNode, _parkingSize.x / 2));
-
                     bool parkingEdge = _parkingSpaceMap.ContainsKey(vertNode);
-                    
-                    float uvY;
-                    if(!reachedFirstSpot)
-                        uvY = 0;
-                    else if(parkingEdge && parkingStart)
-                        uvY = 0;
-                    else if(parkingEdge)
-                        uvY = 1;
-                    else
-                        uvY = forwardUV;
 
+                    if(i != 0)
+                        distanceToNextParkingSpot -= vertNode.DistanceToPrevNode;
+
+                    float forwardUV = (distanceToNextParkingSpot ?? 100) / (distanceToNextParkingSpotOriginal);
+                    
+
+
+
+                    Debug.Log("Distance to next parking spot: " + distanceToNextParkingSpot);
+                    GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cube.transform.position = GetEdgePosition(vertNode);
+
+                   // Debug.Log(forwardUV);
+                    float uvY;
+
+                    if (parkingEdge)
+                        uvY = parkingStart ? 0 : 1;
+                    else
+                        uvY = parkingStart ? forwardUV : 1 - forwardUV;
+           
+
+                    
                     if(parkingEdge)
                     {
                         prevParking = _parkingSpaceMap[vertNode];
                         parkingStart = !parkingStart;
                         reachedFirstSpot = true;
-                        distance = 0;
+                        distanceToNextParkingSpot = GetDistanceToNextParkingSpot(vertNode);
+                        distanceToNextParkingSpotOriginal = distanceToNextParkingSpot ?? 0;
+                        //distance = 0;
                     }
-
+                    cube.name = "forwardUV" + forwardUV + "distance To next" + distanceToNextParkingSpot + "uvY" + uvY;
                     prev = vertNode;
                     //float uvY = parkingEdge ? (parkingStart ? 0 : 1) : forwardUV;
 
-                    Debug.Log($"{parkingEdge}: {uvY}");
 
                     uvs.Add(new Vector2(0, uvY));
                     uvs.Add(new Vector2(1, uvY));
