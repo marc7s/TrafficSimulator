@@ -79,7 +79,6 @@ namespace User
             if (_instance == null)
             {
                 _instance = this;
-                DontDestroyOnLoad(gameObject.transform.root);
             }
             else
             {
@@ -153,6 +152,10 @@ namespace User
         // Common method for handling click and double-click inputs
         private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke)
         {
+            if (_mainCamera == null)
+            {
+                _mainCamera = Camera.main;
+            }
             Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
             if (Physics.Raycast(ray, out RaycastHit hitInfo) && CanSelectNewObject)

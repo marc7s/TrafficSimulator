@@ -1,6 +1,7 @@
 using Cam;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 using Simulation;
 using User;
 
@@ -9,7 +10,6 @@ namespace UI
     public class OverlayController : MonoBehaviour
     {
         private UIDocument _doc;
-        private MenuController _menuController;
         
         // Overlay Button
         private Button _menuButton;
@@ -53,7 +53,6 @@ namespace UI
             _doc = GetComponent<UIDocument>();
             _cameraButtonStyles = Resources.Load<StyleSheet>("CameraButtonStyle");
             _doc.rootVisualElement.styleSheets.Add(_cameraButtonStyles);
-            _menuController = GameObject.Find("UIMenu").GetComponent<MenuController>();
 
             // Labels
             _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
@@ -210,7 +209,7 @@ namespace UI
             _statisticsUI.visible = false;
             _worldUI.visible = false;
             _doc.rootVisualElement.visible = false;
-            _menuController.Enable();
+            SceneManager.LoadScene("StartMenu",  LoadSceneMode.Single);
         }
 
         private void DefaultCameraButtonClicked()
@@ -244,6 +243,7 @@ namespace UI
         private void EditorButtonOnClicked()
         {
             Debug.Log("Editor");
+            SceneManager.LoadScene("Martin", LoadSceneMode.Single);
         }
 
         private void RewindButtonOnClicked()

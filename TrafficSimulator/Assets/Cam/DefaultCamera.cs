@@ -69,6 +69,11 @@ namespace Cam
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject -= HandleGameObjectDoubleClickSelection;
         }
 
+        private void OnDisable()
+        {
+            SetInactive(CameraManager);
+        }
+
         private void HandleNewGameObjectSelection(Selectable selectable)
         {
             StopAllCoroutines();

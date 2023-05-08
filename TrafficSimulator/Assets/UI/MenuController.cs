@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 
 namespace UI
 {
@@ -7,7 +8,6 @@ namespace UI
     {
         private UIDocument _doc;
         private VisualElement _displayedContainer;
-        private OverlayController _overlayController;
 
         // Start Menu UI
         private VisualElement _settingsContainer;
@@ -41,9 +41,6 @@ namespace UI
             _doc = GetComponent<UIDocument>();
             // Set the displayed container to the start menu
             _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("MenuDisplay");
-
-            // Get the overlay controller
-            _overlayController = GameObject.Find("UIOverlay").GetComponent<OverlayController>();
 
             // Start Menu UI
             _startMenuContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
@@ -89,7 +86,8 @@ namespace UI
         private void StartButtonOnClicked()
         {
             _doc.rootVisualElement.visible = false;
-            _overlayController.Enable();
+            // ------------------------------------- TODO CHANGE TO GAME SCENE ------------------------------------- //
+            SceneManager.LoadScene("Martin", LoadSceneMode.Single);
         }
 
         private void SettingsButtonOnClicked()
