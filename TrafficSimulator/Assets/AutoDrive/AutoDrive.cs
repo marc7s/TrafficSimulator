@@ -65,7 +65,7 @@ namespace VehicleBrain
         }
 
         [Header("Connections")]
-        public Road Road;
+        [SerializeField] private Road _road;
         public GameObject NavigationTargetMarker;
         public Material NavigationPathMaterial;
         public int LaneIndex = 0;
@@ -101,6 +101,9 @@ namespace VehicleBrain
         
         // Public variables
         [HideInInspector] public LaneNode CustomStartNode = null;
+        // Used for road registration
+        [HideInInspector] public delegate void RoadChangedDelegate(Road newRoad);
+        [HideInInspector] public RoadChangedDelegate OnRoadChanged;
 
         // Private variables
         private float _vehicleLength;
@@ -135,6 +138,12 @@ namespace VehicleBrain
         private float _targetLerpSpeed = 0;
         private float _timeElapsedSinceLastTarget = 0;
         private float _lastLerpTime = 0;
+
+        public Road Road
+        {
+            get => _road;
+            set => SetRoad(value);
+        }
 
         void Start()
         {
@@ -238,6 +247,15 @@ namespace VehicleBrain
             
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
+        }
+
+        private void SetRoad(Road newRoad)
+        {
+            if (_road != newRoad)
+            {
+                _road = newRoad;
+                OnRoadChanged?.Invoke(_road);
+            }
         }
 
         private void UpdateIndicators()
