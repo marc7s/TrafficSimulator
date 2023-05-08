@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.UIElements;
 using User;
 using VehicleBrain;
@@ -80,6 +81,27 @@ namespace UI
             _tabs = Tabs.Vehicles;
         }
 
+        private void EnablePanel(VisualElement panel, Button button)
+        {
+            List<VisualElement> panels = new List<VisualElement>{ _trafficFlowPanel, _emissionPanel, _vehiclesPanel };
+            List<Button> buttons = new List<Button>{ _trafficFlowButton, _emissionButton, _vehiclesButton };
+            panels.Remove(panel);
+            buttons.Remove(button);
+
+            foreach (VisualElement p in panels)
+            {
+                p.visible = false;
+            }
+            foreach (Button b in buttons)
+            {
+                b.style.height = new Length(25, LengthUnit.Pixel);
+                b.RemoveFromClassList("panel-button-selected");
+            }
+
+            panel.visible = true;
+            button.style.height = new Length(30, LengthUnit.Pixel);
+            button.AddToClassList("panel-button-selected");
+        }
         private void UpdatePanels()
         {
             switch(_tabs)
@@ -90,19 +112,13 @@ namespace UI
                     _vehiclesPanel.visible = false;
                     break;
                 case Tabs.TrafficFlow:
-                    _trafficFlowPanel.visible = true;
-                    _emissionPanel.visible = false;
-                    _vehiclesPanel.visible = false;
+                    EnablePanel(_trafficFlowPanel, _trafficFlowButton);
                     break;
                 case Tabs.Emission:
-                    _trafficFlowPanel.visible = false;
-                    _emissionPanel.visible = true;
-                    _vehiclesPanel.visible = false;
+                    EnablePanel(_emissionPanel, _emissionButton);
                     break;
                 case Tabs.Vehicles:
-                    _trafficFlowPanel.visible = false;
-                    _emissionPanel.visible = false;
-                    _vehiclesPanel.visible = true;
+                    EnablePanel(_vehiclesPanel, _vehiclesButton);
                     break;
             }
         }
