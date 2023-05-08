@@ -501,7 +501,7 @@ namespace RoadGenerator
         }
         private void LoadOSMMap(XmlDocument document)
         {
-            document.Load("Assets/MastHugget.osm");
+            document.Load("Assets/OsmMaps/MastHugget.osm");
         }
 
         private void GenerateFootWay(List <Vector3> points, WayData wayData)
