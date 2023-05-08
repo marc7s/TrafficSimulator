@@ -207,9 +207,7 @@ namespace RoadEditor
             }
 
             if (_isGeneratingOSM.boolValue != road.IsGeneratingOSM)
-            {
                 road.IsGeneratingOSM = _isGeneratingOSM.boolValue;
-            }
 
             serializedObject.ApplyModifiedProperties();
 

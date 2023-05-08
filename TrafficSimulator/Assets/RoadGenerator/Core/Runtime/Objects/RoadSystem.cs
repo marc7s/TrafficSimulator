@@ -30,6 +30,7 @@ namespace RoadGenerator
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
+        
         [Header("OSM Settings")]
         public bool ShouldGenerateBuildings = true;
         public bool ShouldGenerateTrees = true;

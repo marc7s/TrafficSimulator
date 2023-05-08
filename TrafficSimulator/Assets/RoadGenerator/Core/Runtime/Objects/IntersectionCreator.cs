@@ -97,21 +97,18 @@ namespace RoadGenerator
         static IntersectionPointData CalculateIntersectionDataMultipleRoads(Vector3 intersectionPosition, List<Road> roads)
         {
             List<JunctionEdgeData> junctionEdgeDatas = new List<JunctionEdgeData>();
+            
             // TODO fix
             float intersectionLength = Intersection.CalculateIntersectionLength(roads[0], roads[1]);
+            
             // Get the anchor points on either side of the intersection for the two roads
-
             foreach(Road road in roads)
-            {
                 junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road, intersectionPosition, intersectionLength));
-            }
-
 
             IntersectionType type = IntersectionType.FourWayIntersection;
             if (junctionEdgeDatas.Count == 3)
-            {
                 type = IntersectionType.ThreeWayIntersectionAtStart;
-            }
+            
             return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
         }
 
@@ -120,6 +117,7 @@ namespace RoadGenerator
             IntersectionPointData intersectionPointData = CalculateIntersectionData(intersectionPosition, road1, road2);
             if (!road1.RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
                 return CreateIntersectionAtPosition(intersectionPointData, road1.RoadSystem);
+            
             return null;
         }
 
@@ -128,6 +126,7 @@ namespace RoadGenerator
             IntersectionPointData intersectionPointData = CalculateIntersectionDataMultipleRoads(intersectionPosition, roads);
             if (!roads[0].RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
                 return CreateIntersectionAtPosition(intersectionPointData, roads[0].RoadSystem);
+            
             return null;
         }
 
@@ -197,9 +196,8 @@ namespace RoadGenerator
 
             DeleteAnchorsInsideIntersectionBounds(intersection);
             foreach (Road road in roads)
-            {
                 road.OnChange();
-            }
+
             return intersection;
             //intersection.UpdateMesh();
         }

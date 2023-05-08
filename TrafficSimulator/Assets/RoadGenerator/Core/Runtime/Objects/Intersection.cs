@@ -1150,7 +1150,6 @@ namespace RoadGenerator
                     {
                         minDistance = distance;
                         minAngleArm = otherIntersectionArm;
-
                     }
                 }
                 if (minAngleArm != null)
@@ -1187,9 +1186,7 @@ namespace RoadGenerator
                         continue;
                     
                     if (GetArm(intersectionArm.OppositeArmID).OppositeArmID != intersectionArm.ID)
-                    {
                         intersectionArm.OppositeArmID = "";
-                    }
                 }
             }
 
