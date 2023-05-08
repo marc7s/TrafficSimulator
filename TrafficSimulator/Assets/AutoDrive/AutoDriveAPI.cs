@@ -431,6 +431,7 @@ namespace VehicleBrain
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>();
             NavigationPathContainer = new GameObject("Navigation Path");
+            NavigationPathContainer.AddComponent<LineRenderer>();
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;

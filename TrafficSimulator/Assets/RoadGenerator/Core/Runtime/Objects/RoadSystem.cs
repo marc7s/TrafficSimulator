@@ -9,27 +9,80 @@ namespace RoadGenerator
         Left = 1,
         Right = -1
     }
+
+    public struct ColorShade
+    {
+        public int RedMin;
+        public int RedMax;
+        public int GreenMin;
+        public int GreenMax;
+        public int BlueMin;
+        public int BlueMax;
+        public bool GreyScale;
+
+        public ColorShade((int, int) redRange, (int, int) greenRange, (int, int) blueRange, bool greyScale)
+        {
+            (RedMin, RedMax) = redRange;
+            (GreenMin, GreenMax) = greenRange;
+            (BlueMin, BlueMax) = blueRange;
+            GreyScale = greyScale;
+        }
+
+        public Color GetColor()
+        {
+            int r = UnityEngine.Random.Range(RedMin, RedMax);
+            int g = UnityEngine.Random.Range(GreenMin, GreenMax);
+            int b = UnityEngine.Random.Range(BlueMin, BlueMax);
+
+            if(GreyScale)
+            {
+                int avg = (r + g + b) / 3;
+                r = avg;
+                g = avg;
+                b = avg;
+            }
+
+            return new Color(
+                r / 255f,
+                g / 255f,
+                b / 255f
+            );
+        }
+    }
     
     [ExecuteInEditMode()]
     [Serializable]
 	public class RoadSystem : MonoBehaviour
 	{
         [Header("Connections")]
-        [SerializeField] private GameObject _roadContainer;
+        public GameObject RoadContainer;
         [SerializeField] private GameObject _intersectionContainer;
+        public GameObject BuildingContainer;
+        public GameObject BusStopContainer;
+        public GameObject NatureContainer;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
         [SerializeField] private GameObject _intersectionPrefab;
-
+        [SerializeField] private MapGenerator _mapGenerator;
         [SerializeField] private GameObject _roadSystemGraphNodePrefab;
+        [SerializeField] private GameObject _roadSideParkingPrefab;
+        [SerializeField] private GameObject _parkingLotPrefab;
 
         [Header("Road system settings")]
         public DrivingSide DrivingSide = DrivingSide.Right;
+        
+        [Header("OSM Settings")]
+        public bool ShouldGenerateBuildings = true;
+        public bool ShouldGenerateTrees = true;
+        public bool ShouldGenerateBusStops = true;
+        public bool UseOSM = false;
         
         [Header("Default models")]
         public GameObject DefaultTrafficLightPrefab;
         public GameObject DefaultTrafficLightControllerPrefab;
         public GameObject DefaultStopSignPrefab;
+        public GameObject DefaultBusStopPrefab;
+        public GameObject DefaultTreePrefab;
         public GameObject DefaultYieldSignPrefab;
         public bool ShowGraph = false;
         public bool SpawnRoadsAtOrigin = false;
@@ -56,6 +109,7 @@ namespace RoadGenerator
             else if (road is TramRail)
                 _tramRails.Remove(road as TramRail);
         }
+
         public void AddNewRoad(PathType pathType)
         {
             Vector3 spawnPoint = Vector3.zero;
@@ -93,7 +147,7 @@ namespace RoadGenerator
             roadObj.name = GetPathName(pathType) + (pathType == PathType.Road ? RoadCount : TramRailCount);
             
             // Set the road as a child of the road container
-            roadObj.transform.parent = _roadContainer.transform;
+            roadObj.transform.parent = RoadContainer.transform;
             
             // Move the road to the spawn point
             PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
@@ -163,17 +217,117 @@ namespace RoadGenerator
             return collides;
         }
 
+        public void GenerateOSMRoads()
+        {
+            DeleteAllRoads();
+            DeleteAllBuildings();
+            DeleteAllBusStops();
+            DeleteAllNature();
+            _mapGenerator.GenerateMap(this);
+            ChangeBuildingColors();
+        }
+
+        public void SpawnBusStops()
+        {
+            _mapGenerator.AddBusStops();
+        }
+
+        public void DeleteAllRoads()
+        {
+            List<GameObject> roads = new List<GameObject>();
+
+            foreach(Transform roadT in RoadContainer.transform)
+                roads.Add(roadT.gameObject);
+
+            foreach(GameObject road in roads)
+                DestroyImmediate(road);
+
+            DefaultRoads.Clear();
+        }
+
+        public void DeleteAllBuildings()
+        {
+            List<GameObject> buildings = new List<GameObject>();
+
+            foreach(Transform buildingT in BuildingContainer.transform)
+                buildings.Add(buildingT.gameObject);
+            
+            foreach(GameObject building in buildings)
+                DestroyImmediate(building);
+        }
+
+        public void ChangeBuildingColors()
+        {
+            List<ColorShade> wallColorScheme = new List<ColorShade>();
+            List<ColorShade> roofColorScheme = new List<ColorShade>();
+
+            ColorShade whiteGrey = new ColorShade((60, 200), (60, 200), (60, 200), true);
+            ColorShade yellow = new ColorShade((255, 255), (180, 200), (1, 73), false);
+            ColorShade brown = new ColorShade((80, 160), (60, 120), (30, 40), false);
+            ColorShade red = new ColorShade((100, 130), (50, 60), (50, 40), false);
+
+            wallColorScheme.Add(whiteGrey);
+            wallColorScheme.Add(brown);
+            wallColorScheme.Add(red);
+
+            roofColorScheme.Add(yellow);
+            roofColorScheme.Add(red);
+
+            foreach(Transform buildingT in BuildingContainer.transform)
+            {
+                MaterialPropertyBlock wallProperty = new MaterialPropertyBlock();
+                MaterialPropertyBlock roofProperty = new MaterialPropertyBlock();
+                
+                // Get mesh renderer
+                MeshRenderer meshRenderer = buildingT.GetComponent<MeshRenderer>();
+
+                Color wallColor = wallColorScheme[UnityEngine.Random.Range(0, wallColorScheme.Count)].GetColor();
+                Color roofColor = roofColorScheme[UnityEngine.Random.Range(0, roofColorScheme.Count)].GetColor();
+
+                wallProperty.SetColor("_Color", wallColor);
+                roofProperty.SetColor("_Color", roofColor);
+                
+                meshRenderer.SetPropertyBlock(wallProperty, 0);
+                meshRenderer.SetPropertyBlock(roofProperty, 1);
+            }
+        }
+
+        public void DeleteAllNature()
+        {
+            List<GameObject> nature = new List<GameObject>();
+
+            foreach(Transform natureT in NatureContainer.transform)
+                nature.Add(natureT.gameObject);
+
+            foreach(GameObject natureObj in nature)
+                DestroyImmediate(natureObj);
+        }
+
+        public void DeleteAllBusStops()
+        {
+            List<GameObject> busStops = new List<GameObject>();
+
+            foreach(Transform busStopT in BusStopContainer.transform)
+                busStops.Add(busStopT.gameObject);
+            
+            foreach(GameObject busStop in busStops)
+                DestroyImmediate(busStop);
+        }
+
         // Since serialization did not work, this sets up the road system by locating all its roads and intersections
         public void Setup()
         {
             // Making sure this is only called once
             if (_isSetup) 
                 return;
-            
+
+            ChangeBuildingColors();
+
             _isSetup = true;
             
+            DefaultRoads.Clear();
             // Find roads
-            foreach(Transform roadT in _roadContainer.transform)
+            foreach(Transform roadT in RoadContainer.transform)
             {
                 Road road = roadT.GetComponent<Road>();
                 road.RoadSystem = this;
@@ -184,6 +338,7 @@ namespace RoadGenerator
                     AddRail(road as TramRail);
             }
 
+            Intersections.Clear();
             // Find intersections
             foreach(Transform intersectionT in _intersectionContainer.transform)
             {
@@ -269,10 +424,8 @@ namespace RoadGenerator
                road.UpdateRoadNodes();
                road.UpdateLanes();
             }
-
             // Generate a new graph
             RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
-
             // Display the graph if the setting is active
             if (ShowGraph)
             {
@@ -324,9 +477,20 @@ namespace RoadGenerator
         {
             get => _tramRails;
         }
+
         public List<Intersection> Intersections 
         {
             get => _intersections;
+        }
+
+        public GameObject RoadSideParkingPrefab
+        {
+            get => _roadSideParkingPrefab;
+        }
+
+        public GameObject ParkingLotPrefab
+        {
+            get => _parkingLotPrefab;
         }
 
         void OnDestroy()

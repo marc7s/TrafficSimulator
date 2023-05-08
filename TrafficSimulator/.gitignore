@@ -63,6 +63,9 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+# Probuilder settings
+/[Pp]roject[Ss]ettings/Packages/com.unity.probuilder/*
+
 # Unity Assets
 [Aa]ssets/Unity Assets/*
 ![Aa]ssets/Unity Assets/ASSETS.md

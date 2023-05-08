@@ -11,6 +11,7 @@ namespace RoadSystemGenerator
             private SerializedProperty _drivingSide;
             private SerializedProperty _spawnRoadsAtOrigin;
             private SerializedProperty _showGraph;
+            private SerializedProperty _useOSM;
             private SerializedProperty _defaultTrafficLight;
             private SerializedProperty _defaultTrafficLightController;
             private SerializedProperty _defaultStopSign;
@@ -19,6 +20,7 @@ namespace RoadSystemGenerator
         public void OnEnable()
         {
             _showGraph = serializedObject.FindProperty("ShowGraph");
+            _useOSM = serializedObject.FindProperty("UseOSM");
             _spawnRoadsAtOrigin = serializedObject.FindProperty("SpawnRoadsAtOrigin");
             _drivingSide = serializedObject.FindProperty("DrivingSide");
             _defaultTrafficLight = serializedObject.FindProperty("DefaultTrafficLightPrefab");
@@ -31,7 +33,7 @@ namespace RoadSystemGenerator
             serializedObject.Update();
             
             // Uncomment this if you want to change the connections to containers and prefabs
-            //DrawDefaultInspector();
+            // DrawDefaultInspector();
             
             RoadSystem roadSystem = (RoadSystem)target;
             
@@ -40,6 +42,7 @@ namespace RoadSystemGenerator
             EditorGUILayout.PropertyField(_drivingSide);
             EditorGUILayout.PropertyField(_spawnRoadsAtOrigin);
             EditorGUILayout.PropertyField(_showGraph);
+            EditorGUILayout.PropertyField(_useOSM);
             EditorGUILayout.PropertyField(_defaultTrafficLight);
             EditorGUILayout.PropertyField(_defaultTrafficLightController);
             EditorGUILayout.PropertyField(_defaultStopSign);
@@ -60,6 +63,9 @@ namespace RoadSystemGenerator
                 roadSystem.ShowGraph = _showGraph.boolValue;
             }
 
+            if(_useOSM.boolValue != roadSystem.UseOSM)
+                roadSystem.UseOSM = _useOSM.boolValue;
+
             if(_defaultTrafficLight.objectReferenceValue != (GameObject)roadSystem.DefaultTrafficLightPrefab)
                 roadSystem.DefaultTrafficLightPrefab = (GameObject)_defaultTrafficLight.objectReferenceValue;
 
@@ -72,15 +78,36 @@ namespace RoadSystemGenerator
             if(_defaultYieldSign.objectReferenceValue != (GameObject)roadSystem.DefaultYieldSignPrefab)
                 roadSystem.DefaultYieldSignPrefab = (GameObject)_defaultYieldSign.objectReferenceValue;
 
-            if(GUILayout.Button("Add new road"))
-                roadSystem.AddNewRoad(PathType.Road);
 
-            if(GUILayout.Button("Add new rail"))
-                roadSystem.AddNewRoad(PathType.Rail);
+            if(!_useOSM.boolValue)
+            {
+                EditorGUILayout.LabelField("Actions", EditorStyles.boldLabel);
 
-            if(GUILayout.Button("Update POIs"))
-                roadSystem.UpdatePOIs();
+                if(GUILayout.Button("Add new road"))
+                    roadSystem.AddNewRoad(PathType.Road);
 
+                if(GUILayout.Button("Add new rail"))
+                    roadSystem.AddNewRoad(PathType.Rail);
+
+                if(GUILayout.Button("Update POIs"))
+                    roadSystem.UpdatePOIs();
+            }
+            else
+            {
+                EditorGUILayout.LabelField("OSM Actions", EditorStyles.boldLabel);
+                
+                if(GUILayout.Button("Generate OSM roads"))
+                    roadSystem.GenerateOSMRoads();
+
+                if(GUILayout.Button("Spawn bus stops"))
+                    roadSystem.SpawnBusStops();
+
+                if(GUILayout.Button("Delete all roads"))
+                    roadSystem.DeleteAllRoads();
+
+                if(GUILayout.Button("Delete all buildings"))
+                    roadSystem.DeleteAllBuildings();
+            }
 
             serializedObject.ApplyModifiedProperties();
 

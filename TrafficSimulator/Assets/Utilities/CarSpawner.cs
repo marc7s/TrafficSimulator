@@ -264,8 +264,8 @@ namespace RoadGenerator
         /// <summary>Checks multiple conditions to determine if a car is able to spawn on node</summary>
         private bool IsCarSpawnable(LaneNode node)
         {
-            bool IsThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
-            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !IsThreeWayIntersection && !node.RoadNode.IsNavigationNode;
+            bool isThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
+            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !isThreeWayIntersection && !node.RoadNode.IsNavigationNode;
         }
 
         /// <summary>Spawns a car at the current lane node</summary>

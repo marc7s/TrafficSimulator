@@ -256,7 +256,7 @@ namespace RoadGenerator
                 // If the intersection is at the start of the road, the vertices needs to be swapped as the normal will be in the opposite direction
                 if (Type == IntersectionType.ThreeWayIntersectionAtStart)
                     (i5, i10) = (i10, i5);
-                
+     
                 // Find one of the side arms
                 IntersectionArm sideArm = null;
                 foreach(IntersectionArm intersectionArm in IntersectionArms)
@@ -325,8 +325,8 @@ namespace RoadGenerator
                 (float, float) i6UV = (shouldLeftArmHaveIntersectionLine ? 1 : 0, 0f);
 
                 // Right arm
-                (float, float) i8UV = (rightArmRoadNode.Road.IsOneWay && shouldRightArmHaveIntersectionLine ? 1 : 0 , 0);
-                (float, float) i9UV = (shouldRightArmHaveIntersectionLine ? 1 : 0, 0f);
+                (float, float) i8UV = (shouldRightArmHaveIntersectionLine ? 1 : 0, 0f);
+                (float, float) i9UV = (rightArmRoadNode.Road.IsOneWay && shouldRightArmHaveIntersectionLine ? 1 : 0 , 0);
 
                 uvs.AddRange(CreateUVList(new List<(float, float)>(){
                     (1, 0.99f),  (1, 0.99f), (1, 0.99f), (1, 0.99f),
@@ -355,7 +355,6 @@ namespace RoadGenerator
 
                 bool isWrongDirection = bottomArmRoadNode.Prev.Type == RoadNodeType.FourWayIntersection;
 
-
                 IntersectionArm topArm = GetArm(bottomArm.OppositeArmID);
                 RoadNode topArmRoadNode = GetRoadNodeAtIntersectionArm(topArm);
                 float topArmRoadHalfWidth = topArm.Road.LaneWidth * (int)topArm.Road.LaneAmount;
@@ -363,12 +362,12 @@ namespace RoadGenerator
 
                 Vector3 i8 = topArm.JunctionEdgePosition - topArmRoadNode.Normal * topArmRoadHalfWidth;
                 Vector3 i9 = topArm.JunctionEdgePosition + topArmRoadNode.Normal * topArmRoadHalfWidth;
+
                 if (isWrongDirection)
                 {
                     (i5, i12) = (i12, i5);
                     (i8, i9) = (i9, i8);
                 }
-
                 
                 // Find one of the side arms
                 IntersectionArm sideArm = null;
@@ -383,9 +382,9 @@ namespace RoadGenerator
 
                 // Find out which side the side arm is on
                 TurnDirection turnDirection = GetTurnDirection(bottomArmRoadNode.Position - IntersectionPosition, GetRoadNodeAtIntersectionArm(sideArm).Position - IntersectionPosition);
-                
                 IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
                 RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
+
                 float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
                 bool shouldRightArmHaveIntersectionLine = !(rightArmRoadNode.Road.IsOneWay && rightArmRoadNode.Prev.IsIntersection());
 
@@ -823,6 +822,7 @@ namespace RoadGenerator
             List<LaneNode> sourceNodes = new List<LaneNode>();
 
             sourceNodes.Add(entrySection.End);
+            
             if(YieldAtJunctionEdge)
                 sourceNodes.Add(entrySection.Start);
 
@@ -962,7 +962,7 @@ namespace RoadGenerator
         public (LaneNode, LaneNode) GetRandomLaneNode(LaneNode current, ref TurnDirection turnDirection)
         {
             List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
-            
+
             // Pick a random guide path
             int randomLaneNodeIndex = UnityEngine.Random.Range(0, guidePaths.Count);
             GuideNode guidePath = guidePaths[randomLaneNodeIndex];
@@ -1006,7 +1006,6 @@ namespace RoadGenerator
                 return (null, null);
             }
 
-            
             GuideNode guidePath = _intersectionGuidePaths[(current.ID, finalNode.ID)];
             turnDirection = GetTurnDirection(current, finalNode);
             
@@ -1110,38 +1109,79 @@ namespace RoadGenerator
         /// <summary> Sets the opposite arm and the flow group for the arms </summary>
         public void SetupIntersectionArms()
         {
-           foreach (IntersectionArm intersectionArm in IntersectionArms)
+            foreach (IntersectionArm intersectionArm in IntersectionArms)
             {
-                // Consider angles under 5 degrees as straight
-                float straightAngleThreshHold = 5f;
-                float minAngle = straightAngleThreshHold;
+                float minDistance = float.MaxValue;
                 IntersectionArm minAngleArm = null;
+                List<IntersectionArm> usedIntersectionArms = new List<IntersectionArm>();
+                
                 foreach (IntersectionArm otherIntersectionArm in IntersectionArms)
                 {
-                    // Direction from junctionEdge to intersection position
-                    Vector3 intersectionArmDirection = intersectionArm.JunctionEdgePosition - IntersectionPosition;
-
-                    // Direction between the two junction edges
-                    Vector3 directionBetweenTheJunctionEdges = intersectionArm.JunctionEdgePosition - otherIntersectionArm.JunctionEdgePosition;
-
                     if (intersectionArm == otherIntersectionArm)
                         continue;
-                    
+
+                    if (usedIntersectionArms.Contains(otherIntersectionArm))
+                        continue;
+
                     if (intersectionArm.Road == otherIntersectionArm.Road)
                     {
                         minAngleArm = otherIntersectionArm;
                         break;
                     }
 
-                    float angle = Vector3.Angle(intersectionArmDirection, directionBetweenTheJunctionEdges);
-                    if (angle < minAngle)
+                    Vector3 positionAtHalfWay = Vector3.Lerp(intersectionArm.JunctionEdgePosition, otherIntersectionArm.JunctionEdgePosition, 0.5f);
+                    float distance = Vector3.Distance(positionAtHalfWay, IntersectionPosition);
+
+                    if (distance < minDistance)
                     {
-                        minAngle = angle;
+                        minDistance = distance;
                         minAngleArm = otherIntersectionArm;
                     }
                 }
+
                 if (minAngleArm != null)
+                {
                     intersectionArm.OppositeArmID = minAngleArm.ID;
+                    usedIntersectionArms.Add(minAngleArm);
+                }
+                else if (Type == IntersectionType.FourWayIntersection)
+                {
+                    Debug.LogError("Could not find opposite arm for arm " + IntersectionPosition);
+                }
+            }
+
+            if (Type == IntersectionType.FourWayIntersection)
+            {
+                foreach (IntersectionArm intersectionArm in IntersectionArms)
+                {
+                    if (intersectionArm.OppositeArmID == "")
+                    {
+                        Debug.LogError("Could not find opposite arm for arm " + IntersectionPosition);
+                    }
+                }
+            }
+
+            // Special case for three way intersections
+            // We need to find the arm that should not have a opposite arm and set it to null
+            if (IsThreeWayIntersection())
+            {
+                foreach(IntersectionArm intersectionArm in IntersectionArms)
+                {
+                    if (intersectionArm.OppositeArmID == "")
+                        continue;
+                    
+                    if (GetArm(intersectionArm.OppositeArmID).OppositeArmID != intersectionArm.ID)
+                        intersectionArm.OppositeArmID = "";
+                }
+            }
+
+            if (IsThreeWayIntersection())
+            {
+                foreach (IntersectionArm intersectionArm in IntersectionArms)
+                {
+                    if (intersectionArm.OppositeArmID == "")
+                        Type = IntersectionCreator.GetThreeWayIntersectionType(intersectionArm.Road.PathCreator, intersectionArm.Road.PathCreator.path.GetClosestDistanceAlongPath(IntersectionPosition));
+                }
             }
 
             bool isFirstIteration = true;
@@ -1154,6 +1194,7 @@ namespace RoadGenerator
                     if (intersectionArm.OppositeArmID != "")
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
                 }
+                
                 if (intersectionArm.FlowControlGroupID == -1)
                 {
                     intersectionArm.FlowControlGroupID = 1;
@@ -1161,8 +1202,9 @@ namespace RoadGenerator
                     if (intersectionArm.OppositeArmID != "")
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
                 }
+
                 isFirstIteration = false;
-            }           
+            }   
         }
 
         private List<Vector3> GetJunctionEdgesPositionForRoad(Road road)
