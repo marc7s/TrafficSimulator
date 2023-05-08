@@ -54,6 +54,10 @@ MonoBehaviour:
   _roadSystemObject: {fileID: 0}
   _randomVehicleTypes: 1
   _mode: 0
+  _navigationMode: 0
+  _showTargetLines: 0
+  _logBrakeReason: 0
+  _showNavigationPath: 0
   TotalCars: 5
-  LaneCarRatio: 0.5
+  LaneCarRatio: 0.2
   SpawnDelay: 1

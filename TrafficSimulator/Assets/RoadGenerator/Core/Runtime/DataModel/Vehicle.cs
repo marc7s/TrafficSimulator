@@ -7,6 +7,7 @@ namespace DataModel
     {
         protected string _id;
         public Func<float> CurrentSpeedFunction;
+        [SerializeField] public float VehicleLength;
 
         protected void Init()
         {
