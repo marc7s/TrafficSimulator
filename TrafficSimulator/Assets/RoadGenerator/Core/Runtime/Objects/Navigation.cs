@@ -171,11 +171,13 @@ namespace RoadGenerator
                     // Return if the sub path is null, i.e. it was not possible to navigate between these targets
                     if(subPath == null || subPath.Count < 1)
                     {
+#if UNITY_EDITOR
                         if(logSubPathError)
                         {
                             Debug.LogError("Could not find path to target node " + target.RoadNode.Position + ". Skipping target");
                             DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
                         }
+#endif
                         nodeToFind = null;
                         return new Stack<NavigationNodeEdge>();
                     }
