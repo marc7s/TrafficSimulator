@@ -89,7 +89,6 @@ namespace RoadEditor
             // Only show the Draw Lane Pointers option if we are drawing lane nodes
             if(_drawLaneNodes.boolValue)
                 EditorGUILayout.PropertyField(_drawLaneNodePointers);
-
             
             if(_laneAmount.intValue != (int)road.LaneAmount)
             {
@@ -138,46 +137,55 @@ namespace RoadEditor
                 changed = true;
                 road.DrawRoadNodes = _drawRoadNodes.boolValue;
             }
+            
             if (_generateSpeedSigns.boolValue != road.GenerateSpeedSigns)
             {
                 changed = true;
                 road.GenerateSpeedSigns = _generateSpeedSigns.boolValue;
             }
+            
             if (_connectionDistanceThreshold.floatValue != road.ConnectionDistanceThreshold)
             {
                 changed = true;
                 road.ConnectionDistanceThreshold = _connectionDistanceThreshold.floatValue;
             }
+            
             if (_speedLimit.intValue != (int)road.SpeedLimit)
             {
                 changed = true;
                 road.SpeedLimit = (SpeedLimit)_speedLimit.intValue;
             }
+            
             if (_speedSignDistanceFromIntersectionEdge.floatValue != road.SpeedSignDistanceFromIntersectionEdge)
             {
                 changed = true;
                 road.SpeedSignDistanceFromIntersectionEdge = _speedSignDistanceFromIntersectionEdge.floatValue;
             }
+            
             if (_speedSignDistanceFromRoadEnd.floatValue != road.SpeedSignDistanceFromRoadEnd)
             {
                 changed = true;
                 road.SpeedSignDistanceFromRoadEnd = _speedSignDistanceFromRoadEnd.floatValue;
             }
+            
             if (_shouldSpawnLampPoles.boolValue != road.ShouldSpawnLampPoles)
             {
                 changed = true;
                 road.ShouldSpawnLampPoles = _shouldSpawnLampPoles.boolValue;
             }
+            
             if (_lampPoleIntervalDistance.floatValue != road.LampPoleIntervalDistance)
             {
                 changed = true;
                 road.LampPoleIntervalDistance = _lampPoleIntervalDistance.floatValue;
             }
+            
             if (_lampPoleSideDistanceOffset.floatValue != road.LampPoleSideDistanceOffset)
             {
                 changed = true;
                 road.LampPoleSideDistanceOffset = _lampPoleSideDistanceOffset.floatValue;
             }
+            
             if (_defaultTrafficSignOffset.floatValue != road.DefaultTrafficSignOffset)
             {
                 changed = true;

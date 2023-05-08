@@ -40,6 +40,7 @@ namespace RoadGenerator
         [Header("Debug Settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
         [SerializeField] private bool _logBrakeReason = false;
+        [SerializeField] private bool _showNavigationPath = false;
 
         // Total number of cars to spawn in mode Total
         public int TotalCars = 5;
@@ -282,6 +283,7 @@ namespace RoadGenerator
 
             autoDrive.ShowTargetLines = _showTargetLines;
             autoDrive.LogBrakeReason = _logBrakeReason;
+            autoDrive.ShowNavigationPath = _showNavigationPath;
             
             // Overwrite the navigation mode if a custom one is set
             switch(_navigationMode)

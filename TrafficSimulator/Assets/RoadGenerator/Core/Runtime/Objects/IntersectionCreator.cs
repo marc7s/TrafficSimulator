@@ -87,9 +87,6 @@ namespace RoadGenerator
                 else
                     type = GetThreeWayIntersectionType(road1.PathCreator, road1.PathCreator.path.GetClosestDistanceAlongPath(intersectionPosition));
             }
-            if (junctionEdgeDatas.Count < 3)
-                Debug.LogError("Intersection has less than 3 junction edges" + intersectionPosition);
-
 
             return new IntersectionPointData(intersectionPosition, junctionEdgeDatas, type);
         }
@@ -106,6 +103,7 @@ namespace RoadGenerator
                 junctionEdgeDatas.AddRange(GetIntersectionAnchorPoints(road, intersectionPosition, intersectionLength));
 
             IntersectionType type = IntersectionType.FourWayIntersection;
+
             if (junctionEdgeDatas.Count == 3)
                 type = IntersectionType.ThreeWayIntersectionAtStart;
             
@@ -115,6 +113,7 @@ namespace RoadGenerator
         public static Intersection CreateIntersectionAtPosition(Vector3 intersectionPosition, Road road1, Road road2)
         {
             IntersectionPointData intersectionPointData = CalculateIntersectionData(intersectionPosition, road1, road2);
+
             if (!road1.RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
                 return CreateIntersectionAtPosition(intersectionPointData, road1.RoadSystem);
             
@@ -124,8 +123,10 @@ namespace RoadGenerator
         public static Intersection CreateIntersectionAtPositionMultipleRoads(Vector3 intersectionPosition, List<Road> roads)
         {
             IntersectionPointData intersectionPointData = CalculateIntersectionDataMultipleRoads(intersectionPosition, roads);
+
             if (!roads[0].RoadSystem.DoesIntersectionExist(intersectionPointData.Position))
                 return CreateIntersectionAtPosition(intersectionPointData, roads[0].RoadSystem);
+            
             
             return null;
         }
@@ -138,6 +139,7 @@ namespace RoadGenerator
                 Debug.LogError("Road is null");
                 return new List<JunctionEdgeData>();
             }
+            
             float intersectionExtendCoef = 1.2f;
             float intersectionExtension = intersectionLength * 0.5f * intersectionExtendCoef;
             VertexPath vertexPath = road.PathCreator.path;
@@ -159,6 +161,7 @@ namespace RoadGenerator
                 // If the intersection is too close to the start of the road, we just move the first anchor point to the intersection
                 road.PathCreator.bezierPath.MovePoint(0, intersectionPosition);
             }
+
             if (distanceAtIntersection < vertexPath.length - intersectionExtension)
             {
                 Vector3 firstAnchorPoint = vertexPath.GetPointAtDistance(distanceAtIntersection + intersectionLength / 2, EndOfPathInstruction.Stop);
@@ -177,6 +180,7 @@ namespace RoadGenerator
         static Intersection CreateIntersectionAtPosition(IntersectionPointData intersectionPointData, RoadSystem roadSystem)
         {
             List<Road> roads = new List<Road>();
+
             foreach (JunctionEdgeData junctionEdgeData in intersectionPointData.JunctionEdgeDatas)
             {
                 if (!roads.Contains(junctionEdgeData.Road))
@@ -195,11 +199,12 @@ namespace RoadGenerator
                 SplitPathOnPoint(junctionEdgeData.Road.PathCreator, junctionEdgeData.AnchorPoint, junctionEdgeData.SegmentIndex);
 
             DeleteAnchorsInsideIntersectionBounds(intersection);
+            
             foreach (Road road in roads)
                 road.OnChange();
 
+
             return intersection;
-            //intersection.UpdateMesh();
         }
 
         /// <summary>Splits a path on a point</summary>

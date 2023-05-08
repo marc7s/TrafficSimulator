@@ -1,32 +1,29 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RoadGenerator
 {
-
     public class FootWayMeshBuilder
     {
-        enum VerticeType{
+        enum VerticeType
+        {
             BottomLeft = 0,
             TopLeft = 1,
             BottomRight = 2,
             TopRight = 3
-            
         }
+
         public List<Vector3> Vertices = new List<Vector3>();
         public List<int> Triangles = new List<int>();
         public List<Vector2> UVS = new List<Vector2>();
         public List<Vector3> Normals = new List<Vector3>();
-
         private float _height;
 
         public FootWayMeshBuilder(float height)
         {
             _height = height;
         }
+
         public void AddNode((Vector3, Vector3) InnerOuterPoints)
         {
             bool isFirst = Vertices.Count == 0;
@@ -96,6 +93,7 @@ namespace RoadGenerator
             mesh.triangles = builder.Triangles.ToArray();
             mesh.uv = builder.UVS.ToArray();
             mesh.normals = builder.Normals.ToArray();
+            
             return mesh;
         }
 
@@ -124,6 +122,7 @@ namespace RoadGenerator
             mesh.triangles = builder.Triangles.ToArray();
             mesh.uv = builder.UVS.ToArray();
             mesh.normals = builder.Normals.ToArray();
+            
             return mesh;
         }
     }

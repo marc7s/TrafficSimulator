@@ -271,7 +271,6 @@ namespace RoadGenerator
                 // Find out which side the side arm is on
                 TurnDirection turnDirection = GetTurnDirection(bottomArmRoadNode.Position - IntersectionPosition, GetRoadNodeAtIntersectionArm(sideArm).Position - IntersectionPosition);
                 IntersectionArm rightArm = turnDirection == TurnDirection.Right ? sideArm : GetArm(sideArm.OppositeArmID);
-                Debug.Assert(rightArm != null, "No right arm found");
                 RoadNode rightArmRoadNode = GetRoadNodeAtIntersectionArm(rightArm);
                 float rightArmRoadHalfWidth = rightArm.Road.LaneWidth * (int)rightArm.Road.LaneAmount;
                 bool shouldRightArmHaveIntersectionLine = !(rightArmRoadNode.Road.IsOneWay && rightArmRoadNode.Prev.IsIntersection());
@@ -284,7 +283,6 @@ namespace RoadGenerator
                     (i9, i8) = (i8, i9);
 
                 IntersectionArm leftArm = GetArm(rightArm.OppositeArmID);
-                Debug.Assert(leftArm != null, "No left arm found");
                 RoadNode leftArmRoadNode = GetRoadNodeAtIntersectionArm(leftArm);
                 float leftArmRoadHalfWidth = leftArm.Road.LaneWidth * (int)leftArm.Road.LaneAmount;
                 bool shouldLeftArmHaveIntersectionLine = !(leftArmRoadNode.Road.IsOneWay && leftArmRoadNode.Prev.IsIntersection());
@@ -338,7 +336,6 @@ namespace RoadGenerator
                 foreach(Vector3 vert in verts)
                     normals.Add(Vector3.up);
 
-
                 AddTrianglesForRectangle(topTris, 5, 10, 1, 4);
                 AddTrianglesForRectangle(topTris, 7, 6, 2, 1);
                 AddTrianglesForRectangle(topTris, 9, 8, 4, 3);
@@ -346,7 +343,6 @@ namespace RoadGenerator
             }
             else if(Type == IntersectionType.FourWayIntersection)
             {
-                
                 // Map out the intersection from the first arms perspective
                 IntersectionArm bottomArm = IntersectionArms[0];
 
@@ -366,6 +362,7 @@ namespace RoadGenerator
 
                 Vector3 i8 = topArm.JunctionEdgePosition - topArmRoadNode.Normal * topArmRoadHalfWidth;
                 Vector3 i9 = topArm.JunctionEdgePosition + topArmRoadNode.Normal * topArmRoadHalfWidth;
+
                 if (isWrongDirection)
                 {
                     (i5, i12) = (i12, i5);
@@ -399,7 +396,6 @@ namespace RoadGenerator
                     (i11, i10) = (i10, i11);
 
                 IntersectionArm leftArm = GetArm(rightArm.OppositeArmID);
-                Debug.Assert(leftArm != null, "Left arm is null" + "Left arm ID:" + rightArm.OppositeArmID);
                 RoadNode leftArmRoadNode = GetRoadNodeAtIntersectionArm(leftArm);
                 float leftArmRoadHalfWidth = leftArm.Road.LaneWidth * (int)leftArm.Road.LaneAmount;
                 bool shouldLeftArmHaveIntersectionLine = !(leftArmRoadNode.Road.IsOneWay && leftArmRoadNode.Prev.IsIntersection());
@@ -707,7 +703,6 @@ namespace RoadGenerator
         /// <summary> Maps the navigation for the intersection </summary>
         public void MapIntersectionNavigation()
         {
-            Debug.Log("Mapping intersection navigation" + IntersectionPosition);
             // Map the lane node to take in order to get to the navigation node edge
             _laneNodeFromNavigationNodeEdge.Clear();
 
@@ -742,9 +737,7 @@ namespace RoadGenerator
                     {
                         IntersectionArm arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
                         if (arm != null)
-                        {
                             AddLaneNodeFromNavigationNodeEdge(arm?.NavigationNodeEdgeOutwards, currentNode);
-                        }
                     }
 
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
@@ -780,8 +773,6 @@ namespace RoadGenerator
                     _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
                 }
             }
-           // if (_laneNodeFromNavigationNodeEdge.Keys.Count != 4)
-           //     Debug.LogError("ERRORRRRRR " + this);
         }
 
         /// <summary> Get a list of all nodes a path going between these sections needs to yield to </summary>
@@ -831,6 +822,7 @@ namespace RoadGenerator
             List<LaneNode> sourceNodes = new List<LaneNode>();
 
             sourceNodes.Add(entrySection.End);
+            
             if(YieldAtJunctionEdge)
                 sourceNodes.Add(entrySection.Start);
 
@@ -970,12 +962,6 @@ namespace RoadGenerator
         public (LaneNode, LaneNode) GetRandomLaneNode(LaneNode current, ref TurnDirection turnDirection)
         {
             List<GuideNode> guidePaths = GetGuidePaths(current).Select(x => x.Item3).ToList();
-            
-            if (guidePaths.Count == 0)
-            {
-                Debug.Log($"No guide paths found for lane node {current.Position}" + current.Type);
-                return (current.Last, current);
-            }
 
             // Pick a random guide path
             int randomLaneNodeIndex = UnityEngine.Random.Range(0, guidePaths.Count);
@@ -1019,7 +1005,6 @@ namespace RoadGenerator
                 Debug.LogError("Error, The lane entry node does not exist in the intersection: " + current.Position);
                 return (null, null);
             }
-
 
             GuideNode guidePath = _intersectionGuidePaths[(current.ID, finalNode.ID)];
             turnDirection = GetTurnDirection(current, finalNode);
@@ -1124,12 +1109,12 @@ namespace RoadGenerator
         /// <summary> Sets the opposite arm and the flow group for the arms </summary>
         public void SetupIntersectionArms()
         {
-            Debug.Log("Setting up intersection arms for intersection: " + this);
             foreach (IntersectionArm intersectionArm in IntersectionArms)
             {
                 float minDistance = float.MaxValue;
                 IntersectionArm minAngleArm = null;
                 List<IntersectionArm> usedIntersectionArms = new List<IntersectionArm>();
+                
                 foreach (IntersectionArm otherIntersectionArm in IntersectionArms)
                 {
                     if (intersectionArm == otherIntersectionArm)
@@ -1146,12 +1131,14 @@ namespace RoadGenerator
 
                     Vector3 positionAtHalfWay = Vector3.Lerp(intersectionArm.JunctionEdgePosition, otherIntersectionArm.JunctionEdgePosition, 0.5f);
                     float distance = Vector3.Distance(positionAtHalfWay, IntersectionPosition);
+
                     if (distance < minDistance)
                     {
                         minDistance = distance;
                         minAngleArm = otherIntersectionArm;
                     }
                 }
+
                 if (minAngleArm != null)
                 {
                     intersectionArm.OppositeArmID = minAngleArm.ID;
@@ -1161,8 +1148,6 @@ namespace RoadGenerator
                 {
                     Debug.LogError("Could not find opposite arm for arm " + IntersectionPosition);
                 }
-
-                
             }
 
             if (Type == IntersectionType.FourWayIntersection)
@@ -1195,9 +1180,7 @@ namespace RoadGenerator
                 foreach (IntersectionArm intersectionArm in IntersectionArms)
                 {
                     if (intersectionArm.OppositeArmID == "")
-                    {
                         Type = IntersectionCreator.GetThreeWayIntersectionType(intersectionArm.Road.PathCreator, intersectionArm.Road.PathCreator.path.GetClosestDistanceAlongPath(IntersectionPosition));
-                    }
                 }
             }
 
@@ -1211,6 +1194,7 @@ namespace RoadGenerator
                     if (intersectionArm.OppositeArmID != "")
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 0;
                 }
+                
                 if (intersectionArm.FlowControlGroupID == -1)
                 {
                     intersectionArm.FlowControlGroupID = 1;
@@ -1218,6 +1202,7 @@ namespace RoadGenerator
                     if (intersectionArm.OppositeArmID != "")
                         GetArm(intersectionArm.OppositeArmID).FlowControlGroupID = 1;
                 }
+
                 isFirstIteration = false;
             }   
         }
