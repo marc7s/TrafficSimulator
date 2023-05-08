@@ -37,7 +37,10 @@ namespace UI
         // Clock Buttons
         private Button _rewindButton;
         private Button _pauseButton;
+        private VisualElement _pauseIcon;
+        private VisualElement _playIcon;
         private Button _fastForwardButton;
+        public bool _isPaused = false;
 
         private Label _clockLabel;
 
@@ -106,6 +109,9 @@ namespace UI
 
             _pauseButton = _doc.rootVisualElement.Q<Button>("Pause");
             _pauseButton.clicked += PauseButtonOnClicked;
+
+            _pauseIcon = _doc.rootVisualElement.Q<VisualElement>("Pause-icon");
+            _playIcon = _doc.rootVisualElement.Q<VisualElement>("Play-icon");
 
             _fastForwardButton = _doc.rootVisualElement.Q<Button>("Fastforward");
             _fastForwardButton.clicked += FastForwardButtonOnClicked;
@@ -226,6 +232,7 @@ namespace UI
         {
             _isStatisticsOpen = !_isStatisticsOpen;
             _statisticsUI.visible = _isStatisticsOpen;
+            
         }
 
         private void WorldOptionButtonOnClicked()
@@ -247,6 +254,9 @@ namespace UI
         private void PauseButtonOnClicked()
         {
             TimeManager.Instance.SetModePause();
+            _isPaused = !_isPaused;
+            _pauseIcon.visible = !_isPaused;
+            _playIcon.visible = _isPaused;
         }
 
         private void FastForwardButtonOnClicked()

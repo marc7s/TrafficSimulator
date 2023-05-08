@@ -1090,5 +1090,10 @@ namespace VehicleBrain
         {
             return Quaternion.Lerp(_prevTarget.Rotation, _target.Rotation, t);
         }
+
+        public AutoDriveAgent Agent
+        {
+            get => _agent;
+        }
     }
 }
