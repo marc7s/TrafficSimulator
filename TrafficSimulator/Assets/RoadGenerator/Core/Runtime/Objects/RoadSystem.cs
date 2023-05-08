@@ -320,6 +320,8 @@ namespace RoadGenerator
             if (_isSetup) 
                 return;
 
+            ChangeBuildingColors();
+
             _isSetup = true;
             
             DefaultRoads.Clear();

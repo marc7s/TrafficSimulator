@@ -639,6 +639,10 @@ namespace RoadGenerator
             if (wayData.BuildingData.Height == null && wayData.BuildingData.BuildingLevels != null)
                 height = wayData.BuildingData.BuildingLevels.Value * 3.5f;
 
+            System.Random random = new System.Random();
+            float randomEpsilon = (float)random.NextDouble() * 0.2f;
+            height += randomEpsilon;
+
             List<Vector3> buildingPointsBottom = GetWayNodePositions(ienum);
             List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
             List<Vector3> buildingPointsTop = new List<Vector3>();
