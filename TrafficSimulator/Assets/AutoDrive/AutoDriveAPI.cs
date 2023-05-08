@@ -217,11 +217,6 @@ namespace VehicleBrain
                                 break;
                             }
                         }
-                        if(forcePath == null)
-                        {
-                            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                            cube.transform.position = Setting.Vehicle.transform.position + Vector3.up * 5f;
-                        }
                     }
                         
                     break;
