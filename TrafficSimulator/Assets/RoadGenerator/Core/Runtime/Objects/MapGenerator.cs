@@ -29,8 +29,8 @@ namespace RoadGenerator
     public struct BuildingData
     {
         public bool? IsMultiPolygon;
-        public string? StreetName;
-        public string? StreetAddress;
+        public string StreetName;
+        public string StreetAddress;
         public int? Height;
         public int? BuildingLevels;
     }
@@ -51,7 +51,7 @@ namespace RoadGenerator
         public int? MaxSpeed;
         public bool? IsLit;
         public bool? IsOneWay;
-        public string? Name;
+        public string Name;
         public SideWalkType? SideWalkType;
         public ParkingType? ParkingType;
         public ServiceType? ServiceType;
@@ -548,7 +548,7 @@ namespace RoadGenerator
         private void GenerateFootWay(List <Vector3> points, WayData wayData)
         {
             return;
-            Debug.Log("Generating footway");
+            /*Debug.Log("Generating footway");
             FootWayMeshGenerator footWayMeshGenerator = new FootWayMeshGenerator();
             Mesh footWay = footWayMeshGenerator.GenerateMesh(points, 4, 0.1f);
             GameObject footWayObject = new GameObject();
@@ -557,7 +557,7 @@ namespace RoadGenerator
             meshFilter.mesh = footWay;
             MeshRenderer meshRenderer = footWayObject.AddComponent<MeshRenderer>();
             //meshRenderer.material = roadSystem.DefaultRoadMaterial;
-            footWayObject.name = "FootWay";
+            footWayObject.name = "FootWay";*/
         }
 
         // https://wiki.openstreetmap.org/wiki/Map_features#Highway
@@ -707,7 +707,7 @@ namespace RoadGenerator
             {
                 triangles.AddRange(TriangulateConcavePolygon(buildingPointsTop));
             }
-            catch (Exception e){}
+            catch (Exception){}
 
             buildingPointsTop.Reverse();
 
@@ -715,7 +715,7 @@ namespace RoadGenerator
             {
                 triangles.AddRange(TriangulateConcavePolygon(buildingPointsTop));
             }
-            catch (Exception e){}
+            catch (Exception){}
 
             CreateBuildingMesh(buildingMesh, buildingPoints, triangles);
         }
