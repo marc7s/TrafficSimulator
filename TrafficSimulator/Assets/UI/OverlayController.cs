@@ -84,7 +84,8 @@ namespace UI
             _fpvButton.clicked += FPVButtonOnClicked;
             GreyOutButton(_fpvButton);
 
-            _statisticsButton = _doc.rootVisualElement.Q<Button>("Statistics");
+            
+            /*_statisticsButton = _doc.rootVisualElement.Q<Button>("Statistics");
             _statisticsButton.clicked += StatisticsButtonOnClicked;
 
             // Get car statistics UI visual element
@@ -107,7 +108,8 @@ namespace UI
             _worldOptionButton.clicked += WorldOptionButtonOnClicked;
 
             _editorButton = _doc.rootVisualElement.Q<Button>("Editor");
-            _editorButton.clicked += EditorButtonOnClicked;
+            _editorButton.clicked += EditorButtonOnClicked;*/
+            
 
             _rewindButton = _doc.rootVisualElement.Q<Button>("Rewind");
             _rewindButton.clicked += RewindButtonOnClicked;
