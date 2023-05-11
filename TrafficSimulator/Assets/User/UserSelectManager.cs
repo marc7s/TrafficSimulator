@@ -84,13 +84,9 @@ namespace User
         private void InitializeSingletonInstance()
         {
             if (_instance == null)
-            {
                 _instance = this;
-            }
             else
-            {
                 Destroy(gameObject);
-            }
         }
 
         private void SetupInputActions()

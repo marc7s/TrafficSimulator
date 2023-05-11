@@ -191,11 +191,12 @@ MonoBehaviour:
   FollowTransform: {fileID: 0}
   IsDefault: 1
   _enableEdgeScrolling: 0
-  _rotationSpeed: 50
+  _rotationSpeedFactor: 10
+  _movementSpeedFactor: 50
   _followOffsetMin: 5
   _followOffsetMax: 200
   _zoomLerpSpeed: 5
-  _zoomScrollFactor: 2
+  _zoomScrollFactor: 4
   _togglePanSpeed: 10
 --- !u!1 &8508769868232620548
 GameObject:
@@ -652,8 +653,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa7155796051b734daa718462081dc5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_BindingMode: 1
-  m_FollowOffset: {x: 0, y: 30, z: -20}
+  m_BindingMode: 3
+  m_FollowOffset: {x: 0, y: 0, z: -20}
   m_XDamping: 0
   m_YDamping: 0
   m_ZDamping: 0

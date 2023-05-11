@@ -1,5 +1,6 @@
 using UnityEngine;
 using User;
+using UnityEngine.InputSystem;
 
 namespace Cam
 {
@@ -10,7 +11,7 @@ namespace Cam
     /// </summary>
     public class ThirdPersonCamera : CameraState
     {
-        [SerializeField] private float _rotateSpeed = 1f;
+        [SerializeField][Range(1, 30)] private float _rotationSpeedFactor = 10;
         [SerializeField] private float _minZoom = 50f;
         [SerializeField] private float _maxZoom = 10f;
         [SerializeField] private float _zoomSpeed = 1f;
@@ -21,19 +22,19 @@ namespace Cam
         {
             base.SetActive(cameraManager);
             UserSelectManager.Instance.CanSelectNewObject = false;
+            RotationOrigin.eulerAngles = FollowTransform.eulerAngles;
         }
 
-        public override void RotateHorizontal(float horizontalRotation)
+        public override void Rotate(Vector2 mouseOrigin)
         {
-            FollowTransform.rotation *= Quaternion.AngleAxis(horizontalRotation * _rotateSpeed * Time.deltaTime, Vector3.up);
+            OrbitCameraRotation(ref FollowTransform, Mouse.current.position.ReadValue(), mouseOrigin, _rotationSpeedFactor / 30f, true);
         }
 
         public override void Zoom(float zoomValue)
         {
             _targetZoom -= zoomValue;
             _targetZoom = Mathf.Clamp(_targetZoom, _maxZoom, _minZoom);
-            VirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(VirtualCamera.m_Lens.FieldOfView,
-                _targetZoom, Time.deltaTime * _zoomSpeed);
+            VirtualCamera.m_Lens.FieldOfView = Mathf.Lerp(VirtualCamera.m_Lens.FieldOfView, _targetZoom, Time.deltaTime * _zoomSpeed);
         }
 
         public override void HandleEscapeInput()
@@ -44,9 +45,8 @@ namespace Cam
         public override void HandleSpaceInput()
         {
             if (UserSelectManager.Instance.SelectedGameObject.GetComponent<CarSelectable>() == null)
-            {
                 return;
-            }
+            
             CameraManager.ToggleFirstPersonDriverCamera();
         }
     }
