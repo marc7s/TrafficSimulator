@@ -127,7 +127,7 @@ namespace User
             if(!IsHoveringUIElement)
             {
                 _previousClickedSelectable = SelectedGameObject;
-                OnClickInput(OnSelectedGameObject);
+                OnClickInput(OnSelectedGameObject, true);
             }
         }
 
@@ -136,7 +136,7 @@ namespace User
             if(!IsHoveringUIElement)
             {
                 if (_previousClickedSelectable == SelectedGameObject)
-                    OnClickInput(OnDoubleClickedSelectedGameObject);
+                    OnClickInput(OnDoubleClickedSelectedGameObject, false);
                 else
                     _previousClickedSelectable = null;
             }
@@ -154,7 +154,7 @@ namespace User
         public event SelectedGameObjectChangedHandler OnSelectedGameObject;
 
         // Common method for handling click and double-click inputs
-        private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke)
+        private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke, bool deselectIfClickedAgain)
         {
             if (_mainCamera == null)
                 _mainCamera = Camera.main;
@@ -162,18 +162,22 @@ namespace User
             Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
             if (Physics.Raycast(ray, out RaycastHit hitInfo) && CanSelectNewObject)
-                SelectObjectFromClick(eventToInvoke, hitInfo);
+                SelectObjectFromClick(eventToInvoke, hitInfo, deselectIfClickedAgain);
         }
 
         // Select the object based on the click event and invoke the corresponding event
-        private void SelectObjectFromClick(SelectedGameObjectChangedHandler eventToInvoke, RaycastHit hitInfo)
+        private void SelectObjectFromClick(SelectedGameObjectChangedHandler eventToInvoke, RaycastHit hitInfo, bool deselectIfClickedAgain)
         {
             Selectable hitSelectable = hitInfo.transform.GetComponent<Selectable>();
             if (hitSelectable != null)
             {
                 if (hitSelectable.Equals(SelectedGameObject))
                 {
-                    eventToInvoke?.Invoke(SelectedGameObject);
+                    if(deselectIfClickedAgain)
+                        DeselectCurrentObject();
+                    else
+                        eventToInvoke?.Invoke(SelectedGameObject);
+                    
                     return;
                 }
 
