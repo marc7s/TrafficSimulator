@@ -21,6 +21,6 @@ public class DraggableUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        // If you need to do anything after the user stops dragging
+        // If we need to add any closing logic for the graphs
     }
 }
