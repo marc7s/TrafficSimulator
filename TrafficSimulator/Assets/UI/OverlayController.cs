@@ -242,10 +242,14 @@ namespace UI
             
         }
 
+        public GameObject WorldWindowStatistic;        
+        
         private void WorldOptionButtonOnClicked()
         {
             _isWorldOpen = !_isWorldOpen;
             _worldUI.visible = _isWorldOpen;
+            WorldWindowStatistic.SetActive(_isWorldOpen);
+            
         }
 
         private void EditorButtonOnClicked()
