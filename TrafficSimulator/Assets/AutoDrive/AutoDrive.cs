@@ -17,6 +17,7 @@ namespace VehicleBrain
         Performance,
         Quality
     }
+    
     public enum VehicleType
     {
         Car,
@@ -24,6 +25,7 @@ namespace VehicleBrain
         Tram,
         Unknown
     }
+    
     public enum ShowTargetLines 
     {
         None,
@@ -33,11 +35,20 @@ namespace VehicleBrain
         OccupiedNodes,
         All
     }
-    public enum VehicleActivity 
+    
+    public enum VehicleAction 
     {
         Driving,
         Parked,
         Waiting
+    }
+
+    public enum VehicleActivity
+    {
+        DrivingRandomly,
+        DrivingToTarget,
+        Parked,
+        AtPOI
     }
     
     public class AutoDrive : MonoBehaviour
@@ -142,6 +153,33 @@ namespace VehicleBrain
         {
             get => _road;
             set => SetRoad(value);
+        }
+
+        /// <summary> Returns a description of what the vehicle is currently doing </summary>
+        public string GetVehicleActivityDescription()
+        {
+            const string err = "UNKNOWN";
+            switch(_agent.Context.CurrentActivity)
+            {
+                case VehicleActivity.DrivingRandomly:
+                    return "Driving randomly";
+                case VehicleActivity.Parked:
+                    return $"Parked at {_agent.Context.CurrentParking.name ?? err}";
+                case VehicleActivity.DrivingToTarget when _agent.Context.NavigationMode == NavigationMode.Path:
+                    string targetName = _agent.Context.NavigationPathTargets.Count > 0 ? _agent.Context.NavigationPathTargets.Peek().Item1.name : err;
+                    return $"Driving to {targetName}";
+                case VehicleActivity.DrivingToTarget when _agent.Context.NavigationMode == NavigationMode.RandomNavigationPath:
+                    RoadNode targetNode = _agent.Context.NavigationPathEndNode.RoadNode;
+                    string randomTargetName = _agent.Context.NavigationPathTargets.Count > 0 ? _agent.Context.NavigationPathTargets.Peek().Item1.name
+                        : targetNode.Intersection != null ? targetNode.Intersection.name
+                        : targetNode.Type == RoadNodeType.End ? $"End of {targetNode.Road.name}"
+                        : err;
+                    return $"Driving to {randomTargetName}";
+                case VehicleActivity.AtPOI:
+                    return $"At {_agent.Context.CurrentPOI.name ?? err}";
+                default:
+                    return err;
+            }
         }
 
         void Start()
@@ -268,7 +306,7 @@ namespace VehicleBrain
         private void UpdateContext()
         {
             _agent.Context.VehiclePosition = transform.position;
-            _agent.Context.CurrentAction = GetCurrentDrivingAction();
+            _agent.Context.CurrentDrivingState = GetCurrentDrivingAction();
         }
 
         private void IntersectionEntryHandler(Intersection intersection)
@@ -288,9 +326,9 @@ namespace VehicleBrain
 
         private void HandleActivity()
         {
-            switch (_agent.Context.Activity)
+            switch (_agent.Context.CurrentAction)
             {
-                case VehicleActivity.Driving:
+                case VehicleAction.Driving:
                     UpdateContext();
                     UpdateOccupiedNodes();
 
@@ -308,16 +346,16 @@ namespace VehicleBrain
                         P_UpdateTargetAndCurrent();
                     }
 
-                    if(_agent.Context.Activity != VehicleActivity.Driving)
+                    if(_agent.Context.CurrentAction != VehicleAction.Driving)
                         break;
                     
                     _brakeLightController.SetBrakeLights(_agent.Context.IsBrakingOrStopped ?  BrakeLightState.On : BrakeLightState.Off);
                     UpdateIndicators();
                     
                     break;
-                case VehicleActivity.Parked:
+                case VehicleAction.Parked:
                     break;
-                case VehicleActivity.Waiting:
+                case VehicleAction.Waiting:
                     break;
                 default:
                     break;
@@ -330,7 +368,7 @@ namespace VehicleBrain
             TeleportToNode(node);
             PostTeleportCleanup(node);
             
-            if(_agent.Context.Activity == VehicleActivity.Driving)
+            if(_agent.Context.CurrentAction == VehicleAction.Driving)
             {
                 switch(_agent.Context.NavigationMode)
                 {
@@ -351,7 +389,7 @@ namespace VehicleBrain
 
         private void ParkAtNode(POINode node, ParkingLineup parkingLineup)
         {
-            _agent.Context.Activity = VehicleActivity.Parked;
+            _agent.Context.CurrentAction = VehicleAction.Parked;
             LaneNode parkingEntry = _agent.Context.CurrentNode;
             ResetNodeParameters(null);
             TeleportToNode(node, false);
@@ -379,7 +417,7 @@ namespace VehicleBrain
             
             _agent.Context.CurrentParking.Unpark(_agent.Setting.Vehicle);
             _agent.Context.CurrentParking = null;
-            _agent.Context.Activity = VehicleActivity.Driving;
+            _agent.Context.CurrentAction = VehicleAction.Driving;
             SetVehicleMovement(true);
             
             // The entry node to the parking was stored in prev target, so teleport back to that node
@@ -703,13 +741,13 @@ namespace VehicleBrain
                 return;
             }
 
-            ParkAtNode(parkNode, parking.ParkingLineup);
             _agent.Context.CurrentParking = parking;
+            ParkAtNode(parkNode, parking.ParkingLineup);
         }
 
         private void WaitAtBusStop(BusStop busStop)
         {
-            _agent.Context.Activity = VehicleActivity.Waiting;
+            _agent.Context.CurrentAction = VehicleAction.Waiting;
             
             // Brake at the bus stop
             _vehicleController.brakeInput = 0.7f;
@@ -724,7 +762,7 @@ namespace VehicleBrain
             TimeManager.Instance.AddEvent(unPauseEvent);
             
             // Return to driving after the vehicle is done waiting at the bus stop
-            unPauseEvent.OnEvent += () => _agent.Context.Activity = VehicleActivity.Driving;
+            unPauseEvent.OnEvent += () => _agent.Context.CurrentAction = VehicleAction.Driving;
         }
 
         private void SetTarget(LaneNode newTarget)
@@ -814,7 +852,7 @@ namespace VehicleBrain
             }
 
             bool waitWithTeleporting = false;
-            if(reachedTarget && _agent.Context.NavigationMode == NavigationMode.Path)
+            if(reachedTarget)
             {
                 (POI targetPOI, _, _) = _agent.Context.NavigationPathTargets.Pop();
 
@@ -824,14 +862,14 @@ namespace VehicleBrain
                     {
                         Parking parking = targetPOI as Parking;
                         Park(parking);
-                        waitWithTeleporting = _agent.Context.Activity == VehicleActivity.Parked;
+                        waitWithTeleporting = _agent.Context.CurrentAction == VehicleAction.Parked;
 
                         // Queue an event to try unparking the vehicle after a random delay
                         TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(10, 60) * 1000));
                         TimeManager.Instance.AddEvent(unParkEvent);
                         unParkEvent.OnEvent += () => StartCoroutine(Unpark());
                     }
-                    else if(targetPOI is BusStop)
+                    else if(targetPOI is BusStop && _agent.Setting.Vehicle is Bus)
                     {
                         WaitAtBusStop(targetPOI as BusStop);
                     }
@@ -852,26 +890,26 @@ namespace VehicleBrain
             }
 
             // After the first increment of the current node, we are no longer entering the network
-            if(_agent.Context.Activity == VehicleActivity.Driving && !teleported && (_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End))
+            if(_agent.Context.CurrentAction == VehicleAction.Driving && !teleported && (_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End))
                 _agent.Context.IsEnteringNetwork = false;
         }
 
         private bool HasReachedTarget()
         {
-            switch(_agent.Context.NavigationMode)
+            if(_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath || _agent.Context.NavigationMode == NavigationMode.Path)
             {
-                case NavigationMode.RandomNavigationPath:
+                Stack<(POI, RoadNode, LaneSide)> targets = _agent.Context.NavigationPathTargets;
+                if(_agent.Context.NavigationMode == NavigationMode.RandomNavigationPath && targets.Count > 0 && targets.Peek().Item2.HasPOI())
                     return _agent.Context.CurrentNode.RoadNode == _agent.Context.NavigationPathEndNode.RoadNode;
-                case NavigationMode.Path:
-                    if(_agent.Context.NavigationPathTargets.Count < 1)
+
+                if(_agent.Context.NavigationPathTargets.Count < 1)
                         return false;
                     
-                    bool hasTargetPOI = _agent.Context.CurrentNode.POIs.Contains(_agent.Context.NavigationPathTargets.Peek().Item1);
-                    bool isOnRightSide = _agent.Context.NavigationPathTargets.Peek().Item3 == _agent.Context.CurrentNode.LaneSide;
-                    return hasTargetPOI && isOnRightSide;
-                default:
-                    return false;
+                bool hasTargetPOI = _agent.Context.CurrentNode.POIs.Contains(_agent.Context.NavigationPathTargets.Peek().Item1);
+                bool isOnRightSide = _agent.Context.NavigationPathTargets.Peek().Item3 == _agent.Context.CurrentNode.LaneSide;
+                return hasTargetPOI && isOnRightSide;
             }
+            return false;
         }
 
         private void Q_EndOfRoadTeleport()
@@ -1071,18 +1109,18 @@ namespace VehicleBrain
             return _lastLerpTime;
         }
 
-        private DrivingAction GetCurrentDrivingAction()
+        private DrivingState GetCurrentDrivingAction()
         {
             if (GetCurrentSpeed() < 0.01f)
-                return DrivingAction.Stopped;
+                return DrivingState.Stopped;
             
             if (_agent.Context.CurrentBrakeInput > 0)
-                return DrivingAction.Braking;
+                return DrivingState.Braking;
             
             if (_agent.Context.CurrentThrottleInput > 0)
-                return DrivingAction.Accelerating;
+                return DrivingState.Accelerating;
             
-            return DrivingAction.Driving;
+            return DrivingState.Driving;
         }
 
         private Vector3 P_GetLerpPosition(float t)

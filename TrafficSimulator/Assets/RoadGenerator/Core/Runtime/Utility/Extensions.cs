@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Extensions
 {
@@ -59,6 +60,15 @@ namespace Extensions
                 list[k] = list[n];
                 list[n] = value;
             }  
+        }
+
+        /// <summary> Returns a random element from the list </summary>
+        public static T GetRandomElement<T>(this IEnumerable<T> list)
+        {
+            if(list.Count() == 0)
+                return default(T);
+
+            return list.ElementAt(UnityEngine.Random.Range(0, list.Count()));
         }
     }
 }
