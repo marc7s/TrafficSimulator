@@ -13,8 +13,12 @@ namespace Cam
         private float _edgeScrollSensitivity = 0.1f;
 
         [Header("Movement Settings")]
-        [SerializeField] private float _movementSpeed = 50f;
         [SerializeField] private float _rotationSpeed = 50f;
+        [SerializeField] private float _movementSpeed
+        {
+            get => 50f * FollowOffset.magnitude / 20;
+            set => _movementSpeed = value;
+        }
 
         [Header("Zoom Settings")]
         [SerializeField] private float _followOffsetMin = 5f;
@@ -112,9 +116,12 @@ namespace Cam
 
         public override void Move(Vector3 direction)
         {
-            if (_isNearScreenBorder) direction = _mousePointDirection.normalized;
+            if (_isNearScreenBorder) 
+                direction = _mousePointDirection.normalized;
 
-            if (direction.sqrMagnitude != 0 && _hasToggledGameObject) SetToggledGameObject(null);
+            if (direction.sqrMagnitude != 0 && _hasToggledGameObject) 
+                SetToggledGameObject(null);
+            
             Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
             FollowTransform.position += translatedDirection * _movementSpeed * Time.deltaTime;
         }
@@ -129,21 +136,14 @@ namespace Cam
             Vector3 zoomDirection = FollowOffset.normalized;
     
             if (zoomValue > 0)
-            {
                 FollowOffset -= zoomDirection * _zoomScrollFactor;
-            }
             else if (zoomValue < 0)
-            {
                 FollowOffset += zoomDirection * _zoomScrollFactor;
-            }
+            
             if (FollowOffset.magnitude < _followOffsetMin)
-            {
                 FollowOffset = zoomDirection * _followOffsetMin;
-            }
             else if (FollowOffset.magnitude > _followOffsetMax)
-            {
                 FollowOffset = zoomDirection * _followOffsetMax;
-            }
     
             _cinemachineTransposer.m_FollowOffset =
                 Vector3.Lerp(_cinemachineTransposer.m_FollowOffset,
