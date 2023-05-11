@@ -147,6 +147,7 @@ namespace VehicleBrain
                     POI randomPOI = targetRoadNode.POIs.GetRandomElement();
                     Context.NavigationPathTargets.Push((randomPOI, targetRoadNode, randomPOI.LaneSide));
                 }
+                
                 MapNavigationPath(node, showNavigationPath);
             }
         }
@@ -302,7 +303,7 @@ namespace VehicleBrain
                 if(current.IsSteeringTarget)
                     _context.NavigationPathPositions.Add(current.Position);
                 
-                if (current.RoadNode == Context.NavigationPathEndNode.RoadNode && Context.NavigationPath.Count == 0)
+                if (current.RoadNode == _context.NavigationPathEndNode.RoadNode && _context.NavigationPath.Count == 0)
                     break;
 
                 if((current.Type == RoadNodeType.JunctionEdge && current.Next?.IsIntersection() == true && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(current.Intersection, current))) || current.RoadNode.IsNavigationNode)
@@ -311,10 +312,9 @@ namespace VehicleBrain
                     current = Next(current, RoadEndBehaviour.Stop);
             }
 
-            _context.PrevIntersection = prevIntersection;
+            Context.PrevIntersection = prevIntersection;
 
-            if (showNavigationPath)
-                Navigation.DrawNewNavigationPath(_context.NavigationPathPositions, Context.NavigationPathEndNode, Context.NavigationPathContainer, Setting.NavigationPathMaterial , Setting.NavigationTargetMarker);
+            Context.UpdateNavigationPathLine();
 
             _context.CurrentActivity = VehicleActivity.DrivingToTarget;
         }
@@ -366,8 +366,6 @@ namespace VehicleBrain
         private float _brakeOffset;
         private float _speed;
         private float _acceleration;
-        private GameObject _navigationTargetMarker;
-        private Material _navigationPathMaterial;
         
         public Vehicle Vehicle => _vehicle;
         public VehicleType VehicleType => _vehicleType;
@@ -377,10 +375,8 @@ namespace VehicleBrain
         public float BrakeOffset => _brakeOffset;
         public float Speed => _speed;
         public float Acceleration => _acceleration;
-        public GameObject NavigationTargetMarker => _navigationTargetMarker;
-        public Material NavigationPathMaterial => _navigationPathMaterial;
         
-        public AutoDriveSetting(Vehicle vehicle, VehicleType vehicleType, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration, GameObject navigationTargetMarker, Material navigationPathMaterial)
+        public AutoDriveSetting(Vehicle vehicle, VehicleType vehicleType, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration)
         {
             _vehicle = vehicle;
             _vehicleType = vehicleType;
@@ -390,8 +386,6 @@ namespace VehicleBrain
             _brakeOffset = brakeOffset;
             _speed = speed;
             _acceleration = acceleration;
-            _navigationTargetMarker = navigationTargetMarker;
-            _navigationPathMaterial = navigationPathMaterial;
         }
     }
 
@@ -414,6 +408,8 @@ namespace VehicleBrain
         public Stack<NavigationNodeEdge> NavigationPath;
         public Stack<(POI, RoadNode, LaneSide)> NavigationPathTargets;
         public GameObject NavigationPathContainer;
+        public GameObject NavigationTargetMarker;
+        public Material NavigationPathMaterial;
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
@@ -429,6 +425,18 @@ namespace VehicleBrain
 
         private VehicleActivity _currentActivity;
         private VehicleAction  _currentAction;
+        private bool _showNavigationPath;
+        private LineRenderer _navigationPathLineRenderer;
+
+        public bool ShowNavigationPath
+        {
+            get => _showNavigationPath;
+            set
+            {
+                _showNavigationPath = value;
+                UpdateNavigationPathLine();
+            }
+        }
 
         public VehicleActivity CurrentActivity
         {
@@ -450,10 +458,13 @@ namespace VehicleBrain
             }
         }
         
-        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool logNavigationErrors, bool logBrakeReason)
+        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool showNavigationPath, bool logNavigationErrors, bool logBrakeReason, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
             CurrentNode = initialNode;
             VehiclePosition = vehiclePosition;
+
+            NavigationTargetMarker = navigationTargetMarker;
+            NavigationPathMaterial = navigationPathMaterial;
 
             IsEnteringNetwork = true;
             PrevIntersection = null;
@@ -468,8 +479,13 @@ namespace VehicleBrain
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>();
+            
             NavigationPathContainer = new GameObject("Navigation Path");
-            NavigationPathContainer.AddComponent<LineRenderer>();
+            _navigationPathLineRenderer = NavigationPathContainer.AddComponent<LineRenderer>();
+            _navigationPathLineRenderer.startWidth = 1f;
+            _navigationPathLineRenderer.endWidth = 1f;
+            _navigationPathLineRenderer.material = NavigationPathMaterial;
+            
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;
@@ -482,6 +498,8 @@ namespace VehicleBrain
             LogBrakeReason = logBrakeReason;
 
             SetLoopNode(initialNode);
+
+            ShowNavigationPath = showNavigationPath;
         }
 
         private VehicleActivity GetVehicleActivity(VehicleAction activity, VehicleActivity currentAction)
@@ -539,6 +557,30 @@ namespace VehicleBrain
                 SetLoopNodeAtRandomRoad();
             else
                 EndNextNode = node.RoadNode.Road.Lanes.Find(l => l.Type.Index == node.LaneIndex && l.Type.Side != node.LaneSide).StartNode;
+        }
+
+        public void UpdateNavigationPathLine()
+        {
+            if(ShowNavigationPath)
+            {
+                if(NavigationPathPositions.Count < 1)
+                    return;
+                
+                _navigationPathLineRenderer.positionCount = NavigationPathPositions.Count;
+                _navigationPathLineRenderer.SetPositions(NavigationPathPositions.ToArray());
+
+                Vector3 position = NavigationPathEndNode.RoadNode.Position + Vector3.up * 10f;
+                GameObject marker = UnityEngine.Object.Instantiate(NavigationTargetMarker, position, Quaternion.identity);
+                marker.transform.parent = NavigationPathContainer.transform;
+            }
+            else
+            {
+                _navigationPathLineRenderer.positionCount = 0;
+                _navigationPathLineRenderer.SetPositions(new Vector3[0]);
+                
+                foreach (Transform child in NavigationPathContainer.transform)
+                    UnityEngine.Object.Destroy(child.gameObject);
+            }
         }
     }
 }

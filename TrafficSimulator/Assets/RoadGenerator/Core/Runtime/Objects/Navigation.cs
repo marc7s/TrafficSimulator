@@ -201,36 +201,5 @@ namespace RoadGenerator
             nodeToFind = null;
             return new Stack<NavigationNodeEdge>();
         }
-        
-        public static void DrawNewNavigationPath(List<Vector3> positions, NavigationNode nodeToFind, GameObject container, Material pathMaterial, GameObject targetMarker)
-        {
-            if (container.GetComponent<LineRenderer>() == null)
-                container.AddComponent<LineRenderer>();
-            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
-            lineRenderer.startWidth = 1f;
-            lineRenderer.endWidth = 1f;
-            
-            lineRenderer.material = pathMaterial;
-            lineRenderer.positionCount = positions.Count;
-            lineRenderer.SetPositions(positions.ToArray());
-
-            foreach (Transform child in container.transform)
-            {
-                Object.Destroy(child.gameObject);
-            }
-            Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
-            GameObject marker = Object.Instantiate(targetMarker, position, Quaternion.identity);
-            marker.transform.parent = container.transform;
-        }
-
-        public static void DrawUpdatedNavigationPath(ref List<Vector3> navigationPath, GameObject container)
-        {
-            if (navigationPath.Count == 0)
-                return;
-
-            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
-            lineRenderer.positionCount = navigationPath.Count;
-            lineRenderer.SetPositions(navigationPath.ToArray());
-        }
     }
 }

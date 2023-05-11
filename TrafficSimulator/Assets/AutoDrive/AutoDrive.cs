@@ -244,8 +244,8 @@ namespace VehicleBrain
             }
 
             _agent = new AutoDriveAgent(
-                new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration, NavigationTargetMarker, NavigationPathMaterial),
-                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, LogNavigationErrors, LogBrakeReason)
+                new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration),
+                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
             );
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
@@ -374,12 +374,12 @@ namespace VehicleBrain
                 {
                     case NavigationMode.RandomNavigationPath:
                         // Generate a new random path when resetting to a node
-                        _agent.UpdateRandomPath(node, ShowNavigationPath);
+                        _agent.UpdateRandomPath(node, _agent.Context.ShowNavigationPath);
                         break;
                     case NavigationMode.Path:
                         // Generate a new path if the current one is empty since there might be targets left
                         if(_agent.Context.NavigationPathTargets.Count < 1)
-                            _agent.GeneratePath(node, ShowNavigationPath);
+                            _agent.GeneratePath(node, _agent.Context.ShowNavigationPath);
                         break;
                 }
             }
@@ -842,8 +842,7 @@ namespace VehicleBrain
                 if (_agent.Context.CurrentNode.IsSteeringTarget && _agent.Context.NavigationPathPositions.Count > 0)
                     _agent.Context.NavigationPathPositions.RemoveAt(0);
 
-                if (ShowNavigationPath)
-                    Navigation.DrawUpdatedNavigationPath(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
+                _agent.Context.UpdateNavigationPathLine();
                 
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
@@ -1049,8 +1048,7 @@ namespace VehicleBrain
                 if (_agent.Context.NavigationPathPositions.Count > 0)
                     _agent.Context.NavigationPathPositions.RemoveAt(0);
 
-                if (ShowNavigationPath)
-                    Navigation.DrawUpdatedNavigationPath(ref _agent.Context.NavigationPathPositions, _agent.Context.NavigationPathContainer);
+                _agent.Context.UpdateNavigationPathLine();
             
                 SetTarget(GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop));
             }
