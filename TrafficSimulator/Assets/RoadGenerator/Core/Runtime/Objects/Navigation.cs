@@ -153,7 +153,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
-        public static Stack<NavigationNodeEdge> GetPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, List<NavigationNode> targets, bool logSubPathError, out NavigationNode nodeToFind)
+        public static Stack<NavigationNodeEdge> GetPath(NavigationNodeEdge currentEdge, List<NavigationNode> targets, bool logSubPathError, out NavigationNode nodeToFind)
         {
             if(targets.Count > 0)
             {
@@ -174,7 +174,7 @@ namespace RoadGenerator
 #if UNITY_EDITOR
                         if(logSubPathError)
                         {
-                            Debug.LogError("Could not find path to target node " + target.RoadNode.Position + ". Skipping target");
+                            Debug.LogError("Could not find path to target node " + target.RoadNode.Position + ". Switching to random.");
                             DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
                         }
 #endif

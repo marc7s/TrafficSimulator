@@ -215,7 +215,7 @@ namespace VehicleBrain
                             POI parking = parkings[0];
                             parkings.RemoveAt(0);
                             NavigationNode pathEnd = null;
-                            Stack<NavigationNodeEdge> forcedNavigationPath = Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), new List<NavigationNode>{ GetPOINavigationNode(parking) }, false, out pathEnd);
+                            Stack<NavigationNodeEdge> forcedNavigationPath = Navigation.GetPath(node.GetNavigationEdge(), new List<NavigationNode>{ GetPOINavigationNode(parking) }, false, out pathEnd);
                             
                             // Break if a path was found
                             if(pathEnd != null && forcedNavigationPath.Count > 0)
@@ -254,9 +254,6 @@ namespace VehicleBrain
             {
                 targets = forcePath.ForcedTargets;
             }
-
-            // Since we are converting the list to a stack and we want the targets to be popped in the same order as the sorted list, we need to reverse the list
-            targets.Reverse();
             
             List<NavigationNode> targetList = targets.ConvertAll(x => x.Item2);
             
@@ -264,7 +261,7 @@ namespace VehicleBrain
             Context.NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1, x.Item2.RoadNode, x.Item3)));
             
             // Get a random path from the navigation graph
-            Context.NavigationPath = forcePath != null ? forcePath.ForcedNavigationPath : Navigation.GetPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
+            Context.NavigationPath = forcePath != null ? forcePath.ForcedNavigationPath : Navigation.GetPath(node.GetNavigationEdge(), targetList, Context.LogNavigationErrors, out Context.NavigationPathEndNode);
 
             // Switch to Random mode if no path could be found
             if (Context.NavigationPath.Count == 0)
