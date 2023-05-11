@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 using Extensions;
 using DataModel;
@@ -8,7 +9,7 @@ using POIs;
 
 namespace VehicleBrain
 {
-    public enum DrivingAction
+    public enum DrivingState
     {
         Accelerating,
         Driving,
@@ -128,6 +129,7 @@ namespace VehicleBrain
         public void UpdateRandomPath(LaneNode node, bool showNavigationPath)
         {
             Context.VisitedNavigationNodes.Clear();
+            Context.NavigationPathTargets.Clear();
             
             // Get a random path from the navigation graph
             Context.NavigationPath = Navigation.GetRandomPath(Context.CurrentRoad.RoadSystem, node.GetNavigationEdge(), out Context.NavigationPathEndNode);
@@ -138,7 +140,15 @@ namespace VehicleBrain
 
             // If a path was found we are still in RandomNavigationPath mode, so map the navigation path
             if (Context.NavigationMode == NavigationMode.RandomNavigationPath)
+            {
+                RoadNode targetRoadNode = Context.NavigationPathEndNode.RoadNode;
+                if(targetRoadNode.HasPOI())
+                {
+                    POI randomPOI = targetRoadNode.POIs.GetRandomElement();
+                    Context.NavigationPathTargets.Push((randomPOI, targetRoadNode, randomPOI.LaneSide));
+                }
                 MapNavigationPath(node, showNavigationPath);
+            }
         }
 
         private void SetAllBusStops()
@@ -305,6 +315,8 @@ namespace VehicleBrain
 
             if (showNavigationPath)
                 Navigation.DrawNewNavigationPath(_context.NavigationPathPositions, Context.NavigationPathEndNode, Context.NavigationPathContainer, Setting.NavigationPathMaterial , Setting.NavigationTargetMarker);
+
+            _context.CurrentActivity = VehicleActivity.DrivingToTarget;
         }
 
         public LaneNode Next(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
@@ -385,6 +397,7 @@ namespace VehicleBrain
 
     public class AutoDriveContext
     {
+        public Action OnActivityChanged;
         public LaneNode CurrentNode;
         public LaneNode EndPrevNode;
         public LaneNode EndNextNode;
@@ -396,7 +409,7 @@ namespace VehicleBrain
         public LaneNode BrakeTarget;
         public float CurrentBrakeInput;
         public float CurrentThrottleInput;
-        public DrivingAction CurrentAction;
+        public DrivingState CurrentDrivingState;
         public NavigationNode NavigationPathEndNode;
         public Stack<NavigationNodeEdge> NavigationPath;
         public Stack<(POI, RoadNode, LaneSide)> NavigationPathTargets;
@@ -404,15 +417,38 @@ namespace VehicleBrain
         public List<Vector3> NavigationPathPositions;
         public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
-        public VehicleActivity Activity;
         public Parking CurrentParking;
+        public POI CurrentPOI;
         public Dictionary<Intersection, LaneNode> PrevEntryNodes;
         public bool IsInsideIntersection;
         public bool LogNavigationErrors;
         public bool LogBrakeReason;
         public float BrakeUndershoot;
-        public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
+        public bool IsBrakingOrStopped => CurrentDrivingState == DrivingState.Braking || CurrentDrivingState == DrivingState.Stopped;
         public Road CurrentRoad => CurrentNode?.RoadNode.Road;
+
+        private VehicleActivity _currentActivity;
+        private VehicleAction  _currentAction;
+
+        public VehicleActivity CurrentActivity
+        {
+            get => _currentActivity;
+            set
+            {
+                _currentActivity = value;
+                OnActivityChanged?.Invoke();
+            }
+        }
+
+        public VehicleAction CurrentAction
+        {
+            get => _currentAction;
+            set
+            {
+                _currentAction = value;
+                CurrentActivity = GetVehicleActivity(_currentAction, CurrentActivity);
+            }
+        }
         
         public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool logNavigationErrors, bool logBrakeReason)
         {
@@ -426,7 +462,9 @@ namespace VehicleBrain
             BrakeTarget = null;
             CurrentBrakeInput = 0;
             CurrentThrottleInput = 0;
-            CurrentAction = DrivingAction.Stopped;
+            CurrentDrivingState = DrivingState.Stopped;
+            CurrentActivity = VehicleActivity.DrivingRandomly;
+            CurrentAction = VehicleAction.Driving;
             NavigationPathEndNode = null;
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>();
@@ -436,14 +474,33 @@ namespace VehicleBrain
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;
             BrakeUndershoot = 0;
-            Activity = VehicleActivity.Driving;
             CurrentParking = null;
+            CurrentPOI = null;
             PrevEntryNodes = new Dictionary<Intersection, LaneNode>();
             IsInsideIntersection = false;
             LogNavigationErrors = logNavigationErrors;
             LogBrakeReason = logBrakeReason;
 
             SetLoopNode(initialNode);
+        }
+
+        private VehicleActivity GetVehicleActivity(VehicleAction activity, VehicleActivity currentAction)
+        {
+            switch(_currentAction)
+                {
+                    case VehicleAction.Driving when NavigationMode == NavigationMode.Disabled:
+                    case VehicleAction.Driving when NavigationMode == NavigationMode.Random:
+                        return VehicleActivity.DrivingRandomly;
+                    case VehicleAction.Driving when NavigationMode == NavigationMode.RandomNavigationPath:
+                    case VehicleAction.Driving when NavigationMode == NavigationMode.Path:
+                        return VehicleActivity.DrivingToTarget;
+                    case VehicleAction.Parked:
+                        return VehicleActivity.Parked;
+                    case VehicleAction.Waiting:
+                        return currentAction;
+                    default:
+                        return currentAction;
+                }
         }
 
         public void Loop()
@@ -456,7 +513,7 @@ namespace VehicleBrain
         private void SetLoopNodeAtRandomRoad()
         {
             List<DefaultRoad> twoWayRoads = CurrentRoad.RoadSystem.DefaultRoads.FindAll(r => !r.IsOneWay && (r.StartRoadNode.Next?.IsIntersection() == false || r.EndRoadNode.Prev?.IsIntersection() == false));
-            Road randomRoad = twoWayRoads[Random.Range(0, twoWayRoads.Count)];
+            Road randomRoad = twoWayRoads.GetRandomElement();
 
             // if there is no intersection at the start of the road, spawn at the start
             if (randomRoad.StartRoadNode.Next?.IsIntersection() == false)
