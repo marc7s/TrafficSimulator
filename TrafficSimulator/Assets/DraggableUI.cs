@@ -13,10 +13,7 @@ public class DraggableUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (Mouse.current.leftButton.isPressed)
-        {
-            transform.position = eventData.position - _offset;
-        }
+        if (Mouse.current.leftButton.isPressed) transform.position = eventData.position - _offset;
     }
 
     public void OnEndDrag(PointerEventData eventData)

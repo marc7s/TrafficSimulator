@@ -247,7 +247,7 @@ namespace UI
         private void WorldOptionButtonOnClicked()
         {
             _isWorldOpen = !_isWorldOpen;
-            //_worldUI.visible = _isWorldOpen;
+            _worldUI.visible = _isWorldOpen;
             WorldWindowStatistic.SetActive(_isWorldOpen);
             
         }
