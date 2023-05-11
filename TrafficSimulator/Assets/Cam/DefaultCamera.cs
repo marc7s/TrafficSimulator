@@ -1,6 +1,7 @@
 using System.Collections;
 using Cinemachine;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using User;
 
 namespace Cam
@@ -13,10 +14,11 @@ namespace Cam
         private float _edgeScrollSensitivity = 0.1f;
 
         [Header("Movement Settings")]
-        [SerializeField] private float _rotationSpeed = 50f;
-        [SerializeField] private float _movementSpeed
+        [SerializeField][Range(1, 30)] private float _rotationSpeedFactor = 10;
+        [SerializeField] private float _movementSpeedFactor = 50f;
+        private float _movementSpeed
         {
-            get => 50f * FollowOffset.magnitude / 20;
+            get => _movementSpeedFactor * FollowOffset.magnitude / 20;
             set => _movementSpeed = value;
         }
 
@@ -24,7 +26,7 @@ namespace Cam
         [SerializeField] private float _followOffsetMin = 5f;
         [SerializeField] private float _followOffsetMax = 50f;
         [SerializeField] private float _zoomLerpSpeed = 5f;
-        [SerializeField] private float _zoomScrollFactor = 2f;
+        [SerializeField] private float _zoomScrollFactor = 4f;
 
         [Header("Toggle Follow Settings")]
         [SerializeField] private float _togglePanSpeed = 0.3f;
@@ -52,7 +54,8 @@ namespace Cam
 
         private void Update()
         {
-            if (_hasToggledGameObject && !_isMovingTowardsTarget) FollowTransform.position = _toggledGameObject.transform.position;
+            if (_hasToggledGameObject && !_isMovingTowardsTarget) 
+                FollowTransform.position = _toggledGameObject.transform.position;
         }
 
         public override void SetActive(CameraManager cameraManager)
@@ -63,6 +66,7 @@ namespace Cam
             UserSelectManager.Instance.CanSelectNewObject = true;
             UserSelectManager.Instance.OnSelectedGameObject += HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject += HandleGameObjectDoubleClickSelection;
+            FollowTransform.eulerAngles = RotationOrigin.eulerAngles;
         }
 
         public override void SetInactive(CameraManager cameraManager)
@@ -82,11 +86,13 @@ namespace Cam
         private void HandleNewGameObjectSelection(Selectable selectable)
         {
             StopAllCoroutines();
+            
             if (selectable == null)
             {
                 SetToggledGameObject();
                 return;
             }
+            
             SetToggledGameObject(selectable.gameObject);
             StartCoroutine(PanToTarget(selectable.transform));
         }
@@ -98,17 +104,22 @@ namespace Cam
 
         public override void HandlePointInput(Vector2 pointPosition)
         {
-            if (!_enableEdgeScrolling) return;
+            if (!_enableEdgeScrolling) 
+                return;
             
             Vector2 viewportPosition = Camera.main.ScreenToViewportPoint(pointPosition);
             float horizontal = 0f;
             float vertical = 0f;
             
-            if (viewportPosition.x < _edgeScrollSensitivity) horizontal = -1f;
-            else if (viewportPosition.x > 1 - _edgeScrollSensitivity) horizontal = 1f;
+            if (viewportPosition.x < _edgeScrollSensitivity) 
+                horizontal = -1f;
+            else if (viewportPosition.x > 1 - _edgeScrollSensitivity) 
+                horizontal = 1f;
 
-            if (viewportPosition.y < _edgeScrollSensitivity) vertical = -1f;
-            else if (viewportPosition.y > 1 - _edgeScrollSensitivity) vertical = 1f;
+            if (viewportPosition.y < _edgeScrollSensitivity) 
+                vertical = -1f;
+            else if (viewportPosition.y > 1 - _edgeScrollSensitivity) 
+                vertical = 1f;
             
             _isNearScreenBorder = (horizontal != 0f) || (vertical != 0f);
             _mousePointDirection = new Vector3(horizontal, vertical);
@@ -116,19 +127,16 @@ namespace Cam
 
         public override void Move(Vector3 direction)
         {
-            if (_isNearScreenBorder) 
-                direction = _mousePointDirection.normalized;
-
             if (direction.sqrMagnitude != 0 && _hasToggledGameObject) 
                 SetToggledGameObject(null);
             
-            Vector3 translatedDirection = TranslateDirectionToForward(direction.y, direction.x);
+            Vector3 translatedDirection = TranslateDirectionToForward(direction.z, direction.x);
             FollowTransform.position += translatedDirection * _movementSpeed * Time.deltaTime;
         }
 
-        public override void RotateHorizontal(float horizontalRotation)
+        public override void Rotate(Vector2 mouseOrigin)
         {
-            FollowTransform.eulerAngles += new Vector3(0, horizontalRotation * _rotationSpeed * Time.deltaTime, 0);
+            OrbitCameraRotation(ref FollowTransform, Mouse.current.position.ReadValue(), mouseOrigin, _rotationSpeedFactor / 30f);
         }
         
         public override void Zoom(float zoomValue)
@@ -160,7 +168,9 @@ namespace Cam
 
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)
         {
-            return FollowTransform.forward * forwardScalar + FollowTransform.right * sidewaysScalar;
+            Vector3 forward = new Vector3(FollowTransform.forward.x, 0, FollowTransform.forward.z).normalized;
+            Vector3 right = new Vector3(FollowTransform.right.x, 0, FollowTransform.right.z).normalized;
+            return forward * forwardScalar + right * sidewaysScalar;
         }
 
         private IEnumerator PanToTarget(Transform target)
