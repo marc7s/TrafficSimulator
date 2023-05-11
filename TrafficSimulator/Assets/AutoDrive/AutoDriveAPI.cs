@@ -217,11 +217,6 @@ namespace VehicleBrain
                                 break;
                             }
                         }
-                        if(forcePath == null)
-                        {
-                            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                            cube.transform.position = Setting.Vehicle.transform.position + Vector3.up * 5f;
-                        }
                     }
                         
                     break;
@@ -417,7 +412,7 @@ namespace VehicleBrain
         public bool LogBrakeReason;
         public float BrakeUndershoot;
         public bool IsBrakingOrStopped => CurrentAction == DrivingAction.Braking || CurrentAction == DrivingAction.Stopped;
-        public Road CurrentRoad => CurrentNode.RoadNode.Road;
+        public Road CurrentRoad => CurrentNode?.RoadNode.Road;
         
         public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool logNavigationErrors, bool logBrakeReason)
         {
@@ -436,6 +431,7 @@ namespace VehicleBrain
             NavigationPath = new Stack<NavigationNodeEdge>();
             NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>();
             NavigationPathContainer = new GameObject("Navigation Path");
+            NavigationPathContainer.AddComponent<LineRenderer>();
             NavigationPathPositions = new List<Vector3>();
             VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;

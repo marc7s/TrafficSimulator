@@ -760,6 +760,9 @@ GameObject:
   - component: {fileID: 5731599073768975713}
   - component: {fileID: 4280802154114693104}
   - component: {fileID: 7509357529138853640}
+  - component: {fileID: 3195956251767587162}
+  - component: {fileID: 2916892881911361644}
+  - component: {fileID: 4481699828904971502}
   m_Layer: 0
   m_Name: Tram
   m_TagString: Untagged
@@ -821,18 +824,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed2077f9a1d00454da03e178dd2ee3f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Road: {fileID: 0}
+  _road: {fileID: 0}
   NavigationTargetMarker: {fileID: 0}
   NavigationPathMaterial: {fileID: 0}
   LaneIndex: 0
   _mesh: {fileID: 3442594187742297645}
   Mode: 1
-  Active: 0
   EndBehaviour: 0
   ShowNavigationPath: 0
   OriginalNavigationMode: 0
-  LogRepositioningInformation: 1
-  ShowTargetLines: 0
   BrakeOffset: 5
   MaxRepositioningSpeed: 5
   MaxReverseDistance: 20
@@ -842,6 +842,11 @@ MonoBehaviour:
   Speed: 10
   Acceleration: 7
   TotalDistance: 0
+  ShowTargetLines: 0
+  LogRepositioningInformation: 1
+  LogNavigationErrors: 0
+  LogBrakeReason: 0
+  _logParkingFull: 0
 --- !u!114 &5731599073768975713
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -854,6 +859,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5cbd697ee36e504cb3b8ba2931bf140, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  VehicleLength: 0
 --- !u!120 &4280802154114693104
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -966,6 +972,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <FirstPersonPivot>k__BackingField: {fileID: 0}
+--- !u!114 &3195956251767587162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3442594187742297629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fea29bb7c508c244a1f805a5fd3fc4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outlineMode: 0
+  outlineColor: {r: 1, g: 1, b: 1, a: 1}
+  outlineWidth: 2
+  precomputeOutline: 0
+  bakeKeys: []
+  bakeValues: []
+--- !u!114 &2916892881911361644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3442594187742297629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6857cd9d1b611dd489f0529d75623e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _leftIndicatorLights: []
+  _rightIndicatorLights: []
+  _intervalTime: 0.5
+--- !u!114 &4481699828904971502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3442594187742297629}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32721b0d0a62be545badcf89bbea6628, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _brakeLights: []
 --- !u!1 &3442594187742297631
 GameObject:
   m_ObjectHideFlags: 0

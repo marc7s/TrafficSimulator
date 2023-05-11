@@ -21,6 +21,8 @@ namespace User
         public delegate void SelectedGameObjectChangedHandler(Selectable newSelectedGameObject);
 
         private static UserSelectManager _instance;
+        private static object _lock = new object();
+        private static bool applicationIsQuitting;
 
         [HideInInspector] public bool CanSelectNewObject;
 
@@ -44,25 +46,30 @@ namespace User
         public static UserSelectManager Instance
         {
             get
-            {
-                if (_instance == null)
+            {   
+                if (applicationIsQuitting)
+                    return null;
+                
+                lock (_lock)
                 {
-                    _instance = FindObjectOfType<UserSelectManager>();
                     if (_instance == null)
                     {
-                        GameObject obj = new GameObject();
-                        obj.name = nameof(UserSelectManager);
-                        _instance = obj.AddComponent<UserSelectManager>();
-                        DontDestroyOnLoad(obj.transform.root);
+                        _instance = FindObjectOfType<UserSelectManager>();
+                        if (_instance == null)
+                        {
+                            GameObject obj = new GameObject();
+                            obj.name = nameof(UserSelectManager);
+                            _instance = obj.AddComponent<UserSelectManager>();
+                        }
                     }
                 }
-
                 return _instance;
             }
         }
         
         private void Awake()
         {
+            applicationIsQuitting = false;
             InitializeSingletonInstance();
             _mainCamera = Camera.main;
             CanSelectNewObject = true;
@@ -79,7 +86,6 @@ namespace User
             if (_instance == null)
             {
                 _instance = this;
-                DontDestroyOnLoad(gameObject.transform.root);
             }
             else
             {
@@ -105,6 +111,7 @@ namespace User
         private void OnDisable()
         {
             UnsubscribeFromInput();
+            applicationIsQuitting = true;
         }
 
         private void UnsubscribeFromInput()
@@ -129,13 +136,9 @@ namespace User
             if(!IsHoveringUIElement)
             {
                 if (_previousClickedSelectable == SelectedGameObject)
-                {
                     OnClickInput(OnDoubleClickedSelectedGameObject);
-                }
                 else
-                {
                     _previousClickedSelectable = null;
-                }
             }
         }
 
@@ -153,12 +156,13 @@ namespace User
         // Common method for handling click and double-click inputs
         private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke)
         {
+            if (_mainCamera == null)
+                _mainCamera = Camera.main;
+
             Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
             if (Physics.Raycast(ray, out RaycastHit hitInfo) && CanSelectNewObject)
-            {
                 SelectObjectFromClick(eventToInvoke, hitInfo);
-            }
         }
 
         // Select the object based on the click event and invoke the corresponding event
@@ -174,9 +178,7 @@ namespace User
                 }
 
                 if (_hasSelectedGameObject)
-                {
                     SelectedGameObject.Deselect();
-                }
 
                 hitSelectable.Select();
                 SelectedGameObject = hitSelectable;

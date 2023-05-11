@@ -106,7 +106,6 @@ namespace VehicleBrain
         [HideInInspector] public RoadChangedDelegate OnRoadChanged;
 
         // Private variables
-        private float _vehicleLength;
         private AutoDriveAgent _agent;
         private BrakeController _brakeController;
         private NavigationController _navigationController;
@@ -156,7 +155,7 @@ namespace VehicleBrain
             Road.RoadSystem.Setup();
 
             _vehicleController = GetComponent<VehicleController>();
-            _vehicleLength = _mesh.GetComponent<MeshRenderer>().bounds.size.z;
+            
             if (Mode == DrivingMode.Quality)
             {
                 _originalMaxSpeedForward = _vehicleController.maxSpeedForward;
@@ -219,9 +218,13 @@ namespace VehicleBrain
             }
             else if (Mode == DrivingMode.Performance)
             {
-                // In performance mode the vehicle should not be affected by physics or gravity
-                _rigidbody.isKinematic = false;
-                _rigidbody.useGravity = false;
+                if (_rigidbody != null)
+                {
+                    // In performance mode the vehicle should not be affected by physics or gravity
+                    _rigidbody.isKinematic = false;
+                    _rigidbody.useGravity = false;
+                }
+
                 _lerpSpeed = Speed;
                 _targetLerpSpeed = Speed;
             }
@@ -504,7 +507,7 @@ namespace VehicleBrain
             bool isWithinReleaseDistance = false;
 
             // Add all occupied nodes prior to and excluding the current node
-            while (node != null && WithinSpanDistance(nodeDistance, distanceToCurrentNode + _vehicleLength / 2 + VehicleOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
+            while (node != null && WithinSpanDistance(nodeDistance, distanceToCurrentNode + _agent.Setting.Vehicle.VehicleLength / 2 + VehicleOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
             {
                 if(isWithinClaimDistance)
                     backwardClaimNodes.Add(node);
@@ -529,7 +532,7 @@ namespace VehicleBrain
                 node = _agent.Next(_agent.Context.CurrentNode, RoadEndBehaviour.Stop);
                 nodeDistance += node != null && node.IsSteeringTarget ? Vector3.Distance(node.Position, last.Position) : 0;
                 
-                while (node != null && WithinSpanDistance(nodeDistance, _vehicleLength / 2 + distanceToCurrentNode + VehicleOccupancyOffset + forwardOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
+                while (node != null && WithinSpanDistance(nodeDistance, _agent.Setting.Vehicle.VehicleLength / 2 + distanceToCurrentNode + VehicleOccupancyOffset + forwardOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
                 {
                     // Do not occupy nodes in front of a red light
                     if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
