@@ -1643,7 +1643,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 041e74d744444ca288dff463716afbbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <FirstPersonPivot>k__BackingField: {fileID: 1577973480899048131}
+  <FirstPersonPivot>k__BackingField: {fileID: 1577973480899043867}
 --- !u!114 &1577973480888144765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2476,7 +2476,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1577973480899426879}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.39498428, y: 1.2, z: -0.044983614}
+  m_LocalPosition: {x: -0.5, y: 1.6, z: 0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
