@@ -33,6 +33,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
+        [SerializeField] private DrivingMode _drivingMode = DrivingMode.Quality;
         [SerializeField] private bool _randomVehicleTypes = true;
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
         [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
@@ -281,6 +282,7 @@ namespace RoadGenerator
 
             autoDrive.CustomStartNode = _laneNodeCurrent;
 
+            autoDrive.Mode = _drivingMode;
             autoDrive.ShowTargetLines = _showTargetLines;
             autoDrive.LogBrakeReason = _logBrakeReason;
             autoDrive.ShowNavigationPath = _showNavigationPath;
