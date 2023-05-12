@@ -188,6 +188,7 @@ namespace RoadGenerator
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
+            MapIntersectionNavigation();
             ShowGuideNodes();
             gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
         }
@@ -525,8 +526,11 @@ namespace RoadGenerator
                 // Project the intersection position back to the 3D plane, with the y coordinate set to the average y coordinate of the two points
                 Vector3 intersectPos = new Vector3(intersectPos2D.x, Vector3.Lerp(main.position, projectionTarget.position, 0.5f).y, intersectPos2D.y);
                 
-                // Return the intersection position, offset in the projection target position by the stretch factor to apply the stretch
-                return Vector3.Lerp(intersectPos, projectionTarget.position, _stretchFactor);
+                // Project the intersection position onto the line between the road edges to get the point on the line at the intersection position
+                Vector3 projectedPoint = Vector3.Project(intersectPos - main.position, projectionTarget.position - main.position) + main.position;
+
+                // Return the intersection position, offset towards the projected point by the stretch factor to apply the stretch
+                return Vector3.Lerp(intersectPos, projectedPoint, _stretchFactor);
             }
         }
 
