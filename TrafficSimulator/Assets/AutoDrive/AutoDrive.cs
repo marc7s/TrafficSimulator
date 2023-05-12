@@ -307,6 +307,8 @@ namespace VehicleBrain
                 new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
             );
 
+            _agent.Context.OnRoadChanged = () => RoadChanged?.Invoke();
+
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
             
             if (Mode == DrivingMode.Quality)
