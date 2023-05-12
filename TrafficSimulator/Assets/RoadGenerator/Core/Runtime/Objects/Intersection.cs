@@ -892,6 +892,7 @@ namespace RoadGenerator
                 // Mirror the rotation if the section is in the opposite road direction
                 bool mirror = intersectionRoadNode.Index < junctionNode.RoadNode.Index;
                 
+                // Add a section lane node
                 curr = curr == null ? new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, 0, true, mirror) : new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position), true, mirror);
                 
                 if(prev != null)
