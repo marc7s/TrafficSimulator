@@ -297,9 +297,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7f0c4b1b13bb48488cca017cdb7d34b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 32
 --- !u!1 &7583653625750658814
 GameObject:
   m_ObjectHideFlags: 0
@@ -653,7 +650,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: heightRatio
-      value: 79.66696
+      value: 79.66702
       objectReference: {fileID: 0}
     - target: {fileID: 2455342072481877525, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_SizeDelta.x
