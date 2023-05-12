@@ -60,6 +60,64 @@ namespace VehicleBrain
             Repositioning
         }
 
+        private struct PerformanceEngine
+        {
+            private float _maxSpeed;
+            private float _maxAcceleration;
+            private float _speed;
+            private float _acceleration;
+            private float _currentDistance;
+            public float MaxSpeed
+            {
+                get => _maxSpeed;
+            }
+            public float MaxAcceleration
+            {
+                get => _maxAcceleration;
+            }
+            public float Speed
+            {
+                get => _speed;
+            }
+            public float Acceleration
+            {
+                get => _acceleration;
+                set => _acceleration = value;
+            }
+
+            public float CurrentDistance
+            {
+                get => _currentDistance;
+            }
+
+            public PerformanceEngine(float maxSpeed, float maxAcceleration)
+            {
+                _maxSpeed = maxSpeed;
+                _maxAcceleration = maxAcceleration;
+                _speed = 0;
+                _acceleration = 0;
+                _currentDistance = 0;
+            }
+
+            public void SetAccelerationPercent(float accelerationPercent)
+            {
+                _acceleration = _maxAcceleration * Mathf.Clamp(accelerationPercent, -1, 1);
+            }
+
+            public void Update()
+            {
+                _speed += _acceleration * Time.deltaTime;
+                _speed = Mathf.Clamp(_speed, 0, _maxSpeed);
+                
+                _currentDistance += _speed * Time.deltaTime;
+            }
+
+            public void ReachedTarget()
+            {
+                _currentDistance = 0;
+            }
+        }
+
         private struct SpanNodes
         {
             public HashSet<LaneNode> ForwardClaimNodes;
@@ -144,10 +202,8 @@ namespace VehicleBrain
         private bool _isSetup = false;
 
         // Performance variables
-        private float _lerpSpeed = 0;
-        private float _targetLerpSpeed = 0;
-        private float _timeElapsedSinceLastTarget = 0;
-        private float _lastLerpTime = 0;
+
+        private PerformanceEngine PEngine;
 
         public Road Road
         {
@@ -190,6 +246,12 @@ namespace VehicleBrain
 
         public void Setup()
         {
+            if(Road == null)
+            {
+                Debug.LogError("Error: Road not set for " + this.name);
+                return;
+            }
+            
             Road.RoadSystem.Setup();
 
             _vehicleController = GetComponent<VehicleController>();
@@ -202,6 +264,7 @@ namespace VehicleBrain
 
             _brakeLightController = GetComponent<BrakeLightController>();
             _indicatorController = GetComponent<IndicatorController>();
+            
             // If the road has not updated yet there will be no lanes, so update them first
             if(Road.Lanes.Count == 0)
                 Road.OnChange();
@@ -256,15 +319,16 @@ namespace VehicleBrain
             }
             else if (Mode == DrivingMode.Performance)
             {
+                PEngine = new PerformanceEngine(Speed, Acceleration);
+                _vehicleController.enabled = false;
+                
                 if (_rigidbody != null)
                 {
                     // In performance mode the vehicle should not be affected by physics or gravity
-                    _rigidbody.isKinematic = false;
+                    _rigidbody.isKinematic = true;
+                    _rigidbody.detectCollisions = false;
                     _rigidbody.useGravity = false;
                 }
-
-                _lerpSpeed = Speed;
-                _targetLerpSpeed = Speed;
             }
 
             // Setup the controller that handles the braking
@@ -284,6 +348,9 @@ namespace VehicleBrain
 
         void Update()
         {
+            if(!_isSetup)
+                return;
+            
             HandleActivity();
             
             if (ShowTargetLines != ShowTargetLines.None)
@@ -341,7 +408,6 @@ namespace VehicleBrain
                     }
                     else if (Mode == DrivingMode.Performance)
                     {
-                        _timeElapsedSinceLastTarget += Time.deltaTime;
                         // Brake if needed
                         P_UpdateTargetAndCurrent();
                     }
@@ -436,7 +502,6 @@ namespace VehicleBrain
             _target = node;
             _prevTarget = node;
             _agent.Context.PrevTarget = null;
-            _lastLerpTime = 0;
             _agent.Context.BrakeTarget = node;
             _repositioningTarget = node;
             _agent.Context.IsEnteringNetwork = true;
@@ -462,7 +527,7 @@ namespace VehicleBrain
 
         public float GetCurrentSpeed()
         {
-            return _agent.Setting.Mode == DrivingMode.Quality ? _rigidbody.velocity.magnitude : _lerpSpeed;
+            return _agent.Setting.Mode == DrivingMode.Quality ? _rigidbody.velocity.magnitude : PEngine.Speed;
         }
 
         // Update the list of nodes that the vehicle is currently occupying
@@ -768,11 +833,6 @@ namespace VehicleBrain
         {
             _prevTarget = _target;
             _target = newTarget;
-            if(_agent.Setting.Mode == DrivingMode.Performance)
-            {
-                _timeElapsedSinceLastTarget = 0;
-                _lastLerpTime = 0;
-            }
         }
 
         private void Q_SetBrakeInput(float brakeInput)
@@ -1021,7 +1081,9 @@ namespace VehicleBrain
         private void P_UpdateTargetAndCurrent()
         {
             bool shouldBrake = _brakeController.ShouldAct(ref _agent);
-            _lerpSpeed = P_GetLerpSpeed(shouldBrake ? 0f : Speed);
+            PEngine.SetAccelerationPercent(shouldBrake ? -1f : 1f);
+
+            PEngine.Update();
             
             _agent.Context.CurrentBrakeInput = shouldBrake ? 1f : 0;
             _agent.Context.CurrentThrottleInput = 1f - _agent.Context.CurrentBrakeInput;
@@ -1030,6 +1092,7 @@ namespace VehicleBrain
             // Update the target if we have reached the current target, and we do not need to brake
             if (P_HasReachedTarget(_target))
             {
+                PEngine.ReachedTarget();
                 TotalDistance += _target.DistanceToPrevNode;
                 _agent.Context.CurrentNode = _target;
 
@@ -1080,30 +1143,9 @@ namespace VehicleBrain
                 }
             }
         }
-
-        private float P_GetLerpSpeed(float target)
-        {
-            // Move the speed by the acceleration
-            float maxDiff = Acceleration * Time.deltaTime;
-            return Mathf.MoveTowards(_lerpSpeed, target, maxDiff);
-        }
         private float P_GetLerpTime()
         {
-            float speed = _lerpSpeed;
-            float s = Vector3.Distance(_prevTarget.Position, _target.Position);
-            float t = s / speed;
-            float newLerpTime = _lastLerpTime;
-            
-            // If the car has slowed down enough that this will be the last target node, then do not move all the way to it to avoid updating the current node
-            // Otherwise, only update the lerp time if the speed is large enough to remove oscillations
-            if(speed < 3f && _agent.Context.IsBrakingOrStopped)
-                newLerpTime = Mathf.MoveTowards(_lastLerpTime, 0.9f, Time.deltaTime * 0.2f);
-            else if(speed >= 3f)
-                newLerpTime = _timeElapsedSinceLastTarget / t;
-
-            // Only update the lerp time if it has increased to avoid the car reversing due to a shift in the time due to speed decrease (denominator less than one)
-            _lastLerpTime = newLerpTime > _lastLerpTime ? newLerpTime : _lastLerpTime;
-            return _lastLerpTime;
+            return Mathf.Clamp01(PEngine.CurrentDistance / Vector3.Distance(_prevTarget.Position, _target.Position));
         }
 
         private DrivingState GetCurrentDrivingAction()
