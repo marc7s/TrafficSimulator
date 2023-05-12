@@ -8,10 +8,10 @@ using VehicleBrain;
 
 public class VehicleInfoDisplay : MonoBehaviour
 {
-    public AutoDrive vehicleAutoDrive; // Reference to your vehicle script
-    public TextMeshProUGUI roadNameText; // Use TextMeshProUGUI instead of Text
-    public TextMeshProUGUI activityText; // Use TextMeshProUGUI instead of Text
-    public TextMeshProUGUI distanceTravelledText; // Use TextMeshProUGUI instead of Text
+    public AutoDrive vehicleAutoDrive; 
+    public TextMeshProUGUI roadNameText; 
+    public TextMeshProUGUI activityText; 
+    public TextMeshProUGUI distanceTravelledText; 
     
     private void Start()
     {
