@@ -21,6 +21,10 @@ namespace UI
         private Button _fpvButton;
         private Button _currentlyHighlightedCameraButton;
 
+        // Car Spawner Buttons
+        private Button _spawnCarsButton;
+        private Button _deleteCarsButton;
+
         // Clock Buttons
         private Button _rewindButton;
         private Button _pauseButton;
@@ -33,6 +37,9 @@ namespace UI
         private Label _clockLabel;
         private Label _fpsLabel;
         private bool _showFPS = false;
+
+        // Car Spawner Input
+        private TextField _carSpawnerInput;
 
         private const int _fpsUpdateFrequency = 15;
         private float _fpsLastUpdateTime = 0;
@@ -54,7 +61,14 @@ namespace UI
             _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
             
             FindCameraManager();
+
             // Buttons
+            _spawnCarsButton = _doc.rootVisualElement.Q<Button>("SpawnCars");
+            _spawnCarsButton.clicked += SpawnCarsButtonOnClicked;
+
+            _deleteCarsButton = _doc.rootVisualElement.Q<Button>("DeleteCars");
+            _deleteCarsButton.clicked += DeleteCarsButtonOnClicked;
+
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
 
@@ -83,6 +97,9 @@ namespace UI
 
             _fastForwardButton = _doc.rootVisualElement.Q<Button>("Fastforward");
             _fastForwardButton.clicked += FastForwardButtonOnClicked;
+
+            // Input
+            _carSpawnerInput = _doc.rootVisualElement.Q<TextField>("CarSpawnerInput");
 
             // Load settings
             _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
@@ -214,6 +231,23 @@ namespace UI
         private void FastForwardButtonOnClicked()
         {
             TimeManager.Instance.SetModeFastForward();
+        }
+
+        private void SpawnCarsButtonOnClicked()
+        {
+            if (int.TryParse(_carSpawnerInput.text, out int amount))
+            {
+                // TODO: Implement this
+            }
+            else
+            {
+                Debug.LogWarning("Invalid input for car spawner.");
+            }
+        }
+
+        private void DeleteCarsButtonOnClicked()
+        {
+            // TODO: Implement this
         }
 
         void Update()
