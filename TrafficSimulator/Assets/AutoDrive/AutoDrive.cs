@@ -71,14 +71,17 @@ namespace VehicleBrain
             {
                 get => _maxSpeed;
             }
+            
             public float MaxAcceleration
             {
                 get => _maxAcceleration;
             }
+            
             public float Speed
             {
                 get => _speed;
             }
+            
             public float Acceleration
             {
                 get => _acceleration;
