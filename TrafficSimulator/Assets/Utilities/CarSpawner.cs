@@ -33,6 +33,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
+        [SerializeField] private DrivingMode _drivingMode = DrivingMode.Quality;
         [SerializeField] private bool _randomVehicleTypes = true;
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
         [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
@@ -273,7 +274,7 @@ namespace RoadGenerator
         {
             _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
             AutoDrive autoDrive = _currentCar.GetComponent<AutoDrive>();
-            autoDrive.Road = _lanes[index].Road;
+            autoDrive.StartingRoad = _lanes[index].Road;
             autoDrive.LaneIndex = _indexes[index];
 
             // If a custom car is being used as a spawn prefab it should be deactivated to not interfere, so activate this car
@@ -281,6 +282,7 @@ namespace RoadGenerator
 
             autoDrive.CustomStartNode = _laneNodeCurrent;
 
+            autoDrive.Mode = _drivingMode;
             autoDrive.ShowTargetLines = _showTargetLines;
             autoDrive.LogBrakeReason = _logBrakeReason;
             autoDrive.ShowNavigationPath = _showNavigationPath;

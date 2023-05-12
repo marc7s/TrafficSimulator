@@ -33,12 +33,19 @@ namespace Cam
         {
             InputHandler = new CameraInputHandler();
             _cmBrain = Camera.main.GetComponent<CinemachineBrain>();
+            
+            if(_cmBrain == null)
+            {
+                Debug.LogError("There must be a CinemachineBrain component on the main camera");
+                return;
+            }
+            
             _cameras[FindDefaultCameraIndex()].SetActive(this);
         }
 
         private void Update()
         {
-            if (_cmBrain.IsBlending) 
+            if (_cmBrain == null || _cmBrain.IsBlending) 
                 return;
             
             _cameras[_currentActiveCameraIndex].Look(InputHandler.LookDelta);
