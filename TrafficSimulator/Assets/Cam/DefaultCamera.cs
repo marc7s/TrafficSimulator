@@ -25,6 +25,7 @@ namespace Cam
         [Header("Zoom Settings")]
         [SerializeField] private float _followOffsetMin = 5f;
         [SerializeField] private float _followOffsetMax = 50f;
+        [SerializeField][Range(10, 40)] private float _dynamicZoomFactor = 15;
         [SerializeField] private float _zoomLerpSpeed = 5f;
         [SerializeField] private float _zoomScrollFactor = 4f;
 
@@ -144,9 +145,9 @@ namespace Cam
             Vector3 zoomDirection = FollowOffset.normalized;
     
             if (zoomValue > 0)
-                FollowOffset -= zoomDirection * _zoomScrollFactor;
+                FollowOffset -= zoomDirection * _zoomScrollFactor * FollowOffset.magnitude / _dynamicZoomFactor;
             else if (zoomValue < 0)
-                FollowOffset += zoomDirection * _zoomScrollFactor;
+                FollowOffset += zoomDirection * _zoomScrollFactor * FollowOffset.magnitude / _dynamicZoomFactor;
             
             if (FollowOffset.magnitude < _followOffsetMin)
                 FollowOffset = zoomDirection * _followOffsetMin;
