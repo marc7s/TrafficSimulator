@@ -33,6 +33,7 @@ namespace Statistics
 
             _totalFuelConsumption += CurrentFuelConsumption;
             _worldDataGatherer.AddFuelConsumed(CurrentFuelConsumption);
+            _worldDataGatherer.TotalFuelConsumed += CurrentFuelConsumption;
         }
 
         public void RegisterVehicle(GameObject vehicle)

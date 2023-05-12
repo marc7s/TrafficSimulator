@@ -3,14 +3,19 @@ using UnityEngine;
 
 public class WorldDataGatherer : MonoBehaviour
 {
+    public float TotalSecondsElapsed;
     public float TotalFuelConsumed;
+
+    // This would require the streaming graph which the project had not obtained at the time of writing the code
+    // to implement for real. Set one hour to represent all time;
+    public float FuelConsumedAllTime => CalculateTotalFuelConsumedLastSeconds(3600);
     public float FuelConsumedLast30Sec => CalculateTotalFuelConsumedLastSeconds(30);
     public float FuelConsumedLast3Min => CalculateTotalFuelConsumedLastSeconds(180);
     
-    // Buffer size to store fuel consumption for the last 3 minutes
-    private const int BufferSize = 180; 
-    // Circular buffer to store fuel consumption
-    private float[] _buffer = new float[BufferSize]; 
+    // Buffer size to store fuel consumption for the hour.
+    private const int BufferSize = 3600; 
+    // Circular buffer to store fuel consumption. 
+    public float[] FuelConsumedPerSecondHistory = new float[BufferSize]; 
     private int _bufferIndex = 0; 
 
     private float _fuelConsumedThisSecond = 0;
@@ -24,10 +29,11 @@ public class WorldDataGatherer : MonoBehaviour
         _timeElapsedThisSecond += Time.deltaTime;
         if (_timeElapsedThisSecond >= 1)
         {
-            _buffer[_bufferIndex] = _fuelConsumedThisSecond;
-            _bufferIndex = (_bufferIndex + 1) % BufferSize; 
+            FuelConsumedPerSecondHistory[_bufferIndex] = _fuelConsumedThisSecond;
+            _bufferIndex = (_bufferIndex + 1) % BufferSize;
             _timeElapsedThisSecond  = 0;
             _fuelConsumedThisSecond = 0;
+            TotalSecondsElapsed += 1;
         }
     }
 
@@ -37,13 +43,8 @@ public class WorldDataGatherer : MonoBehaviour
         for(int i = 0; i < seconds; i++)
         {
             int index = (_bufferIndex - 1 - i + BufferSize) % BufferSize;
-            total += _buffer[index];
+            total += FuelConsumedPerSecondHistory[index];
         }
         return total;
-    }
-
-    private void Update()
-    {
-        print($"{TotalFuelConsumed}, {FuelConsumedLast3Min}, {FuelConsumedLast30Sec}");
     }
 }
