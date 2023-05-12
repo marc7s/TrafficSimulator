@@ -56,13 +56,4 @@ public class VehicleInfoDisplay : MonoBehaviour
     {
         distanceTravelledText.text = (vehicleAutoDrive.TotalDistance / 1000).ToString("0.00");
     }
-
-    private void OnDestroy()
-    {
-        if(vehicleAutoDrive != null)
-        {
-            vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
-            UserSelectManager.Instance.OnSelectedGameObject -= ToggledVehicle;
-        }
-    }
 }
