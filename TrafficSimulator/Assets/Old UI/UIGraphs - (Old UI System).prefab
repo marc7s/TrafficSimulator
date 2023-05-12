@@ -713,7 +713,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1014565208}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2356213198157406805}
+        m_TargetAssemblyTypeName: GraphChartFeed, Assembly-CSharp
+        m_MethodName: LoadAllTimeGraph
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1516353104
 GameObject:
   m_ObjectHideFlags: 0
@@ -2088,12 +2100,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 767156680946674210, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: mainDivisions.total
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674210, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: mainDivisions.messure
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 767156680946674210, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: mainDivisions.unitsPerDivision
-      value: 10
+      value: 1000
       objectReference: {fileID: 0}
     - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: widthRatio
@@ -2102,6 +2118,26 @@ PrefabInstance:
     - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: heightRatio
       value: 269.756
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: Data.verticalViewSize
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: Data.automaticVerticallView
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: Data.automaticVerticalViewGap
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: Data.mSerializedData.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: Data.mSerializedData.Array.data[0].Name
+      value: Emission
       objectReference: {fileID: 0}
     - target: {fileID: 767156680946674220, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_Enabled
@@ -2153,6 +2189,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+--- !u!114 &2356213198157406805 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4839402911206954242, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+  m_PrefabInstance: {fileID: 7177594473725638487}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9ba509bfab5044b9c781ddcc069f6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7582035524793145697 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 766523458728832566, guid: dad91427b76704d468e758aa313ff87a, type: 3}
