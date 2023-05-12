@@ -174,7 +174,7 @@ namespace VehicleBrain
         // Public variables
         [HideInInspector] public LaneNode CustomStartNode = null;
         // Used for road registration
-        [HideInInspector] public delegate void RoadChangedDelegate(Road newRoad);
+        [HideInInspector] public Action RoadChanged;
 
         // Private variables
         private AutoDriveAgent _agent;

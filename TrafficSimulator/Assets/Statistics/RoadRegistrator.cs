@@ -13,7 +13,7 @@ namespace Statistics
         void Awake()
         {
             _autoDrive = GetComponent<AutoDrive>();
-            _autoDrive.Agent.Context.OnRoadChanged += OnRoadChanged;
+            _autoDrive.RoadChanged += OnRoadChanged;
         }
         
         public void OnRoadChanged()
