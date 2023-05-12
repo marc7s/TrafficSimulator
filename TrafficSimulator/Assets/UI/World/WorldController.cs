@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
-using User;
 using VehicleBrain;
 
 namespace UI
@@ -17,8 +16,6 @@ namespace UI
         }
 
         private UIDocument _doc;
-        //private UserSelectManager _userSelectManager;
-        //private Selectable _selectedCar;
         [SerializeField] private TrafficFlowController _trafficFlowController;
         [SerializeField] private EmissionController _emissionController;
         [SerializeField] private VehiclesController _vehiclesController;
@@ -128,12 +125,9 @@ namespace UI
         void Update()
         {
             if(!_overlayController._isWorldOpen)
-            {
                 _tabs = Tabs.None;
-            } else if (_overlayController._isWorldOpen && _tabs == Tabs.None)
-            {
+            else if (_overlayController._isWorldOpen && _tabs == Tabs.None)
                 _tabs = Tabs.TrafficFlow;
-            }
 
             UpdatePanels();
         }

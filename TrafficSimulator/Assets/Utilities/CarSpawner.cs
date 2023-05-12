@@ -274,7 +274,7 @@ namespace RoadGenerator
         {
             _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
             AutoDrive autoDrive = _currentCar.GetComponent<AutoDrive>();
-            autoDrive.Road = _lanes[index].Road;
+            autoDrive.StartingRoad = _lanes[index].Road;
             autoDrive.LaneIndex = _indexes[index];
 
             // If a custom car is being used as a spawn prefab it should be deactivated to not interfere, so activate this car

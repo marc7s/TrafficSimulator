@@ -389,7 +389,8 @@ namespace VehicleBrain
     public class AutoDriveContext
     {
         public Action OnActivityChanged;
-        public LaneNode CurrentNode;
+        public Action OnRoadChanged;
+        private LaneNode _currentNode;
         public LaneNode EndPrevNode;
         public LaneNode EndNextNode;
         public Vector3 VehiclePosition;
@@ -424,6 +425,19 @@ namespace VehicleBrain
         private VehicleAction  _currentAction;
         private bool _showNavigationPath;
         private LineRenderer _navigationPathLineRenderer;
+
+        public LaneNode CurrentNode
+        {
+            get => _currentNode;
+            set
+            {
+                bool roadChanged = _currentNode?.RoadNode.Road != value?.RoadNode.Road;
+                _currentNode = value;
+                
+                if(roadChanged)
+                    OnRoadChanged?.Invoke();
+            }
+        }
 
         public bool ShowNavigationPath
         {
