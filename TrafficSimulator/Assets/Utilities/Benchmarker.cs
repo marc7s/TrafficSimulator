@@ -15,13 +15,15 @@ public class Benchmarker : MonoBehaviour
     List<Vector3> _cameraPositions = new List<Vector3>();
     List<float> _fps = new List<float>();
 
-    float _currentAvg = 0f;
-    float _timer = 0f;
+    const float fpsMeasurePeriod = 10f;
+    private int _fpsAccumulator = 0;
+    private float _fpsNextPeriod = 0;
+    private int _currentFps = 0;
+
     int cameraIndex = 0;
 
     BenchmarkMode _mode = BenchmarkMode.Running;
 
-    // Start is called before the first frame update
     void Start()
     {
         Vector3 cameraPosition1 = new Vector3(1939, 96, 664);
@@ -29,44 +31,41 @@ public class Benchmarker : MonoBehaviour
         Vector3 cameraPosition3 = new Vector3(1170, 96, 1337);
 
         _cameraPositions = new List<Vector3>(){cameraPosition1, cameraPosition2, cameraPosition3};
+        MoveCamera(_camera, _cameraPositions[cameraIndex]);
+
+        _fpsNextPeriod = Time.realtimeSinceStartup + fpsMeasurePeriod;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if(_mode == BenchmarkMode.Stopped)
-            Destroy(camera);
+            Destroy(GetComponent<Camera>());
 
-        _currentAvg += ((Time.deltaTime / Time.timeScale) - _currentAvg) * 0.03f; 
-        
-        _timer += Time.deltaTime;
+        _fpsAccumulator++;
 
-        if (_timer >= 5f)
+        if (Time.time > _fpsNextPeriod)
         {
-            _timer = 0f;
-            Benchmark(cameraIndex, _currentAvg);
+            _currentFps = (int) (_fpsAccumulator / fpsMeasurePeriod);
+            _fpsAccumulator = 0;
+            _fpsNextPeriod += fpsMeasurePeriod;
+            _fps.Add(_currentFps);
+
             cameraIndex++;
+
+            // Check if we're done
+            if(cameraIndex >= _cameraPositions.Count)
+            {
+                float avg = GetAverageFPS();
+                Debug.LogError("Average FPS: " + avg);
+                _mode = BenchmarkMode.Stopped;
+                
+                Debug.developerConsoleVisible = true;
+
+                return;
+            }
+
+            MoveCamera(_camera, _cameraPositions[cameraIndex]);
         }
-    }
-
-    private void Benchmark(int cameraIndex, float fps)
-    {
-        if(cameraIndex >= _cameraPositions.Count)
-        {
-            float avg = GetAverageFPS();
-            Debug.LogError("Average FPS: " + avg);
-            _mode = BenchmarkMode.Stopped;
-            
-            Debug.developerConsoleVisible = true;
-
-            return;
-        }
-
-        MoveCamera(_camera, _cameraPositions[cameraIndex]);
-       
-        _fps.Add((1f / _currentAvg));
-
-        _currentAvg = 0f;
     }
 
     private void MoveCamera(GameObject camera, Vector3 position)
@@ -79,7 +78,10 @@ public class Benchmarker : MonoBehaviour
         float sum = 0f;
 
         foreach (float fps in _fps)
+        {
+            Debug.Log(fps);
             sum += fps;
+        }
 
         return sum / _fps.Count;
     }
