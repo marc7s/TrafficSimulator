@@ -119,17 +119,5 @@ namespace UI
                     break;
             }
         }
-
-
-        // Update is called once per frame
-        void Update()
-        {
-            if(!_overlayController._isWorldOpen)
-                _tabs = Tabs.None;
-            else if (_overlayController._isWorldOpen && _tabs == Tabs.None)
-                _tabs = Tabs.TrafficFlow;
-
-            UpdatePanels();
-        }
     }
 }

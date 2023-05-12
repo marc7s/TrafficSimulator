@@ -14,14 +14,6 @@ namespace UI
         // Overlay Button
         private Button _menuButton;
 
-        // Car statistics UI
-        private VisualElement _statisticsUI;
-        public bool _isStatisticsOpen = false;
-
-        // World statistics UI
-        private VisualElement _worldUI;
-        public bool _isWorldOpen = false;
-
         // Camera Buttons
         private StyleSheet _cameraButtonStyles;
         private Button _defaultCameraButton;
