@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using User;
@@ -8,7 +9,8 @@ using VehicleBrain;
 
 public class VehicleInfoDisplay : MonoBehaviour
 {
-    public AutoDrive vehicleAutoDrive; 
+    public AutoDrive vehicleAutoDrive;
+    public TextMeshProUGUI modelNameText;
     public TextMeshProUGUI roadNameText; 
     public TextMeshProUGUI activityText; 
     public TextMeshProUGUI distanceTravelledText; 
@@ -39,9 +41,16 @@ public class VehicleInfoDisplay : MonoBehaviour
             vehicleAutoDrive = selectable.GetComponent<AutoDrive>();
             vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
             UpdateActivityText();
+            UpdateModelNameText();
         }
     }
 
+
+    private void UpdateModelNameText()
+    {
+        modelNameText.text = Regex.Replace(vehicleAutoDrive.gameObject.name, @"\d|\s*\(Clone\)", "");
+    }
+    
     private void UpdateActivityText()
     {
         activityText.text = vehicleAutoDrive.GetVehicleActivityDescription();
