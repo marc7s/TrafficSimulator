@@ -60,6 +60,7 @@ namespace RoadGenerator
         public GameObject BuildingContainer;
         public GameObject BusStopContainer;
         public GameObject NatureContainer;
+        public Terrain Terrain;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
         [SerializeField] private GameObject _intersectionPrefab;

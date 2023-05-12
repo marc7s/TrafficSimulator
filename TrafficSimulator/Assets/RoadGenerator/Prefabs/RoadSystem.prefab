@@ -66,6 +66,7 @@ Transform:
   - {fileID: 3658795453449097011}
   - {fileID: 845985873080657378}
   - {fileID: 1980633667098319055}
+  - {fileID: 4129491501502191734}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -86,6 +87,7 @@ MonoBehaviour:
   BuildingContainer: {fileID: 2163801758299223360}
   BusStopContainer: {fileID: 2447744149659853018}
   NatureContainer: {fileID: 310114100874643111}
+  Terrain: {fileID: 7545025353029406773}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   _intersectionPrefab: {fileID: 4601614798071418940, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
@@ -97,6 +99,8 @@ MonoBehaviour:
   ShouldGenerateBuildings: 1
   ShouldGenerateTrees: 1
   ShouldGenerateBusStops: 1
+  UseOSM: 0
+  IsGeneratingOSM: 0
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
@@ -233,6 +237,84 @@ Transform:
   m_Father: {fileID: 798415014314360586}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &9217390373106333184
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4129491501502191734}
+  - component: {fileID: 7545025353029406773}
+  - component: {fileID: 1880226196753274655}
+  m_Layer: 0
+  m_Name: Terrain
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &4129491501502191734
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9217390373106333184}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 798415014314360586}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!218 &7545025353029406773
+Terrain:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9217390373106333184}
+  m_Enabled: 0
+  serializedVersion: 6
+  m_TerrainData: {fileID: 15600000, guid: c6bdfe9285023924b9762c932aa60aa7, type: 2}
+  m_TreeDistance: 5000
+  m_TreeBillboardDistance: 50
+  m_TreeCrossFadeLength: 5
+  m_TreeMaximumFullLODCount: 50
+  m_DetailObjectDistance: 80
+  m_DetailObjectDensity: 1
+  m_HeightmapPixelError: 5
+  m_SplatMapDistance: 1000
+  m_HeightmapMaximumLOD: 0
+  m_ShadowCastingMode: 2
+  m_DrawHeightmap: 1
+  m_DrawInstanced: 0
+  m_DrawTreesAndFoliage: 1
+  m_StaticShadowCaster: 0
+  m_ReflectionProbeUsage: 1
+  m_MaterialTemplate: {fileID: 10652, guid: 0000000000000000f000000000000000, type: 0}
+  m_BakeLightProbesForTrees: 1
+  m_PreserveTreePrototypeLayers: 0
+  m_DeringLightProbesForTrees: 1
+  m_ScaleInLightmap: 0.0256
+  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
+  m_GroupingID: 0
+  m_RenderingLayerMask: 1
+  m_AllowAutoConnect: 1
+--- !u!154 &1880226196753274655
+TerrainCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9217390373106333184}
+  m_Material: {fileID: 0}
+  m_Enabled: 1
+  m_TerrainData: {fileID: 15600000, guid: c6bdfe9285023924b9762c932aa60aa7, type: 2}
+  m_EnableTreeColliders: 1
 --- !u!1001 &7706637533628383206
 PrefabInstance:
   m_ObjectHideFlags: 0
