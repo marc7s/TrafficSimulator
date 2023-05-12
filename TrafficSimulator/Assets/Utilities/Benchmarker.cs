@@ -10,7 +10,7 @@ public enum BenchmarkMode
 
 public class Benchmarker : MonoBehaviour
 {
-    [SerializeField] private GameObject camera;
+    [SerializeField] private GameObject _camera;
 
     List<Vector3> _cameraPositions = new List<Vector3>();
     List<float> _fps = new List<float>();
@@ -57,13 +57,12 @@ public class Benchmarker : MonoBehaviour
             Debug.LogError("Average FPS: " + avg);
             _mode = BenchmarkMode.Stopped;
             
-            // Make development console visible
             Debug.developerConsoleVisible = true;
 
             return;
         }
 
-        MoveCamera(camera, _cameraPositions[cameraIndex]);
+        MoveCamera(_camera, _cameraPositions[cameraIndex]);
        
         _fps.Add((1f / _currentAvg));
 
@@ -80,9 +79,7 @@ public class Benchmarker : MonoBehaviour
         float sum = 0f;
 
         foreach (float fps in _fps)
-        {
             sum += fps;
-        }
 
         return sum / _fps.Count;
     }
