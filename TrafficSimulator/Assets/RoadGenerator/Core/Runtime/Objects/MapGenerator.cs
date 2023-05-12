@@ -229,6 +229,24 @@ namespace RoadGenerator
                             }
                         }
                     }
+                    if (wayData?.WayType == WayType.Terrain)
+                    {
+                        List<Vector3> points = new List<Vector3>();
+                        while (ienum.MoveNext())
+                        {
+                            XmlNode currentNode = (XmlNode) ienum.Current; 
+                            if (currentNode.Name == "member" && currentNode.Attributes["type"].Value == "way")
+                            {
+                                if (currentNode.Attributes["role"].Value == "outer" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
+                                {
+                                    XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
+                                    points.AddRange(GetWayNodePositions(wayNode.GetEnumerator()));
+                                }
+                            }
+                        }
+                    AddTerrain(ienum, wayData.Value, points);
+                    }
+
                 }
             }
 
@@ -245,20 +263,19 @@ namespace RoadGenerator
             roadSystem.IsGeneratingOSM = false;
         }
         
-        private void AddTerrain(IEnumerator ienum, WayData wayData)
+        private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonPoints = null)
         {
-            Debug.Log("Adding terrain fghlsdkgjd");
-            List<Vector3> points = GetWayNodePositions(ienum);
-            foreach (Vector3 point in points)
-            {
-                //GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = point;
-            }
+            List<Vector3> points = new List<Vector3>();
+            if (multiPolygonPoints != null)
+                points = multiPolygonPoints;
+            else
+                points = GetWayNodePositions(ienum);
+
             if (points.Count < 3)
                 return;
 
             TerrainBounds terrainBounds = new TerrainBounds(wayData.TerrainType.Value, points);
             _terrainBounds.Add(terrainBounds);
-
         }
 
         public bool IsPointInPolygon(Vector2 point, Vector2[] polygon) 
