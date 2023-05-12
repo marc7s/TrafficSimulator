@@ -536,11 +536,6 @@ namespace VehicleBrain
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
             float currentSpeed = _agent.Setting.Vehicle.CurrentSpeed;
 
-            // Occupy nodes further ahead in intersections
-            // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
-            // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
-            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null && _agent.Setting.Vehicle.CurrentSpeed > 0 ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
-
             bool isWithinClaimDistance = false;
             bool isWithinReleaseDistance = false;
 
@@ -561,6 +556,14 @@ namespace VehicleBrain
             }
 
             nodeDistance = 0;
+
+            // Occupy nodes further ahead in intersections
+            // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
+            // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
+            float forwardOccupancyOffset = currentSpeed > 0.2f && _agent.Context.CurrentNode.Intersection != null ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
+            
+            if(currentSpeed > 0.2f)
+                forwardOccupancyOffset += VehicleOccupancyOffset;
             
             // Add all occupied nodes after and including the current node
             node = _agent.Context.CurrentNode;
@@ -570,7 +573,7 @@ namespace VehicleBrain
                 node = _agent.Next(_agent.Context.CurrentNode, RoadEndBehaviour.Stop);
                 nodeDistance += node != null && node.IsSteeringTarget ? Vector3.Distance(node.Position, last.Position) : 0;
                 
-                while (node != null && WithinSpanDistance(nodeDistance, _agent.Setting.Vehicle.VehicleLength / 2 + distanceToCurrentNode + VehicleOccupancyOffset + forwardOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
+                while (node != null && WithinSpanDistance(nodeDistance, distanceToCurrentNode + _agent.Setting.Vehicle.VehicleLength / 2 + forwardOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
                 {
                     // Do not occupy nodes in front of a red light
                     if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
@@ -582,10 +585,6 @@ namespace VehicleBrain
 
                     // Do not occupy nodes in front of a stop sign
                     if(node.StopSign != null)
-                        break;
-
-                    // Do not occupy nodes in front of the vehicle if it is stationary
-                    if(currentSpeed < 0.1f)
                         break;
                     
                     if(isWithinClaimDistance)
