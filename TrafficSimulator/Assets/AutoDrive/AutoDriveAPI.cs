@@ -471,7 +471,7 @@ namespace VehicleBrain
         
         public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool showNavigationPath, bool logNavigationErrors, bool logBrakeReason, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
-            CurrentNode = initialNode;
+            _currentNode = initialNode;
             VehiclePosition = vehiclePosition;
 
             NavigationTargetMarker = navigationTargetMarker;
