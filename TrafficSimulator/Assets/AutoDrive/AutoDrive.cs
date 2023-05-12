@@ -137,7 +137,7 @@ namespace VehicleBrain
         }
 
         [Header("Connections")]
-        [SerializeField] private Road _road;
+        [SerializeField] public Road StartingRoad;
         public GameObject NavigationTargetMarker;
         public Material NavigationPathMaterial;
         public int LaneIndex = 0;
@@ -175,7 +175,6 @@ namespace VehicleBrain
         [HideInInspector] public LaneNode CustomStartNode = null;
         // Used for road registration
         [HideInInspector] public delegate void RoadChangedDelegate(Road newRoad);
-        [HideInInspector] public RoadChangedDelegate OnRoadChanged;
 
         // Private variables
         private AutoDriveAgent _agent;
@@ -207,12 +206,6 @@ namespace VehicleBrain
         // Performance variables
 
         private PerformanceEngine PEngine;
-
-        public Road Road
-        {
-            get => _road;
-            set => SetRoad(value);
-        }
 
         /// <summary> Returns a description of what the vehicle is currently doing </summary>
         public string GetVehicleActivityDescription()
@@ -249,13 +242,13 @@ namespace VehicleBrain
 
         public void Setup()
         {
-            if(Road == null)
+            if(StartingRoad == null)
             {
                 Debug.LogError("Error: Road not set for " + this.name);
                 return;
             }
             
-            Road.RoadSystem.Setup();
+            StartingRoad.RoadSystem.Setup();
 
             _vehicleController = GetComponent<VehicleController>();
             
@@ -269,17 +262,17 @@ namespace VehicleBrain
             _indicatorController = GetComponent<IndicatorController>();
             
             // If the road has not updated yet there will be no lanes, so update them first
-            if(Road.Lanes.Count == 0)
-                Road.OnChange();
+            if(StartingRoad.Lanes.Count == 0)
+                StartingRoad.OnChange();
             
             // Check that the provided lane index is valid
-            if(LaneIndex < 0 || LaneIndex >= Road.Lanes.Count)
+            if(LaneIndex < 0 || LaneIndex >= StartingRoad.Lanes.Count)
             {
                 Debug.LogError("Lane index out of range");
                 return;
             }
 
-            Lane lane = Road.Lanes[LaneIndex];
+            Lane lane = StartingRoad.Lanes[LaneIndex];
             LaneNode currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = currentNode;
             _prevTarget = currentNode;
@@ -358,15 +351,6 @@ namespace VehicleBrain
             
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
-        }
-
-        private void SetRoad(Road newRoad)
-        {
-            if (_road != newRoad)
-            {
-                _road = newRoad;
-                OnRoadChanged?.Invoke(_road);
-            }
         }
 
         private void UpdateIndicators()
