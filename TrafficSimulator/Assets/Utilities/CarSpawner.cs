@@ -98,7 +98,7 @@ namespace RoadGenerator
                 {
                     _spawned = true;
                     SpawnCars();
-                    Debug.Log("Total cars spawned: " + _carCounter);
+                    Debug.LogError("Total cars spawned: " + _carCounter);
                 }
             }
         }
