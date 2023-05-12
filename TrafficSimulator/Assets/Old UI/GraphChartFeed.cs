@@ -27,7 +27,6 @@ public class GraphChartFeed : MonoBehaviour
         for (int i = 0; i < _worldDataGatherer.TotalSecondsElapsed; i++)
         {
             _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
-            print(_worldDataGatherer.FuelConsumedPerSecondHistory[i]);
         }
         _graph.DataSource.EndBatch();
     }
