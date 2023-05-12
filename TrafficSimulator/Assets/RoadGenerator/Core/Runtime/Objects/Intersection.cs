@@ -863,18 +863,18 @@ namespace RoadGenerator
         private void CreateEntryIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode, road);
-            Section laneSection = CreateLaneSection(road, junctionNode, junctionNode, generatedRoadNodes, LaneSide.Primary, true);
+            Section laneSection = CreateLaneSection(road, intersectionNode.RoadNode, junctionNode, junctionNode, generatedRoadNodes, LaneSide.Primary, true);
             _intersectionEntrySections.Add(junctionNode.ID, laneSection);
         }
 
         private void CreateExitIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode, road);
-            Section laneSection = CreateLaneSection(road, junctionNode, intersectionNode, generatedRoadNodes, LaneSide.Secondary, false);
+            Section laneSection = CreateLaneSection(road, intersectionNode.RoadNode, junctionNode, intersectionNode, generatedRoadNodes, LaneSide.Secondary, false);
             _intersectionExitSections.Add(junctionNode.ID, laneSection);
         }
 
-        private Section CreateLaneSection(Road road, LaneNode junctionNode, LaneNode start, RoadNode roadNode, LaneSide laneSide, bool isEntry)
+        private Section CreateLaneSection(Road road, RoadNode intersectionRoadNode, LaneNode junctionNode, LaneNode start, RoadNode roadNode, LaneSide laneSide, bool isEntry)
         {
             float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
             int laneNodeDirection = laneSide == LaneSide.Primary ? 1 : -1;
@@ -889,7 +889,11 @@ namespace RoadGenerator
             {
                 Vector3 position = currRoadNode.Position + currRoadNode.Normal * laneNodeOffset * laneNodeDirection;
                 
-                curr = curr == null ? new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, 0) : new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position));
+                // Mirror the rotation if the section is in the opposite road direction
+                bool mirror = intersectionRoadNode.Index < junctionNode.RoadNode.Index;
+                
+                // Add a section lane node
+                curr = curr == null ? new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, 0, true, mirror) : new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position), true, mirror);
                 
                 if(prev != null)
                     prev.Next = curr;
