@@ -498,6 +498,7 @@ namespace VehicleBrain
             _navigationPathLineRenderer.startWidth = 1f;
             _navigationPathLineRenderer.endWidth = 1f;
             _navigationPathLineRenderer.material = NavigationPathMaterial;
+            _navigationPathLineRenderer.positionCount = 0;
             
             NavigationPathPositions = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;
