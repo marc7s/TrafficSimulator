@@ -137,9 +137,11 @@ namespace RoadGenerator
                 // If the current node is not part of the same road, we stop
                 if (curr.Road != roadNode.Road)
                     break;
+                
                 // Increase the current cost if the current node is not the starting node
                 if (curr.Prev != null)
                     _currentCost += CalculateCost(curr.DistanceToPrevNode);
+                
                 // If the current node is not a node that should be added to the graph, we skip it
                 if (!_roadNodeTypesToAdd.Contains(curr.Type) && !curr.IsNavigationNode)
                 {
