@@ -89,10 +89,12 @@ namespace RoadGenerator
     {
         public TerrainType TerrainType;
         public List<Vector3> Area;
-        public TerrainBounds(TerrainType terrainType, List<Vector3> area)
+        public List<List<Vector3>> InnerAreas;
+        public TerrainBounds(TerrainType terrainType, List<Vector3> area, List<List<Vector3>> innerAreas = null)
         {
             TerrainType = terrainType;
             Area = area;
+            InnerAreas = innerAreas ?? new List<List<Vector3>>();
         }
     }
 
@@ -231,21 +233,26 @@ namespace RoadGenerator
                     }
                     if (wayData?.WayType == WayType.Terrain)
                     {
-                        List<Vector3> points = new List<Vector3>();
+                        List<Vector3> outerPoints = new List<Vector3>();
+                        List<List<Vector3>> innerPoints = new List<List<Vector3>>();
                         while (ienum.MoveNext())
                         {
                             XmlNode currentNode = (XmlNode) ienum.Current; 
                             if (currentNode.Name == "member" && currentNode.Attributes["type"].Value == "way")
                             {
-                                Debug.Log(wayData.Value.TerrainType);
                                 if (currentNode.Attributes["role"].Value == "outer" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
                                 {
                                     XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
-                                    points.AddRange(GetWayNodePositions(wayNode.GetEnumerator()));
+                                    outerPoints.AddRange(GetWayNodePositions(wayNode.GetEnumerator()));
+                                }
+                                else if (currentNode.Attributes["role"].Value == "inner" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
+                                {
+                                    XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
+                                    innerPoints.Add(GetWayNodePositions(wayNode.GetEnumerator()));
                                 }
                             }
                         }
-                    AddTerrain(ienum, wayData.Value, points);
+                    AddTerrain(ienum, wayData.Value, outerPoints, innerPoints);
                     }
 
                 }
@@ -264,18 +271,18 @@ namespace RoadGenerator
             roadSystem.IsGeneratingOSM = false;
         }
         
-        private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonPoints = null)
+        private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonOuterPoints = null, List<List<Vector3>> multiPolygonInnerPoints = null)
         {
             List<Vector3> points = new List<Vector3>();
-            if (multiPolygonPoints != null)
-                points = multiPolygonPoints;
+            if (multiPolygonOuterPoints != null)
+                points = multiPolygonOuterPoints;
             else
                 points = GetWayNodePositions(ienum);
 
             if (points.Count < 3)
                 return;
 
-            TerrainBounds terrainBounds = new TerrainBounds(wayData.TerrainType.Value, points);
+            TerrainBounds terrainBounds = new TerrainBounds(wayData.TerrainType.Value, points, multiPolygonInnerPoints);
             _terrainBounds.Add(terrainBounds);
         }
 
@@ -333,15 +340,32 @@ namespace RoadGenerator
                     Vector2 basPos2D = new Vector2(basePos.x, basePos.z);
                     Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / res, y * terrainData.size.z / res);
                     heights[y, x] = heights[y, x] = baseheight;
-
+                    bool isInsideInnerArea = false;
                     foreach (TerrainBounds terrainBounds in _terrainBounds)
                     {
 
-                            if (terrainBounds.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.Area).ToArray()))
+                        if (terrainBounds.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.Area).ToArray()))
+                        {
+                            if (terrainBounds.InnerAreas != null && terrainBounds.InnerAreas.Count > 0)
                             {
-                                    heights[y, x] = 0;
+                                List<Vector3> innerArea = new List<Vector3>();
+                                foreach (List<Vector3> innerArea2 in terrainBounds.InnerAreas)
+                                    innerArea.AddRange(innerArea2);
+
+                                // The terrain point is inside the terrain type area
+                                if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
+                                {
+                                    isInsideInnerArea = true;
                                     break;
+                                }
                             }
+
+                            if (isInsideInnerArea)
+                                break;
+
+                            heights[y, x] = 0;
+                            break;
+                        }
                     }
                 }
             }
@@ -362,10 +386,24 @@ namespace RoadGenerator
                     float[] splatWeights = new float[terrainData.alphamapLayers];
                     
                     bool foundTerrain = false;
+                    bool isInsideInnerArea = false;
                     foreach (TerrainBounds terrainBounds in _terrainBounds)
                     {
+                        // The terrain point is inside the terrain type area
                         if (IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.Area).ToArray()))
                         {
+                            foreach (List<Vector3> innerArea in terrainBounds.InnerAreas)
+                            {
+                                // The terrain point is inside the terrain type area
+                                if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
+                                {
+                                    isInsideInnerArea = true;
+                                    break;
+                                }
+                            }
+                            if (isInsideInnerArea)
+                                break;
+
                             if (terrainBounds.TerrainType == TerrainType.Grass)
                                 splatWeights[1] = 1f;
                             else if (terrainBounds.TerrainType == TerrainType.Forest)
