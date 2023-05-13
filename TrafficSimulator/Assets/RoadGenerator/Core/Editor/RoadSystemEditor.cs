@@ -41,7 +41,7 @@ namespace RoadSystemGenerator
             serializedObject.Update();
             
             // Uncomment this if you want to change the connections to containers and prefabs
-            //DrawDefaultInspector();
+            // DrawDefaultInspector();
             
             RoadSystem roadSystem = (RoadSystem)target;
             
@@ -55,10 +55,6 @@ namespace RoadSystemGenerator
             EditorGUILayout.PropertyField(_defaultTrafficLightController);
             EditorGUILayout.PropertyField(_defaultStopSign);
             EditorGUILayout.PropertyField(_defaultYieldSign);
-            EditorGUILayout.PropertyField(_shouldGenerateBuildings);
-            EditorGUILayout.PropertyField(_shouldGenerateBusStops);
-            EditorGUILayout.PropertyField(_shouldGenerateRoads);
-            EditorGUILayout.PropertyField(_shouldGenerateTerrain);
             
             if(_drivingSide.intValue != (int)roadSystem.DrivingSide)
             {
@@ -106,6 +102,10 @@ namespace RoadSystemGenerator
             }
             else
             {
+                EditorGUILayout.PropertyField(_shouldGenerateBuildings);
+                EditorGUILayout.PropertyField(_shouldGenerateBusStops);
+                EditorGUILayout.PropertyField(_shouldGenerateRoads);
+                EditorGUILayout.PropertyField(_shouldGenerateTerrain);
                 EditorGUILayout.LabelField("OSM Actions", EditorStyles.boldLabel);
                 
                 if(GUILayout.Button("Generate OSM roads"))

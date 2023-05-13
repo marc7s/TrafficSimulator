@@ -85,15 +85,15 @@ namespace RoadGenerator
         Default
     }
 
-    public struct TerrainBounds
+    public struct TerrainArea
     {
         public TerrainType TerrainType;
-        public List<Vector3> Area;
+        public List<Vector3> OuterArea;
         public List<List<Vector3>> InnerAreas;
-        public TerrainBounds(TerrainType terrainType, List<Vector3> area, List<List<Vector3>> innerAreas = null)
+        public TerrainArea(TerrainType terrainType, List<Vector3> area, List<List<Vector3>> innerAreas = null)
         {
             TerrainType = terrainType;
-            Area = area;
+            OuterArea = area;
             InnerAreas = innerAreas ?? new List<List<Vector3>>();
         }
     }
@@ -118,7 +118,7 @@ namespace RoadGenerator
         private double _maxLat = 0;
         private double _maxLon = 0;
         private Terrain _terrain;
-        private List<TerrainBounds> _terrainBounds = new List<TerrainBounds>();
+        private List<TerrainArea> _terrainAreas = new List<TerrainArea>();
         public Texture DefaultTexture;
         public Texture WaterTexture;
         public Texture GrassTexture;
@@ -255,7 +255,6 @@ namespace RoadGenerator
                         }
                     AddTerrain(ienum, wayData.Value, outerPoints, innerPoints);
                     }
-
                 }
             }
 
@@ -270,26 +269,21 @@ namespace RoadGenerator
                 AddTrees();
             }
 
-
             roadSystem.IsGeneratingOSM = false;
         }
         
         private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonOuterPoints = null, List<List<Vector3>> multiPolygonInnerPoints = null)
         {
-            List<Vector3> points = new List<Vector3>();
-            if (multiPolygonOuterPoints != null)
-                points = multiPolygonOuterPoints;
-            else
-                points = GetWayNodePositions(ienum);
+            List<Vector3> points = multiPolygonOuterPoints ?? GetWayNodePositions(ienum);
 
             if (points.Count < 3)
                 return;
 
-            TerrainBounds terrainBounds = new TerrainBounds(wayData.TerrainType.Value, points, multiPolygonInnerPoints);
-            _terrainBounds.Add(terrainBounds);
+            TerrainArea terrainArea = new TerrainArea(wayData.TerrainType.Value, points, multiPolygonInnerPoints);
+            _terrainAreas.Add(terrainArea);
         }
 
-        public bool IsPointInPolygon(Vector2 point, Vector2[] polygon) 
+        public bool IsPointInPolygon(Vector2 point, Vector2[] polygon)
         {
             int polygonLength = polygon.Length, i=0;
             bool inside = false;
@@ -297,14 +291,14 @@ namespace RoadGenerator
             float pointX = point.x, pointY = point.y;
             // start / end point for the current polygon segment.
             float startX, startY, endX, endY;
-            Vector2 endPoint = polygon[polygonLength-1];           
-            endX = endPoint.x; 
+            Vector2 endPoint = polygon[polygonLength-1];
+            endX = endPoint.x;
             endY = endPoint.y;
-            while (i<polygonLength) {
+            while (i<polygonLength)
+            {
                 startX = endX;           startY = endY;
                 endPoint = polygon[i++];
                 endX = endPoint.x;       endY = endPoint.y;
-                //
                 inside ^= ( endY > pointY ^ startY > pointY ) /* ? pointY inside [startY;endY] segment ? */
                             && /* if so, test if it is under the segment */
                             ( (pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY) ) ;
@@ -344,10 +338,10 @@ namespace RoadGenerator
                     Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / res, y * terrainData.size.z / res);
                     heights[y, x] = heights[y, x] = baseheight;
                     bool isInsideInnerArea = false;
-                    foreach (TerrainBounds terrainBounds in _terrainBounds)
+                    foreach (TerrainArea terrainBounds in _terrainAreas)
                     {
 
-                        if (terrainBounds.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.Area).ToArray()))
+                        if (terrainBounds.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.OuterArea).ToArray()))
                         {
                             if (terrainBounds.InnerAreas != null && terrainBounds.InnerAreas.Count > 0)
                             {
@@ -381,19 +375,16 @@ namespace RoadGenerator
                     Vector3 basePos = LatLonToPosition(_minLat, _minLon);
                     Vector2 basPos2D = new Vector2(basePos.x, basePos.z);
                     Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / terrainData.alphamapWidth, y * terrainData.size.z / terrainData.alphamapHeight);
-                    // Normalise x/y coordinates to range 0-1 
-                    float y_01 = (float)y/(float)terrainData.alphamapHeight;
-                    float x_01 = (float)x/(float)terrainData.alphamapWidth;
-                    
+
                     // Setup an array to record the mix of texture weights at this point
                     float[] splatWeights = new float[terrainData.alphamapLayers];
-                    
+
                     bool foundTerrain = false;
                     bool isInsideInnerArea = false;
-                    foreach (TerrainBounds terrainBounds in _terrainBounds)
+                    foreach (TerrainArea terrainBounds in _terrainAreas)
                     {
                         // The terrain point is inside the terrain type area
-                        if (IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.Area).ToArray()))
+                        if (IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.OuterArea).ToArray()))
                         {
                             foreach (List<Vector3> innerArea in terrainBounds.InnerAreas)
                             {
@@ -412,24 +403,25 @@ namespace RoadGenerator
                             else if (terrainBounds.TerrainType == TerrainType.Forest)
                                 splatWeights[3] = 1f;
                             else
-                                splatWeights[0] = 1f;
+                                splatWeights[2] = 1f;
 
                             foundTerrain = true;
                             break;
                         }
                     }
+
                     if (!foundTerrain)
                         splatWeights[0] = 1f;
-                    
+
                     // Sum of all textures weights must add to 1, so calculate normalization factor from sum of weights
                     float z = splatWeights.Sum();
-                    
+
                     // Loop through each terrain texture
-                    for(int i = 0; i<terrainData.alphamapLayers; i++){
-                        
+                    for(int i = 0; i<terrainData.alphamapLayers; i++)
+                    {
                         // Normalize so that sum of all texture weights = 1
                         splatWeights[i] /= z;
-                        
+
                         // Assign this point to the splatmap array
                         splatmapData[y, x, i] = splatWeights[i];
                     }
