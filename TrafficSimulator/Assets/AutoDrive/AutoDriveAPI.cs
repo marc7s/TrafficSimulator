@@ -64,7 +64,20 @@ namespace VehicleBrain
             _intersectionNodeTransitions.Clear();
         }
 
-        private LaneNode UpdateAndGetGuideNode(LaneNode node, bool showNavigationPath)
+        public void UpdateNavigationPath(LaneNode node)
+        {
+            switch(Context.NavigationMode)
+            {
+                case NavigationMode.RandomNavigationPath:
+                    UpdateRandomPath(node, Context.ShowNavigationPath);
+                    break;
+                case NavigationMode.Path:
+                    GeneratePath(node, Context.ShowNavigationPath);
+                    break;
+            }
+        }
+
+        private LaneNode UpdateAndGetGuideNode(LaneNode node)
         {
             if (Context.NavigationMode == NavigationMode.Disabled)
                 return node.Next;
@@ -75,22 +88,10 @@ namespace VehicleBrain
             // On navigation nodes that are not intersections, we pop the path
             // Special case for roadConnections, there is always two road connection nodes in a row, we only pop the path on the first one
             if (isNonIntersectionNavigationNode && Context.NavigationPath.Count > 0 && currentTargetNodeNotChecked && node.Prev?.Type != RoadNodeType.RoadConnection)
-            {
                 Context.NavigationPath.Pop();
-            }
 
             if (Context.NavigationPathEndNode != null && Context.NavigationPathEndNode.RoadNode == node.RoadNode && Context.NavigationPath.Count == 0)
-            {
-                switch(Context.NavigationMode)
-                {
-                    case NavigationMode.RandomNavigationPath:
-                        UpdateRandomPath(node, showNavigationPath);
-                        break;
-                    case NavigationMode.Path:
-                        GeneratePath(node, showNavigationPath);
-                        break;
-                }
-            }
+                UpdateNavigationPath(node);
 
             if (node.Type == RoadNodeType.JunctionEdge && currentTargetNodeNotChecked)
             {
@@ -255,6 +256,9 @@ namespace VehicleBrain
             
             List<NavigationNode> targetList = targets.ConvertAll(x => x.Item2);
             
+            // The target list needs to be reversed as it is converted to a stack
+            targets.Reverse();
+            
             // Save the targets
             Context.NavigationPathTargets = new Stack<(POI, RoadNode, LaneSide)>(targets.ConvertAll(x => (x.Item1, x.Item2.RoadNode, x.Item3)));
             
@@ -302,7 +306,7 @@ namespace VehicleBrain
                     break;
 
                 if((current.Type == RoadNodeType.JunctionEdge && current.Next?.IsIntersection() == true && current.Intersection != null && !_intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(current.Intersection, current))) || current.RoadNode.IsNavigationNode)
-                    current = UpdateAndGetGuideNode(current, true);
+                    current = UpdateAndGetGuideNode(current);
                 else
                     current = Next(current, RoadEndBehaviour.Stop);
             }
@@ -325,7 +329,7 @@ namespace VehicleBrain
             }
             
             if (Context.NavigationMode == NavigationMode.Random && node.Type == RoadNodeType.JunctionEdge && node.Intersection != null)
-                return UpdateAndGetGuideNode(node, true);
+                return UpdateAndGetGuideNode(node);
 
             if(node.Next == null)
                 return endBehaviour == RoadEndBehaviour.Loop ? _context.EndNextNode : null;
@@ -357,6 +361,7 @@ namespace VehicleBrain
         private VehicleType _vehicleType;
         private DrivingMode _mode;
         private RoadEndBehaviour _endBehaviour;
+        private NavigationMode _originalNavigationMode;
         private VehicleController _vehicleController;
         private float _brakeOffset;
         private float _speed;
@@ -366,17 +371,19 @@ namespace VehicleBrain
         public VehicleType VehicleType => _vehicleType;
         public DrivingMode Mode => _mode;
         public RoadEndBehaviour EndBehaviour => _endBehaviour;
+        public NavigationMode OriginalNavigationMode => _originalNavigationMode;
         public VehicleController VehicleController => _vehicleController;
         public float BrakeOffset => _brakeOffset;
         public float Speed => _speed;
         public float Acceleration => _acceleration;
         
-        public AutoDriveSetting(Vehicle vehicle, VehicleType vehicleType, DrivingMode mode, RoadEndBehaviour endBehaviour, VehicleController vehicleController, float brakeOffset, float speed, float acceleration)
+        public AutoDriveSetting(Vehicle vehicle, VehicleType vehicleType, DrivingMode mode, RoadEndBehaviour endBehaviour, NavigationMode originalNavigationMode, VehicleController vehicleController, float brakeOffset, float speed, float acceleration)
         {
             _vehicle = vehicle;
             _vehicleType = vehicleType;
             _mode = mode;
             _endBehaviour = endBehaviour;
+            _originalNavigationMode = originalNavigationMode;
             _vehicleController = vehicleController;
             _brakeOffset = brakeOffset;
             _speed = speed;

@@ -303,7 +303,7 @@ namespace VehicleBrain
             }
 
             _agent = new AutoDriveAgent(
-                new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration),
+                new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, OriginalNavigationMode, _vehicleController, BrakeOffset, Speed, Acceleration),
                 new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
             );
 
@@ -513,6 +513,7 @@ namespace VehicleBrain
         private void PostTeleportNavigationClear()
         {
             _agent.Context.NavigationMode = OriginalNavigationMode;
+            _agent.ClearIntersectionTransitions();
             SetInitialPrevIntersection();
         }
 
@@ -817,7 +818,10 @@ namespace VehicleBrain
             TimeManager.Instance.AddEvent(unPauseEvent);
             
             // Return to driving after the vehicle is done waiting at the bus stop
-            unPauseEvent.OnEvent += () => _agent.Context.CurrentAction = VehicleAction.Driving;
+            unPauseEvent.OnEvent += () => { 
+                _agent.Context.CurrentAction = VehicleAction.Driving;
+                OnLeavingPathTarget();
+            };
         }
 
         private void SetTarget(LaneNode newTarget)
@@ -903,6 +907,7 @@ namespace VehicleBrain
             bool waitWithTeleporting = false;
             if(reachedTarget)
             {
+                bool noTargetAction = true;
                 (POI targetPOI, _, _) = _agent.Context.NavigationPathTargets.Pop();
 
                 if(targetPOI != null)
@@ -920,12 +925,18 @@ namespace VehicleBrain
                             TimeManager.Instance.AddEvent(unParkEvent);
                             unParkEvent.OnEvent += () => StartCoroutine(Unpark());
                         }
+                        noTargetAction = false;
                     }
                     else if(targetPOI is BusStop && _agent.Setting.Vehicle is Bus)
                     {
                         WaitAtBusStop(targetPOI as BusStop);
+                        noTargetAction = false;
                     }
                 }
+                
+                // If no action was taken on the target, call the leaving function
+                if(noTargetAction)
+                    OnLeavingPathTarget();
             }
 
             bool teleported = false;
@@ -944,6 +955,28 @@ namespace VehicleBrain
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.CurrentAction == VehicleAction.Driving && !teleported && (_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End))
                 _agent.Context.IsEnteringNetwork = false;
+        }
+
+        private void OnLeavingPathTarget()
+        {
+            // Return if we are not driving
+            if(_agent.Context.CurrentAction != VehicleAction.Driving)
+                return;
+
+            // Only update the navigation path if we are in the correct navigation modes
+            if(!(_agent.Setting.OriginalNavigationMode == NavigationMode.Path || _agent.Setting.OriginalNavigationMode == NavigationMode.RandomNavigationPath))
+                return;
+
+            // If we are in Path mode but have targets left to visit, return
+            if(_agent.Setting.OriginalNavigationMode == NavigationMode.Path && _agent.Context.NavigationPathTargets.Count > 0)
+                return;
+
+            // If we are in random navigation path mode but have targets left to visit, return
+            if(_agent.Setting.OriginalNavigationMode == NavigationMode.RandomNavigationPath && _agent.Context.NavigationPath.Count > 0)
+                return;
+
+            PostTeleportNavigationClear();
+            _agent.UpdateNavigationPath(_agent.Context.CurrentNode);
         }
 
         private bool HasReachedTarget()
