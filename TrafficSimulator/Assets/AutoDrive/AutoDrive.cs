@@ -308,6 +308,7 @@ namespace VehicleBrain
             );
 
             _agent.Context.OnRoadChanged = () => RoadChanged?.Invoke();
+            RoadChanged?.Invoke();
 
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
             
@@ -341,6 +342,7 @@ namespace VehicleBrain
             // Teleport the vehicle to the start of the lane
             ResetToNode(_agent.Context.CurrentNode);
             UpdateOccupiedNodes();
+            
             _isSetup = true;
         }
 
