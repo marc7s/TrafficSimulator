@@ -60,6 +60,67 @@ namespace VehicleBrain
             Repositioning
         }
 
+        private struct PerformanceEngine
+        {
+            private float _maxSpeed;
+            private float _maxAcceleration;
+            private float _speed;
+            private float _acceleration;
+            private float _currentDistance;
+            public float MaxSpeed
+            {
+                get => _maxSpeed;
+            }
+            
+            public float MaxAcceleration
+            {
+                get => _maxAcceleration;
+            }
+            
+            public float Speed
+            {
+                get => _speed;
+            }
+            
+            public float Acceleration
+            {
+                get => _acceleration;
+                set => _acceleration = value;
+            }
+
+            public float CurrentDistance
+            {
+                get => _currentDistance;
+            }
+
+            public PerformanceEngine(float maxSpeed, float maxAcceleration)
+            {
+                _maxSpeed = maxSpeed;
+                _maxAcceleration = maxAcceleration;
+                _speed = 0;
+                _acceleration = 0;
+                _currentDistance = 0;
+            }
+
+            public void SetAccelerationPercent(float accelerationPercent)
+            {
+                _acceleration = _maxAcceleration * Mathf.Clamp(accelerationPercent, -1, 1);
+            }
+
+            public void Update()
+            {
+                _speed += _acceleration * Time.deltaTime;
+                _speed = Mathf.Clamp(_speed, 0, _maxSpeed);
+                
+                _currentDistance += _speed * Time.deltaTime;
+            }
+
+            public void ReachedTarget()
+            {
+                _currentDistance = 0;
+            }
+        }
+
         private struct SpanNodes
         {
             public HashSet<LaneNode> ForwardClaimNodes;
@@ -76,7 +137,7 @@ namespace VehicleBrain
         }
 
         [Header("Connections")]
-        [SerializeField] private Road _road;
+        [SerializeField] public Road StartingRoad;
         public GameObject NavigationTargetMarker;
         public Material NavigationPathMaterial;
         public int LaneIndex = 0;
@@ -113,8 +174,7 @@ namespace VehicleBrain
         // Public variables
         [HideInInspector] public LaneNode CustomStartNode = null;
         // Used for road registration
-        [HideInInspector] public delegate void RoadChangedDelegate(Road newRoad);
-        [HideInInspector] public RoadChangedDelegate OnRoadChanged;
+        [HideInInspector] public Action RoadChanged;
 
         // Private variables
         private AutoDriveAgent _agent;
@@ -144,16 +204,8 @@ namespace VehicleBrain
         private bool _isSetup = false;
 
         // Performance variables
-        private float _lerpSpeed = 0;
-        private float _targetLerpSpeed = 0;
-        private float _timeElapsedSinceLastTarget = 0;
-        private float _lastLerpTime = 0;
 
-        public Road Road
-        {
-            get => _road;
-            set => SetRoad(value);
-        }
+        private PerformanceEngine PEngine;
 
         /// <summary> Returns a description of what the vehicle is currently doing </summary>
         public string GetVehicleActivityDescription()
@@ -190,7 +242,13 @@ namespace VehicleBrain
 
         public void Setup()
         {
-            Road.RoadSystem.Setup();
+            if(StartingRoad == null)
+            {
+                Debug.LogError("Error: Road not set for " + this.name);
+                return;
+            }
+            
+            StartingRoad.RoadSystem.Setup();
 
             _vehicleController = GetComponent<VehicleController>();
             
@@ -202,18 +260,19 @@ namespace VehicleBrain
 
             _brakeLightController = GetComponent<BrakeLightController>();
             _indicatorController = GetComponent<IndicatorController>();
+            
             // If the road has not updated yet there will be no lanes, so update them first
-            if(Road.Lanes.Count == 0)
-                Road.OnChange();
+            if(StartingRoad.Lanes.Count == 0)
+                StartingRoad.OnChange();
             
             // Check that the provided lane index is valid
-            if(LaneIndex < 0 || LaneIndex >= Road.Lanes.Count)
+            if(LaneIndex < 0 || LaneIndex >= StartingRoad.Lanes.Count)
             {
                 Debug.LogError("Lane index out of range");
                 return;
             }
 
-            Lane lane = Road.Lanes[LaneIndex];
+            Lane lane = StartingRoad.Lanes[LaneIndex];
             LaneNode currentNode = CustomStartNode == null ? lane.StartNode : CustomStartNode;
             _target = currentNode;
             _prevTarget = currentNode;
@@ -248,6 +307,8 @@ namespace VehicleBrain
                 new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
             );
 
+            _agent.Context.OnRoadChanged = () => RoadChanged?.Invoke();
+
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
             
             if (Mode == DrivingMode.Quality)
@@ -256,15 +317,16 @@ namespace VehicleBrain
             }
             else if (Mode == DrivingMode.Performance)
             {
+                PEngine = new PerformanceEngine(Speed, Acceleration);
+                _vehicleController.enabled = false;
+                
                 if (_rigidbody != null)
                 {
                     // In performance mode the vehicle should not be affected by physics or gravity
-                    _rigidbody.isKinematic = false;
+                    _rigidbody.isKinematic = true;
+                    _rigidbody.detectCollisions = false;
                     _rigidbody.useGravity = false;
                 }
-
-                _lerpSpeed = Speed;
-                _targetLerpSpeed = Speed;
             }
 
             // Setup the controller that handles the braking
@@ -284,19 +346,13 @@ namespace VehicleBrain
 
         void Update()
         {
+            if(!_isSetup)
+                return;
+            
             HandleActivity();
             
             if (ShowTargetLines != ShowTargetLines.None)
                 DrawTargetLines();
-        }
-
-        private void SetRoad(Road newRoad)
-        {
-            if (_road != newRoad)
-            {
-                _road = newRoad;
-                OnRoadChanged?.Invoke(_road);
-            }
         }
 
         private void UpdateIndicators()
@@ -341,7 +397,6 @@ namespace VehicleBrain
                     }
                     else if (Mode == DrivingMode.Performance)
                     {
-                        _timeElapsedSinceLastTarget += Time.deltaTime;
                         // Brake if needed
                         P_UpdateTargetAndCurrent();
                     }
@@ -436,7 +491,6 @@ namespace VehicleBrain
             _target = node;
             _prevTarget = node;
             _agent.Context.PrevTarget = null;
-            _lastLerpTime = 0;
             _agent.Context.BrakeTarget = node;
             _repositioningTarget = node;
             _agent.Context.IsEnteringNetwork = true;
@@ -462,7 +516,7 @@ namespace VehicleBrain
 
         public float GetCurrentSpeed()
         {
-            return _agent.Setting.Mode == DrivingMode.Quality ? _rigidbody.velocity.magnitude : _lerpSpeed;
+            return _agent.Setting.Mode == DrivingMode.Quality ? _rigidbody.velocity.magnitude : PEngine.Speed;
         }
 
         // Update the list of nodes that the vehicle is currently occupying
@@ -536,11 +590,6 @@ namespace VehicleBrain
             float nodeDistance = _agent.Context.CurrentNode.DistanceToPrevNode;
             float currentSpeed = _agent.Setting.Vehicle.CurrentSpeed;
 
-            // Occupy nodes further ahead in intersections
-            // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
-            // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
-            float forwardOccupancyOffset = _agent.Context.CurrentNode.Intersection != null && _agent.Setting.Vehicle.CurrentSpeed > 0 ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
-
             bool isWithinClaimDistance = false;
             bool isWithinReleaseDistance = false;
 
@@ -561,6 +610,14 @@ namespace VehicleBrain
             }
 
             nodeDistance = 0;
+
+            // Occupy nodes further ahead in intersections
+            // In the worst case, the nodes might be a quarter of an intersection away, which would be IntersectionLength / 4
+            // Since we want some buffer to make sure they are reached, but half the IntersectionLength would be too far, we offset it by a third
+            float forwardOccupancyOffset = currentSpeed > 0.2f && _agent.Context.CurrentNode.Intersection != null ? _agent.Context.CurrentNode.Intersection.IntersectionLength / 3 : 0;
+            
+            if(currentSpeed > 0.2f)
+                forwardOccupancyOffset += VehicleOccupancyOffset;
             
             // Add all occupied nodes after and including the current node
             node = _agent.Context.CurrentNode;
@@ -570,7 +627,7 @@ namespace VehicleBrain
                 node = _agent.Next(_agent.Context.CurrentNode, RoadEndBehaviour.Stop);
                 nodeDistance += node != null && node.IsSteeringTarget ? Vector3.Distance(node.Position, last.Position) : 0;
                 
-                while (node != null && WithinSpanDistance(nodeDistance, _agent.Setting.Vehicle.VehicleLength / 2 + distanceToCurrentNode + VehicleOccupancyOffset + forwardOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
+                while (node != null && WithinSpanDistance(nodeDistance, distanceToCurrentNode + _agent.Setting.Vehicle.VehicleLength / 2 + forwardOccupancyOffset, currentSpeed, ref isWithinClaimDistance, ref isWithinReleaseDistance))
                 {
                     // Do not occupy nodes in front of a red light
                     if(node.TrafficLight != null && node.TrafficLight.CurrentState == TrafficLightState.Red && node.Intersection?.ID != _agent.Context.PrevIntersection?.ID)
@@ -582,10 +639,6 @@ namespace VehicleBrain
 
                     // Do not occupy nodes in front of a stop sign
                     if(node.StopSign != null)
-                        break;
-
-                    // Do not occupy nodes in front of the vehicle if it is stationary
-                    if(currentSpeed < 0.1f)
                         break;
                     
                     if(isWithinClaimDistance)
@@ -769,11 +822,6 @@ namespace VehicleBrain
         {
             _prevTarget = _target;
             _target = newTarget;
-            if(_agent.Setting.Mode == DrivingMode.Performance)
-            {
-                _timeElapsedSinceLastTarget = 0;
-                _lastLerpTime = 0;
-            }
         }
 
         private void Q_SetBrakeInput(float brakeInput)
@@ -863,10 +911,13 @@ namespace VehicleBrain
                         Park(parking);
                         waitWithTeleporting = _agent.Context.CurrentAction == VehicleAction.Parked;
 
-                        // Queue an event to try unparking the vehicle after a random delay
-                        TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(10, 60) * 1000));
-                        TimeManager.Instance.AddEvent(unParkEvent);
-                        unParkEvent.OnEvent += () => StartCoroutine(Unpark());
+                        if(waitWithTeleporting)
+                        {
+                            // Queue an event to try unparking the vehicle after a random delay
+                            TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(10, 60) * 1000));
+                            TimeManager.Instance.AddEvent(unParkEvent);
+                            unParkEvent.OnEvent += () => StartCoroutine(Unpark());
+                        }
                     }
                     else if(targetPOI is BusStop && _agent.Setting.Vehicle is Bus)
                     {
@@ -1022,7 +1073,9 @@ namespace VehicleBrain
         private void P_UpdateTargetAndCurrent()
         {
             bool shouldBrake = _brakeController.ShouldAct(ref _agent);
-            _lerpSpeed = P_GetLerpSpeed(shouldBrake ? 0f : Speed);
+            PEngine.SetAccelerationPercent(shouldBrake ? -1f : 1f);
+
+            PEngine.Update();
             
             _agent.Context.CurrentBrakeInput = shouldBrake ? 1f : 0;
             _agent.Context.CurrentThrottleInput = 1f - _agent.Context.CurrentBrakeInput;
@@ -1031,6 +1084,7 @@ namespace VehicleBrain
             // Update the target if we have reached the current target, and we do not need to brake
             if (P_HasReachedTarget(_target))
             {
+                PEngine.ReachedTarget();
                 TotalDistance += _target.DistanceToPrevNode;
                 _agent.Context.CurrentNode = _target;
 
@@ -1081,30 +1135,9 @@ namespace VehicleBrain
                 }
             }
         }
-
-        private float P_GetLerpSpeed(float target)
-        {
-            // Move the speed by the acceleration
-            float maxDiff = Acceleration * Time.deltaTime;
-            return Mathf.MoveTowards(_lerpSpeed, target, maxDiff);
-        }
         private float P_GetLerpTime()
         {
-            float speed = _lerpSpeed;
-            float s = Vector3.Distance(_prevTarget.Position, _target.Position);
-            float t = s / speed;
-            float newLerpTime = _lastLerpTime;
-            
-            // If the car has slowed down enough that this will be the last target node, then do not move all the way to it to avoid updating the current node
-            // Otherwise, only update the lerp time if the speed is large enough to remove oscillations
-            if(speed < 3f && _agent.Context.IsBrakingOrStopped)
-                newLerpTime = Mathf.MoveTowards(_lastLerpTime, 0.9f, Time.deltaTime * 0.2f);
-            else if(speed >= 3f)
-                newLerpTime = _timeElapsedSinceLastTarget / t;
-
-            // Only update the lerp time if it has increased to avoid the car reversing due to a shift in the time due to speed decrease (denominator less than one)
-            _lastLerpTime = newLerpTime > _lastLerpTime ? newLerpTime : _lastLerpTime;
-            return _lastLerpTime;
+            return Mathf.Clamp01(PEngine.CurrentDistance / Vector3.Distance(_prevTarget.Position, _target.Position));
         }
 
         private DrivingState GetCurrentDrivingAction()

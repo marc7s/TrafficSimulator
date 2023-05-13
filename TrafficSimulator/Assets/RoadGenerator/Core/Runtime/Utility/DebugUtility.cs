@@ -17,7 +17,7 @@ namespace RoadGenerator
         [SerializeField] private static GameObject _endPointPrefab;
         [SerializeField] private static GameObject _markerPrefab;
         [SerializeField] private static GameObject _markerPrefabNoRotation;
-        private static Vector3 _markerPrefabScale = new Vector3(1f, 1f, 1.5f);
+        private static Vector3 _markerPrefabScale = new Vector3(0.8f, 0.8f, 1.3f);
         private static Vector3 _endPointPrefabScale = Vector3.one * 1.3f;
         private static Dictionary<string, (Vector3[], Quaternion[], Vector3[])> _groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
         private static bool _nextGroupPressed = false;

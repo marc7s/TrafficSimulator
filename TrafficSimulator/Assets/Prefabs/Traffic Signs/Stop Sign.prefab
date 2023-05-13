@@ -299,6 +299,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a5a2f9d06f31ea45b03493a66cb22db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  LaneSide: 0
 --- !u!205 &786300210540908055
 LODGroup:
   m_ObjectHideFlags: 0
@@ -335,7 +336,7 @@ BoxCollider:
   m_GameObject: {fileID: 786300210558158487}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 0.05, y: 2.725096, z: 0.05}
   m_Center: {x: 0, y: 1.3614117, z: 0}
@@ -348,7 +349,7 @@ BoxCollider:
   m_GameObject: {fileID: 786300210558158487}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Size: {x: 0.7, y: 0.7, z: 0.04}
   m_Center: {x: 0, y: 2.54, z: 0.05}
