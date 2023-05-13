@@ -22,7 +22,8 @@ public class VehicleInfoDisplay : MonoBehaviour
 
     private void Update()
     {
-        if(vehicleAutoDrive != null) UpdateDistanceTravelledText();
+        if(vehicleAutoDrive != null) 
+            UpdateDistanceTravelledText();
     }
 
     private void ToggledVehicle(Selectable selectable)
@@ -32,11 +33,13 @@ public class VehicleInfoDisplay : MonoBehaviour
             vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
             return;
         }
-        if ((selectable.gameObject.GetComponent<AutoDrive>() &&
-             !selectable.gameObject.GetComponent<AutoDrive>().Equals(vehicleAutoDrive))
-            || vehicleAutoDrive == null)
+
+        bool isOtherAutoDrive = selectable.gameObject.GetComponent<AutoDrive>() && !selectable.gameObject.GetComponent<AutoDrive>().Equals(vehicleAutoDrive);
+        
+        if (vehicleAutoDrive == null || isOtherAutoDrive)
         {
-            if (vehicleAutoDrive != null) vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
+            if (vehicleAutoDrive != null) 
+                vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
 
             vehicleAutoDrive = selectable.GetComponent<AutoDrive>();
             vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
@@ -60,7 +63,7 @@ public class VehicleInfoDisplay : MonoBehaviour
 
     private void UpdateRoadName()
     {
-        roadNameText.text = vehicleAutoDrive.Agent.Context.CurrentRoad.name;
+        roadNameText.text = vehicleAutoDrive.Agent.Context.CurrentRoad?.name ?? "N/A";
     }
 
     private void UpdateDistanceTravelledText()
