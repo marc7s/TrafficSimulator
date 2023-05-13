@@ -9,7 +9,7 @@ namespace CarGenerator
     public class AutoDriveEditor : Editor 
     {
         #region SerializedProperties
-            private SerializedProperty _road;
+            private SerializedProperty _startingRoad;
             private SerializedProperty _laneIndex;
             private SerializedProperty _mode;
             private SerializedProperty _endBehaviour;
@@ -33,7 +33,7 @@ namespace CarGenerator
         #endregion
         public void OnEnable()
         {
-            _road = serializedObject.FindProperty("_road");
+            _startingRoad = serializedObject.FindProperty("StartingRoad");
             _laneIndex = serializedObject.FindProperty("LaneIndex");
             _mode = serializedObject.FindProperty("Mode");
             _endBehaviour = serializedObject.FindProperty("EndBehaviour");
@@ -62,7 +62,7 @@ namespace CarGenerator
             
             AutoDrive autoDrive = (AutoDrive)target;
             
-            EditorGUILayout.PropertyField(_road);
+            EditorGUILayout.PropertyField(_startingRoad);
             EditorGUILayout.PropertyField(_laneIndex);
             EditorGUILayout.PropertyField(_mode);
             EditorGUILayout.PropertyField(_endBehaviour);
