@@ -119,12 +119,6 @@ namespace RoadGenerator
         private double _maxLon = 0;
         private Terrain _terrain;
         private List<TerrainArea> _terrainAreas = new List<TerrainArea>();
-        public Texture DefaultTexture;
-        public Texture WaterTexture;
-        public Texture GrassTexture;
-        public Texture SandTexture;
-        public List<Texture> Textures = new List<Texture>();
-   
 
         public void GenerateMap(RoadSystem roadSystem)
         {
@@ -202,14 +196,13 @@ namespace RoadGenerator
 
                     if (wayData == null)
                         continue;
-    
+
                     if (wayData?.WayType == WayType.Terrain && roadSystem.ShouldGenerateTerrain)
                         AddTerrain(ienum, wayData.Value);
                     else if (wayData?.WayType != WayType.Building && roadSystem.ShouldGenerateRoads) 
                         GenerateRoad(ienum, wayData.Value);
                     else if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings)
                         GenerateBuilding(ienum, wayData.Value);
-
                 }
                 else if (node.Name == "relation")
                 {
@@ -322,7 +315,6 @@ namespace RoadGenerator
             terrainData.size = maxSize;
             _terrain.gameObject.SetActive(true);
             _terrain.gameObject.transform.position = new Vector3(0, -10.01f, 0);
-            float waterHeight = -1;
             float baseheight = 10;
 
             int res = terrainData.heightmapResolution;
@@ -905,13 +897,11 @@ namespace RoadGenerator
             float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat)*scale;
             return new Vector3(xPos, 0, zPos);
             }
-            catch (Exception e)
+            catch
             {
                 Debug.Log("Error parsing node position");
                 return new Vector3(0, 0, 0);
             }
-
-
         }
 
         private Vector3 LatLonToPosition(double lat, double lon)
