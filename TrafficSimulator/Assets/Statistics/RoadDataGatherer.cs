@@ -1,40 +1,51 @@
 using System.Collections.Generic;
+using CustomProperties;
 using UnityEngine;
 using VehicleBrain;
-using CustomProperties;
 
-public class RoadDataGatherer : MonoBehaviour
+namespace Statistics
 {
-    [Header("Connections")]
-    [SerializeField][ReadOnly] private float _totalFuelConsumption;
+    public class RoadDataGatherer : MonoBehaviour
+    {
+        [Header("Connections")]
+        [SerializeField][ReadOnly] private float _totalFuelConsumption;
     
-    // A list to store the registered vehicles
-    private List<GameObject> _registeredVehicles;
-    [SerializeField]public float CurrentFuelConsumption { get; private set; }
+        private List<GameObject> _registeredVehicles;
+
+        private WorldDataGatherer _worldDataGatherer;
+        public float CurrentFuelConsumption { get; private set; }
     
-    private void Awake()
-    {
-        _registeredVehicles = new List<GameObject>();
-    }
+        private void Awake()
+        {
+            _registeredVehicles = new List<GameObject>();
+        }
 
-    private void Update()
-    {
-        CurrentFuelConsumption = 0;
-        foreach (GameObject vehicle in _registeredVehicles)
-            CurrentFuelConsumption += vehicle.GetComponent<FuelConsumption>().FuelConsumedSinceLastFrame;
+        private void Start()
+        {
+            _worldDataGatherer = GetComponentInParent<WorldDataGatherer>();
+        }
 
-        _totalFuelConsumption += CurrentFuelConsumption;
-    }
+        private void Update()
+        {
+            CurrentFuelConsumption = 0;
+            foreach (GameObject vehicle in _registeredVehicles)
+                CurrentFuelConsumption += vehicle.GetComponent<FuelConsumption>().FuelConsumedSinceLastFrame;
 
-    public void RegisterVehicle(GameObject vehicle)
-    {
-        if (!_registeredVehicles.Contains(vehicle))
-            _registeredVehicles.Add(vehicle);
-    }
+            _totalFuelConsumption += CurrentFuelConsumption;
+            _worldDataGatherer.AddFuelConsumed(CurrentFuelConsumption);
+            _worldDataGatherer.TotalFuelConsumed += CurrentFuelConsumption;
+        }
 
-    public void UnregisterVehicle(GameObject vehicle)
-    {
-        if (_registeredVehicles.Contains(vehicle))
-            _registeredVehicles.Remove(vehicle);
+        public void RegisterVehicle(GameObject vehicle)
+        {
+            if (!_registeredVehicles.Contains(vehicle))
+                _registeredVehicles.Add(vehicle);
+        }
+
+        public void UnregisterVehicle(GameObject vehicle)
+        {
+            if (_registeredVehicles.Contains(vehicle))
+                _registeredVehicles.Remove(vehicle);
+        }
     }
 }
