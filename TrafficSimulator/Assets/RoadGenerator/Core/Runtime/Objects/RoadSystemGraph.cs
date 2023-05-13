@@ -296,7 +296,8 @@ namespace RoadGenerator
             }
 
             // Add a line renderer to the lane
-            lineObject.AddComponent<LineRenderer>();
+            LineRenderer lineRenderer = lineObject.AddComponent<LineRenderer>();
+            lineRenderer.positionCount = 0;
             
             // Draw the lane path
             DrawLanePath(lineObject, line, color: color ?? Color.red, width: width);

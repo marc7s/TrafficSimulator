@@ -288,6 +288,7 @@ namespace VehicleBrain
             _targetLineRenderer.sharedMaterial.SetColor("_Color", Color.green);
             _targetLineRenderer.startWidth = targetLineWidth;
             _targetLineRenderer.endWidth = targetLineWidth;
+            _targetLineRenderer.positionCount = 0;
 
 
             VehicleType vehicleType = 
