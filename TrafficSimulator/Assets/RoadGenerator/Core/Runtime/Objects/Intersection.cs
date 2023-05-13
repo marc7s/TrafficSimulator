@@ -753,6 +753,12 @@ namespace RoadGenerator
                         continue;
                     }
 
+                    if (currentNode.Intersection != this)
+                    {
+                        currentNode = currentNode.Next;
+                        continue;
+                    }
+
                     IntersectionArm arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
 
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
