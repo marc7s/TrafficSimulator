@@ -41,6 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 798415014314360586}
   - component: {fileID: 6180432264754652656}
+  - component: {fileID: 3283986855115602963}
   m_Layer: 6
   m_Name: RoadSystem
   m_TagString: Untagged
@@ -97,6 +98,8 @@ MonoBehaviour:
   ShouldGenerateBuildings: 1
   ShouldGenerateTrees: 1
   ShouldGenerateBusStops: 1
+  UseOSM: 0
+  IsGeneratingOSM: 0
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
@@ -109,6 +112,19 @@ MonoBehaviour:
   _tramRails: []
   _intersections: []
   GraphContainer: {fileID: 0}
+--- !u!114 &3283986855115602963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798415014314360587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c8c202b0c95c543aa906b4723580b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TotalFuelConsumed: 0
 --- !u!1 &2163801758299223360
 GameObject:
   m_ObjectHideFlags: 0
