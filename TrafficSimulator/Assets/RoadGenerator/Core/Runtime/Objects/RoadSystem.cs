@@ -74,8 +74,9 @@ namespace RoadGenerator
         
         [Header("OSM Settings")]
         public bool ShouldGenerateBuildings = true;
-        public bool ShouldGenerateTrees = true;
         public bool ShouldGenerateBusStops = true;
+        public bool ShouldGenerateRoads = true;
+        public bool ShouldGenerateTerrain = true;
         public bool UseOSM = false;
         public bool IsGeneratingOSM = false;
         

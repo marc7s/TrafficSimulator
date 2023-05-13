@@ -124,6 +124,7 @@ namespace RoadGenerator
         public Texture GrassTexture;
         public Texture SandTexture;
         public List<Texture> Textures = new List<Texture>();
+   
 
         public void GenerateMap(RoadSystem roadSystem)
         {
@@ -202,9 +203,9 @@ namespace RoadGenerator
                     if (wayData == null)
                         continue;
     
-                    if (wayData?.WayType == WayType.Terrain)
+                    if (wayData?.WayType == WayType.Terrain && roadSystem.ShouldGenerateTerrain)
                         AddTerrain(ienum, wayData.Value);
-                    else if (wayData?.WayType != WayType.Building) 
+                    else if (wayData?.WayType != WayType.Building && roadSystem.ShouldGenerateRoads) 
                         GenerateRoad(ienum, wayData.Value);
                     else if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings)
                         GenerateBuilding(ienum, wayData.Value);
@@ -263,10 +264,12 @@ namespace RoadGenerator
             if (roadSystem.ShouldGenerateBusStops)
                 AddBusStops();
 
-            if (roadSystem.ShouldGenerateTrees)
+            if (roadSystem.ShouldGenerateTerrain)
+            {
+                GenerateTerrain();
                 AddTrees();
-            
-            GenerateTerrain();
+            }
+
 
             roadSystem.IsGeneratingOSM = false;
         }
@@ -409,7 +412,7 @@ namespace RoadGenerator
                             else if (terrainBounds.TerrainType == TerrainType.Forest)
                                 splatWeights[3] = 1f;
                             else
-                                splatWeights[2] = 1f;
+                                splatWeights[0] = 1f;
 
                             foundTerrain = true;
                             break;
@@ -762,6 +765,7 @@ namespace RoadGenerator
         // https://wiki.openstreetmap.org/wiki/Key:landuse
         private TerrainType GetTerrainType(XmlNode node)
         {
+            Debug.Log("Terrain type: " + node.Attributes["v"].Value);
             switch (node.Attributes["v"].Value)
             {
                 case "grass":
@@ -777,7 +781,7 @@ namespace RoadGenerator
 
         private void LoadOSMMap(XmlDocument document)
         {
-            document.Load("Assets/OsmMaps/map.osm");
+            document.Load("Assets/OsmMaps/Masthugget.osm");
         }
 
         private void GenerateFootWay(List <Vector3> points, WayData wayData)
@@ -798,7 +802,6 @@ namespace RoadGenerator
         // https://wiki.openstreetmap.org/wiki/Map_features#Highway
         void GenerateRoad(IEnumerator ienum, WayData wayData) 
         {
-            return;
             List <Vector3> roadPoints = GetWayNodePositions(ienum);
 
             if (wayData.WayType == WayType.Footway || wayData.WayType == WayType.Path)

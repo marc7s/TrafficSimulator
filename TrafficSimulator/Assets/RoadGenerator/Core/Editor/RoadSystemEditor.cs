@@ -16,6 +16,10 @@ namespace RoadSystemGenerator
             private SerializedProperty _defaultTrafficLightController;
             private SerializedProperty _defaultStopSign;
             private SerializedProperty _defaultYieldSign;
+            private SerializedProperty _shouldGenerateBuildings;
+            private SerializedProperty _shouldGenerateBusStops;
+            private SerializedProperty _shouldGenerateRoads;
+            private SerializedProperty _shouldGenerateTerrain;
         #endregion
         public void OnEnable()
         {
@@ -27,13 +31,17 @@ namespace RoadSystemGenerator
             _defaultTrafficLightController = serializedObject.FindProperty("DefaultTrafficLightControllerPrefab");
             _defaultStopSign = serializedObject.FindProperty("DefaultStopSignPrefab");
             _defaultYieldSign = serializedObject.FindProperty("DefaultYieldSignPrefab");
+            _shouldGenerateBuildings = serializedObject.FindProperty("ShouldGenerateBuildings");
+            _shouldGenerateBusStops = serializedObject.FindProperty("ShouldGenerateBusStops");
+            _shouldGenerateRoads = serializedObject.FindProperty("ShouldGenerateRoads");
+            _shouldGenerateTerrain = serializedObject.FindProperty("ShouldGenerateTerrain");
         }
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
             
             // Uncomment this if you want to change the connections to containers and prefabs
-            DrawDefaultInspector();
+            //DrawDefaultInspector();
             
             RoadSystem roadSystem = (RoadSystem)target;
             
@@ -47,6 +55,10 @@ namespace RoadSystemGenerator
             EditorGUILayout.PropertyField(_defaultTrafficLightController);
             EditorGUILayout.PropertyField(_defaultStopSign);
             EditorGUILayout.PropertyField(_defaultYieldSign);
+            EditorGUILayout.PropertyField(_shouldGenerateBuildings);
+            EditorGUILayout.PropertyField(_shouldGenerateBusStops);
+            EditorGUILayout.PropertyField(_shouldGenerateRoads);
+            EditorGUILayout.PropertyField(_shouldGenerateTerrain);
             
             if(_drivingSide.intValue != (int)roadSystem.DrivingSide)
             {
