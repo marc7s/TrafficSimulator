@@ -5,8 +5,16 @@ namespace Old_UI
 {
     public class GraphChartFeed : MonoBehaviour
     {
+        private enum TimeSpan
+        {
+            AllTime,
+            ThreeMinutes,
+            ThirtySeconds
+        }
+
         private GraphChartBase _graph;
         private WorldDataGatherer _worldDataGatherer;
+        private TimeSpan _currentGraph; 
 
         private void Start()
         {
@@ -22,29 +30,29 @@ namespace Old_UI
 
         public void LoadAllTimeGraph()
         {
-            LoadGraph(0, _worldDataGatherer.TotalSecondsElapsed);
+            LoadGraph(_worldDataGatherer.TotalSecondsElapsed);
         }
 
         public void LoadLast3MinGraph()
         {
-            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
-            int startIndex = Mathf.Max(totalSecondsElapsed - 180, 0);
-            LoadGraph(startIndex, 180);
+            LoadGraph(180);
         }
 
         public void LoadLast30SecondsGraph()
         {
-            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
-            int startIndex = Mathf.Max(totalSecondsElapsed - 30, 0);
-            LoadGraph(startIndex, 30);
+            LoadGraph(30);
         }
 
-        private void LoadGraph(int startIndex, int length)
+        private void LoadGraph(int timeSpanInSeconds)
         {
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");
 
-            for (int i = startIndex; i < startIndex + length; i++)
+            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
+            int startIndex = Mathf.Max(totalSecondsElapsed - timeSpanInSeconds, 0);
+            int endIndex = startIndex + timeSpanInSeconds;
+
+            for (int i = startIndex; i < endIndex && i < totalSecondsElapsed; i++)
             {
                 _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
             }
