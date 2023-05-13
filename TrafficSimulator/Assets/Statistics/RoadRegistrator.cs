@@ -10,10 +10,11 @@ namespace Statistics
         private AutoDrive _autoDrive;
         private Road _currentRoad;
         
-        void Awake()
+        void Start()
         {
             _autoDrive = GetComponent<AutoDrive>();
             _autoDrive.RoadChanged += OnRoadChanged;
+            OnRoadChanged();
         }
         
         public void OnRoadChanged()
@@ -21,8 +22,8 @@ namespace Statistics
             if (_currentRoad != null)
                 _currentRoad.GetComponent<RoadDataGatherer>().UnregisterVehicle(gameObject);
 
-            _currentRoad = _autoDrive.Agent.Context.CurrentRoad;
-               
+            _currentRoad = _autoDrive.Agent?.Context.CurrentRoad;
+
             if(_currentRoad != null)
                 _currentRoad.GetComponent<RoadDataGatherer>().RegisterVehicle(gameObject);
         }

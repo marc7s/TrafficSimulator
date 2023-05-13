@@ -1400,7 +1400,8 @@ namespace RoadGenerator
             laneObject.transform.parent = parent.transform;
 
             // Add a line renderer to the lane
-            laneObject.AddComponent<LineRenderer>();
+            LineRenderer lineRenderer = laneObject.AddComponent<LineRenderer>();
+            lineRenderer.positionCount = 0;
             
             // Draw the lane path
             DrawPath(laneObject, lane.StartNode.GetPositions(), color: color);
@@ -1423,7 +1424,8 @@ namespace RoadGenerator
                 laneNodePointerObject.transform.parent = parent.transform;
 
                 // Add a line renderer to the lane
-                laneNodePointerObject.AddComponent<LineRenderer>();
+                LineRenderer lineRenderer = laneNodePointerObject.AddComponent<LineRenderer>();
+                lineRenderer.positionCount = 0;
                 
                 // Draw the lane path
                 DrawPath(laneNodePointerObject, new Vector3[]{ curr.Position, curr.RoadNode.Position }, color: color);
