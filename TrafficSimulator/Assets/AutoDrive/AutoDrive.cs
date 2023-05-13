@@ -307,6 +307,8 @@ namespace VehicleBrain
                 new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
             );
 
+            _agent.Context.OnRoadChanged = () => RoadChanged?.Invoke();
+
             _agent.Context.BrakeTarget = _agent.Context.CurrentNode;
             
             if (Mode == DrivingMode.Quality)
@@ -909,10 +911,13 @@ namespace VehicleBrain
                         Park(parking);
                         waitWithTeleporting = _agent.Context.CurrentAction == VehicleAction.Parked;
 
-                        // Queue an event to try unparking the vehicle after a random delay
-                        TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(10, 60) * 1000));
-                        TimeManager.Instance.AddEvent(unParkEvent);
-                        unParkEvent.OnEvent += () => StartCoroutine(Unpark());
+                        if(waitWithTeleporting)
+                        {
+                            // Queue an event to try unparking the vehicle after a random delay
+                            TimeManagerEvent unParkEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(UnityEngine.Random.Range(10, 60) * 1000));
+                            TimeManager.Instance.AddEvent(unParkEvent);
+                            unParkEvent.OnEvent += () => StartCoroutine(Unpark());
+                        }
                     }
                     else if(targetPOI is BusStop && _agent.Setting.Vehicle is Bus)
                     {
