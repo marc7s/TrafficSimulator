@@ -72,9 +72,10 @@ namespace VehicleBrain
             bool isNonIntersectionNavigationNode = node.RoadNode.IsNavigationNode && !node.IsIntersection();
             bool currentTargetNodeNotChecked = node.RoadNode != Context.PrevTarget?.RoadNode;
 
-            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count > 0 && currentTargetNodeNotChecked && !Context.VisitedNavigationNodes.Contains(node.RoadNode.Position))
+            // On navigation nodes that are not intersections, we pop the path
+            // Special case for roadConnections, there is always two road connection nodes in a row, we only pop the path on the first one
+            if (isNonIntersectionNavigationNode && Context.NavigationPath.Count > 0 && currentTargetNodeNotChecked && node.Prev?.Type != RoadNodeType.RoadConnection)
             {
-                Context.VisitedNavigationNodes.Add(node.RoadNode.Position);
                 Context.NavigationPath.Pop();
             }
 
@@ -128,7 +129,6 @@ namespace VehicleBrain
 
         public void UpdateRandomPath(LaneNode node, bool showNavigationPath)
         {
-            Context.VisitedNavigationNodes.Clear();
             Context.NavigationPathTargets.Clear();
             
             // Get a random path from the navigation graph
@@ -193,8 +193,6 @@ namespace VehicleBrain
 
         public void GeneratePath(LaneNode node, bool showNavigationPath)
         {
-            Context.VisitedNavigationNodes.Clear();
-
             List<(POI, NavigationNode, LaneSide)> targets = new List<(POI, NavigationNode, LaneSide)>();
             List<NavigationNode> navigationNodes = Context.CurrentRoad.RoadSystem.RoadSystemGraph;
             ForcePath forcePath = null;
@@ -409,7 +407,6 @@ namespace VehicleBrain
         public GameObject NavigationTargetMarker;
         public Material NavigationPathMaterial;
         public List<Vector3> NavigationPathPositions;
-        public List<Vector3> VisitedNavigationNodes;
         public TurnDirection TurnDirection;
         public Parking CurrentParking;
         public POI CurrentPOI;
@@ -498,7 +495,6 @@ namespace VehicleBrain
             _navigationPathLineRenderer.material = NavigationPathMaterial;
             
             NavigationPathPositions = new List<Vector3>();
-            VisitedNavigationNodes = new List<Vector3>();
             TurnDirection = TurnDirection.Straight;
             BrakeUndershoot = 0;
             CurrentParking = null;
