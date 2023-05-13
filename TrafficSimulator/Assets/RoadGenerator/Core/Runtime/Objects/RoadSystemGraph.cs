@@ -216,7 +216,7 @@ namespace RoadGenerator
                     if (node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.RoadConnection)
                     {
                         node.Edges.AddRange(roadNavigationGraph[i].Edges);
-                        UpdateEdgeEndNode(roadNavigationGraph[i], node);
+                        UpdateEdgeEndNode(roadNavigationGraph[i], node, roadNavigationGraph);
                         roadNavigationGraph[i] = node;
                     }
 
@@ -228,15 +228,18 @@ namespace RoadGenerator
             }
         }
 
-        private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, NavigationNode newNode)
+        private static void UpdateEdgeEndNode(NavigationNode navigationNodeToUpdate, NavigationNode newNode, List<NavigationNode> navigationNodesFromRoad)
         {
-            foreach (NavigationNodeEdge edge1 in navigationNodeToUpdate.Edges)
+            foreach (NavigationNodeEdge edge in navigationNodeToUpdate.Edges)
+                edge.StartNavigationNode = newNode;
+
+            foreach (NavigationNode node in navigationNodesFromRoad)
             {
                 // Finding the edges with the old node as the end node and updating them to the new node
-                foreach (NavigationNodeEdge edge2 in edge1.EndNavigationNode.Edges)
+                foreach (NavigationNodeEdge edge in node.Edges)
                 {
-                    if (edge2.EndNavigationNode.ID == navigationNodeToUpdate.ID)
-                        edge2.EndNavigationNode = newNode;
+                    if (edge.EndNavigationNode.ID == navigationNodeToUpdate.ID)
+                        edge.EndNavigationNode = newNode;
                 }
             }
         }
