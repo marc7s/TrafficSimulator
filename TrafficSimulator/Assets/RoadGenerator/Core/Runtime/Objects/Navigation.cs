@@ -174,7 +174,7 @@ namespace RoadGenerator
 #if UNITY_EDITOR
                         if(logSubPathError)
                         {
-                            Debug.LogError("Could not find path to target node " + target.RoadNode.Position + ". Switching to random.");
+                            Debug.LogError("Could not find path to target node " + target.RoadNode.Position + "from " + sourceEdge.EndNavigationNode.RoadNode.Position + ". Switching to random.");
                             DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
                         }
 #endif
@@ -192,7 +192,7 @@ namespace RoadGenerator
                     List<NavigationNodeEdge> subPathList = subPath.ToList();
                     NavigationNodeEdge lastSubEdge = subPathList[subPathList.Count - 1];
 
-                    sourceEdge = target.PrimaryDirectionEdge?.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
+                    sourceEdge = target.RoadNode.PrimaryNavigationNodeEdge?.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
                 }
 
                 return path;
