@@ -40,6 +40,8 @@ public class VehicleInfoDisplay : MonoBehaviour
 
             vehicleAutoDrive = selectable.GetComponent<AutoDrive>();
             vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
+            vehicleAutoDrive.Agent.Context.OnRoadChanged += UpdateRoadName;
+            UpdateRoadName();
             UpdateActivityText();
             UpdateModelNameText();
         }
