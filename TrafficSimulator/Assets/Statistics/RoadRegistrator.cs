@@ -10,7 +10,7 @@ namespace Statistics
         private AutoDrive _autoDrive;
         private Road _currentRoad;
         
-        void Awake()
+        void Start()
         {
             _autoDrive = GetComponent<AutoDrive>();
             _autoDrive.RoadChanged += OnRoadChanged;
