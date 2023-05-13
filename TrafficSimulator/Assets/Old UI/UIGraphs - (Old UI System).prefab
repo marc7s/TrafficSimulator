@@ -363,7 +363,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 594391427}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2356213198157406805}
+        m_TargetAssemblyTypeName: GraphChartFeed, Assembly-CSharp
+        m_MethodName: LoadLast30SecondsGraph
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &790318844
 GameObject:
   m_ObjectHideFlags: 0
@@ -485,7 +497,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 790318847}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2356213198157406805}
+        m_TargetAssemblyTypeName: GraphChartFeed, Assembly-CSharp
+        m_MethodName: LoadLast3MinGraph
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &922384070
 GameObject:
   m_ObjectHideFlags: 0
@@ -2108,6 +2132,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 767156680946674210, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: subDivisions.fractionDigits
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674210, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: mainDivisions.fractionDigits
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674210, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: mainDivisions.unitsPerDivision
       value: 1000
       objectReference: {fileID: 0}
@@ -2138,6 +2170,10 @@ PrefabInstance:
     - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: Data.mSerializedData.Array.data[0].Name
       value: Emission
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: Data.mSerializedData.Array.data[0].PointMaterial
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 767156680946674220, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_Enabled

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class WorldDataGatherer : MonoBehaviour
 {
-    public float TotalSecondsElapsed;
+    public int TotalSecondsElapsed;
     public float TotalFuelConsumed;
 
     // This would require the streaming graph which the project had not obtained at the time of writing the code

@@ -36,10 +36,13 @@ namespace Old_UI
         {
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");
+            
+            int xIntervalSkip = 4;
+            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
 
-            float timeToUse = 180 > _worldDataGatherer.TotalSecondsElapsed ? _worldDataGatherer.TotalSecondsElapsed : 180;
-        
-            for (int i = 0; i < timeToUse; i++)
+            int startIndex = Mathf.Max(totalSecondsElapsed - 180, 0);
+
+            for (int i = startIndex; i < (startIndex + 180); i += xIntervalSkip)
             {
                 _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
             }
@@ -50,10 +53,13 @@ namespace Old_UI
         {
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");
-        
-            float timeToUse = 30 > _worldDataGatherer.TotalSecondsElapsed ? _worldDataGatherer.TotalSecondsElapsed : 30;
-        
-            for (int i = 0; i < timeToUse; i++)
+            
+            int xIntervalSkip = 1;
+            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
+            
+            int startIndex = Mathf.Max(totalSecondsElapsed - 30, 0);
+
+            for (int i = startIndex; i < (startIndex + 30); i += xIntervalSkip)
             {
                 _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
             }
