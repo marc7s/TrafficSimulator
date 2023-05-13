@@ -105,10 +105,6 @@ namespace VehicleBrain
                     if (Context.NavigationMode == NavigationMode.RandomNavigationPath || Context.NavigationMode == NavigationMode.Path)
                     {
                         (loopNode, node) = node.Intersection.GetNewLaneNode(Context.NavigationPath.Pop(), node, ref Context.TurnDirection);
-
-                        // In performance mode, one currentNode will not be checked as it changes immediately, so we need to remove the oldest point from the navigation path
-                        if (Setting.Mode == DrivingMode.Performance)
-                            Context.NavigationPathPositions.RemoveAt(0);
                         
                         // If the intersection does not have a lane node that matches the navigation path, unexpected behaviour has occurred, switch to random navigation
                         if (node == null)
@@ -313,7 +309,7 @@ namespace VehicleBrain
 
             Context.PrevIntersection = prevIntersection;
 
-            Context.UpdateNavigationPathLine();
+            Context.DisplayNavigationPathLine();
 
             _context.CurrentActivity = VehicleActivity.DrivingToTarget;
         }
@@ -399,6 +395,7 @@ namespace VehicleBrain
         public LaneNode EndPrevNode;
         public LaneNode EndNextNode;
         public Vector3 VehiclePosition;
+        public Vector3 VehicleDirection;
         public bool IsEnteringNetwork;
         public Intersection PrevIntersection;
         public LaneNode PrevTarget;
@@ -449,7 +446,7 @@ namespace VehicleBrain
             set
             {
                 _showNavigationPath = value;
-                UpdateNavigationPathLine();
+                DisplayNavigationPathLine();
             }
         }
 
@@ -473,10 +470,11 @@ namespace VehicleBrain
             }
         }
         
-        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, NavigationMode navigationMode, bool showNavigationPath, bool logNavigationErrors, bool logBrakeReason, GameObject navigationTargetMarker, Material navigationPathMaterial)
+        public AutoDriveContext(LaneNode initialNode, Vector3 vehiclePosition, Vector3 vehicleDirection, NavigationMode navigationMode, bool showNavigationPath, bool logNavigationErrors, bool logBrakeReason, GameObject navigationTargetMarker, Material navigationPathMaterial)
         {
             _currentNode = initialNode;
             VehiclePosition = vehiclePosition;
+            VehicleDirection = vehicleDirection;
 
             NavigationTargetMarker = navigationTargetMarker;
             NavigationPathMaterial = navigationPathMaterial;
@@ -538,6 +536,7 @@ namespace VehicleBrain
         public void Loop()
         {
             CurrentNode = EndNextNode;
+            
             // Calculate the new loop node
             SetLoopNode(CurrentNode);
         }
@@ -574,6 +573,25 @@ namespace VehicleBrain
         }
 
         public void UpdateNavigationPathLine()
+        {
+            if(NavigationPathPositions.Count < 1)
+                return;
+            
+            while(NavigationPathPositions.Count > 0)
+            {
+                Vector3 nextPosition = NavigationPathPositions[0];
+                Vector3 direction = nextPosition - VehiclePosition;
+                float dot = Vector3.Dot(VehicleDirection, direction.normalized);
+
+                // Continue removing as long as they are not in front, or too far away
+                if(dot > 0 || direction.magnitude > 5f)
+                    break;
+                
+                NavigationPathPositions.RemoveAt(0);
+            }
+        }
+
+        public void DisplayNavigationPathLine()
         {
             if(ShowNavigationPath)
             {

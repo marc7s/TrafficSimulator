@@ -304,7 +304,7 @@ namespace VehicleBrain
 
             _agent = new AutoDriveAgent(
                 new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, OriginalNavigationMode, _vehicleController, BrakeOffset, Speed, Acceleration),
-                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
+                new AutoDriveContext(currentNode, transform.position, transform.forward, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
             );
 
             _agent.Context.OnRoadChanged = () => RoadChanged?.Invoke();
@@ -364,6 +364,7 @@ namespace VehicleBrain
         private void UpdateContext()
         {
             _agent.Context.VehiclePosition = transform.position;
+            _agent.Context.VehicleDirection = transform.forward;
             _agent.Context.CurrentDrivingState = GetCurrentDrivingAction();
         }
 
@@ -893,10 +894,9 @@ namespace VehicleBrain
                 _navigationController.ShouldAct(ref _agent);
                 
                 // When the current node is updated, it needs to redraw the navigation path
-                if (_agent.Context.CurrentNode.IsSteeringTarget && _agent.Context.NavigationPathPositions.Count > 0)
-                    _agent.Context.NavigationPathPositions.RemoveAt(0);
-
                 _agent.Context.UpdateNavigationPathLine();
+
+                _agent.Context.DisplayNavigationPathLine();
                 
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
@@ -1134,10 +1134,9 @@ namespace VehicleBrain
                 _navigationController.ShouldAct(ref _agent);
 
                 // When the currentNode is changed, the navigation path needs to be updated
-                if (_agent.Context.NavigationPathPositions.Count > 0)
-                    _agent.Context.NavigationPathPositions.RemoveAt(0);
-
                 _agent.Context.UpdateNavigationPathLine();
+
+                _agent.Context.DisplayNavigationPathLine();
             
                 SetTarget(GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop));
             }
