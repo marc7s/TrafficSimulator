@@ -5,12 +5,19 @@ public class WorldDataGatherer : MonoBehaviour
 {
     public int TotalSecondsElapsed;
     public float TotalFuelConsumed;
+    public float TotalCo2Emissions => TotalFuelConsumed * 2.3f; // co2 per kilogram
+    
 
     // This would require the streaming graph which the project had not obtained at the time of writing the code
     // to implement for real. Set one hour to represent all time;
     public float FuelConsumedAllTime => CalculateTotalFuelConsumedLastSeconds(3600);
     public float FuelConsumedLast30Sec => CalculateTotalFuelConsumedLastSeconds(30);
     public float FuelConsumedLast3Min => CalculateTotalFuelConsumedLastSeconds(180);
+    
+    public float Co2EmissionsAllTime => CalculateTotalCo2EmissionsLastSeconds(3600);
+    public float Co2EmissionsLast30Sec => CalculateTotalCo2EmissionsLastSeconds(30);
+    public float Co2EmissionsLast3Min => CalculateTotalCo2EmissionsLastSeconds(180);
+
     
     // Buffer size to store fuel consumption for the hour.
     private const int BufferSize = 3600; 
@@ -36,14 +43,17 @@ public class WorldDataGatherer : MonoBehaviour
             TotalSecondsElapsed += 1;
         }
     }
+    
+    public float CalculateTotalFuelConsumedLastSeconds(int seconds) => CalculateTotalEmissionsLastSeconds(seconds, 1);
+    public float CalculateTotalCo2EmissionsLastSeconds(int seconds) => CalculateTotalEmissionsLastSeconds(seconds, 2.3f);
 
-    private float CalculateTotalFuelConsumedLastSeconds(int seconds)
+    private float CalculateTotalEmissionsLastSeconds(int seconds, float conversionFactor)
     {
         float total = 0;
         for(int i = 0; i < seconds; i++)
         {
             int index = (_bufferIndex - 1 - i + BufferSize) % BufferSize;
-            total += FuelConsumedPerSecondHistory[index];
+            total += FuelConsumedPerSecondHistory[index] * conversionFactor;
         }
         return total;
     }
