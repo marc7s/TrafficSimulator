@@ -12,8 +12,7 @@ namespace Old_UI
         {
             _worldDataGatherer = GameObject.Find("RoadSystem").GetComponent<WorldDataGatherer>();
             _graph = GetComponent<GraphChartBase>();
-        
-        
+
             if (_graph != null)
             {
                 _graph.Scrollable = false;
@@ -23,43 +22,29 @@ namespace Old_UI
 
         public void LoadAllTimeGraph()
         {
-            _graph.DataSource.StartBatch();
-            _graph.DataSource.ClearCategory("Emission");
-            for (int i = 0; i < _worldDataGatherer.TotalSecondsElapsed; i++)
-            {
-                _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
-            }
-            _graph.DataSource.EndBatch();
+            LoadGraph(0, _worldDataGatherer.TotalSecondsElapsed);
         }
-    
+
         public void LoadLast3MinGraph()
         {
-            _graph.DataSource.StartBatch();
-            _graph.DataSource.ClearCategory("Emission");
-            
-            int xIntervalSkip = 4;
             int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
-
             int startIndex = Mathf.Max(totalSecondsElapsed - 180, 0);
-
-            for (int i = startIndex; i < (startIndex + 180); i += xIntervalSkip)
-            {
-                _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
-            }
-            _graph.DataSource.EndBatch();
+            LoadGraph(startIndex, 180);
         }
 
         public void LoadLast30SecondsGraph()
         {
+            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
+            int startIndex = Mathf.Max(totalSecondsElapsed - 30, 0);
+            LoadGraph(startIndex, 30);
+        }
+
+        private void LoadGraph(int startIndex, int length)
+        {
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");
-            
-            int xIntervalSkip = 1;
-            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
-            
-            int startIndex = Mathf.Max(totalSecondsElapsed - 30, 0);
 
-            for (int i = startIndex; i < (startIndex + 30); i += xIntervalSkip)
+            for (int i = startIndex; i < startIndex + length; i++)
             {
                 _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
             }
