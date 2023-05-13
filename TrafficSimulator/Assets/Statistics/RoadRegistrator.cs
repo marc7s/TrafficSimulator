@@ -22,7 +22,7 @@ namespace Statistics
                 _currentRoad.GetComponent<RoadDataGatherer>().UnregisterVehicle(gameObject);
 
             _currentRoad = _autoDrive.Agent.Context.CurrentRoad;
-            
+               
             if(_currentRoad != null)
                 _currentRoad.GetComponent<RoadDataGatherer>().RegisterVehicle(gameObject);
         }
