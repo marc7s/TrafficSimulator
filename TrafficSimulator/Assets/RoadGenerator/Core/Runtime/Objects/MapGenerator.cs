@@ -237,6 +237,7 @@ namespace RoadGenerator
                             XmlNode currentNode = (XmlNode) ienum.Current; 
                             if (currentNode.Name == "member" && currentNode.Attributes["type"].Value == "way")
                             {
+                                Debug.Log(wayData.Value.TerrainType);
                                 if (currentNode.Attributes["role"].Value == "outer" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
                                 {
                                     XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
@@ -594,6 +595,18 @@ namespace RoadGenerator
                                 terrainType = TerrainType.Water;
                                 wayType = WayType.Terrain;
                             }
+
+                            break;
+                        case "natural":
+                            if (currentNode.Attributes["v"].Value == "water")
+                            {
+                                terrainType = TerrainType.Water;
+                                wayType = WayType.Terrain;
+                            }
+                            break;
+                        case "waterway":
+                            terrainType = TerrainType.Water;
+                            wayType = WayType.Terrain;
                             break;
                         case "name":
                             wayData.Name = currentNode.Attributes["v"].Value;
@@ -726,7 +739,7 @@ namespace RoadGenerator
 
         private void LoadOSMMap(XmlDocument document)
         {
-            document.Load("Assets/OsmMaps/Masthugget.osm");
+            document.Load("Assets/OsmMaps/map.osm");
         }
 
         private void GenerateFootWay(List <Vector3> points, WayData wayData)
@@ -747,7 +760,7 @@ namespace RoadGenerator
         // https://wiki.openstreetmap.org/wiki/Map_features#Highway
         void GenerateRoad(IEnumerator ienum, WayData wayData) 
         {
-
+            return;
             List <Vector3> roadPoints = GetWayNodePositions(ienum);
 
             if (wayData.WayType == WayType.Footway || wayData.WayType == WayType.Path)
@@ -853,10 +866,19 @@ namespace RoadGenerator
         private Vector3 GetNodePosition(XmlNode node)
         {
             const int scale = 111000;
+            try
+            {
             float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon)*scale;
             float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat)*scale;
-
             return new Vector3(xPos, 0, zPos);
+            }
+            catch (Exception e)
+            {
+                Debug.Log("Error parsing node position");
+                return new Vector3(0, 0, 0);
+            }
+
+
         }
 
         private Vector3 LatLonToPosition(double lat, double lon)
