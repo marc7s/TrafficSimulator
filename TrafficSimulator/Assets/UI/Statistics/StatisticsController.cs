@@ -134,20 +134,5 @@ namespace UI
             _statsController.UpdateInfo(car, fuelConsumption);
             _infoController.UpdateInfo(car);
         }
-
-        // Update is called once per frame
-        void Update()
-        {
-            if(!_overlayController._isStatisticsOpen)
-            {
-                _tabs = Tabs.None;
-            } else if (_overlayController._isStatisticsOpen && _tabs == Tabs.None)
-            {
-                _tabs = Tabs.Stats;
-            }
-
-            UpdatePanels();
-            UpdateCarInfo();
-        }
     }
 }

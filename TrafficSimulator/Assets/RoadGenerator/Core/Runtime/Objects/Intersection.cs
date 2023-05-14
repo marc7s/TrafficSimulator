@@ -36,6 +36,8 @@ namespace RoadGenerator
         public Vector3 JunctionEdgePosition;
         public Road Road;
         public NavigationNodeEdge NavigationNodeEdgeOutwards;
+        public Vector3? PrimaryThresholdPosition = null;
+        public Vector3? SecondaryThresholdPosition = null;
         public string ID = System.Guid.NewGuid().ToString();
         // Since unity can't serialize optional values, we use an empty string to represent null
         public string OppositeArmID = "";
@@ -46,7 +48,7 @@ namespace RoadGenerator
         {
             JunctionEdgePosition = junctionEdgeData.AnchorPoint;
             Road = junctionEdgeData.Road;
-            NavigationNodeEdgeOutwards = null; 
+            NavigationNodeEdgeOutwards = null;
         }
     }
 
@@ -188,6 +190,7 @@ namespace RoadGenerator
             AssignMeshComponents();
             AssignMaterials();
             CreateIntersectionMesh();
+            MapIntersectionNavigation();
             ShowGuideNodes();
             gameObject.GetComponent<MeshCollider>().sharedMesh = _mesh;
         }
@@ -299,16 +302,13 @@ namespace RoadGenerator
 
                 (Vector3, Vector3) i5RoadLine = (i5, road1Dir);
                 (Vector3, Vector3) i10RoadLine = (i10, road1Dir);
-
-                (Vector3, Vector3) i7RoadLine = (i7, road2Dir);
                 (Vector3, Vector3) i6RoadLine = (i6, road2Dir);
-                (Vector3, Vector3) i8RoadLine = (i8, -road2Dir);
                 (Vector3, Vector3) i9RoadLine = (i9, -road2Dir);
 
                 // Mid points
                 Vector3 i1 = GetMidPointCorner(i5RoadLine, i6RoadLine);
-                Vector3 i2 = GetMidPointCorner(i5RoadLine, i7RoadLine);
-                Vector3 i3 = GetMidPointCorner(i10RoadLine, i8RoadLine);
+                Vector3 i2 = Vector3.Lerp(i7, i8, 1 / 3);
+                Vector3 i3 = Vector3.Lerp(i7, i8, 2 / 3);
                 Vector3 i4 = GetMidPointCorner(i10RoadLine, i9RoadLine);
                 
                 // Adding unused vertice to make sure the index is correct
@@ -493,8 +493,9 @@ namespace RoadGenerator
         }
 
         /// <summary> Returns the position of a mid point corner used for creating the intersections. Uses line intersection with a fallback for lerps </summary>
-        private Vector3 GetMidPointCorner((Vector3 position, Vector3 direction) main, (Vector3 position, Vector3 direction) projectionTarget)
+        private Vector3 GetMidPointCorner((Vector3 position, Vector3 direction) main, (Vector3 position, Vector3 direction) projectionTarget, float? forceStretchFactor = null)
         {
+            float stretchFactor = forceStretchFactor ?? _stretchFactor;
             // Normalize the directions. It should not matter for the algorithm,
             // but if these vectors would be abnormally large the intersection point accuracy could be compromised, so this is mostly here for sanity
             main.direction = main.direction.normalized;
@@ -518,15 +519,18 @@ namespace RoadGenerator
             if(a2Ddir == b2Ddir || Vector2.Distance(intersectPos2D, b2DPos) > Vector3.Distance(main.position, projectionTarget.position))
             {
                 Vector3 midPoint = Vector3.Lerp(main.position, projectionTarget.position, 0.5f);
-                return Vector3.Lerp(midPoint, IntersectionPosition, _stretchFactor);
+                return Vector3.Lerp(midPoint, IntersectionPosition, stretchFactor);
             }
             else
             {
                 // Project the intersection position back to the 3D plane, with the y coordinate set to the average y coordinate of the two points
                 Vector3 intersectPos = new Vector3(intersectPos2D.x, Vector3.Lerp(main.position, projectionTarget.position, 0.5f).y, intersectPos2D.y);
                 
-                // Return the intersection position, offset in the projection target position by the stretch factor to apply the stretch
-                return Vector3.Lerp(intersectPos, projectionTarget.position, _stretchFactor);
+                // Project the intersection position onto the line between the road edges to get the point on the line at the intersection position
+                Vector3 projectedPoint = ProjectPointOntoLine(intersectPos, (main.position, projectionTarget.position));
+
+                // Return the intersection position, offset towards the projected point by the stretch factor to apply the stretch
+                return Vector3.Lerp(intersectPos, projectedPoint, stretchFactor);
             }
         }
 
@@ -537,6 +541,12 @@ namespace RoadGenerator
                 bottomLeft, topLeft, topRight,
                 bottomLeft, topRight, bottomRight
             };
+        }
+
+        private Vector3 ProjectPointOntoLine(Vector3 point, (Vector3, Vector3) line)
+        {
+            (Vector3 start, Vector3 end) = line;
+            return Vector3.Project(point - start, end - start) + start;
         }
         
         private void AssignMeshComponents() 
@@ -712,6 +722,16 @@ namespace RoadGenerator
             _intersectionGuideRoadNodes.Clear();
             _intersectionGuidePaths.Clear();
 
+            // The factor with which to slightly expand the minimum distance to account for slight variations due to angles
+            const float MIN_DISTANCE_FACTOR = 1.2f;
+
+            // Clear the threshold positions
+            foreach(IntersectionArm arm in IntersectionArms)
+            {
+                arm.PrimaryThresholdPosition = null;
+                arm.SecondaryThresholdPosition = null;
+            }
+
             List<Lane> lanes = new List<Lane>();
 
             foreach (Road road in GetIntersectionRoads())
@@ -721,6 +741,7 @@ namespace RoadGenerator
             {
                 LaneNode currentNode = lane.StartNode;
                 Road road = currentNode.RoadNode.Road;
+                
                 while(currentNode != null)
                 {
                     if (currentNode.RoadNode.Road != road)
@@ -732,12 +753,66 @@ namespace RoadGenerator
                         continue;
                     }
 
+                    if (currentNode.Intersection != this)
+                    {
+                        currentNode = currentNode.Next;
+                        continue;
+                    }
+
+                    IntersectionArm arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
+
                     bool isEdgePointingToIntersection = currentNode.GetNavigationEdge().EndNavigationNode.RoadNode.Position == IntersectionPosition;
                     if (!isEdgePointingToIntersection)
                     {
-                        IntersectionArm arm = GetIntersectionArmAtJunctionEdge(currentNode.RoadNode);
                         if (arm != null)
                             AddLaneNodeFromNavigationNodeEdge(arm?.NavigationNodeEdgeOutwards, currentNode);
+                    }
+
+                    foreach(IntersectionArm otherArm in IntersectionArms)
+                    {
+                        if(otherArm == arm)
+                            continue;
+ 
+                        bool startingEdge = currentNode.RoadNode.Next.IsIntersection();
+
+                        RoadNode otherArmRoadNode = GetRoadNodeAtIntersectionArm(otherArm);
+
+                        // The primary and secondary positions of the lane for the current arm
+                        Vector3 armPrimary = arm.JunctionEdgePosition + currentNode.RoadNode.Normal * (lane.Type.Index + 1) * arm.Road.LaneWidth * 0.5f;
+                        Vector3 armSecondary = arm.JunctionEdgePosition - currentNode.RoadNode.Normal * (lane.Type.Index + 1) * arm.Road.LaneWidth * 0.5f;
+                        
+                        // The primary and secondary positions of the lane for the other arm
+                        Vector3 otherPrimary = otherArm.JunctionEdgePosition + otherArmRoadNode.Normal * (lane.Type.Index + 1) * otherArm.Road.LaneWidth * 0.5f;
+                        Vector3 otherSecondary = otherArm.JunctionEdgePosition - otherArmRoadNode.Normal * (lane.Type.Index + 1) * otherArm.Road.LaneWidth * 0.5f;
+
+                        // Calculate the minimum distance, within which a lane is considered to intersect with the other lane
+                        float minDistance = Mathf.Max(arm.Road.LaneWidth, otherArm.Road.LaneWidth) * MIN_DISTANCE_FACTOR;
+                        
+                        // The directions of the arms
+                        Vector3 armDirection = (IntersectionPosition - arm.JunctionEdgePosition).normalized;
+                        Vector3 otherArmDirection = (IntersectionPosition - otherArm.JunctionEdgePosition).normalized;
+                        
+                        // Calculate the intersection point of the arms, which is the threshold position
+                        Vector3 intersectPoint = GetMidPointCorner((arm.JunctionEdgePosition, armDirection), (otherArm.JunctionEdgePosition, otherArmDirection), 0);
+
+                        // Check if the primary lane intersects with any other arm
+                        if(Vector3.Distance(armPrimary, otherPrimary) < minDistance || Vector3.Distance(armPrimary, otherSecondary) < minDistance)
+                        {
+                            // Set the threshold positions for the arm
+                            if(startingEdge)
+                                arm.PrimaryThresholdPosition = intersectPoint;
+                            else
+                                arm.SecondaryThresholdPosition = intersectPoint;
+                        }
+                        // Check if the secondary lane intersects with any other arm
+                        else if(Vector3.Distance(armSecondary, otherPrimary) < minDistance || Vector3.Distance(armSecondary, otherSecondary) < minDistance)
+                        {
+                            // Set the threshold positions for the arm
+                            if(startingEdge)
+                                arm.SecondaryThresholdPosition = intersectPoint;
+                            else
+                                arm.PrimaryThresholdPosition = intersectPoint;
+                        }
                     }
 
                     // Since we want to map the nodes that point out of the intersection, we skip nodes that point towards the intersection 
@@ -863,33 +938,66 @@ namespace RoadGenerator
         private void CreateEntryIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode, road);
-            Section laneSection = CreateLaneSection(road, junctionNode, junctionNode, generatedRoadNodes, LaneSide.Primary, true);
+            Section laneSection = CreateLaneSection(road, intersectionNode.RoadNode, junctionNode, junctionNode, generatedRoadNodes, LaneSide.Primary, true);
             _intersectionEntrySections.Add(junctionNode.ID, laneSection);
         }
 
         private void CreateExitIntersectionLaneNodes(Road road, LaneNode junctionNode, LaneNode intersectionNode)
         {
             RoadNode generatedRoadNodes = FetchOrGenerateRoadNodes(junctionNode.RoadNode, intersectionNode.RoadNode, road);
-            Section laneSection = CreateLaneSection(road, junctionNode, intersectionNode, generatedRoadNodes, LaneSide.Secondary, false);
+            Section laneSection = CreateLaneSection(road, intersectionNode.RoadNode, junctionNode, intersectionNode, generatedRoadNodes, LaneSide.Secondary, false);
             _intersectionExitSections.Add(junctionNode.ID, laneSection);
         }
 
-        private Section CreateLaneSection(Road road, LaneNode junctionNode, LaneNode start, RoadNode roadNode, LaneSide laneSide, bool isEntry)
+        private Section CreateLaneSection(Road road, RoadNode intersectionRoadNode, LaneNode junctionNode, LaneNode start, RoadNode roadNode, LaneSide laneSide, bool isEntry)
         {
             float laneNodeOffset = Vector3.Distance(start.RoadNode.Position, start.Position);
             int laneNodeDirection = laneSide == LaneSide.Primary ? 1 : -1;
+            IntersectionArm arm = GetIntersectionArmAtJunctionEdge(junctionNode.RoadNode);
+
+            // The start and end points to create the lane section between
+            Vector3 startPoint;
+            Vector3 endPoint;
             
+            // Set the start and end points, projecting the threshold position onto the lane section direction if it exists
+            if(laneSide == LaneSide.Primary)
+            {
+                startPoint = roadNode.Position;
+                endPoint = arm.PrimaryThresholdPosition == null ? roadNode.Last.Position : ProjectPointOntoLine(arm.PrimaryThresholdPosition.Value, (roadNode.Position, roadNode.Last.Position));
+            }
+            else
+            {
+                startPoint = roadNode.Position;
+                endPoint = arm.SecondaryThresholdPosition == null ? roadNode.Last.Position : ProjectPointOntoLine(arm.SecondaryThresholdPosition.Value, (roadNode.Position, roadNode.Last.Position));
+            }
+            
+            // The direction the section is being generated in
+            Vector3 direction = (endPoint - startPoint).normalized;
+
             // Important: In order to get the correct direction of the lane nodes, we need to reverse the road nodes if the lane is secondary
             // Since reverse creates copies of the nodes, this means that logic that relies on the road nodes being the same instance between entry and exit will not work
             RoadNode currRoadNode = roadNode;
             
             LaneNode curr = null;
             LaneNode prev = null;
-            while(currRoadNode != null)
+            
+            // Loop until the last end node, or the end point is behind or on the same position as the current road node
+            while(currRoadNode != null && Vector3.Dot(direction, (endPoint - currRoadNode.Position).normalized) >= 0)
             {
+                // Continue as long as the start point is in front of the current road node
+                if(Vector3.Dot(direction, (startPoint - currRoadNode.Position).normalized) > 0)
+                {
+                    currRoadNode = currRoadNode.Next;
+                    continue;
+                }
+                
                 Vector3 position = currRoadNode.Position + currRoadNode.Normal * laneNodeOffset * laneNodeDirection;
                 
-                curr = curr == null ? new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, 0) : new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position));
+                // Mirror the rotation if the section is in the opposite road direction
+                bool mirror = intersectionRoadNode.Index < junctionNode.RoadNode.Index;
+                
+                // Add a section lane node
+                curr = curr == null ? new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, 0, true, mirror) : new LaneNode(position, junctionNode.LaneSide, start.LaneIndex, currRoadNode, prev, null, Vector3.Distance(prev.Position, position), true, mirror);
                 
                 if(prev != null)
                     prev.Next = curr;

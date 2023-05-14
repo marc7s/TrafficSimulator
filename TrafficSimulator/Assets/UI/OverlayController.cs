@@ -14,14 +14,6 @@ namespace UI
         // Overlay Button
         private Button _menuButton;
 
-        // Car statistics UI
-        private VisualElement _statisticsUI;
-        public bool _isStatisticsOpen = false;
-
-        // World statistics UI
-        private VisualElement _worldUI;
-        public bool _isWorldOpen = false;
-
         // Camera Buttons
         private StyleSheet _cameraButtonStyles;
         private Button _defaultCameraButton;
@@ -29,10 +21,9 @@ namespace UI
         private Button _fpvButton;
         private Button _currentlyHighlightedCameraButton;
 
-        // Mode Buttons
-        private Button _statisticsButton;
-        private Button _worldOptionButton;
-        private Button _editorButton;
+        // Car Spawner Buttons
+        private Button _spawnCarsButton;
+        private Button _deleteCarsButton;
 
         // Clock Buttons
         private Button _rewindButton;
@@ -45,6 +36,10 @@ namespace UI
         // Labels
         private Label _clockLabel;
         private Label _fpsLabel;
+        private bool _showFPS = false;
+
+        // Car Spawner Input
+        private TextField _carSpawnerInput;
 
         private const int _fpsUpdateFrequency = 15;
         private float _fpsLastUpdateTime = 0;
@@ -66,7 +61,14 @@ namespace UI
             _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
             
             FindCameraManager();
+
             // Buttons
+            _spawnCarsButton = _doc.rootVisualElement.Q<Button>("SpawnCars");
+            _spawnCarsButton.clicked += SpawnCarsButtonOnClicked;
+
+            _deleteCarsButton = _doc.rootVisualElement.Q<Button>("DeleteCars");
+            _deleteCarsButton.clicked += DeleteCarsButtonOnClicked;
+
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
 
@@ -83,32 +85,7 @@ namespace UI
             _fpvButton.AddToClassList("button");
             _fpvButton.clicked += FPVButtonOnClicked;
             GreyOutButton(_fpvButton);
-
-            _statisticsButton = _doc.rootVisualElement.Q<Button>("Statistics");
-            _statisticsButton.clicked += StatisticsButtonOnClicked;
-
-            // Get car statistics UI visual element
-            _statisticsUI = _doc.rootVisualElement.Q<VisualElement>("StatisticsWindow");
-            _statisticsUI.pickingMode = PickingMode.Position;
-            _statisticsUI.visible = false;
-            // Make draggable
-            _statisticsUI.AddManipulator(new DragManipulator());
-            _statisticsUI.RegisterCallback<DropEvent>(evt => Debug.Log($"{evt.target} dropped on {evt.droppable}"));
-
-            // Get world statistics UI visual element
-            _worldUI = _doc.rootVisualElement.Q<VisualElement>("WorldWindow");
-            _worldUI.pickingMode = PickingMode.Position;
-            _worldUI.visible = false;
-            // Make draggable
-            _worldUI.AddManipulator(new DragManipulator());
-            _worldUI.RegisterCallback<DropEvent>(evt => Debug.Log($"{evt.target} dropped on {evt.droppable}"));
-
-            _worldOptionButton = _doc.rootVisualElement.Q<Button>("WorldOptions");
-            _worldOptionButton.clicked += WorldOptionButtonOnClicked;
-
-            _editorButton = _doc.rootVisualElement.Q<Button>("Editor");
-            _editorButton.clicked += EditorButtonOnClicked;
-
+            
             _rewindButton = _doc.rootVisualElement.Q<Button>("Rewind");
             _rewindButton.clicked += RewindButtonOnClicked;
 
@@ -121,13 +98,18 @@ namespace UI
             _fastForwardButton = _doc.rootVisualElement.Q<Button>("Fastforward");
             _fastForwardButton.clicked += FastForwardButtonOnClicked;
 
-            _doc.rootVisualElement.visible = false;
+            // Input
+            _carSpawnerInput = _doc.rootVisualElement.Q<TextField>("CarSpawnerInput");
+
+            // Load settings
+            _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
         }
 
         private void Start()
         {
             // Set FPS visibility
             _fpsLabel.visible = PlayerPrefsGetBool(FPS_COUNTER);
+
             UserSelectManager.Instance.OnSelectedGameObject += selectedGameObject =>
             {
                 if (selectedGameObject)
@@ -214,8 +196,6 @@ namespace UI
 
         private void MenuButtonOnClicked()
         {
-            _statisticsUI.visible = false;
-            _worldUI.visible = false;
             _doc.rootVisualElement.visible = false;
             SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
         }
@@ -233,28 +213,6 @@ namespace UI
         private void FPVButtonOnClicked()
         {
             _cameraManager.ToggleFirstPersonDriverCamera();
-        }
-
-        private void StatisticsButtonOnClicked()
-        {
-            _isStatisticsOpen = !_isStatisticsOpen;
-            _statisticsUI.visible = _isStatisticsOpen;
-            
-        }
-
-        public GameObject WorldWindowStatistic;        
-        
-        private void WorldOptionButtonOnClicked()
-        {
-            _isWorldOpen = !_isWorldOpen;
-            _worldUI.visible = _isWorldOpen;
-            WorldWindowStatistic.SetActive(_isWorldOpen);
-            
-        }
-
-        private void EditorButtonOnClicked()
-        {
-            Debug.Log("Editor");
         }
 
         private void RewindButtonOnClicked()
@@ -275,11 +233,28 @@ namespace UI
             TimeManager.Instance.SetModeFastForward();
         }
 
+        private void SpawnCarsButtonOnClicked()
+        {
+            if (int.TryParse(_carSpawnerInput.text, out int amount))
+            {
+                // TODO: Implement this
+            }
+            else
+            {
+                Debug.LogWarning("Invalid input for car spawner.");
+            }
+        }
+
+        private void DeleteCarsButtonOnClicked()
+        {
+            // TODO: Implement this
+        }
+
         void Update()
         {
             _clockLabel.text = TimeManager.Instance.Timestamp;
             // FPS counter
-            if(PlayerPrefsGetBool(FPS_COUNTER) && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
+            if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
                 DisplayFPS(1f / Time.unscaledDeltaTime);
         }
 
@@ -293,11 +268,6 @@ namespace UI
         private bool PlayerPrefsGetBool(string name)
         {
             return PlayerPrefs.GetInt(name, 0) == 1;
-        }
-
-        public void Enable()
-        {
-            _doc.rootVisualElement.visible = true;
         }
     }
 }

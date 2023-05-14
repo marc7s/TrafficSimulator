@@ -1,7 +1,6 @@
 using Cinemachine;
 using UnityEngine;
 using User;
-using CameraState = Cam.CameraState;
 
 namespace Cam
 {
@@ -34,15 +33,27 @@ namespace Cam
         {
             InputHandler = new CameraInputHandler();
             _cmBrain = Camera.main.GetComponent<CinemachineBrain>();
+            
+            if(_cmBrain == null)
+            {
+                Debug.LogError("There must be a CinemachineBrain component on the main camera");
+                return;
+            }
+            
             _cameras[FindDefaultCameraIndex()].SetActive(this);
         }
 
         private void Update()
         {
-            if (_cmBrain.IsBlending) return;
+            if (_cmBrain == null || _cmBrain.IsBlending) 
+                return;
+            
             _cameras[_currentActiveCameraIndex].Look(InputHandler.LookDelta);
-            _cameras[_currentActiveCameraIndex].Move(InputHandler.Movement);
-            _cameras[_currentActiveCameraIndex].RotateHorizontal(InputHandler.Rotation);
+            _cameras[_currentActiveCameraIndex].Move(new Vector3(InputHandler.Movement.x, 0, InputHandler.Movement.y));
+            
+            if(InputHandler.MouseOrigin != null)
+                _cameras[_currentActiveCameraIndex].Rotate(InputHandler.MouseOrigin.Value);
+            
             _cameras[_currentActiveCameraIndex].Zoom(InputHandler.Zoom);
         }
 

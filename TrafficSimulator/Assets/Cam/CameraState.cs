@@ -16,16 +16,17 @@ namespace Cam
         [SerializeField] protected Transform FollowTransform;
         protected CameraManager CameraManager;
         protected CinemachineVirtualCamera VirtualCamera;
+        protected Quaternion RotationOrigin = Quaternion.Euler(20, 0, 0);
         public bool IsDefault = false;
         
         protected virtual void Awake()
         {
             VirtualCamera = GetComponent<CinemachineVirtualCamera>();
+            
             // Cinemachine is internally hooked up to the old input system
             if(VirtualCamera.GetCinemachineComponent<CinemachinePOV>())
-            {
                 DisableInput();
-            }
+            
             VirtualCamera.Priority = IsDefault ? 1 : 0;
         }
 
@@ -38,9 +39,10 @@ namespace Cam
             VirtualCamera.Priority = 1;
             CameraManager = cameraManager;
             FollowTransform = cameraManager.CameraTarget.transform;
+            
             cameraManager.InputHandler.OnEscapePressed += HandleEscapeInput;
             cameraManager.InputHandler.OnSpacePressed += HandleSpaceInput;
-
+            cameraManager.InputHandler.OnRotationEnded += UpdateRotationOrigin;
         }
 
         /// <summary>
@@ -51,8 +53,10 @@ namespace Cam
         {
             VirtualCamera.Priority = 0;
             CameraManager = null;
+            
             cameraManager.InputHandler.OnEscapePressed -= HandleEscapeInput;
             cameraManager.InputHandler.OnSpacePressed -= HandleSpaceInput;
+            cameraManager.InputHandler.OnRotationEnded -= UpdateRotationOrigin;
         }
         
         /// <summary>
@@ -74,6 +78,33 @@ namespace Cam
             }
         }
 
+        public void UpdateRotationOrigin()
+        {
+            RotationOrigin = FollowTransform.rotation;
+        }
+
+        public void OrbitCameraRotation(ref Transform targetTransform, Vector2 mousePosition, Vector2 mouseOrigin, float rotationSpeedFactor, bool lockPitch = false, bool lockYaw = false)
+        {
+            Vector3 origin = RotationOrigin.eulerAngles;
+            Vector2 rotationOffset = mousePosition - mouseOrigin;
+            
+            // Return if there is no rotation offset
+            if(rotationOffset.magnitude <= 0)
+                return;
+            
+            // Scale the rotation offset with the rotation speed
+            rotationOffset *= rotationSpeedFactor;
+            
+            // Calculate the new rotation
+            Vector3 rot = RotationOrigin.eulerAngles + new Vector3(lockPitch ? 0 : -rotationOffset.y, lockYaw ? 0 : rotationOffset.x, 0);
+
+            // Clamp the pitch
+            rot.x = Mathf.Clamp(rot.x, 5, 90);
+            
+            // Update the rotation
+            targetTransform.eulerAngles = rot;
+        }
+
 
         #region Virtual Input Methods
         public virtual void HandleEscapeInput()
@@ -91,7 +122,7 @@ namespace Cam
             return;
         }
 
-        public virtual void RotateHorizontal(float horizontalRotation)
+        public virtual void Rotate(Vector2 rotationOffset)
         {
             return;
         }

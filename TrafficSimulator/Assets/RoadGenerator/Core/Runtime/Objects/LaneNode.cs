@@ -13,11 +13,12 @@ namespace RoadGenerator
         protected Vehicle _vehicle;
         protected int _laneIndex;
         protected bool _isSteeringTarget;
+        protected bool _mirrorRotation;
         public List<(LaneNode, LaneNode)> YieldNodes = new List<(LaneNode, LaneNode)>();
         public List<LaneNode> YieldBlockingNodes = new List<LaneNode>();
 
         /// <summary>Creates a new isolated lane node without any previous or next nodes</summary>
-        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, float distanceToPrevNode, bool isSteeringTarget = true) : this(position, laneSide, laneIndex, roadNode, null, null, distanceToPrevNode, isSteeringTarget){}
+        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, float distanceToPrevNode, bool isSteeringTarget = true, bool mirrorRotation = false) : this(position, laneSide, laneIndex, roadNode, null, null, distanceToPrevNode, isSteeringTarget, mirrorRotation){}
         
         /// <summary>Creates a new lane node</summary>
         /// <param name="position">The position of the node</param>
@@ -28,7 +29,7 @@ namespace RoadGenerator
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
         /// <param name="distanceToPrevNode">The distance to the previous (current end node)</param>
         /// <param name="isSteeringTarget">If the node should be steered towards or not</param>
-        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode, bool isSteeringTarget = true)
+        public LaneNode(Vector3 position, LaneSide laneSide, int laneIndex, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode, bool isSteeringTarget = true, bool mirrorRotation = false)
         {
             _position = position;
             _laneSide = laneSide;
@@ -38,10 +39,11 @@ namespace RoadGenerator
             _next = next;
             _distanceToPrevNode = distanceToPrevNode;
             _isSteeringTarget = isSteeringTarget;
+            _mirrorRotation = mirrorRotation;
             _id = System.Guid.NewGuid().ToString();
             _index = prev == null ? 0 : prev.Index + 1;
 
-            _rotation = laneSide == LaneSide.Primary ? roadNode.Rotation : roadNode.Rotation * Quaternion.Euler(0, 180f, 0);
+            _rotation = (laneSide == LaneSide.Primary) ^ mirrorRotation ? roadNode.Rotation : roadNode.Rotation * Quaternion.Euler(0, 180f, 0);
         }
 
         public bool IsIntersection() => _roadNode.IsIntersection();
@@ -61,9 +63,10 @@ namespace RoadGenerator
         public virtual Intersection Intersection => _roadNode.Intersection;
         public virtual Vehicle Vehicle => _vehicle;
         public virtual bool IsSteeringTarget => _isSteeringTarget;
+        public virtual bool MirrorRotation => _mirrorRotation;
         public override LaneNode Copy()
         {
-            return new LaneNode(_position, _laneSide, _laneIndex, _roadNode, _prev, _next, _distanceToPrevNode);
+            return new LaneNode(_position, _laneSide, _laneIndex, _roadNode, _prev, _next, _distanceToPrevNode, _isSteeringTarget, _mirrorRotation);
         }
 
         public bool HasPOI()
@@ -104,10 +107,7 @@ namespace RoadGenerator
             LaneNode curr = this.Next;
             while(curr != null)
             {
-                if(curr.RoadNode.Type == RoadNodeType.RoadConnection)
-                    return curr;
-                
-                if (curr.RoadNode.Type == RoadNodeType.End)
+                if(curr.RoadNode.Type == RoadNodeType.End || curr.RoadNode.Type == RoadNodeType.RoadConnection)
                     return curr;
                 
                 curr = curr.Next;

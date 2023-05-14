@@ -427,8 +427,10 @@ namespace RoadGenerator
                road.UpdateRoadNodes();
                road.UpdateLanes();
             }
+            
             // Generate a new graph
             RoadSystemGraph = RoadSystemNavigationGraph.GenerateRoadSystemNavigationGraph(this);
+            
             // Display the graph if the setting is active
             if (ShowGraph)
             {

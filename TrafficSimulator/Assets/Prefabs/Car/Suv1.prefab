@@ -1611,7 +1611,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _road: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
-  NavigationPathMaterial: {fileID: 0}
+  NavigationPathMaterial: {fileID: 2100000, guid: 4e77caf264868b44a911ed5008e6cf87, type: 2}
   LaneIndex: 0
   _mesh: {fileID: 480717873014840413}
   Mode: 1
@@ -1750,7 +1750,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 041e74d744444ca288dff463716afbbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <FirstPersonPivot>k__BackingField: {fileID: 1577973480899048131}
+  <FirstPersonPivot>k__BackingField: {fileID: 1577973480899043867}
 --- !u!114 &1577973480888144765
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -153,7 +153,7 @@ namespace RoadGenerator
         }
 
         /// <summary> Returns a random path from the current edge to a random node in the road graph </summary>
-        public static Stack<NavigationNodeEdge> GetPath(RoadSystem roadSystem, NavigationNodeEdge currentEdge, List<NavigationNode> targets, bool logSubPathError, out NavigationNode nodeToFind)
+        public static Stack<NavigationNodeEdge> GetPath(NavigationNodeEdge currentEdge, List<NavigationNode> targets, bool logSubPathError, out NavigationNode nodeToFind)
         {
             if(targets.Count > 0)
             {
@@ -174,7 +174,7 @@ namespace RoadGenerator
 #if UNITY_EDITOR
                         if(logSubPathError)
                         {
-                            Debug.LogError("Could not find path to target node " + target.RoadNode.Position + ". Skipping target");
+                            Debug.LogError("Could not find path to target node " + target.RoadNode.Position + "from " + sourceEdge.EndNavigationNode.RoadNode.Position + ". Switching to random.");
                             DebugUtility.MarkPositions(new Vector3[]{ sourceEdge.StartNavigationNode.RoadNode.Position, sourceEdge.EndNavigationNode.RoadNode.Position });
                         }
 #endif
@@ -192,7 +192,7 @@ namespace RoadGenerator
                     List<NavigationNodeEdge> subPathList = subPath.ToList();
                     NavigationNodeEdge lastSubEdge = subPathList[subPathList.Count - 1];
 
-                    sourceEdge = target.PrimaryDirectionEdge?.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
+                    sourceEdge = target.RoadNode.PrimaryNavigationNodeEdge?.EndNavigationNode == lastSubEdge.StartNavigationNode ? target.SecondaryDirectionEdge : target.PrimaryDirectionEdge;
                 }
 
                 return path;
@@ -200,37 +200,6 @@ namespace RoadGenerator
 
             nodeToFind = null;
             return new Stack<NavigationNodeEdge>();
-        }
-        
-        public static void DrawNewNavigationPath(List<Vector3> positions, NavigationNode nodeToFind, GameObject container, Material pathMaterial, GameObject targetMarker)
-        {
-            if (container.GetComponent<LineRenderer>() == null)
-                container.AddComponent<LineRenderer>();
-            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
-            lineRenderer.startWidth = 1f;
-            lineRenderer.endWidth = 1f;
-            
-            lineRenderer.material = pathMaterial;
-            lineRenderer.positionCount = positions.Count;
-            lineRenderer.SetPositions(positions.ToArray());
-
-            foreach (Transform child in container.transform)
-            {
-                Object.Destroy(child.gameObject);
-            }
-            Vector3 position = nodeToFind.RoadNode.Position + Vector3.up * 10f;
-            GameObject marker = Object.Instantiate(targetMarker, position, Quaternion.identity);
-            marker.transform.parent = container.transform;
-        }
-
-        public static void DrawUpdatedNavigationPath(ref List<Vector3> navigationPath, GameObject container)
-        {
-            if (navigationPath.Count == 0)
-                return;
-
-            LineRenderer lineRenderer = container.GetComponent<LineRenderer>();
-            lineRenderer.positionCount = navigationPath.Count;
-            lineRenderer.SetPositions(navigationPath.ToArray());
         }
     }
 }

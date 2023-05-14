@@ -11,7 +11,7 @@ namespace Cam
     public class CameraInputHandler : IDisposable
     {
         public Vector2 Movement { get; private set; }
-        public float Rotation { get; private set; }
+        public Vector2? MouseOrigin { get; private set; }
         public Vector2 LookDelta { get; private set; }
         public float Zoom { get; private set; }
 
@@ -31,6 +31,11 @@ namespace Cam
         /// Occurs when the Space key is pressed.
         /// </summary>
         public event Action OnSpacePressed;
+
+        /// <summary>
+        /// Occurs when the Rotation stops being changed
+        /// </summary>
+        public event Action OnRotationEnded;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CameraInputHandler"/> class.
@@ -55,13 +60,18 @@ namespace Cam
         {
             _movementInput.performed += OnMovementInput;
             _movementInput.canceled += OnMovementInput;
+            
             _rotationInput.performed += OnRotationInput;
-            _rotationInput.canceled += OnRotationInput;
+            _rotationInput.canceled += OnRotationInputCancelled;
+            
             _lookDeltaInput.performed += OnLookDeltaInput;
             _lookDeltaInput.canceled += OnLookDeltaInput;
+            
             _zoomInput.performed += OnZoomInput;
             _zoomInput.canceled += OnZoomInput;
+            
             _escapeInput.performed += OnEscapeInput;
+            
             _spaceInput.performed += OnSpaceInput;
         }
 
@@ -88,7 +98,17 @@ namespace Cam
 
         private void OnRotationInput(InputAction.CallbackContext ctx)
         {
-            Rotation = ctx.ReadValue<float>();
+            if(!UserSelectManager.Instance.IsHoveringUIElement)
+            {
+                Vector2 mousePosition = Mouse.current.position.ReadValue();
+                MouseOrigin = mousePosition;
+            }
+        }
+
+        private void OnRotationInputCancelled(InputAction.CallbackContext ctx)
+        {
+            MouseOrigin = null;
+            OnRotationEnded?.Invoke();
         }
 
         private void OnLookDeltaInput(InputAction.CallbackContext ctx)
@@ -108,13 +128,18 @@ namespace Cam
         {
             _movementInput.performed -= OnMovementInput;
             _movementInput.canceled -= OnMovementInput;
+            
             _rotationInput.performed -= OnRotationInput;
             _rotationInput.canceled -= OnRotationInput;
+            
             _zoomInput.performed -= OnZoomInput;
             _zoomInput.canceled -= OnZoomInput;
+            
             _lookDeltaInput.performed -= OnLookDeltaInput;
             _lookDeltaInput.canceled -= OnLookDeltaInput;
+            
             _escapeInput.performed -= OnEscapeInput;
+            
             _spaceInput.performed -= OnSpaceInput;
         }
     }

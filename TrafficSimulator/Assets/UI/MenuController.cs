@@ -169,15 +169,5 @@ namespace UI
             if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
                 DisplayFPS(1f / Time.unscaledDeltaTime);
         }
-
-        public void Enable()
-        {
-            _doc.rootVisualElement.visible = true;
-        }
-
-        public bool ShowFPS
-        {
-            get => _showFPS;
-        }
     }
 }

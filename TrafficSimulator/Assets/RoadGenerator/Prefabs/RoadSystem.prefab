@@ -41,6 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 798415014314360586}
   - component: {fileID: 6180432264754652656}
+  - component: {fileID: 3283986855115602963}
   m_Layer: 6
   m_Name: RoadSystem
   m_TagString: Untagged
@@ -66,7 +67,6 @@ Transform:
   - {fileID: 3658795453449097011}
   - {fileID: 845985873080657378}
   - {fileID: 1980633667098319055}
-  - {fileID: 8155297711703565684}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -87,7 +87,6 @@ MonoBehaviour:
   BuildingContainer: {fileID: 2163801758299223360}
   BusStopContainer: {fileID: 2447744149659853018}
   NatureContainer: {fileID: 310114100874643111}
-  Terrain: {fileID: 4301617544365304850}
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   _intersectionPrefab: {fileID: 4601614798071418940, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
@@ -97,16 +96,15 @@ MonoBehaviour:
   _parkingLotPrefab: {fileID: 3515437566898414979, guid: b09c3367fc5f1834792f19ddf614ea95, type: 3}
   DrivingSide: -1
   ShouldGenerateBuildings: 1
+  ShouldGenerateTrees: 1
   ShouldGenerateBusStops: 1
-  ShouldGenerateRoads: 1
-  ShouldGenerateTerrain: 1
   UseOSM: 0
   IsGeneratingOSM: 0
   DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
   DefaultBusStopPrefab: {fileID: 4172526712689242174, guid: 05003485e3fde2e499308490ddc2106d, type: 3}
-  DefaultTreePrefab: {fileID: 123896, guid: c63ea781a273235439e583799176c846, type: 3}
+  DefaultTreePrefab: {fileID: 9011557119221475123, guid: dafa189ce90adc94e93ddbd2f8bbc1ae, type: 3}
   DefaultYieldSignPrefab: {fileID: 4811144999697380177, guid: a02e087aa1f5e43499891fd70fefc5ba, type: 3}
   ShowGraph: 0
   SpawnRoadsAtOrigin: 0
@@ -114,84 +112,19 @@ MonoBehaviour:
   _tramRails: []
   _intersections: []
   GraphContainer: {fileID: 0}
---- !u!1 &1617797713765326929
-GameObject:
+--- !u!114 &3283986855115602963
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2516555535807450630}
-  - component: {fileID: 4301617544365304850}
-  - component: {fileID: 6709991127635927162}
-  m_Layer: 0
-  m_Name: Terrain
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
-  m_IsActive: 0
---- !u!4 &2516555535807450630
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1617797713765326929}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2549.161, y: -10.01, z: -68.79324}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8155297711703565684}
-  m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!218 &4301617544365304850
-Terrain:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1617797713765326929}
+  m_GameObject: {fileID: 798415014314360587}
   m_Enabled: 1
-  serializedVersion: 6
-  m_TerrainData: {fileID: 15600000, guid: c6bdfe9285023924b9762c932aa60aa7, type: 2}
-  m_TreeDistance: 5000
-  m_TreeBillboardDistance: 50
-  m_TreeCrossFadeLength: 5
-  m_TreeMaximumFullLODCount: 50
-  m_DetailObjectDistance: 80
-  m_DetailObjectDensity: 1
-  m_HeightmapPixelError: 5
-  m_SplatMapDistance: 1000
-  m_HeightmapMaximumLOD: 0
-  m_ShadowCastingMode: 2
-  m_DrawHeightmap: 1
-  m_DrawInstanced: 0
-  m_DrawTreesAndFoliage: 1
-  m_StaticShadowCaster: 0
-  m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 10652, guid: 0000000000000000f000000000000000, type: 0}
-  m_BakeLightProbesForTrees: 1
-  m_PreserveTreePrototypeLayers: 0
-  m_DeringLightProbesForTrees: 1
-  m_ScaleInLightmap: 0.0256
-  m_LightmapParameters: {fileID: 15203, guid: 0000000000000000f000000000000000, type: 0}
-  m_GroupingID: 0
-  m_RenderingLayerMask: 1
-  m_AllowAutoConnect: 1
---- !u!154 &6709991127635927162
-TerrainCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1617797713765326929}
-  m_Material: {fileID: 0}
-  m_Enabled: 1
-  m_TerrainData: {fileID: 15600000, guid: c6bdfe9285023924b9762c932aa60aa7, type: 2}
-  m_EnableTreeColliders: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c8c202b0c95c543aa906b4723580b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  TotalFuelConsumed: 0
 --- !u!1 &2163801758299223360
 GameObject:
   m_ObjectHideFlags: 0
@@ -316,303 +249,6 @@ Transform:
   m_Father: {fileID: 798415014314360586}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &9114344058142820384
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 8155297711703565684}
-  - component: {fileID: 9006996457829681849}
-  m_Layer: 0
-  m_Name: TerrainSpawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &8155297711703565684
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9114344058142820384}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2516555535807450630}
-  m_Father: {fileID: 798415014314360586}
-  m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9006996457829681849
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9114344058142820384}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f710250abab6f24a954bdf3c3c1ac64, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  seed: 13729
-  terrains:
-  - {fileID: 4301617544365304850}
-  visibleTerrainsOnly: 0
-  treeTypes:
-  - enabled: 1
-    name: tree01
-    seed: 71292
-    probability: 23.3
-    collisionCheck: 1
-    rejectUnderwater: 1
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 0
-    prefabs:
-    - index: 0
-      probability: 100
-      prefab: {fileID: 136824, guid: 393b236c42954a640b513d46de90ac38, type: 3}
-    distance: 3.1
-    scaleRange: {x: 0.8, y: 1.2}
-    sinkAmount: 0
-  - enabled: 1
-    name: tree02
-    seed: 29916
-    probability: 10
-    collisionCheck: 1
-    rejectUnderwater: 1
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 0
-    prefabs:
-    - index: 1
-      probability: 100
-      prefab: {fileID: 123896, guid: c63ea781a273235439e583799176c846, type: 3}
-    distance: 5
-    scaleRange: {x: 0.8, y: 1.2}
-    sinkAmount: 0
-  - enabled: 1
-    name: tree03
-    seed: 28928
-    probability: 10
-    collisionCheck: 1
-    rejectUnderwater: 1
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 0
-    prefabs:
-    - index: 2
-      probability: 100
-      prefab: {fileID: 191138, guid: 4e2dd32c733005a44b50004d673dc653, type: 3}
-    distance: 19.5
-    scaleRange: {x: 0.8, y: 1.2}
-    sinkAmount: 0
-  - enabled: 1
-    name: tree04
-    seed: 22030
-    probability: 10
-    collisionCheck: 1
-    rejectUnderwater: 1
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 0
-    prefabs:
-    - index: 3
-      probability: 100
-      prefab: {fileID: 109402, guid: aae542b8a65f39b49b008fa689ce9804, type: 3}
-    distance: 5
-    scaleRange: {x: 0.8, y: 1.2}
-    sinkAmount: 0.399
-  grassPrefabs:
-  - enabled: 1
-    name: Grass_A
-    seed: 60881
-    probability: 100
-    collisionCheck: 1
-    rejectUnderwater: 0
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: -10, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0.567
-    instanceCount: 9139
-    index: 0
-    type: 0
-    renderAsBillboard: 0
-    prefab: {fileID: 398929321252300881, guid: 4e6885e0d11bd224fa27617a4657c329, type: 3}
-    gpuInstancing: 1
-    holeEdgePadding: 2
-    billboard: {fileID: 0}
-    mainColor: {r: 1, g: 1, b: 1, a: 1}
-    secondaryColor: {r: 1, g: 1, b: 1, a: 1}
-    linkColors: 1
-    minMaxHeight: {x: 0.5, y: 1}
-    minMaxWidth: {x: 0.8, y: 1.2}
-    noiseSize: 0.1
-  - enabled: 1
-    name: Grass_B
-    seed: 6084
-    probability: 76.4
-    collisionCheck: 1
-    rejectUnderwater: 0
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 6849
-    index: 1
-    type: 0
-    renderAsBillboard: 0
-    prefab: {fileID: 1245006558584958560, guid: 7b3e6db10d22f504dbc606110b2cb5e7, type: 3}
-    gpuInstancing: 1
-    holeEdgePadding: 2
-    billboard: {fileID: 0}
-    mainColor: {r: 1, g: 1, b: 1, a: 1}
-    secondaryColor: {r: 1, g: 1, b: 1, a: 1}
-    linkColors: 1
-    minMaxHeight: {x: 0.5, y: 1}
-    minMaxWidth: {x: 0.8, y: 1.2}
-    noiseSize: 0.1
-  - enabled: 1
-    name: GrassDry_A
-    seed: 8551
-    probability: 34.5
-    collisionCheck: 1
-    rejectUnderwater: 0
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 3119
-    index: 2
-    type: 0
-    renderAsBillboard: 0
-    prefab: {fileID: 8486787402013068894, guid: 9e8508e3025d9c844810b83c5607c09e, type: 3}
-    gpuInstancing: 1
-    holeEdgePadding: 2
-    billboard: {fileID: 0}
-    mainColor: {r: 1, g: 1, b: 1, a: 1}
-    secondaryColor: {r: 1, g: 1, b: 1, a: 1}
-    linkColors: 1
-    minMaxHeight: {x: 0.5, y: 1}
-    minMaxWidth: {x: 0.8, y: 1.2}
-    noiseSize: 0.1
-  - enabled: 1
-    name: Grass_C
-    seed: 1193
-    probability: 54.1
-    collisionCheck: 1
-    rejectUnderwater: 0
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 5024
-    index: 3
-    type: 0
-    renderAsBillboard: 0
-    prefab: {fileID: 6846659341408791651, guid: 4c72217d56dcb6749a897a75cad1f34e, type: 3}
-    gpuInstancing: 1
-    holeEdgePadding: 2
-    billboard: {fileID: 0}
-    mainColor: {r: 1, g: 1, b: 1, a: 1}
-    secondaryColor: {r: 1, g: 1, b: 1, a: 1}
-    linkColors: 1
-    minMaxHeight: {x: 0.5, y: 1}
-    minMaxWidth: {x: 0.8, y: 1.2}
-    noiseSize: 0.1
-  - enabled: 1
-    name: Grass_D
-    seed: 5438
-    probability: 25
-    collisionCheck: 1
-    rejectUnderwater: 0
-    heightRange: {x: -10, y: 1000}
-    slopeRange: {x: 0, y: 60}
-    curvatureRange: {x: 0, y: 1}
-    layerMasks:
-    - name: Heather_A
-      layerID: 3
-      threshold: 0
-    instanceCount: 2186
-    index: 4
-    type: 0
-    renderAsBillboard: 0
-    prefab: {fileID: 5443344685879028270, guid: 4dfd50a1f648e984f8188be70774f281, type: 3}
-    gpuInstancing: 1
-    holeEdgePadding: 2
-    billboard: {fileID: 0}
-    mainColor: {r: 1, g: 1, b: 1, a: 1}
-    secondaryColor: {r: 1, g: 1, b: 1, a: 1}
-    linkColors: 1
-    minMaxHeight: {x: 0.5, y: 1}
-    minMaxWidth: {x: 0.8, y: 1.2}
-    noiseSize: 0.1
-  terrainSettings:
-    drawTreesAndFoliage: 1
-    perservePrefabLayer: 1
-    treeLightProbes: 0
-    treeDistance: 1000
-    billboardStart: 300
-    maxMeshTrees: 50
-    grassDistance: 200
-    grassDensity: 1
-    windStrength: 0.15
-    windSpeed: 1
-    windFrequency: 2
-    wintTint: {r: 1, g: 1, b: 1, a: 1}
-  cellSize: 64
-  cellDivisions: 4
-  highPrecisionCollision: 1
-  collisionLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  terrainMinMaxHeight: {x: -100, y: 2000}
-  detailResolution: 256
-  detailResolutionIndex: 1
-  grassPatchSize: 128
-  grassPatchSizeIndex: 4
-  tempColliders: []
-  waterHeight: -0.1
-  autoRespawnTrees: 1
 --- !u!1001 &7706637533628383206
 PrefabInstance:
   m_ObjectHideFlags: 0
