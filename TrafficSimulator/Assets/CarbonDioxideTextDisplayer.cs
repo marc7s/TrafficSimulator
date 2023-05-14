@@ -30,9 +30,7 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
 
     public void DisplayAllTime()
     {
-        print(_currentDisplay);
         if (_currentDisplay == CO2DisplayTimeSpan.AllTime) return;
-        print(2);
         DisplayCO2(_worldDataGatherer.Co2EmissionsAllTime);
         _currentDisplay = CO2DisplayTimeSpan.AllTime;
     }
