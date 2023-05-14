@@ -67,7 +67,7 @@ MonoBehaviour:
   GenerateSpeedSigns: 1
   ConnectionDistanceThreshold: 3
   IsOneWay: 0
-  IsGeneratingOSM: 1
+  RoadType: 0
   SpeedSignDistanceFromIntersectionEdge: 5
   SpeedSignDistanceFromRoadEnd: 5
   ShouldSpawnLampPoles: 1
@@ -90,6 +90,8 @@ MonoBehaviour:
   IsFirstRoadInClosedLoop: 0
   POIs: []
   IsRoadClosed: 0
+  RoadsideParkingPrimaryFullRoad: {fileID: 0}
+  RoadsideParkingSecondaryFullRoad: {fileID: 0}
   _speedSignTenKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignThirtyKPH: {fileID: 9128038793144409781, guid: da6e69a00cc9afc488d2ce695ed080ed, type: 3}
@@ -104,6 +106,7 @@ MonoBehaviour:
   _speedSignOneHundredTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignOneHundredThirtyKPH: {fileID: 1378736042997771929, guid: aa0d07a1b4228624287023f0703d50be, type: 3}
   NoEntryOneDirectionSignPrefab: {fileID: 100000, guid: 269e9f931d31d5145977872b6045218d, type: 3}
+  ParkingSignPrefab: {fileID: 538306130152936576, guid: 8fdbe5729cad8f742ac6e168fde2de9a, type: 3}
   LampPostPrefab: {fileID: 3558233629873542575, guid: 2eac61f19323a5f41b799d089d0ec797, type: 3}
 --- !u!114 &2234105199191049172
 MonoBehaviour:

@@ -22,7 +22,8 @@ namespace RoadGenerator
         YieldSign,
         TrafficLight,
         LampPost,
-        NoEntry
+        NoEntry,
+        Parking
     }
     public enum SpeedLimit
     {
