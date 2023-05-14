@@ -219,7 +219,7 @@ namespace RoadGenerator
         private List<SpawnableLaneNode> GetSpawnableLaneNodesInLane(Lane lane)
         {
             float distance = 0;
-            float offset = 4f;
+            float offset = 6f;
 
             List<SpawnableLaneNode> spawnableNodes = new List<SpawnableLaneNode>();
 
