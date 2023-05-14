@@ -108,7 +108,6 @@ namespace UI
             // Subscribe to events
             UserSelectManager.Instance.OnSelectedGameObject += selectedGameObject =>
             {
-                Debug.Log("Selected game object: " + selectedGameObject);
                 if (selectedGameObject)
                 {
                     RestoreButton(_fpvButton);
