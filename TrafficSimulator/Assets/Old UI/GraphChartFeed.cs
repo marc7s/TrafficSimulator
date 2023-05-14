@@ -25,6 +25,11 @@ namespace Old_UI
             if (_graph != null)
                 _graph.Scrollable = false;
         }
+        
+        public void SetCurrentGraphToNone()
+        {
+            _currentGraph = TimeSpan.None;
+        }
 
         public void LoadAllTimeGraph()
         {
