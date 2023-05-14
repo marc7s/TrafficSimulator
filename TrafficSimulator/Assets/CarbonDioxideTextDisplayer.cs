@@ -21,12 +21,16 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
     {
         _carbonDioxideEstimateText = GetComponent<TextMeshProUGUI>();
         _worldDataGatherer = GameObject.Find("RoadSystem").GetComponent<WorldDataGatherer>();
-        DisplayAllTime();
     }
 
     private void DisplayCO2(float co2Amount)
     {
         _carbonDioxideEstimateText.text = DefaultText + co2Amount.ToString("0.0000") + Units;
+    }
+    
+    public void SetDisplayTimeToNone()
+    {
+        _currentDisplay = CO2DisplayTimeSpan.None;
     }
 
     public void DisplayAllTime()
