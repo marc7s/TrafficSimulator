@@ -167,7 +167,6 @@ namespace Cam
             _toggledGameObject = toggledGameObject;
             _hasToggledGameObject = toggledGameObject != null;
             _isMovingTowardsTarget = false;
-            SetFollowTransform(_toggledGameObject?.transform);
         }
 
         private Vector3 TranslateDirectionToForward(float forwardScalar, float sidewaysScalar)

@@ -80,7 +80,6 @@ namespace Cam
         private void SetToggledGameObject(GameObject toggledGameObject = null)
         {
             _toggledGameObject = toggledGameObject;
-            SetFollowTransform(_toggledGameObject?.transform);
         }
 
         public override void Rotate(Vector2 mouseOrigin)
