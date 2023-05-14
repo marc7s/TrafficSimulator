@@ -119,7 +119,7 @@ namespace RoadGenerator
 
             AddLanesToList();
             CalculateLaneIndexes();
-            CreateCarInLaneDict();
+            CalculateMaxCarsForLanes();
         }
 
         void Update()
@@ -168,7 +168,8 @@ namespace RoadGenerator
             }
         }
 
-        private void CreateCarInLaneDict()
+        /// <summary>Calculate the maximum amount of vehicles per lane </summary>
+        private void CalculateMaxCarsForLanes()
         {
             spawnableLanes.Clear();
 
@@ -184,9 +185,9 @@ namespace RoadGenerator
             Debug.Log("Max cars: " + maxCars);
         }
 
-        private List<CarsForLane> CalculateCarsPerLane(int carCount)
+        /// <summary>Remove 1 capacity from each lane until there are no cars left or no lanes left </summary>
+        private List<CarsForLane> T_CalculateCarsPerLane(int carCount)
         {
-            // Loop through _maxCarsInLane and subtract 1 car from each lane
             List<CarsForLane> availableLanes = new List<CarsForLane>(spawnableLanes);
             List<CarsForLane> fullLanes = new List<CarsForLane>();
 
@@ -216,6 +217,19 @@ namespace RoadGenerator
             return allLanes;
         }
 
+        /// <summary>Calculate the amount of cars per lane by ratio </summary>
+        private List<CarsForLane> R_CalculateCarsPerLane()
+        {
+            int carCount = 0;
+            List<CarsForLane> availableLanes = new List<CarsForLane>(spawnableLanes);
+
+            foreach (CarsForLane lane in availableLanes)
+                carCount += Mathf.CeilToInt(lane.Capacity * LaneCarRatio);
+            
+            return T_CalculateCarsPerLane(carCount);
+        }
+
+        /// <summary>Find all acceptable spawn nodes in a lane </summary>
         private List<SpawnableLaneNode> GetSpawnableLaneNodesInLane(Lane lane)
         {
             float distance = 0;
@@ -259,9 +273,9 @@ namespace RoadGenerator
             }
 
             // Calculate cars to spawn per lane
-            List<CarsForLane> allLanes = CalculateCarsPerLane(carsToSpawn);
+            List<CarsForLane> allLanes = _mode == SpawnMode.Total ? T_CalculateCarsPerLane(carsToSpawn) : R_CalculateCarsPerLane();
 
-            // Loop through _carsThatShouldSpawn and spawn cars
+            // Loop through all lanes and spawn their cars
             foreach (CarsForLane lane in allLanes)
             {
                 for (int i = 0; i < lane.Capacity - lane.CapacityLeft; i++)
@@ -327,6 +341,7 @@ namespace RoadGenerator
             autoDrive.Setup();
         }
 
+        /// <summary>Calculates the next node in a lane based on the target length</summary>
         private LaneNode CalculateNextNode(LaneNode startNode, float targetLength)
         {
             LaneNode curr = startNode.Next;
@@ -335,7 +350,6 @@ namespace RoadGenerator
             while(curr != null && ((curr.Type == RoadNodeType.JunctionEdge || curr.IsIntersection()) || currentLength < targetLength))
             {
                 currentLength += curr.DistanceToPrevNode;
-
                 curr = curr.Next;
             }
 
