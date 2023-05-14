@@ -43,8 +43,7 @@ namespace Old_UI
 
         private void LoadGraph(TimeSpan timeSpan, int timeSpanInSeconds)
         {
-            if (_currentGraph == timeSpan) return; 
-            print("LoadGraph");
+            if (_currentGraph == timeSpan) return;
             _currentGraph = timeSpan;
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");
