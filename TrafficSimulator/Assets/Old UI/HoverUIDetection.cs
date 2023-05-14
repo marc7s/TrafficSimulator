@@ -22,6 +22,6 @@ public class HoverUIDetection : MonoBehaviour
         _eventSystem.RaycastAll(_pointerEventData, results);
 
         bool isHoveringUIGO = results.Exists(result => LayerMask.LayerToName(result.gameObject.layer) == "UI");
-        UserSelectManager.Instance.IsHoveringUIElement = isHoveringUIGO;
+        UserSelectManager.Instance.IsHoveringNewUIElement = isHoveringUIGO;
     }
 }
