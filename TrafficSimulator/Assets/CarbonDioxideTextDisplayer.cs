@@ -5,6 +5,7 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
 {
     private enum CO2DisplayTimeSpan
     {
+        None,
         AllTime,
         ThreeMinutes,
         ThirtySeconds
@@ -14,7 +15,7 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
     private const string Units = " kg";
     private TextMeshProUGUI _carbonDioxideEstimateText;
     private WorldDataGatherer _worldDataGatherer;
-    private CO2DisplayTimeSpan _currentDisplay;
+    private CO2DisplayTimeSpan _currentDisplay = CO2DisplayTimeSpan.None;
 
     private void Start()
     {
