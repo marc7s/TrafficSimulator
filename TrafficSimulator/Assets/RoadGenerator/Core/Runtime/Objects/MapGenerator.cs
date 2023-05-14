@@ -77,10 +77,10 @@ namespace RoadGenerator
 
     public enum TerrainType
     {
-        Water,
+        Water = -1,
         Grass = 1,
-        Sand,
-        Concrete,
+        Sand = -2,
+        Concrete = -3,
         Forest = 3,
         Default = 0
     }
