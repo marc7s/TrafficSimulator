@@ -237,7 +237,9 @@ namespace RoadGenerator
                                 if (currentNode.Attributes["role"].Value == "outer" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
                                 {
                                     XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
-                                    outerPoints.AddRange(GetWayNodePositions(wayNode.GetEnumerator()));
+                                    List<Vector3> wayNodePositions = GetWayNodePositions(wayNode.GetEnumerator());
+                                    wayNodePositions.Reverse();
+                                    outerPoints.AddRange(wayNodePositions);
                                 }
                                 else if (currentNode.Attributes["role"].Value == "inner" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
                                 {
