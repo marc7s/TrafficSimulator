@@ -1176,7 +1176,7 @@ namespace RoadGenerator
             return guidePath;
         }
         /// <summary> Returns the turn direction for the intersection path </summary>
-        private TurnDirection GetTurnDirection(LaneNode entry, LaneNode exit)
+        public TurnDirection GetTurnDirection(LaneNode entry, LaneNode exit)
         {
             // If the entry and exit nodes share the same first node it means that the entry and exit nodes are on the same road
             if (GetIntersectionArmAtJunctionEdge(entry.RoadNode)?.OppositeArmID == GetIntersectionArmAtJunctionEdge(exit.RoadNode)?.ID && GetIntersectionArmAtJunctionEdge(exit.RoadNode)?.ID != "")
