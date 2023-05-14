@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/MenuStyles.uss?fileID=7433441132597879392&amp;guid=2a52f77de35e43240844819b355f1b18&amp;type=3#MenuStyles" />
     <Style src="project://database/Assets/UI/GeneralTheme.uss?fileID=7433441132597879392&amp;guid=d78cb5c2f4b3da046954bc98f8dde196&amp;type=3#GeneralTheme" />
-    <ui:VisualElement name="Main" style="height: 100%; justify-content: flex-start; align-items: flex-start; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; background-color: rgba(60, 58, 58, 0); width: 100%; flex-shrink: 0; flex-grow: 1; background-image: none; -unity-background-scale-mode: stretch-to-fill; flex-direction: row;">
+    <ui:VisualElement name="root" style="height: 100%; justify-content: flex-start; align-items: flex-start; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; background-color: rgba(60, 58, 58, 0); width: 100%; flex-shrink: 0; flex-grow: 1; background-image: none; -unity-background-scale-mode: stretch-to-fill; flex-direction: row;">
         <ui:VisualElement style="flex-shrink: 0; flex-grow: 1; height: 100%; width: 33%;" />
         <ui:VisualElement style="width: 33%; height: 100%; background-color: rgba(0, 0, 0, 0.78); flex-shrink: 0; flex-grow: 1;">
             <ui:VisualElement name="Head" style="align-items: flex-start; height: auto; width: 100%; justify-content: center; flex-shrink: 0; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; flex-direction: row;">
@@ -10,7 +10,10 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="MenuDisplay" style="flex-shrink: 0; width: 100%; height: auto; flex-grow: 1; align-items: center; justify-content: center;">
-                <ui:VisualElement name="StartMenuButtons" style="align-items: center; padding-bottom: 0; flex-shrink: 0; bottom: 10%;">
+                <ui:VisualElement name="StartMenuButtons" style="align-items: center; padding-bottom: 0; flex-shrink: 0;">
+                    <ui:VisualElement style="align-items: center; justify-content: center; flex-shrink: 0; padding-bottom: 20px;">
+                        <ui:TextField picking-mode="Ignore" name="CarSpawnerInput" text="Number of cars to simulate...   " style="font-size: 17px; width: 251px;" />
+                    </ui:VisualElement>
                     <ui:Button text="Start" display-tooltip-when-elided="true" name="StartButton" focusable="false" class="menu-button text color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
                     <ui:Button text="Settings" display-tooltip-when-elided="true" name="SettingsButton" focusable="false" class="menu-button color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
                     <ui:Button text="Exit" display-tooltip-when-elided="true" name="ExitButton" focusable="false" class="menu-button color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
