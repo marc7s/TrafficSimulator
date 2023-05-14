@@ -1135,7 +1135,7 @@ namespace RoadGenerator
             bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
             Vector3 offsetDirection =  roadNode.Normal * (isDrivingRight ? 1 : -1) * (IsForward ? 1 : -1);
             float distanceFromRoad = 1f;
-            busStop.transform.position += (distanceFromRoad + LaneCount / 2 * LaneWidth) * offsetDirection;
+            busStop.transform.position += (distanceFromRoad + (LaneCount / (IsOneWay ? 1 : 2) * LaneWidth)) * offsetDirection;
             TextMesh text = busStop.GetComponentInChildren<TextMesh>();
             text.text = busStopName;
             busStop.transform.parent = RoadSystem.BusStopContainer.transform;
