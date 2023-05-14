@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8070643699621653665
+--- !u!1 &538306130152936576
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,45 +8,45 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8070643699622015105}
-  - component: {fileID: 8070643699635725345}
-  - component: {fileID: 1763826198780066145}
-  - component: {fileID: 5584573746665488853}
+  - component: {fileID: 538306130152638624}
+  - component: {fileID: 538306130168192000}
+  - component: {fileID: 2135823848}
+  - component: {fileID: 2135823847}
   m_Layer: 0
-  m_Name: PLACEHOLDER
+  m_Name: Parking Sign
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8070643699622015105
+--- !u!4 &538306130152638624
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653665}
+  m_GameObject: {fileID: 538306130152936576}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8070643699622015107}
-  - {fileID: 8070643699622015109}
-  - {fileID: 8070643699622015111}
+  - {fileID: 538306130152638626}
+  - {fileID: 538306130152638628}
+  - {fileID: 538306130152638630}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!205 &8070643699635725345
+--- !u!205 &538306130168192000
 LODGroup:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653665}
+  m_GameObject: {fileID: 538306130152936576}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: -0.000000029802322, y: 1.4432932, z: 0.012470558}
-  m_Size: 2.8869612
+  m_LocalReferencePoint: {x: -0.0016998947, y: 1.2025341, z: 0.0034419578}
+  m_Size: 2.405069
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -54,43 +54,43 @@ LODGroup:
   - screenRelativeHeight: 0.25
     fadeTransitionWidth: 0
     renderers:
-    - renderer: {fileID: 8070643699619721825}
+    - renderer: {fileID: 538306130150738496}
   - screenRelativeHeight: 0.125
     fadeTransitionWidth: 0
     renderers:
-    - renderer: {fileID: 8070643699619721827}
+    - renderer: {fileID: 538306130150738498}
   - screenRelativeHeight: 0.01
     fadeTransitionWidth: 0
     renderers:
-    - renderer: {fileID: 8070643699619721829}
+    - renderer: {fileID: 538306130150738500}
   m_Enabled: 1
---- !u!65 &1763826198780066145
+--- !u!65 &2135823848
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653665}
+  m_GameObject: {fileID: 538306130152936576}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Size: {x: 0.05, y: 2.725096, z: 0.05}
-  m_Center: {x: 0, y: 1.3614117, z: 0}
---- !u!65 &5584573746665488853
+  m_Size: {x: 0.05, y: 2.3180244, z: 0.05}
+  m_Center: {x: 0, y: 1.1578759, z: 0}
+--- !u!65 &2135823847
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653665}
+  m_GameObject: {fileID: 538306130152936576}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 0
   serializedVersion: 2
-  m_Size: {x: 0.7, y: 0.7, z: 0.05}
-  m_Center: {x: 0, y: 2.54, z: 0.05}
---- !u!1 &8070643699621653667
+  m_Size: {x: 0.5, y: 0.5, z: 0.02}
+  m_Center: {x: 0, y: 2.15, z: 0.04}
+--- !u!1 &538306130152936578
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,46 +98,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8070643699622015107}
-  - component: {fileID: 8070643699618590881}
-  - component: {fileID: 8070643699619721825}
+  - component: {fileID: 538306130152638626}
+  - component: {fileID: 538306130151835776}
+  - component: {fileID: 538306130150738496}
   m_Layer: 0
-  m_Name: Prohibition_SpeedEnd30_LOD0
+  m_Name: Informational_Parking_LOD0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8070643699622015107
+--- !u!4 &538306130152638626
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653667}
+  m_GameObject: {fileID: 538306130152936578}
   m_LocalRotation: {x: 0.0000018099951, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.00000007947286, y: 0, z: -3.473869e-15}
+  m_LocalPosition: {x: -0.00032637513, y: 0, z: -5.7065245e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8070643699622015105}
+  m_Father: {fileID: 538306130152638624}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8070643699618590881
+--- !u!33 &538306130151835776
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653667}
-  m_Mesh: {fileID: 4300000, guid: f512b62edfad7d04cac21c0794ae0ca8, type: 3}
---- !u!23 &8070643699619721825
+  m_GameObject: {fileID: 538306130152936578}
+  m_Mesh: {fileID: 4300004, guid: 104634af4fd4f3b429e554a644e2cbee, type: 3}
+--- !u!23 &538306130150738496
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653667}
+  m_GameObject: {fileID: 538306130152936578}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -173,7 +173,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &8070643699621653669
+--- !u!1 &538306130152936580
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -181,46 +181,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8070643699622015109}
-  - component: {fileID: 8070643699618590883}
-  - component: {fileID: 8070643699619721827}
+  - component: {fileID: 538306130152638628}
+  - component: {fileID: 538306130151835778}
+  - component: {fileID: 538306130150738498}
   m_Layer: 0
-  m_Name: Prohibition_SpeedEnd30_LOD1
+  m_Name: Informational_Parking_LOD1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8070643699622015109
+--- !u!4 &538306130152638628
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653669}
+  m_GameObject: {fileID: 538306130152936580}
   m_LocalRotation: {x: 0.0000018099951, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.00000007947286, y: 0, z: -3.473869e-15}
+  m_LocalPosition: {x: 0.0006527504, y: 0, z: 2.8532624e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8070643699622015105}
+  m_Father: {fileID: 538306130152638624}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8070643699618590883
+--- !u!33 &538306130151835778
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653669}
-  m_Mesh: {fileID: 4300002, guid: f512b62edfad7d04cac21c0794ae0ca8, type: 3}
---- !u!23 &8070643699619721827
+  m_GameObject: {fileID: 538306130152936580}
+  m_Mesh: {fileID: 4300002, guid: 104634af4fd4f3b429e554a644e2cbee, type: 3}
+--- !u!23 &538306130150738498
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653669}
+  m_GameObject: {fileID: 538306130152936580}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -256,7 +256,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &8070643699621653671
+--- !u!1 &538306130152936582
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -264,46 +264,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8070643699622015111}
-  - component: {fileID: 8070643699618590885}
-  - component: {fileID: 8070643699619721829}
+  - component: {fileID: 538306130152638630}
+  - component: {fileID: 538306130151835780}
+  - component: {fileID: 538306130150738500}
   m_Layer: 0
-  m_Name: Prohibition_SpeedEnd30_LOD2
+  m_Name: Informational_Parking_LOD2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8070643699622015111
+--- !u!4 &538306130152638630
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653671}
+  m_GameObject: {fileID: 538306130152936582}
   m_LocalRotation: {x: 0.0000018099951, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.000000039736413, y: 0, z: 6.9477378e-15}
+  m_LocalPosition: {x: 0.0006527504, y: 0, z: 2.8532624e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8070643699622015105}
+  m_Father: {fileID: 538306130152638624}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8070643699618590885
+--- !u!33 &538306130151835780
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653671}
-  m_Mesh: {fileID: 4300004, guid: f512b62edfad7d04cac21c0794ae0ca8, type: 3}
---- !u!23 &8070643699619721829
+  m_GameObject: {fileID: 538306130152936582}
+  m_Mesh: {fileID: 4300000, guid: 104634af4fd4f3b429e554a644e2cbee, type: 3}
+--- !u!23 &538306130150738500
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8070643699621653671}
+  m_GameObject: {fileID: 538306130152936582}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1

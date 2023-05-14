@@ -26,7 +26,7 @@ namespace VehicleBrain
         public ref AutoDriveSetting Setting => ref _setting;
         public ref AutoDriveContext Context => ref _context;
 
-        private Dictionary<string, (LaneNode, LaneNode)> _intersectionNodeTransitions = new Dictionary<string, (LaneNode, LaneNode)>();
+        private Dictionary<string, (LaneNode, LaneNode, TurnDirection)> _intersectionNodeTransitions = new Dictionary<string, (LaneNode, LaneNode, TurnDirection)>();
 
         private class ForcePath
         {
@@ -48,9 +48,9 @@ namespace VehicleBrain
             SetAllBusStops();
         }
 
-        public void SetIntersectionTransition(Intersection intersection, LaneNode entry, LaneNode guideStart)
+        public void SetIntersectionTransition(Intersection intersection, LaneNode entry, LaneNode guideStart, TurnDirection turnDirection)
         {
-            _intersectionNodeTransitions[GetIntersectionTransitionKey(intersection, entry)] = (entry, guideStart);
+            _intersectionNodeTransitions[GetIntersectionTransitionKey(intersection, entry)] = (entry, guideStart, turnDirection);
         }
 
         public void UnsetIntersectionTransition(Intersection intersection, LaneNode entry)
@@ -115,7 +115,7 @@ namespace VehicleBrain
                         (loopNode, node) = node.Intersection.GetRandomLaneNode(node, ref Context.TurnDirection);
                     }
                     
-                    SetIntersectionTransition(entryNode.Intersection, entryNode, node);
+                    SetIntersectionTransition(entryNode.Intersection, entryNode, node, Context.TurnDirection);
                     Context.SetLoopNode(loopNode);
                 }
             }
@@ -319,7 +319,9 @@ namespace VehicleBrain
             RoadEndBehaviour endBehaviour = overrideEndBehaviour ?? _setting.EndBehaviour;
             if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(node.Intersection, node)))
             {
-                (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[GetIntersectionTransitionKey(node.Intersection, node)];
+                (LaneNode entry, LaneNode guideStart, TurnDirection turnDirection) = _intersectionNodeTransitions[GetIntersectionTransitionKey(node.Intersection, node)];
+                Context.TurnDirection = turnDirection;
+                
                 if(node == entry)
                     return guideStart;
             }
@@ -338,7 +340,7 @@ namespace VehicleBrain
             RoadEndBehaviour endBehaviour = overrideEndBehaviour ?? _setting.EndBehaviour;
             if(node.Intersection != null && _intersectionNodeTransitions.ContainsKey(GetIntersectionTransitionKey(node.Intersection, node)))
             {
-                (LaneNode entry, LaneNode guideStart) = _intersectionNodeTransitions[GetIntersectionTransitionKey(node.Intersection, node)];
+                (LaneNode entry, LaneNode guideStart, _) = _intersectionNodeTransitions[GetIntersectionTransitionKey(node.Intersection, node)];
                 
                 if(node == guideStart)
                     return entry;
@@ -384,6 +386,10 @@ namespace VehicleBrain
             _brakeOffset = brakeOffset;
             _speed = speed;
             _acceleration = acceleration;
+
+            // Register all ragdolls to the user select manager
+            if(_mode == DrivingMode.Performance)
+                User.UserSelectManager.Instance.AddRagdollVehicle(_vehicle);
         }
     }
 
