@@ -56,7 +56,7 @@ namespace Cam
             
             if(followObject != null)
                 _toggledGameObject = followObject;
-            
+
             RotationOrigin = FollowTransform.rotation;
         }
 
