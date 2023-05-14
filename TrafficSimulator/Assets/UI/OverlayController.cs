@@ -269,15 +269,15 @@ namespace UI
         
         private void FilterInput()
         {
-            const string placeholderText = "Cars to spawn...";
-            bool isplaceholderText = _carSpawnerInput.text.Equals(placeholderText);
+            const string PLACEHOLDER_TEXT = "Cars to spawn...";
+            bool isPlaceholderText = _carSpawnerInput.text.Equals(PLACEHOLDER_TEXT);
             bool isStartingZero = _carSpawnerInput.text.StartsWith("0");
             _carSpawnerInputText = _carSpawnerInput.text;
             
-            if (!_carSpawnerInputText.Equals("") && !isplaceholderText && !isStartingZero)
+            if (!_carSpawnerInputText.Equals("") && !isPlaceholderText && !isStartingZero)
                 _carSpawnerInput.SetValueWithoutNotify(Regex.Replace(_carSpawnerInputText, @"[^0-9]", ""));
-            else if (!isplaceholderText || isStartingZero)
-                _carSpawnerInput.SetValueWithoutNotify(placeholderText);
+            else if (!isPlaceholderText || isStartingZero)
+                _carSpawnerInput.SetValueWithoutNotify(PLACEHOLDER_TEXT);
         }
 
         /// <summary>Wrapper to allow getting bools from PlayerPrefs</summary>

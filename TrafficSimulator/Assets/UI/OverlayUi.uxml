@@ -33,7 +33,7 @@
             <ui:VisualElement class="bottom-border" />
             <ui:VisualElement name="CameraAndModeButtons" tabindex="0" style="flex-direction: column; align-items: flex-end; width: 312px; flex-shrink: 0; flex-grow: 0; height: 100px; justify-content: flex-end;">
                 <ui:VisualElement tabindex="0" class="car-spawner-border color-theme" style="height: 100px;">
-                    <ui:TextField picking-mode="Ignore" text="Number of cars..." focusable="true" tabindex="0" name="CarSpawnerInput" mask-character="asdasd" style="left: 10%; top: 2px; width: 125px; height: auto; font-size: 12px;" />
+                    <ui:TextField picking-mode="Ignore" text="Number of cars..." focusable="true" tabindex="0" name="CarSpawnerInput" style="left: 10%; top: 2px; width: 125px; height: auto; font-size: 12px;" />
                     <ui:VisualElement tabindex="-1" style="flex-shrink: 0; flex-grow: 1; height: 60%; width: 100%; align-items: center; justify-content: center; flex-direction: row;">
                         <ui:Button text="Spawn" display-tooltip-when-elided="true" name="SpawnCars" focusable="false" tabindex="-1" class="color-theme-button" style="height: 25px; -unity-background-image-tint-color: rgb(19, 183, 0);" />
                         <ui:Button text="Delete" display-tooltip-when-elided="true" name="DeleteCars" focusable="false" tabindex="-1" class="color-theme-button" style="height: 25px; -unity-background-image-tint-color: rgb(195, 0, 0);" />
