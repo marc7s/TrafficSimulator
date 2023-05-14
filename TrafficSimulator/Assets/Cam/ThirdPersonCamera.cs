@@ -17,6 +17,7 @@ namespace Cam
         private GameObject _toggledGameObject;
         private Quaternion _rotationOffset = Quaternion.identity;
         private Cinemachine3rdPersonFollow _cinemachineFollow;
+        
         [Header("Zoom Settings")]
         [SerializeField] private float _shoulderOffsetMin = 5f;
         [SerializeField] private float _shoulderOffsetMax = 20f;
