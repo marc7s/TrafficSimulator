@@ -92,7 +92,6 @@ namespace Cam
 
             _rotationOffset = vehicleRotationOffset * Quaternion.Inverse(newRotationOffset);
             
-            
             FollowTransform.position = _toggledGameObject.transform.position;
             FollowTransform.rotation = vehicleRotation * _rotationOffset;
         }
