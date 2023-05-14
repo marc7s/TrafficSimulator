@@ -1888,7 +1888,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed2077f9a1d00454da03e178dd2ee3f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _road: {fileID: 0}
+  StartingRoad: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
   NavigationPathMaterial: {fileID: 2100000, guid: 4e77caf264868b44a911ed5008e6cf87, type: 2}
   LaneIndex: 0
@@ -2250,7 +2250,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1577973480899275759}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e716af2fc4e2ff443b55f2492761cd23, type: 3}
   m_Name: 
