@@ -122,6 +122,19 @@ namespace RoadGenerator
             CalculateMaxCarsForLanes();
         }
 
+        public void Setup()
+        {
+            if (!_spawned)
+            {
+                _spawned = true;
+                SpawnCars();
+                Debug.Log("Total cars spawned: " + _carCounter);
+            }
+            else
+                Debug.Log("Cars already spawned");
+        }
+
+        /*
         void Update()
         {
             if (!_spawned)
@@ -134,6 +147,7 @@ namespace RoadGenerator
                 }
             }
         }
+        */
 
         private float GetLongestCarLength(List<GameObject> cars)
         {
