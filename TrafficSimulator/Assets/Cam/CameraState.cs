@@ -17,6 +17,7 @@ namespace Cam
         protected CameraManager CameraManager;
         protected CinemachineVirtualCamera VirtualCamera;
         protected Quaternion RotationOrigin = Quaternion.Euler(20, 0, 0);
+        protected bool IsRotating = false;
         public bool IsDefault = false;
         
         protected virtual void Awake()
@@ -42,7 +43,8 @@ namespace Cam
             
             cameraManager.InputHandler.OnEscapePressed += HandleEscapeInput;
             cameraManager.InputHandler.OnSpacePressed += HandleSpaceInput;
-            cameraManager.InputHandler.OnRotationEnded += UpdateRotationOrigin;
+            cameraManager.InputHandler.OnRotationStarted += StartRotating;
+            cameraManager.InputHandler.OnRotationEnded += EndRotation;
         }
 
         /// <summary>
@@ -53,10 +55,14 @@ namespace Cam
         {
             VirtualCamera.Priority = 0;
             CameraManager = null;
+
+            if(cameraManager == null)
+                return;
             
             cameraManager.InputHandler.OnEscapePressed -= HandleEscapeInput;
             cameraManager.InputHandler.OnSpacePressed -= HandleSpaceInput;
-            cameraManager.InputHandler.OnRotationEnded -= UpdateRotationOrigin;
+            cameraManager.InputHandler.OnRotationStarted -= StartRotating;
+            cameraManager.InputHandler.OnRotationEnded -= EndRotation;
         }
         
         /// <summary>
@@ -78,8 +84,15 @@ namespace Cam
             }
         }
 
-        public void UpdateRotationOrigin()
+        public void StartRotating()
         {
+            IsRotating = true;
+            RotationOrigin = FollowTransform.rotation;
+        }
+
+        public void EndRotation()
+        {
+            IsRotating = false;
             RotationOrigin = FollowTransform.rotation;
         }
 
