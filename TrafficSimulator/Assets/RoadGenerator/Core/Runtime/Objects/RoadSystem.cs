@@ -60,6 +60,7 @@ namespace RoadGenerator
         public GameObject BuildingContainer;
         public GameObject BusStopContainer;
         public GameObject NatureContainer;
+        public Terrain Terrain;
         [SerializeField] private GameObject _roadPrefab;
         [SerializeField] private GameObject _railPrefab;        
         [SerializeField] private GameObject _intersectionPrefab;
@@ -73,8 +74,9 @@ namespace RoadGenerator
         
         [Header("OSM Settings")]
         public bool ShouldGenerateBuildings = true;
-        public bool ShouldGenerateTrees = true;
         public bool ShouldGenerateBusStops = true;
+        public bool ShouldGenerateRoads = true;
+        public bool ShouldGenerateTerrain = true;
         public bool UseOSM = false;
         public bool IsGeneratingOSM = false;
         
