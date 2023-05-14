@@ -806,6 +806,7 @@ namespace VehicleBrain
         private void WaitAtBusStop(BusStop busStop)
         {
             _agent.Context.CurrentAction = VehicleAction.Waiting;
+            _agent.Context.CurrentActivity = VehicleActivity.AtPOI;
             
             // Brake at the bus stop
             _vehicleController.brakeInput = 0.7f;
@@ -913,6 +914,8 @@ namespace VehicleBrain
 
                 if(targetPOI != null)
                 {
+                    _agent.Context.CurrentPOI = targetPOI;
+                    
                     if(targetPOI is Parking)
                     {
                         Parking parking = targetPOI as Parking;
@@ -933,6 +936,10 @@ namespace VehicleBrain
                         WaitAtBusStop(targetPOI as BusStop);
                         noTargetAction = false;
                     }
+                }
+                else
+                {
+                    _agent.Context.CurrentPOI = null;
                 }
                 
                 // If no action was taken on the target, call the leaving function

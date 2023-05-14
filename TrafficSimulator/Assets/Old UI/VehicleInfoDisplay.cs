@@ -18,6 +18,7 @@ public class VehicleInfoDisplay : MonoBehaviour
     private void Start()
     {
         UserSelectManager.Instance.OnSelectedGameObject += ToggledVehicle;
+        ClearVehicleInfo();
     }
 
     private void Update()
@@ -30,7 +31,11 @@ public class VehicleInfoDisplay : MonoBehaviour
     {
         if (selectable == null)
         {
-            vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
+            if(vehicleAutoDrive != null)
+                Unsubscribe(vehicleAutoDrive);
+           
+            vehicleAutoDrive = null;
+            ClearVehicleInfo();
             return;
         }
 
@@ -38,36 +43,68 @@ public class VehicleInfoDisplay : MonoBehaviour
         
         if (vehicleAutoDrive == null || isOtherAutoDrive)
         {
-            if (vehicleAutoDrive != null) 
-                vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
+            if (vehicleAutoDrive != null)
+                Unsubscribe(vehicleAutoDrive);
 
             vehicleAutoDrive = selectable.GetComponent<AutoDrive>();
-            vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
-            vehicleAutoDrive.Agent.Context.OnRoadChanged += UpdateRoadName;
+            Subscribe(vehicleAutoDrive);
+
             UpdateRoadName();
             UpdateActivityText();
             UpdateModelNameText();
         }
     }
 
+    private void Subscribe(AutoDrive autoDrive)
+    {
+        if(autoDrive == null)
+            return;
+
+        vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
+        vehicleAutoDrive.Agent.Context.OnRoadChanged += UpdateRoadName;
+    }
+
+    private void Unsubscribe(AutoDrive autoDrive)
+    {
+        if(autoDrive == null)
+            return;
+
+        vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
+        vehicleAutoDrive.Agent.Context.OnRoadChanged -= UpdateRoadName;
+    }
+
+    private void ClearVehicleInfo()
+    {
+        modelNameText.text = "";
+        roadNameText.text = "";
+        distanceTravelledText.text = "";
+
+        // The vehicle selected text is the most centered, so use it temporarily until a vehicle is selected
+        activityText.text = "No vehicle selected";
+    }
+
+    private string Header(string text)
+    {
+        return $"<b><color=black>{text}: </color></b>";
+    }
 
     private void UpdateModelNameText()
     {
-        modelNameText.text = Regex.Replace(vehicleAutoDrive.gameObject.name, @"\d|\s*\(Clone\)", "");
+        modelNameText.text = Header("Model") + Regex.Replace(vehicleAutoDrive.gameObject.name, @"\d|\s*\(Clone\)", "");
     }
     
     private void UpdateActivityText()
     {
-        activityText.text = vehicleAutoDrive.GetVehicleActivityDescription();
+        activityText.text = Header("Activity") + vehicleAutoDrive.GetVehicleActivityDescription();
     }
 
     private void UpdateRoadName()
     {
-        roadNameText.text = vehicleAutoDrive.Agent.Context.CurrentRoad?.name ?? "N/A";
+        roadNameText.text = Header("Road") + vehicleAutoDrive.Agent.Context.CurrentRoad?.name ?? "N/A";
     }
 
     private void UpdateDistanceTravelledText()
     {
-        distanceTravelledText.text = (vehicleAutoDrive.TotalDistance / 1000).ToString("0.00");
+        distanceTravelledText.text = Header("Distance") + (vehicleAutoDrive.TotalDistance / 1000).ToString("0.00") + " km";
     }
 }

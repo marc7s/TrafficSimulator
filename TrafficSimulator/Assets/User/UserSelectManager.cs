@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using DataModel;
+using System.Collections.Generic;
 
 namespace User
 {
@@ -30,8 +32,12 @@ namespace User
         private InputAction _clickInput;
         private InputAction _doubleClickInput;
         private bool _hasSelectedGameObject;
+        private HashSet<Vehicle> _ragdollVehicles = new HashSet<Vehicle>();
         private InputAction _pointInput;
-        public bool IsHoveringUIElement { get; set; } = false;
+        public bool IsHoveringOldUIElement = false;
+        public bool IsHoveringNewUIElement = false;
+
+        public bool IsHoveringUIElement => IsHoveringOldUIElement || IsHoveringNewUIElement;
 
         /// <summary>
         ///     The currently selected game object.
@@ -79,6 +85,12 @@ namespace User
         {
             SetupInputActions();
             SubscribeToInput();
+        }
+
+        public void AddRagdollVehicle(Vehicle vehicle)
+        {
+            if(vehicle != null && !_ragdollVehicles.Contains(vehicle))
+                _ragdollVehicles.Add(vehicle);
         }
 
         private void InitializeSingletonInstance()
@@ -157,14 +169,23 @@ namespace User
 
             Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
+            // Temporarily enable collisions for all ragdoll vehicles so that the raycast can hit them
+            foreach(Vehicle v in _ragdollVehicles)
+                v.gameObject.GetComponent<Rigidbody>().detectCollisions = true;
+            
             if (Physics.Raycast(ray, out RaycastHit hitInfo) && CanSelectNewObject)
                 SelectObjectFromClick(eventToInvoke, hitInfo, deselectIfClickedAgain);
+
+            // Disable collisions for all ragdoll vehicles again
+            foreach(Vehicle v in _ragdollVehicles)
+                v.gameObject.GetComponent<Rigidbody>().detectCollisions = false;
         }
 
         // Select the object based on the click event and invoke the corresponding event
         private void SelectObjectFromClick(SelectedGameObjectChangedHandler eventToInvoke, RaycastHit hitInfo, bool deselectIfClickedAgain)
         {
             Selectable hitSelectable = hitInfo.transform.GetComponent<Selectable>();
+
             if (hitSelectable != null)
             {
                 if (hitSelectable.Equals(SelectedGameObject))

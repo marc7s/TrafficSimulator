@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Xml;
 using System;
+using System.Linq;
 
 namespace RoadGenerator
 {
@@ -22,6 +23,7 @@ namespace RoadGenerator
         Tertiary,
         Service,
         Building,
+        Terrain,
         Unclassified
     }
 
@@ -54,6 +56,7 @@ namespace RoadGenerator
         public ParkingType? ParkingType;
         public ServiceType? ServiceType;
         public BuildingData BuildingData;
+        public TerrainType? TerrainType;
     }
 
     public enum SideWalkType
@@ -70,6 +73,29 @@ namespace RoadGenerator
         Left,
         Right,
         Both
+    }
+
+    public enum TerrainType
+    {
+        Water = -1,
+        Grass = 1,
+        Sand = -2,
+        Concrete = -3,
+        Forest = 3,
+        Default = 0
+    }
+
+    public struct TerrainArea
+    {
+        public TerrainType TerrainType;
+        public List<Vector3> OuterArea;
+        public List<List<Vector3>> InnerAreas;
+        public TerrainArea(TerrainType terrainType, List<Vector3> area, List<List<Vector3>> innerAreas = null)
+        {
+            TerrainType = terrainType;
+            OuterArea = area;
+            InnerAreas = innerAreas ?? new List<List<Vector3>>();
+        }
     }
 
     public class MapGenerator : MonoBehaviour
@@ -89,16 +115,23 @@ namespace RoadGenerator
         private List<XmlNode> _trees = new List<XmlNode>();
         private double _minLat = 0;
         private double _minLon = 0;
+        private double _maxLat = 0;
+        private double _maxLon = 0;
+        private Terrain _terrain;
+        private List<TerrainArea> _terrainAreas = new List<TerrainArea>();
 
         public void GenerateMap(RoadSystem roadSystem)
         {
             roadSystem.UseOSM = true;
             roadSystem.IsGeneratingOSM = true;
+            _terrain = roadSystem.Terrain;
             _nodesDict.Clear();
             _roadsAtNode.Clear();
             _busStops.Clear();
             _minLat = 0;
             _minLon = 0;
+            _maxLat = 0;
+            _maxLon = 0;
 
             _roadSystem = roadSystem;
 
@@ -113,6 +146,8 @@ namespace RoadGenerator
                     case "bounds":
                         _minLat = double.Parse(node.Attributes["minlat"].Value.Replace(".", ","));
                         _minLon = double.Parse(node.Attributes["minlon"].Value.Replace(".", ","));
+                        _maxLat = double.Parse(node.Attributes["maxlat"].Value.Replace(".", ","));
+                        _maxLon = double.Parse(node.Attributes["maxlon"].Value.Replace(".", ","));
                         break;
                     case "node":
                         if (!_nodesDict.ContainsKey(node.Attributes["id"].Value))
@@ -162,10 +197,11 @@ namespace RoadGenerator
                     if (wayData == null)
                         continue;
 
-                    if (wayData?.WayType != WayType.Building) 
+                    if (wayData?.WayType == WayType.Terrain && roadSystem.ShouldGenerateTerrain)
+                        AddTerrain(ienum, wayData.Value);
+                    else if (wayData?.WayType != WayType.Building && roadSystem.ShouldGenerateRoads) 
                         GenerateRoad(ienum, wayData.Value);
-
-                    if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings)
+                    else if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings)
                         GenerateBuilding(ienum, wayData.Value);
                 }
                 else if (node.Name == "relation")
@@ -189,6 +225,32 @@ namespace RoadGenerator
                             }
                         }
                     }
+                    if (wayData?.WayType == WayType.Terrain)
+                    {
+                        List<Vector3> outerPoints = new List<Vector3>();
+                        List<List<Vector3>> innerPoints = new List<List<Vector3>>();
+                        while (ienum.MoveNext())
+                        {
+                            XmlNode currentNode = (XmlNode) ienum.Current; 
+                            if (currentNode.Name == "member" && currentNode.Attributes["type"].Value == "way")
+                            {
+                                if (currentNode.Attributes["role"].Value == "outer" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
+                                {
+                                    XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
+                                    List<Vector3> wayNodePositions = GetWayNodePositions(wayNode.GetEnumerator());
+                                    wayNodePositions.Reverse();
+                                    outerPoints.AddRange(wayNodePositions);
+                                }
+                                else if (currentNode.Attributes["role"].Value == "inner" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
+                                {
+                                    XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
+                                    innerPoints.Add(GetWayNodePositions(wayNode.GetEnumerator()));
+                                }
+                            }
+                        }
+
+                        AddTerrain(ienum, wayData.Value, outerPoints, innerPoints);
+                    }
                 }
             }
 
@@ -197,10 +259,186 @@ namespace RoadGenerator
             if (roadSystem.ShouldGenerateBusStops)
                 AddBusStops();
 
-            if (roadSystem.ShouldGenerateTrees)
+            if (roadSystem.ShouldGenerateTerrain)
+            {
+                GenerateTerrain();
                 AddTrees();
-            
+            }
+
             roadSystem.IsGeneratingOSM = false;
+
+            foreach (Road road in roadSystem.DefaultRoads)
+                road.OnChange();
+        }
+
+        private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonOuterPoints = null, List<List<Vector3>> multiPolygonInnerPoints = null)
+        {
+            List<Vector3> points = multiPolygonOuterPoints ?? GetWayNodePositions(ienum);
+
+            if (points.Count < 3)
+                return;
+
+            TerrainArea terrainArea = new TerrainArea(wayData.TerrainType.Value, points, multiPolygonInnerPoints);
+            _terrainAreas.Add(terrainArea);
+        }
+
+        public bool IsPointInPolygon(Vector2 point, Vector2[] polygon)
+        {
+            int polygonLength = polygon.Length;
+            int i = 0;
+            bool inside = false;
+            // x, y for tested point.
+            float pointX = point.x, pointY = point.y;
+            // start / end point for the current polygon segment.
+            float startX;
+            float startY;
+            float endX;
+            float endY;
+            Vector2 endPoint = polygon[polygonLength - 1];
+            endX = endPoint.x;
+            endY = endPoint.y;
+
+            while (i < polygonLength)
+            {
+                startX = endX;
+                startY = endY;
+                endPoint = polygon[i++];
+                endX = endPoint.x;
+                endY = endPoint.y;
+                inside ^= (endY > pointY ^ startY > pointY) && ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
+            }
+
+            return inside;
+        }
+
+        private List<Vector2> Vector3ToVector2(List<Vector3> points)
+        {
+            List<Vector2> vector2Points = new List<Vector2>();
+
+            foreach (Vector3 point in points)
+                vector2Points.Add(new Vector2(point.x, point.z));
+
+            return vector2Points;
+        }
+
+        private void GenerateTerrain()
+        {
+            TerrainData terrainData = _terrain.terrainData;
+            Vector3 maxSize = LatLonToPosition(_maxLat, _maxLon);
+            maxSize.y = 10f;
+            terrainData.size = maxSize;
+            _terrain.gameObject.SetActive(true);
+            _terrain.gameObject.transform.position = new Vector3(0, -10.01f, 0);
+            float baseheight = 10;
+
+            int res = terrainData.heightmapResolution;
+            float[,] heights = terrainData.GetHeights(0, 0, res, res);
+            float[, ,] splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
+
+            for (int x = 0; x < res; x++)
+            {
+                for (int y = 0; y < res; y++)
+                {
+                    Vector3 basePos = LatLonToPosition(_minLat, _minLon);
+                    Vector2 basPos2D = new Vector2(basePos.x, basePos.z);
+                    Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / res, y * terrainData.size.z / res);
+                    heights[y, x] = heights[y, x] = baseheight;
+                    bool isInsideInnerArea = false;
+
+                    foreach (TerrainArea terrainBounds in _terrainAreas)
+                    {
+                        if (terrainBounds.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.OuterArea).ToArray()))
+                        {
+                            if (terrainBounds.InnerAreas != null && terrainBounds.InnerAreas.Count > 0)
+                            {
+                                List<Vector3> innerArea = new List<Vector3>();
+
+                                foreach (List<Vector3> innerArea2 in terrainBounds.InnerAreas)
+                                    innerArea.AddRange(innerArea2);
+
+                                // The terrain point is inside the terrain type area
+                                if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
+                                {
+                                    isInsideInnerArea = true;
+                                    break;
+                                }
+                            }
+
+                            if (isInsideInnerArea)
+                                break;
+
+                            heights[y, x] = 0;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            terrainData.SetHeights(0, 0, heights);
+
+            for (int y = 0; y < terrainData.alphamapHeight; y++)
+            {
+                for (int x = 0; x < terrainData.alphamapWidth; x++)
+                {
+                    Vector3 basePos = LatLonToPosition(_minLat, _minLon);
+                    Vector2 basePos2D = new Vector2(basePos.x, basePos.z);
+                    Vector2 terrainPosition =  basePos2D + new Vector2(x * terrainData.size.x / terrainData.alphamapWidth, y * terrainData.size.z / terrainData.alphamapHeight);
+
+                    // Setup an array to record the mix of texture weights at this point
+                    float[] splatWeights = new float[terrainData.alphamapLayers];
+
+                    bool foundTerrain = false;
+                    bool isInsideInnerArea = false;
+                    foreach (TerrainArea terrainBounds in _terrainAreas)
+                    {
+                        // The terrain point is inside the terrain type area
+                        if (IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.OuterArea).ToArray()))
+                        {
+                            foreach (List<Vector3> innerArea in terrainBounds.InnerAreas)
+                            {
+                                // The terrain point is inside the terrain type area
+                                if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
+                                {
+                                    isInsideInnerArea = true;
+                                    break;
+                                }
+                            }
+
+                            if (isInsideInnerArea)
+                                break;
+
+
+                            if (terrainBounds.TerrainType == TerrainType.Grass)
+                                splatWeights[(int)TerrainType.Grass] = 1f;
+                            else if (terrainBounds.TerrainType == TerrainType.Forest)
+                                splatWeights[(int)TerrainType.Forest] = 1f;
+                            else
+                                splatWeights[2] = 1f;
+
+                            foundTerrain = true;
+                            break;
+                        }
+                    }
+
+                    if (!foundTerrain)
+                        splatWeights[(int)TerrainType.Default] = 1f;
+
+                    // Sum of all textures weights must add to 1, so calculate normalization factor from sum of weights
+                    float z = splatWeights.Sum();
+
+                    // Loop through each terrain texture
+                    for(int i = 0; i<terrainData.alphamapLayers; i++)
+                    {
+                        // Normalize so that sum of all texture weights = 1
+                        splatWeights[i] /= z;
+
+                        // Assign this point to the splatmap array
+                        splatmapData[y, x, i] = splatWeights[i];
+                    }
+                }
+            }
+            // Finally assign the new splatmap to the terrainData:
+            terrainData.SetAlphamaps(0, 0, splatmapData);
         }
 
         private void AddIntersections()
@@ -375,6 +613,7 @@ namespace RoadGenerator
             WayData wayData = new WayData();
             ParkingType parkingType = ParkingType.None;
             wayData.WayID = node.Attributes["id"].Value;
+            TerrainType? terrainType = null;
             
             // Search for type of way
             while (ienum.MoveNext())
@@ -393,8 +632,31 @@ namespace RoadGenerator
                         case "building":
                             wayType = WayType.Building;
                             break;
+                        case "water":
+                            if (currentNode.Attributes["v"].Value == "lake")
+                            {
+                                terrainType = TerrainType.Water;
+                                wayType = WayType.Terrain;
+                            }
+
+                            break;
+                        case "natural":
+                            if (currentNode.Attributes["v"].Value == "water")
+                            {
+                                terrainType = TerrainType.Water;
+                                wayType = WayType.Terrain;
+                            }
+                            break;
+                        case "waterway":
+                            terrainType = TerrainType.Water;
+                            wayType = WayType.Terrain;
+                            break;
                         case "name":
                             wayData.Name = currentNode.Attributes["v"].Value;
+                            break;
+                        case "landuse":
+                            terrainType = GetTerrainType(currentNode);
+                            wayType = WayType.Terrain;
                             break;
                         case "maxspeed":
                             wayData.MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
@@ -467,6 +729,7 @@ namespace RoadGenerator
             wayData.WayType = wayType.Value;
             wayData.BuildingData = buildingData;
             wayData.ParkingType = parkingType;
+            wayData.TerrainType = terrainType;
 
             return wayData;
         }
@@ -500,9 +763,26 @@ namespace RoadGenerator
                     return null;
             }
         }
+
+        // https://wiki.openstreetmap.org/wiki/Key:landuse
+        private TerrainType GetTerrainType(XmlNode node)
+        {
+            switch (node.Attributes["v"].Value)
+            {
+                case "grass":
+                    return TerrainType.Grass;
+                case "sand":
+                    return TerrainType.Sand;
+                case "forest":
+                    return TerrainType.Forest;
+                default:
+                    return TerrainType.Default;
+            }
+        }
+
         private void LoadOSMMap(XmlDocument document)
         {
-            document.Load("Assets/OsmMaps/MastHugget.osm");
+            document.Load("Assets/OsmMaps/Masthugget.osm");
         }
 
         private void GenerateFootWay(List <Vector3> points, WayData wayData)
@@ -627,12 +907,30 @@ namespace RoadGenerator
 
         private Vector3 GetNodePosition(XmlNode node)
         {
-            const int scale = 111000;
-            float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon)*scale;
-            float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat)*scale;
+            const int LatLonToMeterRatio = 111000;
+
+            try
+            {
+                float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon) * LatLonToMeterRatio;
+                float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat) * LatLonToMeterRatio;
+                return new Vector3(xPos, 0, zPos);
+            }
+            catch
+            {
+                Debug.Log("Error parsing node position");
+                return new Vector3(0, 0, 0);
+            }
+        }
+
+        private Vector3 LatLonToPosition(double lat, double lon)
+        {
+            const int LatLonToMeterRatio = 111000;
+            float xPos = (float)(lon - _minLon) * LatLonToMeterRatio;
+            float zPos = (float)(lat - _minLat) * LatLonToMeterRatio;
 
             return new Vector3(xPos, 0, zPos);
         }
+
 
         void GenerateBuilding(IEnumerator ienum, WayData wayData)
         {
