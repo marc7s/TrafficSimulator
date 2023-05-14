@@ -264,6 +264,9 @@ namespace RoadGenerator
             }
 
             roadSystem.IsGeneratingOSM = false;
+
+            foreach (Road road in roadSystem.DefaultRoads)
+                road.OnChange();
         }
 
         private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonOuterPoints = null, List<List<Vector3>> multiPolygonInnerPoints = null)
