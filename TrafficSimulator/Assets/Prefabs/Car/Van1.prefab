@@ -1752,7 +1752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed2077f9a1d00454da03e178dd2ee3f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _road: {fileID: 0}
+  StartingRoad: {fileID: 0}
   NavigationTargetMarker: {fileID: 7023115232937241705, guid: aefc060f78374b74d90bb7c5c444d6ab, type: 3}
   NavigationPathMaterial: {fileID: 2100000, guid: 4e77caf264868b44a911ed5008e6cf87, type: 2}
   LaneIndex: 0
@@ -2114,12 +2114,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1577973480899275759}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e716af2fc4e2ff443b55f2492761cd23, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steeringWheel: {fileID: 0}
+  steeringWheel: {fileID: 8958834135853381479}
   degreesOfRotation: 540
   brakesRenderer: {fileID: 0}
   brakesMaterialIndex: 0
@@ -3132,6 +3132,38 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &2000516413522598203
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8958834135853381479}
+  m_Layer: 0
+  m_Name: SteeringWheel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8958834135853381479
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000516413522598203}
+  m_LocalRotation: {x: 0.10065237, y: -0, z: -0, w: 0.9949217}
+  m_LocalPosition: {x: -0.49852258, y: 1.3558886, z: 1.045288}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3637104399911921216}
+  m_Father: {fileID: 4349608779211074403}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 11.553, y: 0, z: 0}
 --- !u!1 &2159787096174868927
 GameObject:
   m_ObjectHideFlags: 0
@@ -4543,7 +4575,7 @@ Transform:
   - {fileID: 7604413112032715349}
   - {fileID: 4611637624825037812}
   - {fileID: 7264953115829368941}
-  - {fileID: 3637104399911921216}
+  - {fileID: 8958834135853381479}
   - {fileID: 2038509201430670610}
   - {fileID: 6959760714010621254}
   - {fileID: 3435426324959252935}
@@ -5394,14 +5426,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8363437026192862148}
-  m_LocalRotation: {x: -0.6087614, y: 0, z: -0, w: 0.7933533}
-  m_LocalPosition: {x: -0.49852258, y: 1.3558886, z: 1.045288}
+  m_LocalRotation: {x: -0.7158617, y: -0, z: -0, w: 0.6982421}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 4349608779211074403}
-  m_RootOrder: 8
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 8958834135853381479}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: -91.428, y: 0, z: 0}
 --- !u!33 &291670459914645234
 MeshFilter:
   m_ObjectHideFlags: 0
