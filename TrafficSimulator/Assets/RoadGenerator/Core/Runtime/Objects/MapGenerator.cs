@@ -246,7 +246,8 @@ namespace RoadGenerator
                                 }
                             }
                         }
-                    AddTerrain(ienum, wayData.Value, outerPoints, innerPoints);
+
+                        AddTerrain(ienum, wayData.Value, outerPoints, innerPoints);
                     }
                 }
             }
@@ -264,7 +265,7 @@ namespace RoadGenerator
 
             roadSystem.IsGeneratingOSM = false;
         }
-        
+
         private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonOuterPoints = null, List<List<Vector3>> multiPolygonInnerPoints = null)
         {
             List<Vector3> points = multiPolygonOuterPoints ?? GetWayNodePositions(ienum);
@@ -287,15 +288,17 @@ namespace RoadGenerator
             Vector2 endPoint = polygon[polygonLength-1];
             endX = endPoint.x;
             endY = endPoint.y;
-            while (i<polygonLength)
+
+            while (i < polygonLength)
             {
-                startX = endX;           startY = endY;
+                startX = endX;
+                startY = endY;
                 endPoint = polygon[i++];
-                endX = endPoint.x;       endY = endPoint.y;
-                inside ^= ( endY > pointY ^ startY > pointY ) /* ? pointY inside [startY;endY] segment ? */
-                            && /* if so, test if it is under the segment */
-                            ( (pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY) ) ;
+                endX = endPoint.x;
+                endY = endPoint.y;
+                inside ^= (endY > pointY ^ startY > pointY) && ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
             }
+
             return inside;
         }
 
@@ -320,7 +323,7 @@ namespace RoadGenerator
             int res = terrainData.heightmapResolution;
             float[,] heights = terrainData.GetHeights(0, 0, res, res);
             float[, ,] splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
-            Vector3 currentPos = LatLonToPosition(_minLat, _minLon);
+
             for (int x = 0; x < res; x++)
             {
                 for (int y = 0; y < res; y++)
@@ -330,14 +333,15 @@ namespace RoadGenerator
                     Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / res, y * terrainData.size.z / res);
                     heights[y, x] = heights[y, x] = baseheight;
                     bool isInsideInnerArea = false;
+
                     foreach (TerrainArea terrainBounds in _terrainAreas)
                     {
-
                         if (terrainBounds.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.OuterArea).ToArray()))
                         {
                             if (terrainBounds.InnerAreas != null && terrainBounds.InnerAreas.Count > 0)
                             {
                                 List<Vector3> innerArea = new List<Vector3>();
+
                                 foreach (List<Vector3> innerArea2 in terrainBounds.InnerAreas)
                                     innerArea.AddRange(innerArea2);
 
@@ -360,6 +364,7 @@ namespace RoadGenerator
             }
 
             terrainData.SetHeights(0, 0, heights);
+
             for (int y = 0; y < terrainData.alphamapHeight; y++)
             {
                 for (int x = 0; x < terrainData.alphamapWidth; x++)
@@ -387,6 +392,7 @@ namespace RoadGenerator
                                     break;
                                 }
                             }
+
                             if (isInsideInnerArea)
                                 break;
 
