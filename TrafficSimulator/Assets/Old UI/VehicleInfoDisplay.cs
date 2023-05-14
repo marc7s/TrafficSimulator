@@ -31,8 +31,9 @@ public class VehicleInfoDisplay : MonoBehaviour
     {
         if (selectable == null)
         {
-            vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
-            vehicleAutoDrive.Agent.Context.OnRoadChanged -= UpdateRoadName;
+            if(vehicleAutoDrive != null)
+                Unsubscribe(vehicleAutoDrive);
+           
             vehicleAutoDrive = null;
             ClearVehicleInfo();
             return;
@@ -42,16 +43,34 @@ public class VehicleInfoDisplay : MonoBehaviour
         
         if (vehicleAutoDrive == null || isOtherAutoDrive)
         {
-            if (vehicleAutoDrive != null) 
-                vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
+            if (vehicleAutoDrive != null)
+                Unsubscribe(vehicleAutoDrive);
 
             vehicleAutoDrive = selectable.GetComponent<AutoDrive>();
-            vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
-            vehicleAutoDrive.Agent.Context.OnRoadChanged += UpdateRoadName;
+            Subscribe(vehicleAutoDrive);
+
             UpdateRoadName();
             UpdateActivityText();
             UpdateModelNameText();
         }
+    }
+
+    private void Subscribe(AutoDrive autoDrive)
+    {
+        if(autoDrive == null)
+            return;
+
+        vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
+        vehicleAutoDrive.Agent.Context.OnRoadChanged += UpdateRoadName;
+    }
+
+    private void Unsubscribe(AutoDrive autoDrive)
+    {
+        if(autoDrive == null)
+            return;
+
+        vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
+        vehicleAutoDrive.Agent.Context.OnRoadChanged -= UpdateRoadName;
     }
 
     private void ClearVehicleInfo()
