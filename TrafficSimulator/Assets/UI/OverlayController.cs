@@ -121,7 +121,6 @@ namespace UI
             };
             _cameraManager.OnCameraChanged += type =>
             {
-                Debug.Log("Camera changed to " + type);
                 // Reset all camera buttons to normal state
                 RemoveCameraButtonHighlight(_defaultCameraButton);
                 RemoveCameraButtonHighlight(_focusedCameraButton);
