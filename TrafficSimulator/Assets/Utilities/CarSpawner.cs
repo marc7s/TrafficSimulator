@@ -70,10 +70,10 @@ namespace RoadGenerator
 
         private bool _spawned = false;
 
-        private Dictionary<Lane, int> _maxCarsInLane = new Dictionary<Lane, int>();
-        private Dictionary<Lane, int> _carsToSpawnInLane = new Dictionary<Lane, int>();
+        private List<CarsForLane> spawnableLanes = new List<CarsForLane>();
+
         
-        public struct SpawnableLaneNodes
+        public struct SpawnableLaneNode
         {
             private float _distance;
             private LaneNode _node;
@@ -81,10 +81,28 @@ namespace RoadGenerator
             public float Distance { get => _distance; set => _distance = value; }
             public LaneNode Node { get => _node; set => _node = value; }
 
-            public SpawnableLaneNodes(float distance, LaneNode node)
+            public SpawnableLaneNode(float distance, LaneNode node)
             {
                 _distance = distance;
                 _node = node;
+            }
+        }
+
+        public class CarsForLane
+        {
+            private Lane _lane;
+            public int CapacityLeft;
+            private List<SpawnableLaneNode> _spawnableLaneNodes;
+
+            public Lane Lane { get => _lane; }
+            public List<SpawnableLaneNode> SpawnableLaneNodes { get => _spawnableLaneNodes; }
+            public int Capacity { get => _spawnableLaneNodes.Count; }
+
+            public CarsForLane(Lane lane, List<SpawnableLaneNode> spawnableLaneNodes)
+            {
+                _lane = lane;
+                _spawnableLaneNodes = spawnableLaneNodes;
+                CapacityLeft = Capacity;
             }
         }
 
@@ -152,77 +170,62 @@ namespace RoadGenerator
 
         private void CreateCarInLaneDict()
         {
-            int maxCars = 0;
+            spawnableLanes.Clear();
 
+            int maxCars = 0;
             for (int i = 0; i < _lanes.Count; i++)
             {
-                Debug.Log("Something: " + GetSpawnableLaneNodesInLane(_lanes[i]).Count);
-
-                if (!_maxCarsInLane.ContainsKey(_lanes[i]))
-                    _maxCarsInLane.Add(_lanes[i], GetSpawnableLaneNodesInLane(_lanes[i]).Count);
+                List<SpawnableLaneNode> carsInLane = GetSpawnableLaneNodesInLane(_lanes[i]);
+                spawnableLanes.Add(new CarsForLane(_lanes[i], carsInLane));
                 
-                if (!_carsToSpawnInLane.ContainsKey(_lanes[i]))
-                    _carsToSpawnInLane.Add(_lanes[i], 0);
-                
-                maxCars += GetSpawnableLaneNodesInLane(_lanes[i]).Count;
+                maxCars += carsInLane.Count;
             }
-            Debug.Log("Count: " + _maxCarsInLane.Count);
+
             Debug.Log("Max cars: " + maxCars);
         }
 
-        private Dictionary<Lane, int> CalculateCarsPerLane(int carCount)
+        private List<CarsForLane> CalculateCarsPerLane(int carCount)
         {
             // Loop through _maxCarsInLane and subtract 1 car from each lane
-            int index = 0;
-            int carsToSpawn = carCount;
-            Dictionary<Lane, int> _carsThatShouldSpawn = new Dictionary<Lane, int>();
+            List<CarsForLane> availableLanes = new List<CarsForLane>(spawnableLanes);
+            List<CarsForLane> fullLanes = new List<CarsForLane>();
 
-            while (carsToSpawn >= 1)
+            while (carCount >= 1 && availableLanes.Count > 0)
             {
-                // If the lane has cars left to spawn, subtract 1 from it and add 1 to _carsThatShouldSpawn
-                if(_maxCarsInLane[_lanes[index]] > 0)
+                for (int i = availableLanes.Count - 1; i >= 0; i--)
                 {
-                    _maxCarsInLane[_lanes[index]]--;
-                    _carsToSpawnInLane[_lanes[index]]++;
-                }
-                else
-                {
-                    // If lane is full, skip it
-                    index++;
-                    continue;
-                }
+                    if(carCount < 1)
+                        break;
 
-                // If the lane reaches is max cars, add it to _carsThatShouldSpawn
-                if (_maxCarsInLane[_lanes[index]] <= 0)
-                    _carsThatShouldSpawn.Add(_lanes[index], _carsToSpawnInLane[_lanes[index]]);
-
-                index++;
-                carsToSpawn--;
-
-                // If index is out of range, reset it
-                if (index >= _maxCarsInLane.Count)
-                    index = 0;
-            }
-
-            // Add the rest of _carsToSpawnInLane to _carsThatShouldSpawn
-            if (_carsToSpawnInLane.Count > 0)
-            {
-                foreach (KeyValuePair<Lane, int> pair in _carsToSpawnInLane)
-                {
-                    if (!_carsThatShouldSpawn.ContainsKey(pair.Key))
-                        _carsThatShouldSpawn.Add(pair.Key, pair.Value);
+                    if (availableLanes[i].CapacityLeft > 0)
+                    {
+                        availableLanes[i].CapacityLeft--;
+                        carCount--;
+                    }
+                    else
+                    {
+                        fullLanes.Add(availableLanes[i]);
+                        availableLanes.RemoveAt(i);
+                    }
                 }
             }
 
-            return _carsThatShouldSpawn;
+            List<CarsForLane> allLanes = new List<CarsForLane>(availableLanes);
+            allLanes.AddRange(fullLanes);
+
+            return allLanes;
         }
 
-        private List<SpawnableLaneNodes> GetSpawnableLaneNodesInLane(Lane lane)
+        private List<SpawnableLaneNode> GetSpawnableLaneNodesInLane(Lane lane)
         {
             float distance = 0;
             float offset = 4f;
 
-            List<SpawnableLaneNodes> spawnableNodes = new List<SpawnableLaneNodes>();
+            List<SpawnableLaneNode> spawnableNodes = new List<SpawnableLaneNode>();
+
+            // Return if the lane is too short to spawn a car
+            if (lane.GetLaneLengthNoIntersections() < (_carLength + offset))
+                return spawnableNodes;
 
             LaneNode curr = lane.StartNode.Next;
 
@@ -231,7 +234,7 @@ namespace RoadGenerator
                 if(IsCarSpawnable(curr))
                 {
                     distance += curr.DistanceToPrevNode;
-                    spawnableNodes.Add(new SpawnableLaneNodes(distance, curr));
+                    spawnableNodes.Add(new SpawnableLaneNode(distance, curr));
                     curr = CalculateNextNode(curr, ((_carLength / 2) + offset));
                 }
                 else
@@ -239,9 +242,6 @@ namespace RoadGenerator
                     distance += curr.DistanceToPrevNode;
                     curr = curr.Next;
                 }
-
-                if (curr == null)
-                    break;
             }
             
             return spawnableNodes;
@@ -259,24 +259,18 @@ namespace RoadGenerator
             }
 
             // Calculate cars to spawn per lane
-            Dictionary<Lane, int> _carsThatShouldSpawn = new Dictionary<Lane, int>();
-            _carsThatShouldSpawn = CalculateCarsPerLane(carsToSpawn);
-            Debug.Log("Dictionary count: " + _carsThatShouldSpawn.Count);
+            List<CarsForLane> allLanes = CalculateCarsPerLane(carsToSpawn);
 
             // Loop through _carsThatShouldSpawn and spawn cars
-            foreach (KeyValuePair<Lane, int> pair in _carsThatShouldSpawn)
+            foreach (CarsForLane lane in allLanes)
             {
-                if(pair.Value == 0)
-                    continue;
-
-                // Get Spawnable nodes
-                List<SpawnableLaneNodes> spawnableNodes = GetSpawnableLaneNodesInLane(pair.Key);
-
-                for (int i = 0; i < pair.Value; i++)
+                for (int i = 0; i < lane.Capacity - lane.CapacityLeft; i++)
                 {
-                    _laneNodeCurrent = spawnableNodes[i].Node;
+                    if(_carCounter >= TotalCars)
+                        return;
                     
-                    // Spawn car
+                    _laneNodeCurrent = lane.SpawnableLaneNodes[i].Node;
+                    
                     SpawnCar(0);
                     _carCounter++;
                 }
@@ -338,13 +332,11 @@ namespace RoadGenerator
             LaneNode curr = startNode.Next;
             float currentLength = 0;
             
-            while((curr != null && currentLength < targetLength) || !curr.RoadNode.IsIntersection())
+            while(curr != null && ((curr.Type == RoadNodeType.JunctionEdge || curr.IsIntersection()) || currentLength < targetLength))
             {
                 currentLength += curr.DistanceToPrevNode;
-                curr = curr.Next;
 
-                if(curr == null)
-                    break;
+                curr = curr.Next;
             }
 
             return curr;
