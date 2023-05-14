@@ -480,14 +480,44 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 226603695, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_fontSize
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 226603695, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_fontSizeBase
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 269907949, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_Name
+      value: RadioButtonPanel
+      objectReference: {fileID: 0}
     - target: {fileID: 269907950, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_RootOrder
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 269907950, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -113.1251
+      objectReference: {fileID: 0}
+    - target: {fileID: 269907950, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 9.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 269907950, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -63.2
       objectReference: {fileID: 0}
     - target: {fileID: 922384071, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1639765478, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_Text
+      value: 'Last 30 Seconds
+
+'
+      objectReference: {fileID: 0}
     - target: {fileID: 1725768042, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -535,6 +565,10 @@ PrefabInstance:
     - target: {fileID: 1746695965, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352834976524174853, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 7.100006
       objectReference: {fileID: 0}
     - target: {fileID: 700365300107635114, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_Pivot.x
@@ -695,6 +729,14 @@ PrefabInstance:
     - target: {fileID: 765855024204178622, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_Name
       value: UITabs_Horizontal
+      objectReference: {fileID: 0}
+    - target: {fileID: 1184510264637832042, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_Color.a
+      value: 0.20392157
+      objectReference: {fileID: 0}
+    - target: {fileID: 1605568170135172812, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_Name
+      value: EmissionPanel
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dad91427b76704d468e758aa313ff87a, type: 3}
