@@ -84,15 +84,13 @@ namespace Cam
 
         public override void Rotate(Vector2 mouseOrigin)
         {
-            Transform followTransformCopy = Transform.Instantiate(FollowTransform, FollowTransform.position, FollowTransform.rotation);
-            OrbitCameraRotation(ref followTransformCopy, Mouse.current.position.ReadValue(), mouseOrigin, _rotationSpeedFactor / 30f, true);
-
+            Quaternion newRotation = OrbitCameraRotation(FollowTransform.rotation, Mouse.current.position.ReadValue(), mouseOrigin, _rotationSpeedFactor / 30f, true);
             Quaternion vehicleRotation = _toggledGameObject.transform.rotation;
 
-            Quaternion testTransformOffset = Quaternion.identity * Quaternion.Inverse(followTransformCopy.rotation);
+            Quaternion newRotationOffset = Quaternion.identity * Quaternion.Inverse(newRotation);
             Quaternion vehicleRotationOffset = Quaternion.identity * Quaternion.Inverse(vehicleRotation);
 
-            _rotationOffset = vehicleRotationOffset * Quaternion.Inverse(testTransformOffset);
+            _rotationOffset = vehicleRotationOffset * Quaternion.Inverse(newRotationOffset);
             
             
             FollowTransform.position = _toggledGameObject.transform.position;

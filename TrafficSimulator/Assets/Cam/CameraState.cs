@@ -95,15 +95,21 @@ namespace Cam
             IsRotating = false;
             RotationOrigin = FollowTransform.rotation;
         }
-
+        
         public void OrbitCameraRotation(ref Transform targetTransform, Vector2 mousePosition, Vector2 mouseOrigin, float rotationSpeedFactor, bool lockPitch = false, bool lockYaw = false)
+        {
+            Quaternion rot = OrbitCameraRotation(targetTransform.rotation, mousePosition, mouseOrigin, rotationSpeedFactor, lockPitch, lockYaw);
+            targetTransform.transform.eulerAngles = rot.eulerAngles;
+        }
+
+        public Quaternion OrbitCameraRotation(Quaternion targetRotation, Vector2 mousePosition, Vector2 mouseOrigin, float rotationSpeedFactor, bool lockPitch = false, bool lockYaw = false)
         {
             Vector3 origin = RotationOrigin.eulerAngles;
             Vector2 rotationOffset = mousePosition - mouseOrigin;
             
             // Return if there is no rotation offset
             if(rotationOffset.magnitude <= 0)
-                return;
+                return targetRotation;
             
             // Scale the rotation offset with the rotation speed
             rotationOffset *= rotationSpeedFactor;
@@ -115,7 +121,9 @@ namespace Cam
             rot.x = Mathf.Clamp(rot.x, 5, 90);
             
             // Update the rotation
-            targetTransform.eulerAngles = rot;
+            targetRotation.eulerAngles = rot;
+
+            return targetRotation;
         }
 
 
