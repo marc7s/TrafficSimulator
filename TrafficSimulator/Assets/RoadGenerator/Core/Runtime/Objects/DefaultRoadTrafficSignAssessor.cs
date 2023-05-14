@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace RoadGenerator
 {
@@ -24,6 +25,7 @@ namespace RoadGenerator
             AssessSpeedSignForRoadNode(data, ref signsToBePlaced);
             AssesLampPostForRoadNode(data, ref signsToBePlaced);
             AssesNoEntryOneDirectionForRoadNode(data, ref signsToBePlaced);
+            AssesParkingSignForRoadNode(data, ref signsToBePlaced);
             return signsToBePlaced;
         }
 
@@ -140,6 +142,27 @@ namespace RoadGenerator
                 DefaultRoad road = data.Road as DefaultRoad;
                 signsToBePlaced.Add(new TrafficSignData(TrafficSignType.NoEntry, data.RoadNode, road.NoEntryOneDirectionSignPrefab, false, 0));
             }
-        }       
+        }
+
+        private void AssesParkingSignForRoadNode(RoadNodeData data, ref List<TrafficSignData> signsToBePlaced)
+        {
+            if (data.RoadNode.Type != RoadNodeType.RoadConnection)
+                return;
+
+            float parkingSignOffset = 0.3f;
+            // Placing a parking sign at the start of the road if the road is connected to a road that does not have a parking at the same side
+            if (data.Road.RoadsideParkingPrimaryFullRoad != null && data.DistanceToStart == 0 && !data.Road.ConnectedToAtStart?.Road.RoadsideParkingPrimaryFullRoad)
+            {
+                DefaultRoad road = data.Road as DefaultRoad;
+                signsToBePlaced.Add(new TrafficSignData(TrafficSignType.Parking, data.RoadNode, road.ParkingSignPrefab, true, parkingSignOffset));
+            }
+
+            // Placing a parking sign at the end of the road if the road is connected to a road that does not have a parking at the same side
+            if (data.Road.RoadsideParkingSecondaryFullRoad != null && data.DistanceToStart != 0 && !data.Road.ConnectedToAtEnd?.Road.RoadsideParkingSecondaryFullRoad)
+            {
+                DefaultRoad road = data.Road as DefaultRoad;
+                signsToBePlaced.Add(new TrafficSignData(TrafficSignType.Parking, data.RoadNode, road.ParkingSignPrefab, false, parkingSignOffset));
+            }
+        }
     }
 }
