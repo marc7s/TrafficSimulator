@@ -125,7 +125,7 @@ namespace Cam
             if (UserSelectManager.Instance.SelectedGameObject.GetComponent<CarSelectable>() == null)
                 return;
             
-            CameraManager.ToggleFirstPersonDriverCamera();
+            CameraManager.ToggleDriverCamera();
         }
     }
 }

@@ -14,9 +14,9 @@ namespace Cam
     {
         public enum CustomCameraType
         {
-            Default = 0,
-            Focus = 1,
-            FirstPersonDriver = 2
+            Freecam = 0,
+            Follow = 1,
+            Driver = 2
         }
         
         public delegate void CameraChangedEventHandler(CustomCameraType newCustomCameraType);
@@ -62,10 +62,10 @@ namespace Cam
             InputHandler.Dispose();
         }
         
-        public void ToggleFocusCamera()
+        public void ToggleFollowCamera()
         {
-            SwitchActiveCamera((int) CustomCameraType.Focus);
-            OnCameraChanged?.Invoke(CustomCameraType.Focus);
+            SwitchActiveCamera((int) CustomCameraType.Follow);
+            OnCameraChanged?.Invoke(CustomCameraType.Follow);
         }
 
         private void SwitchActiveCamera(int newIndex)
@@ -90,16 +90,16 @@ namespace Cam
             return 0;
         }
         
-        public void ToggleFirstPersonDriverCamera()
+        public void ToggleDriverCamera()
         {
-            SwitchActiveCamera((int) CustomCameraType.FirstPersonDriver);
-            OnCameraChanged?.Invoke(CustomCameraType.FirstPersonDriver);
+            SwitchActiveCamera((int) CustomCameraType.Driver);
+            OnCameraChanged?.Invoke(CustomCameraType.Driver);
         }
 
         public void ToggleDefaultCamera()
         {
-            SwitchActiveCamera((int) CustomCameraType.Default);
-            OnCameraChanged?.Invoke(CustomCameraType.Default);
+            SwitchActiveCamera((int) CustomCameraType.Freecam);
+            OnCameraChanged?.Invoke(CustomCameraType.Freecam);
         }
     }
 }
