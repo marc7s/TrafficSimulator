@@ -518,20 +518,20 @@ namespace VehicleBrain
         private VehicleActivity GetVehicleActivity(VehicleAction activity, VehicleActivity currentAction)
         {
             switch(_currentAction)
-                {
-                    case VehicleAction.Driving when NavigationMode == NavigationMode.Disabled:
-                    case VehicleAction.Driving when NavigationMode == NavigationMode.Random:
-                        return VehicleActivity.DrivingRandomly;
-                    case VehicleAction.Driving when NavigationMode == NavigationMode.RandomNavigationPath:
-                    case VehicleAction.Driving when NavigationMode == NavigationMode.Path:
-                        return VehicleActivity.DrivingToTarget;
-                    case VehicleAction.Parked:
-                        return VehicleActivity.Parked;
-                    case VehicleAction.Waiting:
-                        return currentAction;
-                    default:
-                        return currentAction;
-                }
+            {
+                case VehicleAction.Driving when NavigationMode == NavigationMode.Disabled:
+                case VehicleAction.Driving when NavigationMode == NavigationMode.Random:
+                    return VehicleActivity.DrivingRandomly;
+                case VehicleAction.Driving when NavigationMode == NavigationMode.RandomNavigationPath:
+                case VehicleAction.Driving when NavigationMode == NavigationMode.Path:
+                    return VehicleActivity.DrivingToTarget;
+                case VehicleAction.Parked:
+                    return VehicleActivity.Parked;
+                case VehicleAction.Waiting:
+                    return currentAction;
+                default:
+                    return currentAction;
+            }
         }
 
         public void Loop()
