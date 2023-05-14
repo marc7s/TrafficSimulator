@@ -2,6 +2,7 @@ using Cam;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
 using Simulation;
 using User;
 
@@ -40,6 +41,7 @@ namespace UI
 
         // Car Spawner Input
         private TextField _carSpawnerInput;
+        private string _carSpawnerInputText = "";
 
         private const int _fpsUpdateFrequency = 15;
         private float _fpsLastUpdateTime = 0;
@@ -253,6 +255,7 @@ namespace UI
         void Update()
         {
             _clockLabel.text = TimeManager.Instance.Timestamp;
+            FilterInput();
             // FPS counter
             if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
                 DisplayFPS(1f / Time.unscaledDeltaTime);
@@ -262,6 +265,19 @@ namespace UI
         {
             _fpsLabel.text = "FPS: " + fps.ToString("F0");
             _fpsLastUpdateTime = Time.time;
+        }
+        
+        private void FilterInput()
+        {
+            const string PLACEHOLDER_TEXT = "Cars to spawn...";
+            bool isPlaceholderText = _carSpawnerInput.text.Equals(PLACEHOLDER_TEXT);
+            bool isStartingZero = _carSpawnerInput.text.StartsWith("0");
+            _carSpawnerInputText = _carSpawnerInput.text;
+            
+            if (!_carSpawnerInputText.Equals("") && !isPlaceholderText && !isStartingZero)
+                _carSpawnerInput.SetValueWithoutNotify(Regex.Replace(_carSpawnerInputText, @"[^0-9]", ""));
+            else if (!isPlaceholderText || isStartingZero)
+                _carSpawnerInput.SetValueWithoutNotify(PLACEHOLDER_TEXT);
         }
 
         /// <summary>Wrapper to allow getting bools from PlayerPrefs</summary>
