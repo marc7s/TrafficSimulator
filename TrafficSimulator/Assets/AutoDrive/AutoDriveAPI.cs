@@ -384,6 +384,10 @@ namespace VehicleBrain
             _brakeOffset = brakeOffset;
             _speed = speed;
             _acceleration = acceleration;
+
+            // Register all ragdolls to the user select manager
+            if(_mode == DrivingMode.Performance)
+                User.UserSelectManager.Instance.AddRagdollVehicle(_vehicle);
         }
     }
 
