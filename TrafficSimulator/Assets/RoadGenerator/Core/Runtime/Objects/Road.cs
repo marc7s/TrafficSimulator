@@ -124,6 +124,8 @@ namespace RoadGenerator
         [HideInInspector] public List<POI> POIs = new List<POI>();
         [HideInInspector] public bool IsRoadClosed = false;
         [HideInInspector] protected bool _isBeingDestroyed = false;
+        [HideInInspector] public RoadsideParking RoadsideParkingPrimaryFullRoad;
+        [HideInInspector] public RoadsideParking RoadsideParkingSecondaryFullRoad;
         protected const string POI_CONTAINER_NAME = "POIs";
         protected const string LANE_NAME = "Lane";
         protected const string LANE_CONTAINER_NAME = "Lanes";
@@ -550,6 +552,28 @@ namespace RoadGenerator
             }
         }
 
+        // When the road is connected to another road with roadside parking, it should not have a smooth edge
+        public void UpdateRoadSideParkingSmoothEdge()
+        {
+            if (ConnectedToAtStart != null)
+            {
+                if (RoadsideParkingPrimaryFullRoad != null)
+                    RoadsideParkingPrimaryFullRoad.AllowStartingSmoothEdge = ConnectedToAtStart.Value.Road.RoadsideParkingPrimaryFullRoad == null;
+
+                if (RoadsideParkingSecondaryFullRoad != null)
+                    RoadsideParkingSecondaryFullRoad.AllowStartingSmoothEdge = ConnectedToAtStart.Value.Road.RoadsideParkingSecondaryFullRoad == null;
+            }
+
+            if (ConnectedToAtEnd != null)
+            {
+                if (RoadsideParkingPrimaryFullRoad != null)
+                    RoadsideParkingPrimaryFullRoad.AllowEndingSmoothEdge = ConnectedToAtEnd.Value.Road.RoadsideParkingPrimaryFullRoad == null;
+
+                if (RoadsideParkingSecondaryFullRoad != null)
+                    RoadsideParkingSecondaryFullRoad.AllowEndingSmoothEdge = ConnectedToAtEnd.Value.Road.RoadsideParkingSecondaryFullRoad == null;
+            }
+        }
+
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
@@ -557,7 +581,10 @@ namespace RoadGenerator
                 return;
 
            if (!RoadSystem.IsGeneratingOSM)
+           {
                 ConnectRoadIfEndPointsAreClose();
+                UpdateRoadSideParkingSmoothEdge();
+           }
 
             // Update the intersections and road when a node is changed
             if (!RoadSystem.UseOSM && Application.isEditor && !Application.isPlaying)
@@ -1108,7 +1135,7 @@ namespace RoadGenerator
             bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
             Vector3 offsetDirection =  roadNode.Normal * (isDrivingRight ? 1 : -1) * (IsForward ? 1 : -1);
             float distanceFromRoad = 1f;
-            busStop.transform.position += (distanceFromRoad + LaneCount / 2 * LaneWidth) * offsetDirection;
+            busStop.transform.position += (distanceFromRoad + (LaneCount / (IsOneWay ? 1 : 2) * LaneWidth)) * offsetDirection;
             TextMesh text = busStop.GetComponentInChildren<TextMesh>();
             text.text = busStopName;
             busStop.transform.parent = RoadSystem.BusStopContainer.transform;
@@ -1191,6 +1218,11 @@ namespace RoadGenerator
             roadsideParking.LaneSide = laneSide;
             roadsideParking.Road = this;
             roadsideParking.ParkingType = RoadSideParkingType.FullRoad;
+
+            if (laneSide == LaneSide.Primary)
+                RoadsideParkingPrimaryFullRoad = roadsideParking;
+            else
+                RoadsideParkingSecondaryFullRoad = roadsideParking;
         }
         private (Vector3, Quaternion) GetPOIOffsetPosition(RoadNode node, POI poi)
         {
@@ -1400,7 +1432,8 @@ namespace RoadGenerator
             laneObject.transform.parent = parent.transform;
 
             // Add a line renderer to the lane
-            laneObject.AddComponent<LineRenderer>();
+            LineRenderer lineRenderer = laneObject.AddComponent<LineRenderer>();
+            lineRenderer.positionCount = 0;
             
             // Draw the lane path
             DrawPath(laneObject, lane.StartNode.GetPositions(), color: color);
@@ -1423,7 +1456,8 @@ namespace RoadGenerator
                 laneNodePointerObject.transform.parent = parent.transform;
 
                 // Add a line renderer to the lane
-                laneNodePointerObject.AddComponent<LineRenderer>();
+                LineRenderer lineRenderer = laneNodePointerObject.AddComponent<LineRenderer>();
+                lineRenderer.positionCount = 0;
                 
                 // Draw the lane path
                 DrawPath(laneNodePointerObject, new Vector3[]{ curr.Position, curr.RoadNode.Position }, color: color);

@@ -11,3 +11,6 @@
 11. [TerrainSampleAssets](https://assetstore.unity.com/packages/3d/environments/landscapes/terrain-sample-asset-pack-145808)
 12. [Dark Theme UI](https://assetstore.unity.com/packages/2d/gui/dark-theme-ui-199010)
 13. [UX Flat Icons Free](https://assetstore.unity.com/packages/2d/gui/icons/ux-flat-icons-free-202525)
+14. [Nature Starter Kit 2](https://assetstore.unity.com/packages/3d/environments/nature-starter-kit-2-52977)
+15. [Terrain Sample Asset](https://assetstore.unity.com/packages/3d/environments/landscapes/terrain-sample-asset-pack-145808)
+16. [Vegetation Spawner](https://assetstore.unity.com/packages/tools/terrain/vegetation-spawner-177192?aid=1011ld79j)

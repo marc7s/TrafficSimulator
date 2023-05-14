@@ -288,6 +288,7 @@ namespace VehicleBrain
             _targetLineRenderer.sharedMaterial.SetColor("_Color", Color.green);
             _targetLineRenderer.startWidth = targetLineWidth;
             _targetLineRenderer.endWidth = targetLineWidth;
+            _targetLineRenderer.positionCount = 0;
 
 
             VehicleType vehicleType = 
@@ -303,8 +304,8 @@ namespace VehicleBrain
             }
 
             _agent = new AutoDriveAgent(
-                new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, _vehicleController, BrakeOffset, Speed, Acceleration),
-                new AutoDriveContext(currentNode, transform.position, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
+                new AutoDriveSetting(GetComponent<Vehicle>(), vehicleType, Mode, EndBehaviour, OriginalNavigationMode, _vehicleController, BrakeOffset, Speed, Acceleration),
+                new AutoDriveContext(currentNode, transform.position, transform.forward, OriginalNavigationMode, ShowNavigationPath, LogNavigationErrors, LogBrakeReason, NavigationTargetMarker, NavigationPathMaterial)
             );
 
             _agent.Context.OnRoadChanged = () => RoadChanged?.Invoke();
@@ -364,6 +365,7 @@ namespace VehicleBrain
         private void UpdateContext()
         {
             _agent.Context.VehiclePosition = transform.position;
+            _agent.Context.VehicleDirection = transform.forward;
             _agent.Context.CurrentDrivingState = GetCurrentDrivingAction();
         }
 
@@ -513,6 +515,7 @@ namespace VehicleBrain
         private void PostTeleportNavigationClear()
         {
             _agent.Context.NavigationMode = OriginalNavigationMode;
+            _agent.ClearIntersectionTransitions();
             SetInitialPrevIntersection();
         }
 
@@ -803,6 +806,7 @@ namespace VehicleBrain
         private void WaitAtBusStop(BusStop busStop)
         {
             _agent.Context.CurrentAction = VehicleAction.Waiting;
+            _agent.Context.CurrentActivity = VehicleActivity.AtPOI;
             
             // Brake at the bus stop
             _vehicleController.brakeInput = 0.7f;
@@ -817,7 +821,10 @@ namespace VehicleBrain
             TimeManager.Instance.AddEvent(unPauseEvent);
             
             // Return to driving after the vehicle is done waiting at the bus stop
-            unPauseEvent.OnEvent += () => _agent.Context.CurrentAction = VehicleAction.Driving;
+            unPauseEvent.OnEvent += () => { 
+                _agent.Context.CurrentAction = VehicleAction.Driving;
+                OnLeavingPathTarget();
+            };
         }
 
         private void SetTarget(LaneNode newTarget)
@@ -889,10 +896,9 @@ namespace VehicleBrain
                 _navigationController.ShouldAct(ref _agent);
                 
                 // When the current node is updated, it needs to redraw the navigation path
-                if (_agent.Context.CurrentNode.IsSteeringTarget && _agent.Context.NavigationPathPositions.Count > 0)
-                    _agent.Context.NavigationPathPositions.RemoveAt(0);
-
                 _agent.Context.UpdateNavigationPathLine();
+
+                _agent.Context.DisplayNavigationPathLine();
                 
                 nextNode = Q_GetNextCurrentNode();
                 nextNextNode = GetNextLaneNode(nextNode, 0, false);
@@ -903,10 +909,13 @@ namespace VehicleBrain
             bool waitWithTeleporting = false;
             if(reachedTarget)
             {
+                bool noTargetAction = true;
                 (POI targetPOI, _, _) = _agent.Context.NavigationPathTargets.Pop();
 
                 if(targetPOI != null)
                 {
+                    _agent.Context.CurrentPOI = targetPOI;
+                    
                     if(targetPOI is Parking)
                     {
                         Parking parking = targetPOI as Parking;
@@ -920,12 +929,22 @@ namespace VehicleBrain
                             TimeManager.Instance.AddEvent(unParkEvent);
                             unParkEvent.OnEvent += () => StartCoroutine(Unpark());
                         }
+                        noTargetAction = false;
                     }
                     else if(targetPOI is BusStop && _agent.Setting.Vehicle is Bus)
                     {
                         WaitAtBusStop(targetPOI as BusStop);
+                        noTargetAction = false;
                     }
                 }
+                else
+                {
+                    _agent.Context.CurrentPOI = null;
+                }
+                
+                // If no action was taken on the target, call the leaving function
+                if(noTargetAction)
+                    OnLeavingPathTarget();
             }
 
             bool teleported = false;
@@ -944,6 +963,28 @@ namespace VehicleBrain
             // After the first increment of the current node, we are no longer entering the network
             if(_agent.Context.CurrentAction == VehicleAction.Driving && !teleported && (_agent.Context.IsEnteringNetwork && _agent.Context.CurrentNode.Type != RoadNodeType.End))
                 _agent.Context.IsEnteringNetwork = false;
+        }
+
+        private void OnLeavingPathTarget()
+        {
+            // Return if we are not driving
+            if(_agent.Context.CurrentAction != VehicleAction.Driving)
+                return;
+
+            // Only update the navigation path if we are in the correct navigation modes
+            if(!(_agent.Setting.OriginalNavigationMode == NavigationMode.Path || _agent.Setting.OriginalNavigationMode == NavigationMode.RandomNavigationPath))
+                return;
+
+            // If we are in Path mode but have targets left to visit, return
+            if(_agent.Setting.OriginalNavigationMode == NavigationMode.Path && _agent.Context.NavigationPathTargets.Count > 0)
+                return;
+
+            // If we are in random navigation path mode but have targets left to visit, return
+            if(_agent.Setting.OriginalNavigationMode == NavigationMode.RandomNavigationPath && _agent.Context.NavigationPath.Count > 0)
+                return;
+
+            PostTeleportNavigationClear();
+            _agent.UpdateNavigationPath(_agent.Context.CurrentNode);
         }
 
         private bool HasReachedTarget()
@@ -1101,10 +1142,9 @@ namespace VehicleBrain
                 _navigationController.ShouldAct(ref _agent);
 
                 // When the currentNode is changed, the navigation path needs to be updated
-                if (_agent.Context.NavigationPathPositions.Count > 0)
-                    _agent.Context.NavigationPathPositions.RemoveAt(0);
-
                 _agent.Context.UpdateNavigationPathLine();
+
+                _agent.Context.DisplayNavigationPathLine();
             
                 SetTarget(GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop));
             }

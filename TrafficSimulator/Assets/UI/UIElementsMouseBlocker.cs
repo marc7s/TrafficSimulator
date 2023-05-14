@@ -46,7 +46,7 @@ namespace UI
             // Check if the target of the event is one of the visual elements in the list.
             if (_visualElements.Contains(evt.target as VisualElement))
             {
-                UserSelectManager.Instance.IsHoveringUIElement = true;
+                UserSelectManager.Instance.IsHoveringOldUIElement = true;
             }
         }
 
@@ -56,7 +56,7 @@ namespace UI
             // Check if the target of the event is one of the visual elements in the list.
             if (_visualElements.Contains(evt.target as VisualElement))
             {
-                UserSelectManager.Instance.IsHoveringUIElement = false;
+                UserSelectManager.Instance.IsHoveringOldUIElement = false;
             }
         }
 

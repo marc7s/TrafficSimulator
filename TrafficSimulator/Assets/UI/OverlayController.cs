@@ -2,6 +2,7 @@ using Cam;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using System.Text.RegularExpressions;
 using Simulation;
 using User;
 
@@ -21,6 +22,10 @@ namespace UI
         private Button _fpvButton;
         private Button _currentlyHighlightedCameraButton;
 
+        // Car Spawner Buttons
+        private Button _spawnCarsButton;
+        private Button _deleteCarsButton;
+
         // Clock Buttons
         private Button _rewindButton;
         private Button _pauseButton;
@@ -33,6 +38,10 @@ namespace UI
         private Label _clockLabel;
         private Label _fpsLabel;
         private bool _showFPS = false;
+
+        // Car Spawner Input
+        private TextField _carSpawnerInput;
+        private string _carSpawnerInputText = "";
 
         private const int _fpsUpdateFrequency = 15;
         private float _fpsLastUpdateTime = 0;
@@ -54,7 +63,14 @@ namespace UI
             _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
             
             FindCameraManager();
+
             // Buttons
+            _spawnCarsButton = _doc.rootVisualElement.Q<Button>("SpawnCars");
+            _spawnCarsButton.clicked += SpawnCarsButtonOnClicked;
+
+            _deleteCarsButton = _doc.rootVisualElement.Q<Button>("DeleteCars");
+            _deleteCarsButton.clicked += DeleteCarsButtonOnClicked;
+
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
 
@@ -83,6 +99,9 @@ namespace UI
 
             _fastForwardButton = _doc.rootVisualElement.Q<Button>("Fastforward");
             _fastForwardButton.clicked += FastForwardButtonOnClicked;
+
+            // Input
+            _carSpawnerInput = _doc.rootVisualElement.Q<TextField>("CarSpawnerInput");
 
             // Load settings
             _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
@@ -216,9 +235,27 @@ namespace UI
             TimeManager.Instance.SetModeFastForward();
         }
 
+        private void SpawnCarsButtonOnClicked()
+        {
+            if (int.TryParse(_carSpawnerInput.text, out int amount))
+            {
+                // TODO: Implement this
+            }
+            else
+            {
+                Debug.LogWarning("Invalid input for car spawner.");
+            }
+        }
+
+        private void DeleteCarsButtonOnClicked()
+        {
+            // TODO: Implement this
+        }
+
         void Update()
         {
             _clockLabel.text = TimeManager.Instance.Timestamp;
+            FilterInput();
             // FPS counter
             if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
                 DisplayFPS(1f / Time.unscaledDeltaTime);
@@ -228,6 +265,19 @@ namespace UI
         {
             _fpsLabel.text = "FPS: " + fps.ToString("F0");
             _fpsLastUpdateTime = Time.time;
+        }
+        
+        private void FilterInput()
+        {
+            const string PLACEHOLDER_TEXT = "Cars to spawn...";
+            bool isPlaceholderText = _carSpawnerInput.text.Equals(PLACEHOLDER_TEXT);
+            bool isStartingZero = _carSpawnerInput.text.StartsWith("0");
+            _carSpawnerInputText = _carSpawnerInput.text;
+            
+            if (!_carSpawnerInputText.Equals("") && !isPlaceholderText && !isStartingZero)
+                _carSpawnerInput.SetValueWithoutNotify(Regex.Replace(_carSpawnerInputText, @"[^0-9]", ""));
+            else if (!isPlaceholderText || isStartingZero)
+                _carSpawnerInput.SetValueWithoutNotify(PLACEHOLDER_TEXT);
         }
 
         /// <summary>Wrapper to allow getting bools from PlayerPrefs</summary>
