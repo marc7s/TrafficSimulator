@@ -31,7 +31,10 @@ namespace User
         private InputAction _doubleClickInput;
         private bool _hasSelectedGameObject;
         private InputAction _pointInput;
-        public bool IsHoveringUIElement { get; set; } = false;
+        public bool IsHoveringOldUIElement = false;
+        public bool IsHoveringNewUIElement = false;
+
+        public bool IsHoveringUIElement => IsHoveringOldUIElement || IsHoveringNewUIElement;
 
         /// <summary>
         ///     The currently selected game object.
