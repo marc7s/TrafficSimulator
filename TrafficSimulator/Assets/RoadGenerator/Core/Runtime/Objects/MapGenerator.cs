@@ -78,11 +78,11 @@ namespace RoadGenerator
     public enum TerrainType
     {
         Water,
-        Grass,
+        Grass = 1,
         Sand,
         Concrete,
-        Forest,
-        Default
+        Forest = 3,
+        Default = 0
     }
 
     public struct TerrainArea
@@ -279,13 +279,17 @@ namespace RoadGenerator
 
         public bool IsPointInPolygon(Vector2 point, Vector2[] polygon)
         {
-            int polygonLength = polygon.Length, i=0;
+            int polygonLength = polygon.Length;
+            int i = 0;
             bool inside = false;
             // x, y for tested point.
             float pointX = point.x, pointY = point.y;
             // start / end point for the current polygon segment.
-            float startX, startY, endX, endY;
-            Vector2 endPoint = polygon[polygonLength-1];
+            float startX;
+            float startY;
+            float endX;
+            float endY;
+            Vector2 endPoint = polygon[polygonLength - 1];
             endX = endPoint.x;
             endY = endPoint.y;
 
@@ -305,8 +309,10 @@ namespace RoadGenerator
         private List<Vector2> Vector3ToVector2(List<Vector3> points)
         {
             List<Vector2> vector2Points = new List<Vector2>();
+
             foreach (Vector3 point in points)
                 vector2Points.Add(new Vector2(point.x, point.z));
+
             return vector2Points;
         }
 
@@ -370,8 +376,8 @@ namespace RoadGenerator
                 for (int x = 0; x < terrainData.alphamapWidth; x++)
                 {
                     Vector3 basePos = LatLonToPosition(_minLat, _minLon);
-                    Vector2 basPos2D = new Vector2(basePos.x, basePos.z);
-                    Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / terrainData.alphamapWidth, y * terrainData.size.z / terrainData.alphamapHeight);
+                    Vector2 basePos2D = new Vector2(basePos.x, basePos.z);
+                    Vector2 terrainPosition =  basePos2D + new Vector2(x * terrainData.size.x / terrainData.alphamapWidth, y * terrainData.size.z / terrainData.alphamapHeight);
 
                     // Setup an array to record the mix of texture weights at this point
                     float[] splatWeights = new float[terrainData.alphamapLayers];
@@ -396,10 +402,11 @@ namespace RoadGenerator
                             if (isInsideInnerArea)
                                 break;
 
+
                             if (terrainBounds.TerrainType == TerrainType.Grass)
-                                splatWeights[1] = 1f;
+                                splatWeights[(int)TerrainType.Grass] = 1f;
                             else if (terrainBounds.TerrainType == TerrainType.Forest)
-                                splatWeights[3] = 1f;
+                                splatWeights[(int)TerrainType.Forest] = 1f;
                             else
                                 splatWeights[2] = 1f;
 
@@ -409,7 +416,7 @@ namespace RoadGenerator
                     }
 
                     if (!foundTerrain)
-                        splatWeights[0] = 1f;
+                        splatWeights[(int)TerrainType.Default] = 1f;
 
                     // Sum of all textures weights must add to 1, so calculate normalization factor from sum of weights
                     float z = splatWeights.Sum();
@@ -755,7 +762,6 @@ namespace RoadGenerator
         // https://wiki.openstreetmap.org/wiki/Key:landuse
         private TerrainType GetTerrainType(XmlNode node)
         {
-            Debug.Log("Terrain type: " + node.Attributes["v"].Value);
             switch (node.Attributes["v"].Value)
             {
                 case "grass":
@@ -896,12 +902,13 @@ namespace RoadGenerator
 
         private Vector3 GetNodePosition(XmlNode node)
         {
-            const int scale = 111000;
+            const int LatLonToMeterRatio = 111000;
+
             try
             {
-            float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon)*scale;
-            float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat)*scale;
-            return new Vector3(xPos, 0, zPos);
+                float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon) * LatLonToMeterRatio;
+                float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat) * LatLonToMeterRatio;
+                return new Vector3(xPos, 0, zPos);
             }
             catch
             {
@@ -912,9 +919,9 @@ namespace RoadGenerator
 
         private Vector3 LatLonToPosition(double lat, double lon)
         {
-            const int scale = 111000;
-            float xPos = (float)(lon - _minLon)*scale;
-            float zPos = (float)(lat - _minLat)*scale;
+            const int LatLonToMeterRatio = 111000;
+            float xPos = (float)(lon - _minLon) * LatLonToMeterRatio;
+            float zPos = (float)(lat - _minLat) * LatLonToMeterRatio;
 
             return new Vector3(xPos, 0, zPos);
         }
