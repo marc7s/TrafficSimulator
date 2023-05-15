@@ -146,19 +146,23 @@ namespace RoadGenerator
 
         private void MenuStart(int totalCars = 100)
         {
-            // Destroy all cars
-            if (_carContainer.transform.childCount > 0)
-            {
-                foreach (Transform child in _carContainer.transform)
-                    Destroy(child.gameObject);
-                _spawned = false;
-            }
+            RemoveCars();
 
             Debug.Log("Spawning " + totalCars + " cars");
 
             TotalCars = totalCars;
             _mode = SpawnMode.Total;
             Setup();
+        }
+
+        private void RemoveCars()
+        {
+            if (_carContainer.transform.childCount > 0)
+            {
+                foreach (Transform child in _carContainer.transform)
+                    Destroy(child.gameObject);
+                _spawned = false;
+            }
         }
 
         public void Setup()
