@@ -14,10 +14,6 @@ namespace RoadGenerator
     [ExecuteInEditMode()]
     public class TrafficLight : MonoBehaviour
     {
-        public GameObject RedLight;
-        public GameObject YellowLight;
-        public GameObject GreenLight;
-
         private float _lastSwitchTime;
         public float SwitchTime = 2f;
         public RoadNode RoadNode;
@@ -25,6 +21,12 @@ namespace RoadGenerator
         private TrafficLightState _currentState = TrafficLightState.Red;
         private TrafficLightState _lastState = TrafficLightState.Red;
         public TrafficLightController trafficLightController;
+        private Renderer _objRenderer;
+
+        void Start()
+        {
+            _objRenderer = GetComponent<Renderer>();
+        }
 
         void Update()
         {
@@ -87,24 +89,16 @@ namespace RoadGenerator
             switch (_currentState)
             {
                 case TrafficLightState.Red:
-                    RedLight.GetComponent<Light>().enabled = true;
-                    YellowLight.GetComponent<Light>().enabled = false;
-                    GreenLight.GetComponent<Light>().enabled = false;
+                    _objRenderer.materials[1].SetTextureOffset("_MainTex", new Vector2(0.0625f * 0.0f, 0.0f));
                     break;
                 case TrafficLightState.ToStop:
-                    RedLight.GetComponent<Light>().enabled = false;
-                    YellowLight.GetComponent<Light>().enabled = true;
-                    GreenLight.GetComponent<Light>().enabled = false;
+                    _objRenderer.materials[1].SetTextureOffset("_MainTex", new Vector2(0.0625f * 1.0f, 0.0f));
                     break;
                 case TrafficLightState.ToGo:
-                    RedLight.GetComponent<Light>().enabled = true;
-                    YellowLight.GetComponent<Light>().enabled = true;
-                    GreenLight.GetComponent<Light>().enabled = false;
+                    _objRenderer.materials[1].SetTextureOffset("_MainTex", new Vector2(0.0625f * 3.0f, 0.0f));
                     break;
                 case TrafficLightState.Green:
-                    RedLight.GetComponent<Light>().enabled = false;
-                    YellowLight.GetComponent<Light>().enabled = false;
-                    GreenLight.GetComponent<Light>().enabled = true;
+                    _objRenderer.materials[1].SetTextureOffset("_MainTex", new Vector2(0.0625f * 2.0f, 0.0f));
                     break;
             }
         }
