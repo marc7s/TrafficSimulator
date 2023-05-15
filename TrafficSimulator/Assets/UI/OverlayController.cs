@@ -46,6 +46,8 @@ namespace UI
         private const string FULLSCREEN = "Fullscreen";
 
         private CameraManager _cameraManager;
+
+        public int CarsToSpawn => _carsToSpawn;
         
         void Awake()
         {
@@ -146,7 +148,6 @@ namespace UI
             };
             // Set the default camera button to highlighted
             HighlightCameraButton(_freecamCameraButton);
-
         }
         
         private void FindCameraManager()

@@ -3,6 +3,7 @@ using UnityEngine;
 using VehicleBrain;
 using System.Linq;
 using System;
+using UI;
 
 namespace RoadGenerator
 {
@@ -44,6 +45,9 @@ namespace RoadGenerator
         [SerializeField] private bool _logBrakeReason = false;
         [SerializeField] private bool _showNavigationPath = false;
 
+        private MenuController _menuController;
+        private OverlayController _overlayController;
+
         // Total number of cars to spawn in mode Total
         public int TotalCars = 5;
         
@@ -72,7 +76,9 @@ namespace RoadGenerator
 
         private List<CarsForLane> spawnableLanes = new List<CarsForLane>();
 
-        
+        // Create a empty gameobject to hold all cars
+        private GameObject _carContainer;
+
         public struct SpawnableLaneNode
         {
             private float _distance;
@@ -120,6 +126,29 @@ namespace RoadGenerator
             AddLanesToList();
             CalculateLaneIndexes();
             CalculateMaxCarsForLanes();
+
+            _carContainer = new GameObject("CarContainer");
+            _carContainer.transform.parent = transform;
+
+            // Get ui controllers
+            _menuController = FindObjectOfType<MenuController>();
+            _overlayController = FindObjectOfType<OverlayController>();
+
+            // Subscribe to start event
+            _menuController.OnSimulationStart += SimulationStartHandler;
+
+        }
+
+        private void SimulationStartHandler()
+        {
+            MenuStart(_overlayController.CarsToSpawn);
+        }
+
+        private void MenuStart(int totalCars = 100)
+        {
+            TotalCars = totalCars;
+            _mode = SpawnMode.Total;
+            Setup();
         }
 
         public void Setup()
@@ -324,6 +353,9 @@ namespace RoadGenerator
         private void SpawnCar(int index)
         {
             _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+            // Make CarContainer parent
+            _currentCar.transform.parent = _carContainer.transform;
+
             AutoDrive autoDrive = _currentCar.GetComponent<AutoDrive>();
             autoDrive.StartingRoad = _lanes[index].Road;
             autoDrive.LaneIndex = _indexes[index];
