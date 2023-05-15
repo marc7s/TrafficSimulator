@@ -45,7 +45,6 @@ namespace RoadGenerator
         [SerializeField] private bool _logBrakeReason = false;
         [SerializeField] private bool _showNavigationPath = false;
 
-        private MenuController _menuController;
         private OverlayController _overlayController;
 
         // Total number of cars to spawn in mode Total
@@ -112,7 +111,19 @@ namespace RoadGenerator
             }
         }
 
-        private void Start()
+        void Awake()
+        {
+            _carContainer = new GameObject("CarContainer");
+            _carContainer.transform.parent = transform;
+
+            // Get ui controllers
+            _overlayController = FindObjectOfType<OverlayController>();
+
+            // Subscribe to start event
+            _overlayController.OnSimulationStart += SimulationStartHandler;
+        }
+
+        private void Starter()
         {
             _vehicleTypes = _randomVehicleTypes ? new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab } : new List<GameObject>(){ _sedanPrefab };
 
@@ -127,28 +138,18 @@ namespace RoadGenerator
             CalculateLaneIndexes();
             CalculateMaxCarsForLanes();
 
-            _carContainer = new GameObject("CarContainer");
-            _carContainer.transform.parent = transform;
-
-            // Get ui controllers
-            _menuController = FindObjectOfType<MenuController>();
-            _overlayController = FindObjectOfType<OverlayController>();
-
-            // Subscribe to start event
-            _menuController.OnSimulationStart += SimulationStartHandler;
-
         }
 
         private void SimulationStartHandler()
         {
+            Debug.Log("Simulation started");
+            Starter();
             MenuStart(_overlayController.CarsToSpawn);
         }
 
         private void MenuStart(int totalCars = 100)
         {
             RemoveCars();
-
-            Debug.Log("Spawning " + totalCars + " cars");
 
             TotalCars = totalCars;
             _mode = SpawnMode.Total;

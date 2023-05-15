@@ -3,7 +3,6 @@ using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
 using RoadGenerator;
-using System;
 
 namespace UI
 {
@@ -43,8 +42,6 @@ namespace UI
 
         private const string FPS_COUNTER = "FPSCounter";
         private const string FULLSCREEN = "Fullscreen";
-
-        public Action OnSimulationStart;
 
         void Awake()
         {
@@ -112,7 +109,6 @@ namespace UI
             }
             PlayerPrefs.SetInt("CarsToSpawn", int.Parse(_carSpawnerInput.text));
             _doc.rootVisualElement.visible = false;
-            OnSimulationStart?.Invoke();
             // ------------------------------------- TODO CHANGE TO GAME SCENE ------------------------------------- //
             SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex + 1), LoadSceneMode.Single);
         }

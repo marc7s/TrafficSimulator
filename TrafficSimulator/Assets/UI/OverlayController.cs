@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using Simulation;
 using User;
 using RoadGenerator;
+using System;
 
 namespace UI 
 {
@@ -48,6 +49,9 @@ namespace UI
         private CameraManager _cameraManager;
 
         public int CarsToSpawn => _carsToSpawn;
+
+        public Action OnSimulationStart;
+
         
         void Awake()
         {
@@ -148,6 +152,12 @@ namespace UI
             };
             // Set the default camera button to highlighted
             HighlightCameraButton(_freecamCameraButton);
+            ActivateCarSpawner();
+        }
+
+        private void ActivateCarSpawner()
+        {
+            OnSimulationStart?.Invoke();
         }
         
         private void FindCameraManager()
