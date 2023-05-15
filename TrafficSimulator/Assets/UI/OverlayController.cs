@@ -17,9 +17,9 @@ namespace UI
 
         // Camera Buttons
         private StyleSheet _cameraButtonStyles;
-        private Button _defaultCameraButton;
-        private Button _focusedCameraButton;
-        private Button _fpvButton;
+        private Button _freecamCameraButton;
+        private Button _followCameraButton;
+        private Button _driverCameraButton;
         private Button _currentlyHighlightedCameraButton;
 
         // Clock Buttons
@@ -67,19 +67,19 @@ namespace UI
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
 
-            _defaultCameraButton = _doc.rootVisualElement.Q<Button>("Default");
-            _defaultCameraButton.AddToClassList("button");
-            _defaultCameraButton.clicked += DefaultCameraButtonClicked;
+            _freecamCameraButton = _doc.rootVisualElement.Q<Button>("Freecam");
+            _freecamCameraButton.AddToClassList("button");
+            _freecamCameraButton.clicked += FreecamCameraButtonClicked;
 
-            _focusedCameraButton = _doc.rootVisualElement.Q<Button>("Focus");
-            _focusedCameraButton.AddToClassList("button");
-            _focusedCameraButton.clicked += FocusedCameraButtonOnClicked;
-            GreyOutButton(_focusedCameraButton);
+            _followCameraButton = _doc.rootVisualElement.Q<Button>("Follow");
+            _followCameraButton.AddToClassList("button");
+            _followCameraButton.clicked += FollowCameraButtonOnClicked;
+            GreyOutButton(_followCameraButton);
 
-            _fpvButton = _doc.rootVisualElement.Q<Button>("FPV");
-            _fpvButton.AddToClassList("button");
-            _fpvButton.clicked += FPVButtonOnClicked;
-            GreyOutButton(_fpvButton);
+            _driverCameraButton = _doc.rootVisualElement.Q<Button>("Driver");
+            _driverCameraButton.AddToClassList("button");
+            _driverCameraButton.clicked += DriverCameraButtonOnClicked;
+            GreyOutButton(_driverCameraButton);
             
             _rewindButton = _doc.rootVisualElement.Q<Button>("Rewind");
             _rewindButton.clicked += RewindButtonOnClicked;
@@ -110,33 +110,33 @@ namespace UI
             {
                 if (selectedGameObject)
                 {
-                    RestoreButton(_fpvButton);
-                    RestoreButton(_focusedCameraButton);
+                    RestoreButton(_driverCameraButton);
+                    RestoreButton(_followCameraButton);
                 }
                 else
                 {
-                    GreyOutButton(_fpvButton);
-                    GreyOutButton(_focusedCameraButton);
+                    GreyOutButton(_driverCameraButton);
+                    GreyOutButton(_followCameraButton);
                 }
             };
             _cameraManager.OnCameraChanged += type =>
             {
                 // Reset all camera buttons to normal state
-                RemoveCameraButtonHighlight(_defaultCameraButton);
-                RemoveCameraButtonHighlight(_focusedCameraButton);
-                RemoveCameraButtonHighlight(_fpvButton);
+                RemoveCameraButtonHighlight(_freecamCameraButton);
+                RemoveCameraButtonHighlight(_followCameraButton);
+                RemoveCameraButtonHighlight(_driverCameraButton);
 
                 // Highlight the correct camera button based on the camera type
                 switch (type)
                 {
-                    case CameraManager.CustomCameraType.Default:
-                        HighlightCameraButton(_defaultCameraButton);
+                    case CameraManager.CustomCameraType.Freecam:
+                        HighlightCameraButton(_freecamCameraButton);
                         break;
-                    case CameraManager.CustomCameraType.Focus:
-                        HighlightCameraButton(_focusedCameraButton);
+                    case CameraManager.CustomCameraType.Follow:
+                        HighlightCameraButton(_followCameraButton);
                         break;
-                    case CameraManager.CustomCameraType.FirstPersonDriver:
-                        HighlightCameraButton(_fpvButton);
+                    case CameraManager.CustomCameraType.Driver:
+                        HighlightCameraButton(_driverCameraButton);
                         break;
                     default:
                         Debug.LogWarning("Unknown camera type.");
@@ -144,7 +144,7 @@ namespace UI
                 }
             };
             // Set the default camera button to highlighted
-            HighlightCameraButton(_defaultCameraButton);
+            HighlightCameraButton(_freecamCameraButton);
 
         }
         
@@ -200,22 +200,22 @@ namespace UI
             SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
         }
 
-        private void DefaultCameraButtonClicked()
+        private void FreecamCameraButtonClicked()
         {
             PlayClickSound();
             _cameraManager.ToggleDefaultCamera();
         }
 
-        private void FocusedCameraButtonOnClicked()
+        private void FollowCameraButtonOnClicked()
         {
             PlayClickSound();
-            _cameraManager.ToggleFocusCamera();
+            _cameraManager.ToggleFollowCamera();
         }
 
-        private void FPVButtonOnClicked()
+        private void DriverCameraButtonOnClicked()
         {
             PlayClickSound();
-            _cameraManager.ToggleFirstPersonDriverCamera();
+            _cameraManager.ToggleDriverCamera();
         }
 
         private void RewindButtonOnClicked()

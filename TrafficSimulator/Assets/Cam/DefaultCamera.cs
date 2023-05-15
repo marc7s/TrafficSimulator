@@ -104,7 +104,7 @@ namespace Cam
 
         private void HandleGameObjectDoubleClickSelection(Selectable selectable)
         {
-            CameraManager.ToggleFocusCamera();
+            CameraManager.ToggleFollowCamera();
         }
 
         public override void HandlePointInput(Vector2 pointPosition)

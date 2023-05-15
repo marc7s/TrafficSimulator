@@ -36,9 +36,9 @@
                 <ui:VisualElement name="CameraButtons" class="camera-button-borders color-theme" style="height: 50px; padding-bottom: 0;">
                     <ui:VisualElement style="background-image: resource(&apos;Photography-Camera-Icon-Transparent-Image&apos;); width: 40px; height: 40px; -unity-background-image-tint-color: rgb(226, 226, 226);" />
                     <ui:VisualElement name="CameraButtons" style="width: auto; top: 15%; left: auto; bottom: auto; flex-direction: row; align-items: center; right: auto; height: auto; flex-shrink: 0; flex-grow: 0; padding-bottom: 10px;">
-                        <ui:Button text="Freecam" display-tooltip-when-elided="true" name="Default" focusable="false" tooltip="Move camera with no constraints" class="color-theme-button" style="height: 25px;" />
-                        <ui:Button text="Follow" display-tooltip-when-elided="true" name="Focus" focusable="false" tooltip="Follow selected car" class="color-theme-button" style="height: 25px; position: relative; top: auto; left: auto;" />
-                        <ui:Button text="Driver" display-tooltip-when-elided="true" name="FPV" focusable="false" tooltip="Driver POV (FPV)" class="color-theme-button" style="height: 25px; position: relative; top: auto; left: auto;" />
+                        <ui:Button text="Freecam" display-tooltip-when-elided="true" name="Freecam" focusable="false" tooltip="Move camera with no constraints" class="color-theme-button" style="height: 25px;" />
+                        <ui:Button text="Follow" display-tooltip-when-elided="true" name="Follow" focusable="false" tooltip="Follow selected car" class="color-theme-button" style="height: 25px; position: relative; top: auto; left: auto;" />
+                        <ui:Button text="Driver" display-tooltip-when-elided="true" name="Driver" focusable="false" tooltip="Driver POV (FPV)" class="color-theme-button" style="height: 25px; position: relative; top: auto; left: auto;" />
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>

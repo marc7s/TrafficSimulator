@@ -8,7 +8,7 @@ public class DevUi : MonoBehaviour
     private Button _camera1Button;
     private Button _camera2Button;
     private Button _camera2DButton;
-    private Button _cameraFpvButton;
+    private Button _cameraDriverButton;
     public CinemachineSwitcher CinemachineSwitcher;
 
     void Start()
@@ -24,13 +24,13 @@ public class DevUi : MonoBehaviour
         _camera1Button = RootElement.Q<Button>("Camera1");
         _camera2Button = RootElement.Q<Button>("Camera2");
         _camera2DButton = RootElement.Q<Button>("Camera_2D");
-        _cameraFpvButton = RootElement.Q<Button>("Camera_FPV");
+        _cameraDriverButton = RootElement.Q<Button>("Camera_FPV");
 
         // Add listeners
         _camera1Button.clickable.clicked += () => OnButtonClicked(1);
         _camera2Button.clickable.clicked += () => OnButtonClicked(2);
         _camera2DButton.clickable.clicked += () => OnButtonClicked(3);
-        _cameraFpvButton.clickable.clicked += () => OnButtonClicked(4);
+        _cameraDriverButton.clickable.clicked += () => OnButtonClicked(4);
     }
  
    private void OnDestroy()
@@ -38,7 +38,7 @@ public class DevUi : MonoBehaviour
         _camera1Button.clickable.clicked -= () => OnButtonClicked(1);
         _camera2Button.clickable.clicked -= () => OnButtonClicked(2);
         _camera2DButton.clickable.clicked -= () => OnButtonClicked(3);
-        _cameraFpvButton.clickable.clicked -= () => OnButtonClicked(4);
+        _cameraDriverButton.clickable.clicked -= () => OnButtonClicked(4);
    }
 
    private void OnButtonClicked(int button)
