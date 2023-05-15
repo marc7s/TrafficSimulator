@@ -14,3 +14,4 @@
 14. [Nature Starter Kit 2](https://assetstore.unity.com/packages/3d/environments/nature-starter-kit-2-52977)
 15. [Terrain Sample Asset](https://assetstore.unity.com/packages/3d/environments/landscapes/terrain-sample-asset-pack-145808)
 16. [Vegetation Spawner](https://assetstore.unity.com/packages/tools/terrain/vegetation-spawner-177192?aid=1011ld79j)
+17. [DOTween (HOTween v2)](https://assetstore.unity.com/packages/tools/animation/dotween-hotween-v2-27676)
