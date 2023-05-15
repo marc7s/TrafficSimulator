@@ -63,6 +63,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _settingsUI: {fileID: 9197481963319205126, guid: 4e20c78076bbe3b428dad7abbb32988f, type: 3}
+  _loadingScreenUI: {fileID: 9197481963319205126, guid: 000baa2c70302cd4b95e68c9e50bbc2e, type: 3}
 --- !u!82 &2321998456740194686
 AudioSource:
   m_ObjectHideFlags: 0
