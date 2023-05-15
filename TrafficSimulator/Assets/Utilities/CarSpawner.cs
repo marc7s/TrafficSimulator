@@ -120,10 +120,10 @@ namespace RoadGenerator
             _overlayController = FindObjectOfType<OverlayController>();
 
             // Subscribe to start event
-            _overlayController.OnSimulationStart += SimulationStartHandler;
+            //_overlayController.OnSimulationStart += SimulationStartHandler;
         }
 
-        private void Starter()
+        private void Start()
         {
             _vehicleTypes = _randomVehicleTypes ? new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab } : new List<GameObject>(){ _sedanPrefab };
 
@@ -143,7 +143,7 @@ namespace RoadGenerator
         private void SimulationStartHandler()
         {
             Debug.Log("Simulation started");
-            Starter();
+            //Starter();
             MenuStart(_overlayController.CarsToSpawn);
         }
 
@@ -178,7 +178,7 @@ namespace RoadGenerator
                 Debug.Log("Cars already spawned");
         }
 
-        /*
+        
         void Update()
         {
             if (!_spawned)
@@ -191,7 +191,7 @@ namespace RoadGenerator
                 }
             }
         }
-        */
+        
 
         private float GetLongestCarLength(List<GameObject> cars)
         {
