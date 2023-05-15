@@ -113,7 +113,7 @@ namespace Cam
 
         public override void HandleEscapeInput()
         {
-            CameraManager.ToggleFocusCamera();
+            CameraManager.ToggleFollowCamera();
         }
     }
 }

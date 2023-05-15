@@ -24,7 +24,7 @@ namespace Cam
 
         [Header("Zoom Settings")]
         [SerializeField] private float _followOffsetMin = 5f;
-        [SerializeField] private float _followOffsetMax = 50f;
+        [SerializeField] private float _followOffsetMax = 1000f;
         [SerializeField][Range(10, 40)] private float _dynamicZoomFactor = 15;
         [SerializeField] private float _zoomLerpSpeed = 5f;
         [SerializeField] private float _zoomScrollFactor = 4f;
@@ -55,6 +55,10 @@ namespace Cam
 
         private void Update()
         {
+            // Only update if this is the active camera
+            if(CameraManager == null)
+                return;
+
             if (_hasToggledGameObject && !_isMovingTowardsTarget) 
                 FollowTransform.position = _toggledGameObject.transform.position;
         }
@@ -67,7 +71,7 @@ namespace Cam
             UserSelectManager.Instance.CanSelectNewObject = true;
             UserSelectManager.Instance.OnSelectedGameObject += HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject += HandleGameObjectDoubleClickSelection;
-            FollowTransform.eulerAngles = RotationOrigin.eulerAngles;
+            FollowTransform.rotation = RotationOrigin;
         }
 
         public override void SetInactive(CameraManager cameraManager)
@@ -100,7 +104,7 @@ namespace Cam
 
         private void HandleGameObjectDoubleClickSelection(Selectable selectable)
         {
-            CameraManager.ToggleFocusCamera();
+            CameraManager.ToggleFollowCamera();
         }
 
         public override void HandlePointInput(Vector2 pointPosition)
@@ -149,10 +153,8 @@ namespace Cam
             else if (zoomValue < 0)
                 FollowOffset += zoomDirection * _zoomScrollFactor * FollowOffset.magnitude / _dynamicZoomFactor;
             
-            if (FollowOffset.magnitude < _followOffsetMin)
-                FollowOffset = zoomDirection * _followOffsetMin;
-            else if (FollowOffset.magnitude > _followOffsetMax)
-                FollowOffset = zoomDirection * _followOffsetMax;
+            // Clamp the follow offset to the min and max values
+            FollowOffset = zoomDirection * Mathf.Clamp(FollowOffset.magnitude, _followOffsetMin, _followOffsetMax);
     
             _cinemachineTransposer.m_FollowOffset =
                 Vector3.Lerp(_cinemachineTransposer.m_FollowOffset,
