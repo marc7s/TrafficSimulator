@@ -2,7 +2,6 @@ using Cam;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
-using System.Text.RegularExpressions;
 using Simulation;
 using User;
 
@@ -11,20 +10,17 @@ namespace UI
     public class OverlayController : MonoBehaviour
     {
         private UIDocument _doc;
+        private AudioSource _clickSound;
         
         // Overlay Button
         private Button _menuButton;
 
         // Camera Buttons
         private StyleSheet _cameraButtonStyles;
-        private Button _defaultCameraButton;
-        private Button _focusedCameraButton;
-        private Button _fpvButton;
+        private Button _freecamCameraButton;
+        private Button _followCameraButton;
+        private Button _driverCameraButton;
         private Button _currentlyHighlightedCameraButton;
-
-        // Car Spawner Buttons
-        private Button _spawnCarsButton;
-        private Button _deleteCarsButton;
 
         // Clock Buttons
         private Button _rewindButton;
@@ -39,9 +35,8 @@ namespace UI
         private Label _fpsLabel;
         private bool _showFPS = false;
 
-        // Car Spawner Input
-        private TextField _carSpawnerInput;
-        private string _carSpawnerInputText = "";
+        private bool _qualityMode = false;
+        private int _carsToSpawn = 0;
 
         private const int _fpsUpdateFrequency = 15;
         private float _fpsLastUpdateTime = 0;
@@ -54,6 +49,10 @@ namespace UI
         void Awake()
         {
             _doc = GetComponent<UIDocument>();
+
+            // Get the audio source
+            _clickSound = GetComponent<AudioSource>();
+
             _cameraButtonStyles = Resources.Load<StyleSheet>("CameraButtonStyle");
             _doc.rootVisualElement.styleSheets.Add(_cameraButtonStyles);
 
@@ -65,28 +64,22 @@ namespace UI
             FindCameraManager();
 
             // Buttons
-            _spawnCarsButton = _doc.rootVisualElement.Q<Button>("SpawnCars");
-            _spawnCarsButton.clicked += SpawnCarsButtonOnClicked;
-
-            _deleteCarsButton = _doc.rootVisualElement.Q<Button>("DeleteCars");
-            _deleteCarsButton.clicked += DeleteCarsButtonOnClicked;
-
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
 
-            _defaultCameraButton = _doc.rootVisualElement.Q<Button>("Default");
-            _defaultCameraButton.AddToClassList("button");
-            _defaultCameraButton.clicked += DefaultCameraButtonClicked;
+            _freecamCameraButton = _doc.rootVisualElement.Q<Button>("Freecam");
+            _freecamCameraButton.AddToClassList("button");
+            _freecamCameraButton.clicked += FreecamCameraButtonClicked;
 
-            _focusedCameraButton = _doc.rootVisualElement.Q<Button>("Focus");
-            _focusedCameraButton.AddToClassList("button");
-            _focusedCameraButton.clicked += FocusedCameraButtonOnClicked;
-            GreyOutButton(_focusedCameraButton);
+            _followCameraButton = _doc.rootVisualElement.Q<Button>("Follow");
+            _followCameraButton.AddToClassList("button");
+            _followCameraButton.clicked += FollowCameraButtonOnClicked;
+            GreyOutButton(_followCameraButton);
 
-            _fpvButton = _doc.rootVisualElement.Q<Button>("FPV");
-            _fpvButton.AddToClassList("button");
-            _fpvButton.clicked += FPVButtonOnClicked;
-            GreyOutButton(_fpvButton);
+            _driverCameraButton = _doc.rootVisualElement.Q<Button>("Driver");
+            _driverCameraButton.AddToClassList("button");
+            _driverCameraButton.clicked += DriverCameraButtonOnClicked;
+            GreyOutButton(_driverCameraButton);
             
             _rewindButton = _doc.rootVisualElement.Q<Button>("Rewind");
             _rewindButton.clicked += RewindButtonOnClicked;
@@ -100,11 +93,11 @@ namespace UI
             _fastForwardButton = _doc.rootVisualElement.Q<Button>("Fastforward");
             _fastForwardButton.clicked += FastForwardButtonOnClicked;
 
-            // Input
-            _carSpawnerInput = _doc.rootVisualElement.Q<TextField>("CarSpawnerInput");
-
             // Load settings
             _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
+            _clickSound.volume = PlayerPrefs.GetFloat("MasterVolume");
+            _qualityMode = PlayerPrefsGetBool("SimulationMode");
+            _carsToSpawn = PlayerPrefs.GetInt("CarsToSpawn");
         }
 
         private void Start()
@@ -112,43 +105,47 @@ namespace UI
             // Set FPS visibility
             _fpsLabel.visible = PlayerPrefsGetBool(FPS_COUNTER);
 
+            // Subscribe to events
             UserSelectManager.Instance.OnSelectedGameObject += selectedGameObject =>
             {
                 if (selectedGameObject)
                 {
-                    RestoreButton(_fpvButton);
-                    RestoreButton(_focusedCameraButton);
+                    RestoreButton(_driverCameraButton);
+                    RestoreButton(_followCameraButton);
                 }
                 else
                 {
-                    GreyOutButton(_fpvButton);
-                    GreyOutButton(_focusedCameraButton);
+                    GreyOutButton(_driverCameraButton);
+                    GreyOutButton(_followCameraButton);
                 }
             };
             _cameraManager.OnCameraChanged += type =>
             {
                 // Reset all camera buttons to normal state
-                RemoveCameraButtonHighlight(_defaultCameraButton);
-                RemoveCameraButtonHighlight(_focusedCameraButton);
-                RemoveCameraButtonHighlight(_fpvButton);
+                RemoveCameraButtonHighlight(_freecamCameraButton);
+                RemoveCameraButtonHighlight(_followCameraButton);
+                RemoveCameraButtonHighlight(_driverCameraButton);
 
                 // Highlight the correct camera button based on the camera type
                 switch (type)
                 {
-                    case CameraManager.CustomCameraType.Default:
-                        HighlightCameraButton(_defaultCameraButton);
+                    case CameraManager.CustomCameraType.Freecam:
+                        HighlightCameraButton(_freecamCameraButton);
                         break;
-                    case CameraManager.CustomCameraType.Focus:
-                        HighlightCameraButton(_focusedCameraButton);
+                    case CameraManager.CustomCameraType.Follow:
+                        HighlightCameraButton(_followCameraButton);
                         break;
-                    case CameraManager.CustomCameraType.FirstPersonDriver:
-                        HighlightCameraButton(_fpvButton);
+                    case CameraManager.CustomCameraType.Driver:
+                        HighlightCameraButton(_driverCameraButton);
                         break;
                     default:
                         Debug.LogWarning("Unknown camera type.");
                         break;
                 }
             };
+            // Set the default camera button to highlighted
+            HighlightCameraButton(_freecamCameraButton);
+
         }
         
         private void FindCameraManager()
@@ -198,32 +195,38 @@ namespace UI
 
         private void MenuButtonOnClicked()
         {
+            PlayClickSound();
             _doc.rootVisualElement.visible = false;
             SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
         }
 
-        private void DefaultCameraButtonClicked()
+        private void FreecamCameraButtonClicked()
         {
+            PlayClickSound();
             _cameraManager.ToggleDefaultCamera();
         }
 
-        private void FocusedCameraButtonOnClicked()
+        private void FollowCameraButtonOnClicked()
         {
-            _cameraManager.ToggleFocusCamera();
+            PlayClickSound();
+            _cameraManager.ToggleFollowCamera();
         }
 
-        private void FPVButtonOnClicked()
+        private void DriverCameraButtonOnClicked()
         {
-            _cameraManager.ToggleFirstPersonDriverCamera();
+            PlayClickSound();
+            _cameraManager.ToggleDriverCamera();
         }
 
         private void RewindButtonOnClicked()
         {
+            PlayClickSound();
             TimeManager.Instance.SetModeRewind();
         }
 
         private void PauseButtonOnClicked()
         {
+            PlayClickSound();
             TimeManager.Instance.SetModePause();
             _isPaused = !_isPaused;
             _pauseIcon.visible = !_isPaused;
@@ -232,52 +235,28 @@ namespace UI
 
         private void FastForwardButtonOnClicked()
         {
+            PlayClickSound();
             TimeManager.Instance.SetModeFastForward();
-        }
-
-        private void SpawnCarsButtonOnClicked()
-        {
-            if (int.TryParse(_carSpawnerInput.text, out int amount))
-            {
-                // TODO: Implement this
-            }
-            else
-            {
-                Debug.LogWarning("Invalid input for car spawner.");
-            }
-        }
-
-        private void DeleteCarsButtonOnClicked()
-        {
-            // TODO: Implement this
         }
 
         void Update()
         {
             _clockLabel.text = TimeManager.Instance.Timestamp;
-            FilterInput();
+
             // FPS counter
             if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
                 DisplayFPS(1f / Time.unscaledDeltaTime);
+        }
+
+        private void PlayClickSound()
+        {
+            _clickSound.Play();
         }
 
         private void DisplayFPS(float fps)
         {
             _fpsLabel.text = "FPS: " + fps.ToString("F0");
             _fpsLastUpdateTime = Time.time;
-        }
-        
-        private void FilterInput()
-        {
-            const string PLACEHOLDER_TEXT = "Cars to spawn...";
-            bool isPlaceholderText = _carSpawnerInput.text.Equals(PLACEHOLDER_TEXT);
-            bool isStartingZero = _carSpawnerInput.text.StartsWith("0");
-            _carSpawnerInputText = _carSpawnerInput.text;
-            
-            if (!_carSpawnerInputText.Equals("") && !isPlaceholderText && !isStartingZero)
-                _carSpawnerInput.SetValueWithoutNotify(Regex.Replace(_carSpawnerInputText, @"[^0-9]", ""));
-            else if (!isPlaceholderText || isStartingZero)
-                _carSpawnerInput.SetValueWithoutNotify(PLACEHOLDER_TEXT);
         }
 
         /// <summary>Wrapper to allow getting bools from PlayerPrefs</summary>

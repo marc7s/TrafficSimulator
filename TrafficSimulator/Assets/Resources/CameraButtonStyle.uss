@@ -1,6 +1,7 @@
 .button-highlighted {
-    background-color: #ADD8E6; 
+    -unity-background-image-tint-color: rgb(51, 154, 46);
 }
+
 .button:focus {
     border-color: transparent;
 }

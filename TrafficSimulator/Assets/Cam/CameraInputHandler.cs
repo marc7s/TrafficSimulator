@@ -33,6 +33,11 @@ namespace Cam
         public event Action OnSpacePressed;
 
         /// <summary>
+        /// Occurs when the Rotation starts being changed
+        /// </summary>
+        public event Action OnRotationStarted;
+
+        /// <summary>
         /// Occurs when the Rotation stops being changed
         /// </summary>
         public event Action OnRotationEnded;
@@ -61,7 +66,8 @@ namespace Cam
             _movementInput.performed += OnMovementInput;
             _movementInput.canceled += OnMovementInput;
             
-            _rotationInput.performed += OnRotationInput;
+            _rotationInput.started += OnRotationInputStarted;
+            _rotationInput.performed += OnRotating;
             _rotationInput.canceled += OnRotationInputCancelled;
             
             _lookDeltaInput.performed += OnLookDeltaInput;
@@ -96,7 +102,12 @@ namespace Cam
             Movement = ctx.ReadValue<Vector2>();
         }
 
-        private void OnRotationInput(InputAction.CallbackContext ctx)
+        private void OnRotationInputStarted(InputAction.CallbackContext ctx)
+        {
+            OnRotationStarted?.Invoke();
+        }
+
+        private void OnRotating(InputAction.CallbackContext ctx)
         {
             if(!UserSelectManager.Instance.IsHoveringUIElement)
             {
@@ -129,8 +140,9 @@ namespace Cam
             _movementInput.performed -= OnMovementInput;
             _movementInput.canceled -= OnMovementInput;
             
-            _rotationInput.performed -= OnRotationInput;
-            _rotationInput.canceled -= OnRotationInput;
+            _rotationInput.started -= OnRotationInputStarted;
+            _rotationInput.performed -= OnRotating;
+            _rotationInput.canceled -= OnRotationInputCancelled;
             
             _zoomInput.performed -= OnZoomInput;
             _zoomInput.canceled -= OnZoomInput;

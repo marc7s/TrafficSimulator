@@ -1,13 +1,12 @@
 .unity-button {
-    background-image: none;
     border-left-width: 1px;
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-left-color: rgba(0, 0, 0, 255);
-    border-right-color: rgba(0, 0, 0, 255);
-    border-top-color: rgba(0, 0, 0, 255);
-    border-bottom-color: rgba(0, 0, 0, 255);
+    border-left-color: rgb(0, 0, 0);
+    border-right-color: rgb(0, 0, 0);
+    border-top-color: rgb(0, 0, 0);
+    border-bottom-color: rgb(0, 0, 0);
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     border-top-right-radius: 0;
@@ -101,6 +100,10 @@
 
 .color-theme-button {
     background-color: rgb(202, 202, 202);
-    -unity-background-image-tint-color: rgba(217, 217, 217, 255);
-    background-image: url('project://database/Assets/Unity%20Assets/Graph%20And%20Chart%20-%20Lite%20Edition/Textures/Bars/bar1.png?fileID=2800000&guid=d2e5fe0b112f8c8479ad363e401be1a0&type=3#bar1');
+    -unity-background-image-tint-color: rgb(217, 217, 217);
+    background-image: resource('bar1');
+}
+
+.color-theme-button:hover {
+    -unity-background-image-tint-color: rgba(0, 0, 0, 0.59);
 }

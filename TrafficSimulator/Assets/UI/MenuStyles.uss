@@ -10,6 +10,15 @@
     width: 200px;
 }
 
-.primary-text-colour Label, .primary-text-colour, .primary-text-colour VisualElement PopupTextElement {
-    color: rgba(255, 255, 255, 255);
+.primary-text-colour Label {
+    color: rgb(255, 255, 255);
 }
+
+.primary-text-colour {
+    color: rgb(255, 255, 255);
+}
+
+.primary-text-colour VisualElement PopupTextElement {
+    color: rgb(255, 255, 255);
+}
+
