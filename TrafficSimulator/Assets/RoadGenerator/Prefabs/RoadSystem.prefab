@@ -103,7 +103,7 @@ MonoBehaviour:
   ShouldGenerateTerrain: 1
   UseOSM: 0
   IsGeneratingOSM: 0
-  DefaultTrafficLightPrefab: {fileID: 5077225816991464905, guid: eb5e8c72ff1051b43a6a6a853822250f, type: 3}
+  DefaultTrafficLightPrefab: {fileID: 7476330815903217974, guid: a1bb6ca9407ef114c95f242cb06867ae, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
   DefaultBusStopPrefab: {fileID: 4172526712689242174, guid: 05003485e3fde2e499308490ddc2106d, type: 3}

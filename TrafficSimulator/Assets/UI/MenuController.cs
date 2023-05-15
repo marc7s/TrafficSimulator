@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
@@ -30,6 +31,11 @@ namespace UI
         private Slider _fovSlider;
         private Label _fpsLabel;
         private bool _showFPS = false;
+
+        // Loading Screen UI
+        [SerializeField] private VisualTreeAsset _loadingScreenUI;
+        private VisualElement _loadingScreenContainer;
+        private ProgressBar _loadingBar;
 
         // Car Spawner Input
         private TextField _carSpawnerInput;
@@ -89,6 +95,11 @@ namespace UI
             _fovSlider = _settingsContainer.Q<Slider>("FOVSlider");
             _fovSlider.RegisterValueChangedCallback(evt => OnFOVSliderChanged(evt.newValue));
 
+            // Loading Screen UI
+            _loadingScreenContainer = _loadingScreenUI.CloneTree();
+
+            _loadingBar = _loadingScreenContainer.Q<ProgressBar>("LoadingBar");
+
             // Input
             _carSpawnerInput = _doc.rootVisualElement.Q<TextField>("CarSpawnerInput");
 
@@ -108,9 +119,8 @@ namespace UI
                 return;
             }
             PlayerPrefs.SetInt("CarsToSpawn", int.Parse(_carSpawnerInput.text));
-            _doc.rootVisualElement.visible = false;
             // ------------------------------------- TODO CHANGE TO GAME SCENE ------------------------------------- //
-            SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex + 1), LoadSceneMode.Single);
+            StartCoroutine(LoadSceneAsync((SceneManager.GetActiveScene().buildIndex + 1)));
         }
 
         private void SettingsButtonOnClicked()
@@ -201,14 +211,34 @@ namespace UI
             _carSpawnerInputText = _carSpawnerInput.text;
             
             if (!_carSpawnerInputText.Equals("") && !isplaceholderText && !isStartingZero)
+            {
                 _carSpawnerInput.SetValueWithoutNotify(Regex.Replace(_carSpawnerInputText, @"[^0-9]", ""));
+                RestoreButton(_startButton);
+            }
             else if (!isplaceholderText || isStartingZero)
-                _carSpawnerInput.SetValueWithoutNotify(placeholderText);
+            {
+               _carSpawnerInput.SetValueWithoutNotify(placeholderText);
+                GreyOutButton(_startButton); 
+            }
         }
 
         private void PlayClickSound()
         {
             _clickSound.Play();
+        }
+
+        private void GreyOutButton(Button button)
+        {
+            button.style.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1.0f);
+            button.style.color = new Color(0.2f, 0.2f, 0.2f, 1.0f);
+            button.SetEnabled(false);
+        }
+
+        private void RestoreButton(Button button)
+        {
+            button.style.backgroundColor = StyleKeyword.Null;
+            button.style.color = StyleKeyword.Null;
+            button.SetEnabled(true);
         }
 
         void Update()
@@ -219,6 +249,25 @@ namespace UI
             // FPS counter
             if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
                 DisplayFPS(1f / Time.unscaledDeltaTime);
+        }
+
+        IEnumerator LoadSceneAsync(int sceneIndex)
+        {
+            // Empty root VisualElement and add loading UI
+            _displayedContainer.Clear();
+            _displayedContainer.Add(_loadingScreenContainer);
+
+            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneIndex, LoadSceneMode.Single);
+
+            while (!asyncLoad.isDone)
+            {
+                float progress = Mathf.Clamp01(asyncLoad.progress)*100;
+                
+                _loadingBar.value = progress;
+                _loadingBar.title = (progress) + "%";
+
+                yield return null;
+            }
         }
     }
 }
