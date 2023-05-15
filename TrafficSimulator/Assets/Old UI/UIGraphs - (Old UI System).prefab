@@ -502,11 +502,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 269907950, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 9.6
+      value: 9.599976
       objectReference: {fileID: 0}
     - target: {fileID: 269907950, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -63.2
+      value: -63.200012
       objectReference: {fileID: 0}
     - target: {fileID: 922384071, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_RootOrder
@@ -730,6 +730,70 @@ PrefabInstance:
       propertyPath: m_Name
       value: UITabs_Horizontal
       objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: widthRatio
+      value: 594
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674211, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: heightRatio
+      value: 199.75604
+      objectReference: {fileID: 0}
+    - target: {fileID: 767156680946674222, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.00024414062
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 2356213198157406805}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 7177594473817867769}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SetCurrentGraphToNone
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
+      value: SetDisplayTimeToNone
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: Old_UI.GraphChartFeed, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_TargetAssemblyTypeName
+      value: CarbonDioxideTextDisplayer, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 807023922455480092, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 1184510264637832042, guid: dad91427b76704d468e758aa313ff87a, type: 3}
       propertyPath: m_Color.a
       value: 0.20392157
@@ -738,8 +802,34 @@ PrefabInstance:
       propertyPath: m_Name
       value: EmissionPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 5815225589134199474, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.00024414062
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+--- !u!114 &2356213198157406805 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4839402911206954242, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+  m_PrefabInstance: {fileID: 7177594473725638487}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a9ba509bfab5044b9c781ddcc069f6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7177594473817867769 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 226603694, guid: dad91427b76704d468e758aa313ff87a, type: 3}
+  m_PrefabInstance: {fileID: 7177594473725638487}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c6adf60febb14f42be640ec0fdced7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7582704094928327657 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 765855024204178622, guid: dad91427b76704d468e758aa313ff87a, type: 3}
