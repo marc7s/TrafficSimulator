@@ -52,9 +52,12 @@ MonoBehaviour:
   _roadNodeContainer: {fileID: 0}
   ParkNodePrefab: {fileID: 6519265059532225654, guid: 90597e2f7266e1c4fba95dc8b6517699, type: 3}
   ParkingLineup: 1
-  DrawParkNodes: 1
+  DrawParkNodes: 0
   _parkNodeContainer: {fileID: 0}
   ParkingMaterial: {fileID: 2100000, guid: 9edbfb52859f94e43865eee4f3c53577, type: 2}
   ParkingLength: 18
+  ParkingType: 0
+  AllowStartingSmoothEdge: 1
+  AllowEndingSmoothEdge: 1
   _mesh: {fileID: 0}
   _meshHolder: {fileID: 0}
