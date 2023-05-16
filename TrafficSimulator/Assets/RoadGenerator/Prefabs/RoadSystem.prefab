@@ -69,7 +69,7 @@ Transform:
   - {fileID: 3658795453449097011}
   - {fileID: 845985873080657378}
   - {fileID: 1980633667098319055}
-  - {fileID: 5617921857050355822}
+  - {fileID: 225130316414376691}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -108,7 +108,7 @@ MonoBehaviour:
   DefaultTrafficLightPrefab: {fileID: 7476330815903217974, guid: a1bb6ca9407ef114c95f242cb06867ae, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
-  DefaultBusStopPrefab: {fileID: 4172526712689242174, guid: 05003485e3fde2e499308490ddc2106d, type: 3}
+  DefaultBusStopPrefab: {fileID: 5382483728603374489, guid: 4af6b3063bc1ab14bab3e575cca93f8c, type: 3}
   DefaultTreePrefab: {fileID: 9011557119221475123, guid: dafa189ce90adc94e93ddbd2f8bbc1ae, type: 3}
   DefaultYieldSignPrefab: {fileID: 4811144999697380177, guid: a02e087aa1f5e43499891fd70fefc5ba, type: 3}
   ShowGraph: 0
@@ -3883,7 +3883,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5617921857050355822}
+  m_Father: {fileID: 225130316414376691}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!218 &9079035566897870571
@@ -3962,7 +3962,7 @@ Transform:
   m_Father: {fileID: 798415014314360586}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &8700060840850350502
+--- !u!1 &4739737879595403603
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3970,8 +3970,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5617921857050355822}
-  - component: {fileID: 7446888097125909208}
+  - component: {fileID: 225130316414376691}
+  - component: {fileID: 923069465187402706}
   m_Layer: 0
   m_Name: TerrainSpawner
   m_TagString: Untagged
@@ -3979,13 +3979,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5617921857050355822
+--- !u!4 &225130316414376691
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8700060840850350502}
+  m_GameObject: {fileID: 4739737879595403603}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -3995,13 +3995,13 @@ Transform:
   m_Father: {fileID: 798415014314360586}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7446888097125909208
+--- !u!114 &923069465187402706
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8700060840850350502}
+  m_GameObject: {fileID: 4739737879595403603}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1f710250abab6f24a954bdf3c3c1ac64, type: 3}
@@ -4012,7 +4012,7 @@ MonoBehaviour:
   - {fileID: 9079035566897870571}
   visibleTerrainsOnly: 0
   treeTypes:
-  - enabled: 1
+  - enabled: 0
     name: tree01
     seed: 71292
     probability: 23.3
@@ -4033,7 +4033,7 @@ MonoBehaviour:
     distance: 3.1
     scaleRange: {x: 0.8, y: 1.2}
     sinkAmount: 0
-  - enabled: 1
+  - enabled: 0
     name: tree02
     seed: 29916
     probability: 10
@@ -4054,9 +4054,9 @@ MonoBehaviour:
     distance: 5
     scaleRange: {x: 0.8, y: 1.2}
     sinkAmount: 0
-  - enabled: 1
+  - enabled: 0
     name: tree03
-    seed: 28928
+    seed: 32458
     probability: 10
     collisionCheck: 1
     rejectUnderwater: 1
@@ -4075,7 +4075,7 @@ MonoBehaviour:
     distance: 19.5
     scaleRange: {x: 0.8, y: 1.2}
     sinkAmount: 0
-  - enabled: 1
+  - enabled: 0
     name: tree04
     seed: 22030
     probability: 10
@@ -4096,6 +4096,300 @@ MonoBehaviour:
     distance: 5
     scaleRange: {x: 0.8, y: 1.2}
     sinkAmount: 0.399
+  - enabled: 1
+    name: oak 2
+    seed: 95937
+    probability: 28
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 2608
+    prefabs:
+    - index: 4
+      probability: 100
+      prefab: {fileID: 197626, guid: 8c2ce82804d5f694baebd9c091763c46, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: birch 3
+    seed: 7092
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 903
+    prefabs:
+    - index: 5
+      probability: 100
+      prefab: {fileID: 198692, guid: 5007d72f38a3bc143ab6fb487790555e, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: birch 1
+    seed: 9437
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 889
+    prefabs:
+    - index: 6
+      probability: 100
+      prefab: {fileID: 198692, guid: 121f4b8733ad35948b7f777425cb7660, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: pine 2
+    seed: 327
+    probability: 4
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 362
+    prefabs:
+    - index: 7
+      probability: 100
+      prefab: {fileID: 195704, guid: 66e49cd96f31982498b0429239575df3, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: spruce 3
+    seed: 5667
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 859
+    prefabs:
+    - index: 8
+      probability: 100
+      prefab: {fileID: 136862, guid: c5e22de043c58b54498cdabd89fccdab, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: oak 1
+    seed: 9252
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 911
+    prefabs:
+    - index: 9
+      probability: 100
+      prefab: {fileID: 197626, guid: 26af2272f700bda43bd6443bcf0bf6a3, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: oak 3
+    seed: 4586
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 918
+    prefabs:
+    - index: 10
+      probability: 100
+      prefab: {fileID: 197626, guid: b8779b61f3ff1ae4aa81cd2cf7885500, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: oak 6
+    seed: 979
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 887
+    prefabs:
+    - index: 11
+      probability: 100
+      prefab: {fileID: 126036, guid: 5f7e1d30aeefe034089abd6a02333d30, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: oak 7
+    seed: 9589
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 0, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 0
+    prefabs:
+    - index: 12
+      probability: 100
+      prefab: {fileID: 108110, guid: 068a2ca839242e947aa534be471f47c5, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: birch 5
+    seed: 8117
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 895
+    prefabs:
+    - index: 13
+      probability: 100
+      prefab: {fileID: 198692, guid: f4a216fa3295d69429cbd631b9215447, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: maple 3
+    seed: 9453
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 923
+    prefabs:
+    - index: 14
+      probability: 100
+      prefab: {fileID: 115800, guid: 0d24382f60ba6b041ba8d7aa7c980045, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: potato_plant
+    seed: 3837
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 903
+    prefabs:
+    - index: 15
+      probability: 100
+      prefab: {fileID: 100000, guid: b46939eabb456b84482c66128633442b, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: linden based 2
+    seed: 5434
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 899
+    prefabs:
+    - index: 16
+      probability: 100
+      prefab: {fileID: 156486, guid: 836f3a89344350b459e78b8f335e8932, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
+  - enabled: 1
+    name: linden based 1
+    seed: 8115
+    probability: 10
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: -10, y: 1000}
+    slopeRange: {x: 0, y: 60}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: Heather_A
+      layerID: 3
+      threshold: 0
+    instanceCount: 907
+    prefabs:
+    - index: 17
+      probability: 100
+      prefab: {fileID: 156486, guid: fd2a4ec6366b3a44d83bfe5d9c423c35, type: 3}
+    distance: 5
+    scaleRange: {x: 0.8, y: 1.2}
+    sinkAmount: 0
   grassPrefabs:
   - enabled: 1
     name: Grass_A
