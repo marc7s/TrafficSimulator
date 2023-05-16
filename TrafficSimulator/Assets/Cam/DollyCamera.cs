@@ -14,7 +14,8 @@ namespace RoadGenerator
         public float DownwardRotation = 0;
         float distanceTravelled = 0;
 
-        void Start() {
+        void Start()
+        {
             if (pathCreator != null)
             {
                 // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
@@ -39,7 +40,8 @@ namespace RoadGenerator
 
         // If the path changes during the game, update the distance travelled so that the follower's position on the new path
         // is as close as possible to its position on the old path
-        private void OnPathChanged() {
+        private void OnPathChanged()
+        {
             distanceTravelled = pathCreator.path.GetClosestDistanceAlongPath(transform.position);
         }
 
