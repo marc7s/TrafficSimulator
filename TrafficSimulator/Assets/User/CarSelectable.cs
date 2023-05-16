@@ -1,5 +1,4 @@
-﻿using Unity_Assets.QuickOutline.Scripts;
-using UnityEngine;
+﻿using UnityEngine;
 using VehicleBrain;
 
 namespace User
