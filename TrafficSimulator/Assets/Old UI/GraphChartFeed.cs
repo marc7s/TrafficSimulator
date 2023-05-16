@@ -20,7 +20,6 @@ namespace Old_UI
         private void Start()
         {
             _worldDataGatherer = GameObject.Find("RoadSystem").GetComponent<WorldDataGatherer>();
-            print("LOADED");
             _graph = GetComponent<GraphChartBase>();
 
             if (_graph != null)
