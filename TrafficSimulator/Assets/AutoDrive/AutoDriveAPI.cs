@@ -312,6 +312,7 @@ namespace VehicleBrain
             Context.DisplayNavigationPathLine();
 
             _context.CurrentActivity = VehicleActivity.DrivingToTarget;
+            _context.TurnDirection = TurnDirection.Straight;
         }
 
         public LaneNode Next(LaneNode node, RoadEndBehaviour? overrideEndBehaviour = null)
