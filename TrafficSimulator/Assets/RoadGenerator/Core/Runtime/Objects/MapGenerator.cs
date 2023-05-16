@@ -359,8 +359,8 @@ namespace RoadGenerator
                                 // The terrain point is inside the terrain type area
                                 if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
                                 {
-                                    isInsideInnerArea = true;
-                                    break;
+                                    //isInsideInnerArea = true;
+                                   // break;
                                 }
                             }
 
@@ -1136,8 +1136,8 @@ namespace RoadGenerator
             // Set the name of the road
             roadObj.name = wayData.Name;
 
-            // TEMPORARY
-            roadObj.name = wayData.WayID;
+            // Uncomment for testing purposes
+            // roadObj.name = wayData.WayID;
 
             roadObj.transform.parent = _roadSystem.RoadContainer.transform;
 
