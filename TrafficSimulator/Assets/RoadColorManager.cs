@@ -14,7 +14,6 @@ public class RoadColorManager : MonoBehaviour
     {
         foreach(Transform child in _roadsParent.transform)
         {
-            print(child.gameObject);
             _roads.Add(child.gameObject);
         }
     }
@@ -24,7 +23,6 @@ public class RoadColorManager : MonoBehaviour
         _isEnabled = !_isEnabled;
         foreach (GameObject road in _roads)
         {
-            print("manager" + _isEnabled);
             road.GetComponent<EmissionColor>().EmissionEnabled = _isEnabled;
         }
     }

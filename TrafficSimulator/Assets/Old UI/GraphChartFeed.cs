@@ -7,12 +7,11 @@ namespace Old_UI
     {
         private enum TimeSpan
         {
-            None,
-            AllTime,
-            ThreeMinutes,
-            ThirtySeconds
+            None = 0,
+            AllTime = -1,
+            ThreeMinutes = 180,
+            ThirtySeconds = 30
         }
-
         private GraphChartBase _graph;
         private WorldDataGatherer _worldDataGatherer;
         private TimeSpan _currentGraph = TimeSpan.None; 
@@ -33,22 +32,27 @@ namespace Old_UI
 
         public void LoadAllTimeGraph()
         {
-            LoadGraph(TimeSpan.AllTime, _worldDataGatherer.TotalSecondsElapsed);
+            LoadGraph(TimeSpan.AllTime);
         }
 
         public void LoadLast3MinGraph()
         {
-            LoadGraph(TimeSpan.ThreeMinutes, 180);
+            LoadGraph(TimeSpan.ThreeMinutes);
         }
 
         public void LoadLast30SecondsGraph()
         {
-            LoadGraph(TimeSpan.ThirtySeconds, 30);
+            LoadGraph(TimeSpan.ThirtySeconds);
         }
 
-        private void LoadGraph(TimeSpan timeSpan, int timeSpanInSeconds)
+        private void LoadGraph(TimeSpan timeSpan)
         {
-            if (_currentGraph == timeSpan) return;
+            int timeSpanInSeconds;
+            if (_currentGraph == timeSpan || timeSpan == TimeSpan.None) return;
+            if (timeSpan == TimeSpan.AllTime)
+                timeSpanInSeconds = _worldDataGatherer.TotalSecondsElapsed;
+            else
+                timeSpanInSeconds = (int) timeSpan;
             _currentGraph = timeSpan;
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");

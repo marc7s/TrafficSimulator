@@ -25,7 +25,6 @@ namespace Statistics
 
         private void Update()
         {
-            print(EmissionEnabled);
             if(EmissionEnabled != _previousEmissionEnabled)
             {
                 StopCoroutine(RoadColorUpdate());
