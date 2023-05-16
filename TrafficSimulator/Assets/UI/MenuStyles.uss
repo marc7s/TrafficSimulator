@@ -22,3 +22,28 @@
     color: rgb(255, 255, 255);
 }
 
+.unity-progress-bar__progress {
+    background-color: Blue;
+}
+
+.unity-progress-bar__container {
+    width: 400px;
+    height: 50px;
+    background-color: white;
+}
+
+.unity-progress-bar__background {
+    width: 400px;
+    height: 50px;
+    background-color: Black;
+}
+
+.unity-progress-bar {
+    width: 400px;
+    height: 50px;
+}
+
+.unity-progress-bar__title {
+    font-size: 18px;
+    -unity-font-style: bold;
+}
