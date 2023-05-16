@@ -69,3 +69,7 @@ crashlytics-build.properties
 # Unity Assets
 [Aa]ssets/Unity Assets/*
 ![Aa]ssets/Unity Assets/ASSETS.md
+
+# Unity Plugings
+[Aa]ssets/Plugins/*
+![Aa]ssets/Plugins/PLUGINS.md
