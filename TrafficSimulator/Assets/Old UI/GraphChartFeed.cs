@@ -5,8 +5,16 @@ namespace Old_UI
 {
     public class GraphChartFeed : MonoBehaviour
     {
+        private enum TimeSpan
+        {
+            None = 0,
+            AllTime = -1,
+            ThreeMinutes = 180,
+            ThirtySeconds = 30
+        }
         private GraphChartBase _graph;
         private WorldDataGatherer _worldDataGatherer;
+        private TimeSpan _currentGraph = TimeSpan.None; 
 
         private void Start()
         {
@@ -14,37 +22,46 @@ namespace Old_UI
             _graph = GetComponent<GraphChartBase>();
 
             if (_graph != null)
-            {
                 _graph.Scrollable = false;
-                LoadAllTimeGraph();
-            }
+        }
+        
+        public void SetCurrentGraphToNone()
+        {
+            _currentGraph = TimeSpan.None;
         }
 
         public void LoadAllTimeGraph()
         {
-            LoadGraph(0, _worldDataGatherer.TotalSecondsElapsed);
+            LoadGraph(TimeSpan.AllTime);
         }
 
         public void LoadLast3MinGraph()
         {
-            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
-            int startIndex = Mathf.Max(totalSecondsElapsed - 180, 0);
-            LoadGraph(startIndex, 180);
+            LoadGraph(TimeSpan.ThreeMinutes);
         }
 
         public void LoadLast30SecondsGraph()
         {
-            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
-            int startIndex = Mathf.Max(totalSecondsElapsed - 30, 0);
-            LoadGraph(startIndex, 30);
+            LoadGraph(TimeSpan.ThirtySeconds);
         }
 
-        private void LoadGraph(int startIndex, int length)
+        private void LoadGraph(TimeSpan timeSpan)
         {
+            int timeSpanInSeconds;
+            if (_currentGraph == timeSpan || timeSpan == TimeSpan.None) return;
+            if (timeSpan == TimeSpan.AllTime)
+                timeSpanInSeconds = _worldDataGatherer.TotalSecondsElapsed;
+            else
+                timeSpanInSeconds = (int) timeSpan;
+            _currentGraph = timeSpan;
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");
 
-            for (int i = startIndex; i < startIndex + length; i++)
+            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
+            int startIndex = Mathf.Max(totalSecondsElapsed - timeSpanInSeconds, 0);
+            int endIndex = startIndex + timeSpanInSeconds;
+
+            for (int i = startIndex; i < endIndex && i < totalSecondsElapsed; i++)
             {
                 _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
             }
