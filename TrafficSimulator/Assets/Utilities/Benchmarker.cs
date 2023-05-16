@@ -17,7 +17,7 @@ namespace Benchmark
         List<Vector3> _cameraPositions = new List<Vector3>();
         List<float> _fps = new List<float>();
 
-        const float fpsMeasurePeriod = 10f;
+        const float fpsMeasurePeriod = 5f;
         private int _fpsAccumulator = 0;
         private float _fpsNextPeriod = 0;
         private int _currentFps = 0;

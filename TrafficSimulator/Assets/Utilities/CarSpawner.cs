@@ -127,7 +127,7 @@ namespace RoadGenerator
         {
             _vehicleTypes = _randomVehicleTypes ? new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab } : new List<GameObject>(){ _sedanPrefab };
 
-            _carLength = GetLongestCarLength(_vehicleTypes);
+            _carLength = 7;//GetLongestCarLength(_vehicleTypes);
 
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();

@@ -75,6 +75,7 @@ namespace User
         
         private void Awake()
         {
+            return;
             applicationIsQuitting = false;
             InitializeSingletonInstance();
             _mainCamera = Camera.main;
@@ -83,6 +84,7 @@ namespace User
 
         private void Start()
         {
+            return;
             SetupInputActions();
             SubscribeToInput();
         }
