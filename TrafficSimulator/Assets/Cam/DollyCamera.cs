@@ -12,6 +12,7 @@ namespace RoadGenerator
         [Range(1, 200)] public float RotationSpeed = 5;
         public float UpwardOffset = 0;
         public float DownwardRotation = 0;
+        public float RightRotation = 0;
         float distanceTravelled = 0;
 
         void Start()
@@ -52,7 +53,12 @@ namespace RoadGenerator
 
         private Quaternion GetNewRotation()
         {
-            return pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction) * (DownwardRotation == 0 ? Quaternion.identity : Quaternion.Euler(GetUpwardDirection() * DownwardRotation));
+            Quaternion rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+
+            Quaternion downOffset = Quaternion.Euler(0, -DownwardRotation, 0);
+            Quaternion rightOffset = Quaternion.Euler(RightRotation, 0, 0);
+            
+            return rotation * Quaternion.Inverse(downOffset * rightOffset);
         }
 
         private Vector3 GetNormal()
