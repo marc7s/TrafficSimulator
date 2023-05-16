@@ -3,43 +3,49 @@ using UnityEngine;
 
 namespace Statistics
 {
-    // This class handles the color change of a road based on the current fuel consumption of vehicles on that road.
     public class EmissionColor : MonoBehaviour
     {
         private RoadDataGatherer _roadDataGatherer;
-        public float ColorChangeSensitivityFactor = 1.0f; // Sensitivity factor to scale the effect of fuel consumption on color change
-        public bool EmissionEnabled = false; // Enable or disable emission shader effect on the road
-        public float ColorTransitionDuration = 0.5f; // The color transition duration in seconds
-        public float MaxRedValue = 1.0f; // The value representing maximum red color
+        public float ColorChangeSensitivityFactor = 1.0f; 
+        public bool EmissionEnabled = false;
+        private bool _previousEmissionEnabled;
+        public float ColorTransitionDuration = 0.5f; 
+        public float MaxRedValue = 1.0f; 
 
         private MeshRenderer _rend;
         private static readonly int EmissionColor1 = Shader.PropertyToID("_EmissionColor");
 
-        // Initialization of the road data gatherer and the mesh renderer components
         private void Start()
         {
             _rend = GetComponent<MeshRenderer>();
             _roadDataGatherer = GetComponent<RoadDataGatherer>();
+            _previousEmissionEnabled = EmissionEnabled;
             StartCoroutine(RoadColorUpdate());
         }
 
-        // Coroutine that updates the road color based on fuel consumption
+        private void Update()
+        {
+            if(EmissionEnabled != _previousEmissionEnabled)
+            {
+                StopCoroutine(RoadColorUpdate());
+                StartCoroutine(RoadColorUpdate());
+                _previousEmissionEnabled = EmissionEnabled;
+            }
+        }
+
         private IEnumerator RoadColorUpdate()
         {
-            Color currentColor = Color.green; // Initialize the road color as green
+            Color currentColor = Color.green;
 
             while (true)
             {
-                Material[] materials = _rend.materials; // Get all materials attached to the road
-
-                // Calculate the colorValue based on the current fuel consumption and the sensitivity factor
+                Material[] materials = _rend.materials;
                 float colorValue = _roadDataGatherer.CurrentFuelConsumption * ColorChangeSensitivityFactor;
                 colorValue = Mathf.Clamp(colorValue, 0, MaxRedValue); 
                 Color targetColor = Color.Lerp(Color.green, Color.red, colorValue); 
 
                 float timeElapsed = 0.0f;
 
-                // Transition the color smoothly over the specified duration
                 while (timeElapsed < ColorTransitionDuration)
                 {
                     currentColor = Color.Lerp(currentColor, targetColor, timeElapsed / ColorTransitionDuration);
@@ -61,6 +67,9 @@ namespace Statistics
                     timeElapsed += Time.deltaTime;
                     yield return null;
                 }
+
+                // If EmissionEnabled is false, stop the coroutine.
+                if (!EmissionEnabled) break;
             }
         }
     }
