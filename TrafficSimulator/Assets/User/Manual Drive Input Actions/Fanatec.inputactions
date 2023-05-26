@@ -1,0 +1,134 @@
+{
+    "name": "Fanatec",
+    "maps": [
+        {
+            "name": "Drive",
+            "id": "ff11af68-04de-44ed-a067-f371a7791dd7",
+            "actions": [
+                {
+                    "name": "Throttle",
+                    "type": "PassThrough",
+                    "id": "b85c573b-a0f2-4bee-b66a-044ffed7c59f",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Brake",
+                    "type": "PassThrough",
+                    "id": "57dddaa0-68b8-4ff8-8888-73366e711413",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Steer",
+                    "type": "PassThrough",
+                    "id": "c7622a89-0376-4a48-9982-5a4ecb04de2d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Handbrake",
+                    "type": "PassThrough",
+                    "id": "0003a5cc-59ce-46f3-8c08-1b780a574f2a",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ReverseGear",
+                    "type": "PassThrough",
+                    "id": "8a86adb7-9d24-4cd9-8a53-ad66605dc35e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Respawn",
+                    "type": "PassThrough",
+                    "id": "f51f7c94-8e46-48a0-a452-eb54d14ee60e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "804d641c-8016-40a3-8725-5123ce892662",
+                    "path": "<HID::Fanatec FANATEC Wheel>/z",
+                    "interactions": "",
+                    "processors": "Invert,Clamp(max=1)",
+                    "groups": "",
+                    "action": "Throttle",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "055a9d0f-49ae-4db3-83d2-e7b920eb2f8e",
+                    "path": "<HID::Fanatec FANATEC Wheel>/rz",
+                    "interactions": "",
+                    "processors": "Invert,Clamp(max=1)",
+                    "groups": "",
+                    "action": "Brake",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "eb0ad5f2-a7c7-4321-8286-2d983620911c",
+                    "path": "<HID::Fanatec FANATEC Wheel>/stick/x",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Steer",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7176758a-9915-4242-84d3-043cdb8c7b67",
+                    "path": "<HID::Fanatec FANATEC Wheel>/slider",
+                    "interactions": "",
+                    "processors": "Invert",
+                    "groups": "",
+                    "action": "Handbrake",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5081da97-4f19-463d-b21d-5a5b3730f3d3",
+                    "path": "<HID::Fanatec FANATEC Wheel>/button3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ReverseGear",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7e89ce68-221b-4600-a3ea-a9ebcd6e0c45",
+                    "path": "<HID::Fanatec FANATEC Wheel>/button31",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Respawn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

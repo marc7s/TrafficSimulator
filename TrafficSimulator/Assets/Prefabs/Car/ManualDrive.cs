@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using RoadGenerator;
 using DataModel;
 using EVP;
+using User;
+using Simulation;
+using System;
 
 namespace VehicleBrain
 {
@@ -11,19 +14,19 @@ namespace VehicleBrain
     [RequireComponent(typeof(BoxCollider))]
     [RequireComponent(typeof(Vehicle))]
     [RequireComponent(typeof(Rigidbody))]
-    public class ManualDriveController : MonoBehaviour
+    public abstract class ManualDrive : MonoBehaviour
     {
-        public bool ShowOccupiedNodes = false;
-        private VehicleController _vehicleController;
-        private BoxCollider _collider;
-        private Rigidbody _rigidbody;
-        private List<LaneNode> _occupiedNodes = new List<LaneNode>();
-        private Vehicle _vehicle = null;
-        private LineRenderer _lineRenderer = null;
-        private DefaultRoad _currentRoad = null;
-        private Intersection _currentIntersection = null;
+        [SerializeField] protected bool _showOccupiedNodes = false;
+        protected VehicleController _vehicleController;
+        protected BoxCollider _collider;
+        protected Rigidbody _rigidbody;
+        protected List<LaneNode> _occupiedNodes = new List<LaneNode>();
+        protected Vehicle _vehicle = null;
+        protected LineRenderer _lineRenderer = null;
+        protected DefaultRoad _currentRoad = null;
+        protected Intersection _currentIntersection = null;
 
-        private void Start()
+        protected void Start()
         {
             _vehicleController = GetComponent<VehicleController>();
             _collider = GetComponent<BoxCollider>();
@@ -50,7 +53,7 @@ namespace VehicleBrain
             if(_currentRoad != null || _currentIntersection != null)
             {
                 UpdateOccupiedNodes();
-                if(ShowOccupiedNodes)
+                if(_showOccupiedNodes)
                 {
                     _lineRenderer.positionCount = _occupiedNodes.Count;
                     _lineRenderer.SetPositions(_occupiedNodes.ConvertAll(node => node.Position).ToArray());
@@ -276,36 +279,29 @@ namespace VehicleBrain
             return _collider.bounds.Contains(node.Position);
         }
 
-        private void OnSteering(InputValue value)
+        protected virtual void OnThrottle(InputValue value) {}
+
+        protected virtual void OnSteer(InputValue value) {}
+
+        protected virtual void OnReverseGear(InputValue value) {}
+
+        protected virtual void OnBrake(InputValue value) {}
+
+        protected virtual void OnHandbrake(InputValue value) {}
+
+        protected void OnRespawn(InputValue value)
         {
-            if(_vehicleController == null)
+            if(!value.isPressed)
                 return;
             
-            _vehicleController.steerInput = value.Get<float>();
-        }
-
-        private void OnAcceleration(InputValue value)
-        {
-            if(_vehicleController == null)
-                return;
-
-            _vehicleController.throttleInput = value.Get<float>();
-        }
-
-        private void OnBraking(InputValue value)
-        {
-            if(_vehicleController == null)
-                return;
-
-            _vehicleController.brakeInput = value.Get<float>();
-        }
-
-        private void OnHandbraking(InputValue value)
-        {
-            if(_vehicleController == null)
-                return;
-
-            _vehicleController.handbrakeInput = value.Get<float>();
+            RigidbodyPause rigidbodyPause = _vehicleController.GetComponent<RigidbodyPause>();
+            rigidbodyPause.pause = true;
+            transform.position = transform.position + Vector3.up;
+            transform.rotation = Quaternion.identity;
+        
+            TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
+            TimeManager.Instance.AddEvent(unPauseEvent);
+            unPauseEvent.OnEvent += () => rigidbodyPause.pause = false;
         }
     }
 }

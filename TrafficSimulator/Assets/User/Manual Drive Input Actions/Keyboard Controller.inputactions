@@ -1,12 +1,12 @@
 {
-    "name": "ManualDrivingInputs",
+    "name": "Keyboard Controller",
     "maps": [
         {
             "name": "Driving",
             "id": "8f0b963c-f4f4-4c58-8325-54cc4071bc1a",
             "actions": [
                 {
-                    "name": "Acceleration",
+                    "name": "Throttle",
                     "type": "PassThrough",
                     "id": "6fd339df-0f85-4405-8c76-b21379f5277c",
                     "expectedControlType": "Axis",
@@ -15,7 +15,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Braking",
+                    "name": "Brake",
                     "type": "PassThrough",
                     "id": "727a9477-3fd2-4886-8e92-b9cd41c14776",
                     "expectedControlType": "Axis",
@@ -24,7 +24,7 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Steering",
+                    "name": "Steer",
                     "type": "PassThrough",
                     "id": "67a03301-0686-44a2-ad1e-6f56ad98fc3b",
                     "expectedControlType": "Analog",
@@ -33,13 +33,22 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Handbraking",
+                    "name": "Handbrake",
                     "type": "PassThrough",
                     "id": "7633997e-6c53-47b0-ab94-93654cd9003a",
                     "expectedControlType": "Axis",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Respawn",
+                    "type": "Button",
+                    "id": "a8771474-f83b-4e94-bde1-0daf4fd81f18",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -50,7 +59,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Acceleration",
+                    "action": "Throttle",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -61,7 +70,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Acceleration",
+                    "action": "Throttle",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -72,7 +81,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Acceleration",
+                    "action": "Throttle",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -83,7 +92,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Acceleration",
+                    "action": "Throttle",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -94,7 +103,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Controller",
-                    "action": "Acceleration",
+                    "action": "Throttle",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -105,20 +114,9 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Controller",
-                    "action": "Acceleration",
+                    "action": "Throttle",
                     "isComposite": false,
                     "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "620ca45c-2a2c-4f72-a92b-573c12fe8192",
-                    "path": "",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Acceleration",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 },
                 {
                     "name": "",
@@ -127,7 +125,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Braking",
+                    "action": "Brake",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -138,7 +136,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Controller",
-                    "action": "Braking",
+                    "action": "Brake",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -149,7 +147,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Steering",
+                    "action": "Steer",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -160,7 +158,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Steering",
+                    "action": "Steer",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -171,7 +169,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Steering",
+                    "action": "Steer",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -182,7 +180,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Controller",
-                    "action": "Steering",
+                    "action": "Steer",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -193,7 +191,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Controller",
-                    "action": "Handbraking",
+                    "action": "Handbrake",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -204,7 +202,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
-                    "action": "Handbraking",
+                    "action": "Handbrake",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -215,7 +213,29 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Handbraking",
+                    "action": "Handbrake",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ba1508dd-84d2-45e5-9a37-1f64c0dc277f",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard",
+                    "action": "Respawn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a335bc66-de2b-4b96-ab1d-404df7be7e94",
+                    "path": "<Gamepad>/select",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Controller",
+                    "action": "Respawn",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

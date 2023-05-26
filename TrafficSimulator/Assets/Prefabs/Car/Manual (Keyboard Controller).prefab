@@ -3043,7 +3043,7 @@ GameObject:
   - component: {fileID: 3757735537286086049}
   - component: {fileID: 5642387982062803922}
   m_Layer: 7
-  m_Name: Manual Car
+  m_Name: Manual (Keyboard Controller)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3094,9 +3094,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6380633828477897570}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0a24c8914fad6924f89a40bd2ac460bb, type: 3}
+  m_Script: {fileID: 11500000, guid: 63b9e58d5bebef94aaa9cb103f7daeb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _showOccupiedNodes: 0
 --- !u!114 &2255352730513624262
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3123,7 +3124,7 @@ MonoBehaviour:
       m_Calls: []
   m_ActionEvents: []
   m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: Controller
+  m_DefaultControlScheme: Keyboard
   m_DefaultActionMap: Driving
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
