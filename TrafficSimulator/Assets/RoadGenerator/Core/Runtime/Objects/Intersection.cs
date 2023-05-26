@@ -92,6 +92,10 @@ namespace RoadGenerator
             get => YieldType == YieldType.Yielding || YieldType == YieldType.RightPriority;
         }
 
+        public List<Section> EntrySections => _intersectionEntrySections.Values.ToList();
+        public List<Section> ExitSections => _intersectionExitSections.Values.ToList();
+        public LaneNode IntersectionCenterLaneNode => _intersectionCenterLaneNode;
+
         [ReadOnly] public IntersectionType Type;
         [HideInInspector] public TrafficLightController TrafficLightController;
         [ReadOnly] public string ID;
@@ -146,7 +150,7 @@ namespace RoadGenerator
             }
 #endif
 
-        private struct Section : IEquatable<Section>
+        public struct Section : IEquatable<Section>
         {
             public Road Road;
             public LaneNode JunctionNode;

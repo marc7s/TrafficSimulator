@@ -84,7 +84,9 @@ namespace User
 
         private void Start()
         {
-            return;
+            if(UserInputManager.Instance == null)
+                return;
+            
             SetupInputActions();
             SubscribeToInput();
         }
@@ -126,6 +128,9 @@ namespace User
 
         private void UnsubscribeFromInput()
         {
+            if(_pointInput == null || _clickInput == null || _doubleClickInput == null)
+                return;
+            
             _pointInput.performed -= OnPointInput;
             _clickInput.performed -= OnSingleClickInput;
             _doubleClickInput.performed -= OnDoubleClickInput;

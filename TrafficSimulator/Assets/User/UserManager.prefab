@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8836211731465414133}
   - component: {fileID: 8836211731465414132}
   - component: {fileID: 8836211731465414131}
+  - component: {fileID: 3509660223808533441}
   m_Layer: 0
   m_Name: UserManager
   m_TagString: Untagged
@@ -58,3 +59,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CanSelectNewObject: 0
+  IsHoveringOldUIElement: 0
+  IsHoveringNewUIElement: 0
+--- !u!114 &3509660223808533441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8836211731465414135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: a4e8418335e483649af509bf17c420b9, type: 3}
+  m_NotificationBehavior: 0
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents: []
+  m_NeverAutoSwitchControlSchemes: 0
+  m_DefaultControlScheme: Keyboard
+  m_DefaultActionMap: Default
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}

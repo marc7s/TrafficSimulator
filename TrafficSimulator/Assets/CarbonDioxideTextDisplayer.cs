@@ -11,7 +11,7 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
         ThirtySeconds
     }
 
-    private const string DefaultText = "Estimated CO<sup>2</sup>: ";
+    private const string DefaultText = "Estimated CO<sub>2</sub>: ";
     private const string Units = " kg";
     private TextMeshProUGUI _carbonDioxideEstimateText;
     private WorldDataGatherer _worldDataGatherer;
