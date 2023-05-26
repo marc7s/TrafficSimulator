@@ -53,6 +53,7 @@ namespace VehicleBrain
             if(_currentRoad != null || _currentIntersection != null)
             {
                 UpdateOccupiedNodes();
+                
                 if(_showOccupiedNodes)
                 {
                     _lineRenderer.positionCount = _occupiedNodes.Count;
@@ -127,6 +128,7 @@ namespace VehicleBrain
             foreach(Intersection.Section entrySection in intersection.EntrySections)
             {
                 bool updated = UpdateClosestNode(entrySection.Start, ref closestEntryNode, ref closestDistance);
+                
                 if(updated)
                 {
                     closestEntryJunction = entrySection.JunctionNode;
@@ -137,6 +139,7 @@ namespace VehicleBrain
             foreach(Intersection.Section exitSection in intersection.ExitSections)
             {
                 bool updated = UpdateClosestNode(exitSection.Start, ref closestExitNode, ref closestDistance);
+                
                 if(updated)
                 {
                     closestExitJunction = exitSection.JunctionNode;
@@ -237,6 +240,7 @@ namespace VehicleBrain
 
             // Add backward nodes
             curr = closestNode?.Prev;
+            
             while(curr != null && ContainsNode(curr) && (curr.Vehicle == null || curr.Vehicle == _vehicle))
             {
                 nodesToOccupy.Add(curr);
@@ -261,6 +265,7 @@ namespace VehicleBrain
             if(_currentIntersection != null && ContainsNode(_currentIntersection.IntersectionCenterLaneNode))
             {
                 bool claimedCenter = _currentIntersection.IntersectionCenterLaneNode.SetVehicle(_vehicle);
+                
                 if(claimedCenter)
                     _occupiedNodes.Add(_currentIntersection.IntersectionCenterLaneNode);
             }
@@ -269,6 +274,7 @@ namespace VehicleBrain
             foreach(LaneNode node in nodesToOccupy)
             {
                 bool claimed = node.SetVehicle(_vehicle);
+                
                 if(claimed)
                     _occupiedNodes.Add(node);
             }
