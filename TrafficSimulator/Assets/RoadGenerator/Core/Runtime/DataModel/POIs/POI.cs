@@ -57,7 +57,8 @@ namespace POIs
 
             // Create a new empty road node container
             _roadNodeContainer = new GameObject(ROAD_NODE_CONTAINER_NAME);
-            _roadNodeContainer.AddComponent<LineRenderer>();
+            LineRenderer lineRenderer = _roadNodeContainer.AddComponent<LineRenderer>();
+            lineRenderer.positionCount = 0;
             _roadNodeContainer.transform.parent = transform;
 
             transform.position = Position;

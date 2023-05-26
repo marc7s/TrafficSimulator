@@ -5,17 +5,24 @@ namespace DataModel
 {
     abstract public class Vehicle : MonoBehaviour
     {
-        protected string _id;
+        protected string _id = null;
         public Func<float> CurrentSpeedFunction;
+        [SerializeField] public float VehicleLength;
 
         protected void Init()
         {
-            _id = System.Guid.NewGuid().ToString();
+            if(_id == null)
+                _id = System.Guid.NewGuid().ToString();
         }
 
         public string ID
         {
-            get => _id;
+            get
+            {
+                if(_id == null)
+                    Init();
+                return _id;
+            }
         }
 
         public float CurrentSpeed
@@ -38,7 +45,7 @@ namespace DataModel
         /// <summary>Override the hashcode function for this class</summary>
         public override int GetHashCode()
         {
-            return _id.GetHashCode();
+            return ID.GetHashCode();
         }
     }
 }

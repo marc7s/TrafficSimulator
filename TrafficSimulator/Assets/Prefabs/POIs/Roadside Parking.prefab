@@ -56,8 +56,14 @@ MonoBehaviour:
   ParkingMaterial: {fileID: 2100000, guid: 9edbfb52859f94e43865eee4f3c53577, type: 2}
   ParkingSpaceMaterial: {fileID: 2100000, guid: 7114621396d195d4a904ee9ce386d582, type: 2}
   ParkingLineup: 1
-  DrawParkNodes: 1
+  DrawParkNodes: 0
   _parkNodeContainer: {fileID: 0}
+  ParkingMaterial: {fileID: 2100000, guid: 9edbfb52859f94e43865eee4f3c53577, type: 2}
+  ParkingLength: 18
+  ParkingType: 0
+  AllowStartingSmoothEdge: 1
+  AllowEndingSmoothEdge: 1
+  _mesh: {fileID: 0}
   _meshHolder: {fileID: 0}
   ParkingLength: 18
   ParkingType: 0

@@ -23,10 +23,9 @@ namespace Cam
         {
             base.Awake();
             _pov = VirtualCamera.GetCinemachineComponent<CinemachinePOV>();
+            
             if (_pov == null)
-            {
                 Debug.LogError("CinemachinePOV component not found on the Virtual Camera");
-            }
         }
 
         public override void Look(Vector2 lookDirection)
@@ -76,8 +75,7 @@ namespace Cam
 
         private void SetCameraParentToFirstPersonPivot()
         {
-            Transform firstPersonPivot = UserSelectManager.Instance.SelectedGameObject
-                .GetComponent<CarSelectable>().FirstPersonPivot;
+            Transform firstPersonPivot = UserSelectManager.Instance.SelectedGameObject.GetComponent<CarSelectable>().FirstPersonPivot;
 
             transform.SetParent(firstPersonPivot);
             transform.position = firstPersonPivot.position;
@@ -115,7 +113,7 @@ namespace Cam
 
         public override void HandleEscapeInput()
         {
-            CameraManager.ToggleFocusCamera();
+            CameraManager.ToggleFollowCamera();
         }
     }
 }

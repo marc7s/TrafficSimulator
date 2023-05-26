@@ -50,7 +50,7 @@ namespace RoadGenerator
 		[SerializeField, HideInInspector]
 		ControlMode controlMode = ControlMode.Automatic;
 		[SerializeField, HideInInspector]
-		float autoControlLength = .3f;
+		public float autoControlLength = .3f;
 		[SerializeField, HideInInspector]
 		bool boundsUpToDate;
 		[SerializeField, HideInInspector]

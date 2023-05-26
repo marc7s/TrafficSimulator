@@ -38,12 +38,12 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": ""Rotate"",
-                    ""type"": ""Value"",
+                    ""type"": ""Button"",
                     ""id"": ""5a13b146-b221-442f-92da-820883220304"",
-                    ""expectedControlType"": ""Axis"",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
-                    ""initialStateCheck"": true
+                    ""initialStateCheck"": false
                 },
                 {
                     ""name"": ""Point"",
@@ -175,39 +175,6 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""1D Axis"",
-                    ""id"": ""ba3544ca-6cc5-4527-8be8-252aca2a216c"",
-                    ""path"": ""1DAxis"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Rotate"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""negative"",
-                    ""id"": ""95c4a0af-9672-4f78-9ea7-23bec748d7f4"",
-                    ""path"": ""<Keyboard>/e"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Rotate"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""positive"",
-                    ""id"": ""735a3008-2aee-46f3-8e92-e68cb9a74e71"",
-                    ""path"": ""<Keyboard>/q"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Rotate"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
                     ""name"": """",
                     ""id"": ""aea4a76d-49e9-4ba5-a583-9fa2117b4346"",
                     ""path"": ""<Mouse>/position"",
@@ -294,123 +261,94 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
                     ""action"": ""MouseLookDirection"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                }
-            ]
-        },
-        {
-            ""name"": ""Car"",
-            ""id"": ""f7f02c33-ef5d-42f2-8780-20a68fd5147b"",
-            ""actions"": [
-                {
-                    ""name"": ""Acceleration"",
-                    ""type"": ""PassThrough"",
-                    ""id"": ""bd59c085-8a32-4c39-9ae0-2657db6827bf"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Braking"",
-                    ""type"": ""PassThrough"",
-                    ""id"": ""76364167-b9dc-41b9-a51c-697bc7c6c29a"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Steering"",
-                    ""type"": ""PassThrough"",
-                    ""id"": ""78c48eeb-a1f6-4f77-a5ca-4336263d5e02"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                }
-            ],
-            ""bindings"": [
-                {
-                    ""name"": ""1D Axis"",
-                    ""id"": ""e5203caa-9944-4f63-b24b-165367320262"",
-                    ""path"": ""1DAxis"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Acceleration"",
-                    ""isComposite"": true,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": ""negative"",
-                    ""id"": ""d54e8152-7b7a-4794-b7e4-a7c6b8c7e4ee"",
-                    ""path"": ""<Keyboard>/s"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Acceleration"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
-                },
-                {
-                    ""name"": ""positive"",
-                    ""id"": ""fbde256d-af10-42a4-80c7-4e7c816d9c77"",
-                    ""path"": ""<Keyboard>/w"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Acceleration"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": true
                 },
                 {
                     ""name"": """",
-                    ""id"": ""8a842d97-c2f6-4191-8e3e-c36186c51fc7"",
-                    ""path"": ""<Keyboard>/space"",
+                    ""id"": ""f5f221d5-4477-40e4-9091-2a9a1f4638ad"",
+                    ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Braking"",
+                    ""action"": ""Rotate"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""1D Axis"",
-                    ""id"": ""827c9094-8d2b-4493-bea7-93f8120a9f06"",
-                    ""path"": ""1DAxis"",
+                    ""name"": ""2D Vector"",
+                    ""id"": ""c15f202e-cc34-4cf1-b484-be262e197f0b"",
+                    ""path"": ""2DVector"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Steering"",
+                    ""action"": ""Move"",
                     ""isComposite"": true,
                     ""isPartOfComposite"": false
                 },
                 {
-                    ""name"": ""negative"",
-                    ""id"": ""f290cc05-cc11-4b51-a7da-aa8950578ff5"",
-                    ""path"": ""<Keyboard>/a"",
+                    ""name"": ""up"",
+                    ""id"": ""9f3fa7fe-987c-4b98-a221-5891940fe7ce"",
+                    ""path"": ""<Keyboard>/upArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Steering"",
+                    ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 },
                 {
-                    ""name"": ""positive"",
-                    ""id"": ""9bfebb10-5049-4b93-999f-9d42fa686147"",
-                    ""path"": ""<Keyboard>/d"",
+                    ""name"": ""down"",
+                    ""id"": ""d7465498-aefc-42ef-9f15-37429c0540a9"",
+                    ""path"": ""<Keyboard>/downArrow"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Steering"",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""left"",
+                    ""id"": ""d22609ef-04d2-48f2-bc65-a2f7ac9308ce"",
+                    ""path"": ""<Keyboard>/leftArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""right"",
+                    ""id"": ""2565334d-49be-437c-8f09-e1888ac15713"",
+                    ""path"": ""<Keyboard>/rightArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
                 }
             ]
         }
     ],
-    ""controlSchemes"": []
+    ""controlSchemes"": [
+        {
+            ""name"": ""Keyboard"",
+            ""bindingGroup"": ""Keyboard"",
+            ""devices"": [
+                {
+                    ""devicePath"": ""<Keyboard>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                },
+                {
+                    ""devicePath"": ""<Mouse>"",
+                    ""isOptional"": false,
+                    ""isOR"": false
+                }
+            ]
+        }
+    ]
 }");
         // Default
         m_Default = asset.FindActionMap("Default", throwIfNotFound: true);
@@ -424,11 +362,6 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         m_Default_Escape = m_Default.FindAction("Escape", throwIfNotFound: true);
         m_Default_Space = m_Default.FindAction("Space", throwIfNotFound: true);
         m_Default_MouseLookDirection = m_Default.FindAction("MouseLookDirection", throwIfNotFound: true);
-        // Car
-        m_Car = asset.FindActionMap("Car", throwIfNotFound: true);
-        m_Car_Acceleration = m_Car.FindAction("Acceleration", throwIfNotFound: true);
-        m_Car_Braking = m_Car.FindAction("Braking", throwIfNotFound: true);
-        m_Car_Steering = m_Car.FindAction("Steering", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -589,55 +522,15 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         }
     }
     public DefaultActions @Default => new DefaultActions(this);
-
-    // Car
-    private readonly InputActionMap m_Car;
-    private ICarActions m_CarActionsCallbackInterface;
-    private readonly InputAction m_Car_Acceleration;
-    private readonly InputAction m_Car_Braking;
-    private readonly InputAction m_Car_Steering;
-    public struct CarActions
+    private int m_KeyboardSchemeIndex = -1;
+    public InputControlScheme KeyboardScheme
     {
-        private @PlayerInputActions m_Wrapper;
-        public CarActions(@PlayerInputActions wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Acceleration => m_Wrapper.m_Car_Acceleration;
-        public InputAction @Braking => m_Wrapper.m_Car_Braking;
-        public InputAction @Steering => m_Wrapper.m_Car_Steering;
-        public InputActionMap Get() { return m_Wrapper.m_Car; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(CarActions set) { return set.Get(); }
-        public void SetCallbacks(ICarActions instance)
+        get
         {
-            if (m_Wrapper.m_CarActionsCallbackInterface != null)
-            {
-                @Acceleration.started -= m_Wrapper.m_CarActionsCallbackInterface.OnAcceleration;
-                @Acceleration.performed -= m_Wrapper.m_CarActionsCallbackInterface.OnAcceleration;
-                @Acceleration.canceled -= m_Wrapper.m_CarActionsCallbackInterface.OnAcceleration;
-                @Braking.started -= m_Wrapper.m_CarActionsCallbackInterface.OnBraking;
-                @Braking.performed -= m_Wrapper.m_CarActionsCallbackInterface.OnBraking;
-                @Braking.canceled -= m_Wrapper.m_CarActionsCallbackInterface.OnBraking;
-                @Steering.started -= m_Wrapper.m_CarActionsCallbackInterface.OnSteering;
-                @Steering.performed -= m_Wrapper.m_CarActionsCallbackInterface.OnSteering;
-                @Steering.canceled -= m_Wrapper.m_CarActionsCallbackInterface.OnSteering;
-            }
-            m_Wrapper.m_CarActionsCallbackInterface = instance;
-            if (instance != null)
-            {
-                @Acceleration.started += instance.OnAcceleration;
-                @Acceleration.performed += instance.OnAcceleration;
-                @Acceleration.canceled += instance.OnAcceleration;
-                @Braking.started += instance.OnBraking;
-                @Braking.performed += instance.OnBraking;
-                @Braking.canceled += instance.OnBraking;
-                @Steering.started += instance.OnSteering;
-                @Steering.performed += instance.OnSteering;
-                @Steering.canceled += instance.OnSteering;
-            }
+            if (m_KeyboardSchemeIndex == -1) m_KeyboardSchemeIndex = asset.FindControlSchemeIndex("Keyboard");
+            return asset.controlSchemes[m_KeyboardSchemeIndex];
         }
     }
-    public CarActions @Car => new CarActions(this);
     public interface IDefaultActions
     {
         void OnMove(InputAction.CallbackContext context);
@@ -650,11 +543,5 @@ public partial class @PlayerInputActions : IInputActionCollection2, IDisposable
         void OnEscape(InputAction.CallbackContext context);
         void OnSpace(InputAction.CallbackContext context);
         void OnMouseLookDirection(InputAction.CallbackContext context);
-    }
-    public interface ICarActions
-    {
-        void OnAcceleration(InputAction.CallbackContext context);
-        void OnBraking(InputAction.CallbackContext context);
-        void OnSteering(InputAction.CallbackContext context);
     }
 }

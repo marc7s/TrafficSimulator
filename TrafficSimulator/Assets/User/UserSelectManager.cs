@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using DataModel;
+using System.Collections.Generic;
 
 namespace User
 {
@@ -21,6 +23,8 @@ namespace User
         public delegate void SelectedGameObjectChangedHandler(Selectable newSelectedGameObject);
 
         private static UserSelectManager _instance;
+        private static object _lock = new object();
+        private static bool applicationIsQuitting;
 
         [HideInInspector] public bool CanSelectNewObject;
 
@@ -28,8 +32,12 @@ namespace User
         private InputAction _clickInput;
         private InputAction _doubleClickInput;
         private bool _hasSelectedGameObject;
+        private HashSet<Vehicle> _ragdollVehicles = new HashSet<Vehicle>();
         private InputAction _pointInput;
-        public bool IsHoveringUIElement { get; set; } = false;
+        public bool IsHoveringOldUIElement = false;
+        public bool IsHoveringNewUIElement = false;
+
+        public bool IsHoveringUIElement => IsHoveringOldUIElement || IsHoveringNewUIElement;
 
         /// <summary>
         ///     The currently selected game object.
@@ -44,25 +52,30 @@ namespace User
         public static UserSelectManager Instance
         {
             get
-            {
-                if (_instance == null)
+            {   
+                if (applicationIsQuitting)
+                    return null;
+                
+                lock (_lock)
                 {
-                    _instance = FindObjectOfType<UserSelectManager>();
                     if (_instance == null)
                     {
-                        GameObject obj = new GameObject();
-                        obj.name = nameof(UserSelectManager);
-                        _instance = obj.AddComponent<UserSelectManager>();
-                        DontDestroyOnLoad(obj.transform.root);
+                        _instance = FindObjectOfType<UserSelectManager>();
+                        if (_instance == null)
+                        {
+                            GameObject obj = new GameObject();
+                            obj.name = nameof(UserSelectManager);
+                            _instance = obj.AddComponent<UserSelectManager>();
+                        }
                     }
                 }
-
                 return _instance;
             }
         }
         
         private void Awake()
         {
+            applicationIsQuitting = false;
             InitializeSingletonInstance();
             _mainCamera = Camera.main;
             CanSelectNewObject = true;
@@ -70,21 +83,25 @@ namespace User
 
         private void Start()
         {
+            if(UserInputManager.Instance == null)
+                return;
+            
             SetupInputActions();
             SubscribeToInput();
+        }
+
+        public void AddRagdollVehicle(Vehicle vehicle)
+        {
+            if(vehicle != null && !_ragdollVehicles.Contains(vehicle))
+                _ragdollVehicles.Add(vehicle);
         }
 
         private void InitializeSingletonInstance()
         {
             if (_instance == null)
-            {
                 _instance = this;
-                DontDestroyOnLoad(gameObject.transform.root);
-            }
             else
-            {
                 Destroy(gameObject);
-            }
         }
 
         private void SetupInputActions()
@@ -105,10 +122,14 @@ namespace User
         private void OnDisable()
         {
             UnsubscribeFromInput();
+            applicationIsQuitting = true;
         }
 
         private void UnsubscribeFromInput()
         {
+            if(_pointInput == null || _clickInput == null || _doubleClickInput == null)
+                return;
+            
             _pointInput.performed -= OnPointInput;
             _clickInput.performed -= OnSingleClickInput;
             _doubleClickInput.performed -= OnDoubleClickInput;
@@ -120,7 +141,7 @@ namespace User
             if(!IsHoveringUIElement)
             {
                 _previousClickedSelectable = SelectedGameObject;
-                OnClickInput(OnSelectedGameObject);
+                OnClickInput(OnSelectedGameObject, true);
             }
         }
 
@@ -129,13 +150,9 @@ namespace User
             if(!IsHoveringUIElement)
             {
                 if (_previousClickedSelectable == SelectedGameObject)
-                {
-                    OnClickInput(OnDoubleClickedSelectedGameObject);
-                }
+                    OnClickInput(OnDoubleClickedSelectedGameObject, false);
                 else
-                {
                     _previousClickedSelectable = null;
-                }
             }
         }
 
@@ -151,32 +168,44 @@ namespace User
         public event SelectedGameObjectChangedHandler OnSelectedGameObject;
 
         // Common method for handling click and double-click inputs
-        private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke)
+        private void OnClickInput(SelectedGameObjectChangedHandler eventToInvoke, bool deselectIfClickedAgain)
         {
+            if (_mainCamera == null)
+                _mainCamera = Camera.main;
+
             Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
             
+            // Temporarily enable collisions for all ragdoll vehicles so that the raycast can hit them
+            foreach(Vehicle v in _ragdollVehicles)
+                v.gameObject.GetComponent<Rigidbody>().detectCollisions = true;
+            
             if (Physics.Raycast(ray, out RaycastHit hitInfo) && CanSelectNewObject)
-            {
-                SelectObjectFromClick(eventToInvoke, hitInfo);
-            }
+                SelectObjectFromClick(eventToInvoke, hitInfo, deselectIfClickedAgain);
+
+            // Disable collisions for all ragdoll vehicles again
+            foreach(Vehicle v in _ragdollVehicles)
+                v.gameObject.GetComponent<Rigidbody>().detectCollisions = false;
         }
 
         // Select the object based on the click event and invoke the corresponding event
-        private void SelectObjectFromClick(SelectedGameObjectChangedHandler eventToInvoke, RaycastHit hitInfo)
+        private void SelectObjectFromClick(SelectedGameObjectChangedHandler eventToInvoke, RaycastHit hitInfo, bool deselectIfClickedAgain)
         {
             Selectable hitSelectable = hitInfo.transform.GetComponent<Selectable>();
+
             if (hitSelectable != null)
             {
                 if (hitSelectable.Equals(SelectedGameObject))
                 {
-                    eventToInvoke?.Invoke(SelectedGameObject);
+                    if(deselectIfClickedAgain)
+                        DeselectCurrentObject();
+                    else
+                        eventToInvoke?.Invoke(SelectedGameObject);
+                    
                     return;
                 }
 
                 if (_hasSelectedGameObject)
-                {
                     SelectedGameObject.Deselect();
-                }
 
                 hitSelectable.Select();
                 SelectedGameObject = hitSelectable;

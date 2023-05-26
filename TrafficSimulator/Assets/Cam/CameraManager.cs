@@ -1,7 +1,6 @@
 using Cinemachine;
 using UnityEngine;
 using User;
-using CameraState = Cam.CameraState;
 
 namespace Cam
 {
@@ -15,9 +14,9 @@ namespace Cam
     {
         public enum CustomCameraType
         {
-            Default = 0,
-            Focus = 1,
-            FirstPersonDriver = 2
+            Freecam = 0,
+            Follow = 1,
+            Driver = 2
         }
         
         public delegate void CameraChangedEventHandler(CustomCameraType newCustomCameraType);
@@ -34,15 +33,27 @@ namespace Cam
         {
             InputHandler = new CameraInputHandler();
             _cmBrain = Camera.main.GetComponent<CinemachineBrain>();
+            
+            if(_cmBrain == null)
+            {
+                Debug.LogError("There must be a CinemachineBrain component on the main camera");
+                return;
+            }
+            
             _cameras[FindDefaultCameraIndex()].SetActive(this);
         }
 
         private void Update()
         {
-            if (_cmBrain.IsBlending) return;
+            if (_cmBrain == null || _cmBrain.IsBlending) 
+                return;
+            
             _cameras[_currentActiveCameraIndex].Look(InputHandler.LookDelta);
-            _cameras[_currentActiveCameraIndex].Move(InputHandler.Movement);
-            _cameras[_currentActiveCameraIndex].RotateHorizontal(InputHandler.Rotation);
+            _cameras[_currentActiveCameraIndex].Move(new Vector3(InputHandler.Movement.x, 0, InputHandler.Movement.y));
+            
+            if(InputHandler.MouseOrigin != null)
+                _cameras[_currentActiveCameraIndex].Rotate(InputHandler.MouseOrigin.Value);
+            
             _cameras[_currentActiveCameraIndex].Zoom(InputHandler.Zoom);
         }
 
@@ -51,10 +62,10 @@ namespace Cam
             InputHandler.Dispose();
         }
         
-        public void ToggleFocusCamera()
+        public void ToggleFollowCamera()
         {
-            SwitchActiveCamera((int) CustomCameraType.Focus);
-            OnCameraChanged?.Invoke(CustomCameraType.Focus);
+            SwitchActiveCamera((int) CustomCameraType.Follow);
+            OnCameraChanged?.Invoke(CustomCameraType.Follow);
         }
 
         private void SwitchActiveCamera(int newIndex)
@@ -79,16 +90,16 @@ namespace Cam
             return 0;
         }
         
-        public void ToggleFirstPersonDriverCamera()
+        public void ToggleDriverCamera()
         {
-            SwitchActiveCamera((int) CustomCameraType.FirstPersonDriver);
-            OnCameraChanged?.Invoke(CustomCameraType.FirstPersonDriver);
+            SwitchActiveCamera((int) CustomCameraType.Driver);
+            OnCameraChanged?.Invoke(CustomCameraType.Driver);
         }
 
         public void ToggleDefaultCamera()
         {
-            SwitchActiveCamera((int) CustomCameraType.Default);
-            OnCameraChanged?.Invoke(CustomCameraType.Default);
+            SwitchActiveCamera((int) CustomCameraType.Freecam);
+            OnCameraChanged?.Invoke(CustomCameraType.Freecam);
         }
     }
 }

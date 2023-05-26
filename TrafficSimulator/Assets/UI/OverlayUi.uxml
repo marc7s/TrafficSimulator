@@ -1,38 +1,47 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:Template name="StatisticsWindow" src="project://database/Assets/UI/Statistics/StatisticsWindow.uxml?fileID=9197481963319205126&amp;guid=61279e05a9bb27740bf68173ef7dcf35&amp;type=3#StatisticsWindow" />
-    <ui:Template name="WorldWindow" src="project://database/Assets/UI/World/WorldWindow.uxml?fileID=9197481963319205126&amp;guid=1027ff7a0014ab64badfbc0ac5a2efa0&amp;type=3#WorldWindow" />
+    <Style src="project://database/Assets/UI/GeneralTheme.uss?fileID=7433441132597879392&amp;guid=d78cb5c2f4b3da046954bc98f8dde196&amp;type=3#GeneralTheme" />
     <Style src="project://database/Assets/UI/Dragging.uss?fileID=7433441132597879392&amp;guid=f1790fabf59d9784184d37e37e4a304d&amp;type=3#Dragging" />
-    <ui:VisualElement class="droppable" style="height: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; width: 100%; flex-shrink: 0; display: flex; visibility: visible;">
-        <ui:VisualElement style="align-items: center; flex-direction: row; flex-shrink: 0; width: 100%; justify-content: space-between; top: auto; bottom: auto; left: auto; flex-grow: 0;">
+    <Style src="project://database/Assets/Resources/CameraButtonStyle.uss?fileID=7433441132597879392&amp;guid=f6f7a11012b6d9343b33570d9c0f68df&amp;type=3#CameraButtonStyle" />
+    <ui:VisualElement name="root" class="droppable" style="height: 100%; align-items: flex-start; justify-content: flex-start; flex-direction: column; width: 100%; flex-shrink: 0; display: flex; visibility: visible;">
+        <ui:VisualElement style="align-items: flex-start; flex-direction: row; flex-shrink: 0; width: 100%; justify-content: space-between; top: auto; bottom: auto; left: auto; flex-grow: 0;">
             <ui:VisualElement style="flex-shrink: 0; left: auto; flex-direction: row; align-items: center; flex-grow: 0; width: auto; justify-content: flex-start; flex-basis: auto;">
-                <ui:Button text="Menu" display-tooltip-when-elided="true" name="MenuButton" style="height: 77px; width: 156px; white-space: nowrap; left: auto; top: auto; align-items: center; justify-content: center;" />
+                <ui:Button display-tooltip-when-elided="true" name="MenuButton" focusable="false" class="color-theme-button" style="height: 50px; width: 70px; white-space: nowrap; left: auto; top: auto; align-items: center; justify-content: center; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; border-left-width: 0; border-top-width: 0; border-top-left-radius: 0; border-bottom-right-radius: 40px; margin-left: 0; margin-top: 0;">
+                    <ui:VisualElement style="width: 100%; height: 100%; -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(0, 0, 0); background-image: resource(&apos;Free Flat Gear 2 Icon&apos;);" />
+                </ui:Button>
                 <ui:VisualElement name="ClockButtons" style="width: auto; position: relative; top: auto; left: auto; align-items: center; flex-direction: row; flex-shrink: 0; justify-content: center; margin-right: 3%; margin-left: 3%;">
-                    <ui:Button text="&lt;--" display-tooltip-when-elided="true" name="Rewind" style="width: 44px; height: 28px; align-items: center; flex-direction: row;" />
-                    <ui:Button text="||" display-tooltip-when-elided="true" name="Pause" style="width: 44px; height: 28px; position: relative; top: auto; left: auto; align-items: auto; flex-direction: row;" />
-                    <ui:Button text="--&gt;" display-tooltip-when-elided="true" name="Fastforward" style="width: 44px; height: 28px; position: relative; top: auto; left: auto; align-items: auto; flex-direction: row;" />
+                    <ui:Button display-tooltip-when-elided="true" name="Rewind" focusable="false" class="color-theme-button" style="width: 44px; height: 28px; align-items: center; flex-direction: row; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; overflow: visible; display: none;">
+                        <ui:VisualElement style="width: 100%; height: 100%; background-image: url(&apos;project://database/Assets/Unity%20Assets/_Heathen%20Engineering/Assets/UX/Icons/Flat%20Icons%20[Free]/Free%20Flat%20Media%20Left%20Double%20Icon.png?fileID=2800000&amp;guid=c7a6fe9f3f07bf74a897236d55e0cee6&amp;type=3#Free Flat Media Left Double Icon&apos;); -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(0, 0, 0);" />
+                    </ui:Button>
+                    <ui:Button display-tooltip-when-elided="true" name="Pause" focusable="false" class="color-theme-button" style="width: 44px; height: 28px; position: relative; top: auto; left: auto; align-items: center; flex-direction: column; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; overflow: visible; justify-content: center; flex-wrap: nowrap; visibility: visible;">
+                        <ui:VisualElement name="Pause-icon" style="width: 100%; height: 100%; background-image: resource(&apos;Free Flat Media Pause Icon&apos;); display: flex; -unity-background-scale-mode: scale-to-fit; visibility: visible; position: absolute; -unity-background-image-tint-color: rgb(0, 0, 0);" />
+                        <ui:VisualElement name="Play-icon" style="width: 100%; height: 100%; background-image: resource(&apos;Free Flat Media Right Icon&apos;); display: flex; -unity-background-scale-mode: scale-to-fit; visibility: hidden; position: absolute; -unity-background-image-tint-color: rgb(0, 0, 0);" />
+                    </ui:Button>
+                    <ui:Button display-tooltip-when-elided="true" name="Fastforward" focusable="false" class="color-theme-button" style="width: 44px; height: 28px; position: relative; top: auto; left: auto; align-items: auto; flex-direction: row; padding-left: 5px; padding-right: 5px; padding-top: 5px; padding-bottom: 5px; overflow: visible; visibility: visible; display: none;">
+                        <ui:VisualElement style="width: 100%; height: 100%; background-image: url(&apos;project://database/Assets/Unity%20Assets/_Heathen%20Engineering/Assets/UX/Icons/Flat%20Icons%20[Free]/Free%20Flat%20Media%20Right%20Double%20Icon.png?fileID=2800000&amp;guid=22057aef5fa19f9489473012c242bba0&amp;type=3#Free Flat Media Right Double Icon&apos;); -unity-background-scale-mode: scale-to-fit; -unity-background-image-tint-color: rgb(0, 0, 0);" />
+                    </ui:Button>
                 </ui:VisualElement>
                 <ui:Label text="NO TIME" display-tooltip-when-elided="true" name="Clock" style="left: auto; width: auto; top: auto; height: 15px; align-items: center; justify-content: center; margin-right: 3px; margin-left: 3px; padding-left: 0; padding-right: 0;" />
             </ui:VisualElement>
+            <ui:VisualElement style="align-items: flex-end; flex-shrink: 0; justify-content: flex-start; flex-grow: 0; flex-direction: column;">
+                <ui:Label text="FPS: 300" display-tooltip-when-elided="true" name="FPSLabel" style="display: flex; align-items: center; justify-content: flex-start; height: 19px; width: 66px; color: rgb(12, 255, 0); position: relative; top: auto; left: auto;" />
+            </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement style="height: 100%; width: 100%; flex-shrink: 1; align-items: center; justify-content: center; flex-grow: 1; flex-direction: row;">
-            <ui:VisualElement style="flex-grow: 1; flex-shrink: 0; width: 50%;" />
-            <ui:VisualElement style="flex-shrink: 0; flex-grow: 1; align-items: center; justify-content: center; width: 50%; flex-direction: column; height: auto;" />
+            <ui:VisualElement style="flex-grow: 1; flex-shrink: 0; width: 50%; height: 100%;" />
+            <ui:VisualElement style="flex-shrink: 0; flex-grow: 1; align-items: center; justify-content: center; width: 50%; flex-direction: column; height: 100%;" />
         </ui:VisualElement>
-        <ui:VisualElement name="CameraAndModeButtons" style="flex-direction: row-reverse; align-items: flex-end; width: 100%; flex-shrink: 0; flex-grow: 0;">
-            <ui:VisualElement name="ModeButtons" style="width: auto; height: auto; left: auto; top: auto; bottom: 10%; right: 1%; position: relative; align-items: center; flex-shrink: 0;">
-                <ui:Button text="Statistics" display-tooltip-when-elided="true" name="Statistics" enable-rich-text="true" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; margin-top: 3px; margin-bottom: 3px;" />
-                <ui:Button text="World" display-tooltip-when-elided="true" name="WorldOptions" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; top: auto; margin-top: 3px; margin-bottom: 3px;" />
-                <ui:Button text="Editor" display-tooltip-when-elided="true" name="Editor" style="width: 65px; height: 64px; border-top-left-radius: 42px; border-bottom-left-radius: 42px; border-top-right-radius: 42px; border-bottom-right-radius: 42px; right: auto; top: auto; margin-top: 3px; margin-bottom: 3px;" />
-            </ui:VisualElement>
-            <ui:VisualElement name="CameraButtons" style="flex-shrink: 0; bottom: 10%; right: 2%;">
-                <ui:VisualElement name="CameraButtons" style="width: auto; top: auto; left: auto; bottom: auto; flex-direction: row; align-items: center; right: auto; height: auto; flex-shrink: 0; flex-grow: 0;">
-                    <ui:Button text="Default&#10;Camera" display-tooltip-when-elided="true" name="Default" focusable="false" style="width: 83px; height: 35px;" />
-                    <ui:Button text="Focus&#10;Camera" display-tooltip-when-elided="true" name="Focus" focusable="false" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
-                    <ui:Button text="FPV&#10;Camera" display-tooltip-when-elided="true" name="FPV" focusable="false" style="width: 83px; height: 35px; position: relative; top: auto; left: auto;" />
+        <ui:VisualElement style="width: 100%; flex-direction: row; flex-shrink: 0; align-items: flex-end; justify-content: flex-end;">
+            <ui:VisualElement class="bottom-border" />
+            <ui:VisualElement name="CameraAndModeButtons" tabindex="0" style="flex-direction: column; align-items: flex-end; width: 312px; flex-shrink: 0; flex-grow: 0; height: auto; justify-content: flex-end;">
+                <ui:VisualElement name="CameraButtons" class="camera-button-borders color-theme" style="height: 50px; padding-bottom: 0;">
+                    <ui:VisualElement style="background-image: resource(&apos;Photography-Camera-Icon-Transparent-Image&apos;); width: 40px; height: 40px; -unity-background-image-tint-color: rgb(226, 226, 226);" />
+                    <ui:VisualElement name="CameraButtons" style="width: auto; top: 15%; left: auto; bottom: auto; flex-direction: row; align-items: center; right: auto; height: auto; flex-shrink: 0; flex-grow: 0; padding-bottom: 10px;">
+                        <ui:Button text="Freecam" display-tooltip-when-elided="true" name="Freecam" focusable="false" tooltip="Move camera with no constraints" class="color-theme-button" style="height: 25px;" />
+                        <ui:Button text="Follow" display-tooltip-when-elided="true" name="Follow" focusable="false" tooltip="Follow selected car" class="color-theme-button" style="height: 25px; position: relative; top: auto; left: auto;" />
+                        <ui:Button text="Driver" display-tooltip-when-elided="true" name="Driver" focusable="false" tooltip="Driver POV (FPV)" class="color-theme-button" style="height: 25px; position: relative; top: auto; left: auto;" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Instance template="StatisticsWindow" name="StatisticsWindow" style="flex-shrink: 0; display: flex; width: 350px; height: 450px; flex-grow: 0; min-width: initial; min-height: initial; visibility: visible; position: absolute; align-items: flex-start; top: 30%; left: 70%;" />
-        <ui:Instance template="WorldWindow" name="WorldWindow" style="position: absolute; left: 50%; top: 30%;" />
     </ui:VisualElement>
 </ui:UXML>

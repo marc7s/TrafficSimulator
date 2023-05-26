@@ -70,7 +70,7 @@ namespace VehicleBrain
             const float g = 9.82f;
             const float qualityOffset = 2f;
             
-            float performanceBrakeCoef = agent.Context.CurrentAction == DrivingAction.Braking || agent.Context.CurrentAction == DrivingAction.Stopped ? 2f : 1f;
+            float performanceBrakeCoef = agent.Context.CurrentDrivingState == DrivingState.Braking || agent.Context.CurrentDrivingState == DrivingState.Stopped ? 2f : 1f;
             
             switch(agent.Setting.Mode)
             {
@@ -122,7 +122,7 @@ namespace VehicleBrain
             float distanceToYieldNode = Vector3.Distance(agent.Context.CurrentNode.Position, yieldStart.Position);
             float distanceToCurrNode = distanceToYieldNode;
 
-            const float yieldTime = 2f;
+            const float yieldTime = 2.5f;
             const float maxSpeed = 20f;
             const float maxDistance = maxSpeed * yieldTime;
 

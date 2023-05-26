@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:TrafficSimulator/Assets/Prefabs/Car/Sedan.prefab.meta
 guid: fe053947ba87ff247978453be24b8da2
+========
+guid: 9bc5ae1e9360d8f42bf60e5ac73a9293
+>>>>>>>> OSM:TrafficSimulator/Assets/Prefabs/Car/SportsCar1.prefab.meta
 PrefabImporter:
   externalObjects: {}
   userData: 

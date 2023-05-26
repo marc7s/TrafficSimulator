@@ -24,7 +24,8 @@ namespace User
 
         private void OnEnable()
         {
-            if (this != null) _playerInputActions.Default.Enable();
+            if (this != null) 
+                _playerInputActions.Default.Enable();
         }
     }
 }

@@ -33,6 +33,7 @@ namespace RoadGenerator
         [SerializeField] private GameObject _roadSystemObject;
 
         [Header("Settings")]
+        [SerializeField] private DrivingMode _drivingMode = DrivingMode.Quality;
         [SerializeField] private bool _randomVehicleTypes = true;
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
         [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
@@ -40,6 +41,7 @@ namespace RoadGenerator
         [Header("Debug Settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
         [SerializeField] private bool _logBrakeReason = false;
+        [SerializeField] private bool _showNavigationPath = false;
 
         // Total number of cars to spawn in mode Total
         public int TotalCars = 5;
@@ -263,8 +265,8 @@ namespace RoadGenerator
         /// <summary>Checks multiple conditions to determine if a car is able to spawn on node</summary>
         private bool IsCarSpawnable(LaneNode node)
         {
-            bool IsThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
-            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !IsThreeWayIntersection && !node.RoadNode.IsNavigationNode;
+            bool isThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
+            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !isThreeWayIntersection && !node.RoadNode.IsNavigationNode;
         }
 
         /// <summary>Spawns a car at the current lane node</summary>
@@ -272,7 +274,7 @@ namespace RoadGenerator
         {
             _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
             AutoDrive autoDrive = _currentCar.GetComponent<AutoDrive>();
-            autoDrive.Road = _lanes[index].Road;
+            autoDrive.StartingRoad = _lanes[index].Road;
             autoDrive.LaneIndex = _indexes[index];
 
             // If a custom car is being used as a spawn prefab it should be deactivated to not interfere, so activate this car
@@ -280,8 +282,10 @@ namespace RoadGenerator
 
             autoDrive.CustomStartNode = _laneNodeCurrent;
 
+            autoDrive.Mode = _drivingMode;
             autoDrive.ShowTargetLines = _showTargetLines;
             autoDrive.LogBrakeReason = _logBrakeReason;
+            autoDrive.ShowNavigationPath = _showNavigationPath;
             
             // Overwrite the navigation mode if a custom one is set
             switch(_navigationMode)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Extensions
 {
@@ -46,6 +47,28 @@ namespace Extensions
             // Then, add back the original contents of stack1
             while(temp1.Count > 0)
                 stack1.Push(temp1.Pop());
+        }
+
+        /// <summary> Shuffles the elements of the list in-place using Fisher-Yates </summary>
+        public static void Shuffle<T>(this IList<T> list)  
+        {  
+            int n = list.Count;  
+            while (n > 1) {  
+                n--;  
+                int k = UnityEngine.Random.Range(0, n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }  
+        }
+
+        /// <summary> Returns a random element from the list </summary>
+        public static T GetRandomElement<T>(this IEnumerable<T> list)
+        {
+            if(list.Count() == 0)
+                return default(T);
+
+            return list.ElementAt(UnityEngine.Random.Range(0, list.Count()));
         }
     }
 }

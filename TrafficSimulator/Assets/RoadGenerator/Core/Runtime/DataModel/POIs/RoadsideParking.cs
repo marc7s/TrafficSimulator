@@ -234,6 +234,7 @@ namespace POIs
 
         private void CalculateSpanNodes()
         {
+            DefaultRoad road = RoadNode.Road as DefaultRoad;
             if(ParkingType == RoadSideParkingType.FullRoad)
             {
                 _spanNodes = GetFullRoadSpanNodes();
@@ -248,7 +249,7 @@ namespace POIs
             float offset = _parkingSize.x / 2 + buffer;
 
             // Add the nodes behind
-            while(curr != null && distance <= Size.z / 2 + offset)
+            while(curr != null && curr.Road == road && distance <= Size.z / 2 + offset)
             {
                 nodes.Add(curr);
                 distance += GetEdgeDistance(curr, prev);
@@ -259,7 +260,7 @@ namespace POIs
             float smoothEdgeDistance = 0;
             
             // Move back until the smooth edge node
-            while(curr != null && smoothEdgeDistance <= _smoothEdgeOffset)
+            while(curr != null && curr.Road == road && smoothEdgeDistance <= _smoothEdgeOffset)
             {
                 smoothEdgeDistance += GetEdgeDistance(curr, prev);
                 prev = curr;
@@ -283,7 +284,7 @@ namespace POIs
             distance = 0;
             
             // Add the nodes in front
-            while(curr != null && distance <= Size.z / 2 + offset)
+            while(curr != null && curr.Road == road && distance <= Size.z / 2 + offset)
             {
                 nodes.Add(curr);
                 distance += GetEdgeDistance(curr, prev);
@@ -294,7 +295,7 @@ namespace POIs
             smoothEdgeDistance = 0;
 
             // Move forward until the smooth edge node
-            while(curr != null && smoothEdgeDistance <= _smoothEdgeOffset)
+            while(curr != null && curr.Road == road && smoothEdgeDistance <= _smoothEdgeOffset)
             {
                 smoothEdgeDistance += GetEdgeDistance(curr, prev);
                 prev = curr;
@@ -316,8 +317,9 @@ namespace POIs
 
         private List<RoadNode> GetFullRoadSpanNodes()
         {
+            DefaultRoad road = RoadNode.Road as DefaultRoad;
             List<RoadNode> nodes = new List<RoadNode>();
-            RoadNode prev = RoadNode.First;
+            RoadNode prev = road.StartRoadNode;
             RoadNode curr = prev.Next;
 
             RoadNode lastBeforeSmoothEdge = null;
@@ -330,13 +332,13 @@ namespace POIs
 
             if(_hasEndingSmoothEdge)
             {
-                prev = RoadNode.Last;
+                prev = road.EndRoadNode;
                 curr = prev.Prev;
 
                 // Find the last node before the ending smooth edge
                 distance = 0;
                 
-                while(curr != null && distance <= _smoothEdgeOffset)
+                while(curr != null && curr.Road == road && distance <= _smoothEdgeOffset)
                 {
                     distance += GetEdgeDistance(curr, prev);
                     prev = curr;
@@ -346,20 +348,20 @@ namespace POIs
                 lastBeforeSmoothEdge = curr;
             }
 
-            prev = RoadNode.First;
+            prev = road.StartRoadNode;;
             curr = prev;
 
             if(_hasStartingSmoothEdge)
             {
                 // Add the first smooth edge node
-                nodes.Add(RoadNode.First);
+                nodes.Add(road.StartRoadNode);
 
-                prev = RoadNode.First;
+                prev = road.StartRoadNode;;
                 curr = prev.Next;
                 
                 // Move the curr node forward until the smooth edge is over
                 distance = 0;
-                while(curr != null && distance <= _smoothEdgeOffset)
+                while(curr != null && curr.Road == road && distance <= _smoothEdgeOffset)
                 {
                     distance += GetEdgeDistance(curr, prev);
                     prev = curr;
@@ -368,7 +370,7 @@ namespace POIs
             }
 
             // Add all nodes between the smooth edges
-            while(curr != null && curr != lastBeforeSmoothEdge)
+            while(curr != null && curr.Road == road && curr != lastBeforeSmoothEdge)
             {
                 nodes.Add(curr);
                 curr = curr.Next;
@@ -376,7 +378,7 @@ namespace POIs
 
             // Add the last smooth edge node
             if(_hasEndingSmoothEdge)
-                nodes.Add(RoadNode.Last);
+                nodes.Add(road.EndRoadNode);
 
             if(LaneSide == LaneSide.Secondary)
                 nodes.Reverse();

@@ -2,13 +2,14 @@
     <ui:Template name="StatsPanel" src="project://database/Assets/UI/Statistics/Stats/StatsPanel.uxml?fileID=9197481963319205126&amp;guid=961b89874325fa74ebbcc39e71a582ad&amp;type=3#StatsPanel" />
     <ui:Template name="InfoPanel" src="project://database/Assets/UI/Statistics/Info/InfoPanel.uxml?fileID=9197481963319205126&amp;guid=af417ab8c3950ba4dad54316f988cb57&amp;type=3#InfoPanel" />
     <ui:Template name="SettingsPanel" src="project://database/Assets/UI/Statistics/Settings/SettingsPanel.uxml?fileID=9197481963319205126&amp;guid=0664d2e3a8f1dfa40ad6bead7deb6266&amp;type=3#SettingsPanel" />
+    <Style src="project://database/Assets/UI/GeneralTheme.uss?fileID=7433441132597879392&amp;guid=d78cb5c2f4b3da046954bc98f8dde196&amp;type=3#GeneralTheme" />
     <ui:VisualElement name="Window" style="width: 350px; height: 450px; flex-shrink: 0; align-items: stretch;">
-        <ui:VisualElement name="Tabs" style="height: auto; flex-direction: row; align-items: flex-end; justify-content: flex-start; left: 10%; width: 200px; margin-left: 0; flex-shrink: 1; flex-grow: 0; margin-right: 0; margin-top: 0; margin-bottom: 0;">
-            <ui:Button text="Stats" display-tooltip-when-elided="true" name="StatsButton" style="padding-bottom: 0; margin-bottom: 0; width: auto;" />
-            <ui:Button text="Info" display-tooltip-when-elided="true" name="InfoButton" style="margin-bottom: 0; padding-bottom: 0;" />
-            <ui:Button text="Settings" display-tooltip-when-elided="true" name="SettingsButton" style="padding-bottom: 0; margin-bottom: 0;" />
+        <ui:VisualElement name="Tabs" style="height: auto; flex-direction: row; align-items: flex-end; justify-content: flex-start; left: auto; width: auto; margin-left: 0; flex-shrink: 1; flex-grow: 0; margin-right: 0; margin-top: 0; margin-bottom: 0;">
+            <ui:Button text="Stats" display-tooltip-when-elided="true" name="StatsButton" class="panel-button" style="margin-bottom: 0; padding-bottom: 0; width: auto; height: auto; border-bottom-left-radius: 0; border-bottom-right-radius: 0; -unity-text-align: lower-center;" />
+            <ui:Button text="Info" display-tooltip-when-elided="true" name="InfoButton" class="panel-button" style="margin-bottom: 0; padding-bottom: 0; border-bottom-left-radius: 0; -unity-text-align: lower-center;" />
+            <ui:Button text="Settings" display-tooltip-when-elided="true" name="SettingsButton" class="panel-button" style="padding-bottom: 0; margin-bottom: 0; border-bottom-right-radius: 0; -unity-text-align: lower-center;" />
         </ui:VisualElement>
-        <ui:VisualElement name="Panel" style="width: auto; height: auto; padding-left: 0; padding-right: 0; padding-bottom: 0; flex-shrink: 0; padding-top: 0; align-items: stretch; justify-content: flex-start; position: relative; flex-grow: 1;">
+        <ui:VisualElement name="Panel" style="width: auto; height: auto; padding-left: 0; padding-right: 0; padding-bottom: 0; flex-shrink: 0; padding-top: 0; align-items: stretch; justify-content: flex-start; position: relative; flex-grow: 1; border-left-color: rgb(48, 48, 48); border-right-color: rgb(48, 48, 48); border-top-color: rgb(48, 48, 48); border-bottom-color: rgb(48, 48, 48); border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 0;">
             <ui:Instance template="StatsPanel" name="StatsPanel" style="width: 100%; height: 100%; display: flex; visibility: visible; flex-shrink: 0; position: absolute; left: auto;" />
             <ui:Instance template="InfoPanel" name="InfoPanel" style="width: 100%; height: 100%; display: flex; visibility: visible; flex-shrink: 0; overflow: visible; position: absolute; top: auto; left: auto;" />
             <ui:Instance template="SettingsPanel" name="SettingsPanel" style="flex-shrink: 0; width: 100%; height: 100%; display: flex; position: absolute; top: auto; left: auto; visibility: visible;" />

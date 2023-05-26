@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: -7222773781664253429}
   - component: {fileID: -8363121987229429450}
   - component: {fileID: 2968229505203983963}
+  - component: {fileID: 8991514170355834578}
+  - component: {fileID: 841036290364271954}
   m_Layer: 6
   m_Name: Road
   m_TagString: Untagged
@@ -56,7 +58,7 @@ MonoBehaviour:
   RoadSystem: {fileID: 0}
   _trafficSignContainer: {fileID: 0}
   LaneAmount: 1
-  LaneWidth: 6
+  LaneWidth: 4.5
   Thickness: 0.15
   MaxAngleError: 2
   MinVertexDistance: 0
@@ -65,6 +67,7 @@ MonoBehaviour:
   GenerateSpeedSigns: 1
   ConnectionDistanceThreshold: 3
   IsOneWay: 0
+  RoadType: 0
   SpeedSignDistanceFromIntersectionEdge: 5
   SpeedSignDistanceFromRoadEnd: 5
   ShouldSpawnLampPoles: 1
@@ -78,12 +81,17 @@ MonoBehaviour:
   _laneContainer: {fileID: 0}
   _roadNodeContainer: {fileID: 0}
   _laneNodeContainer: {fileID: 0}
+  _busStopContainer: {fileID: 0}
+  _POIContainer: {fileID: 0}
   PathCreator: {fileID: 4211003387211000974}
   _endOfPathInstruction: 2
   Intersections: []
   _length: 0
   IsFirstRoadInClosedLoop: 0
+  POIs: []
   IsRoadClosed: 0
+  RoadsideParkingPrimaryFullRoad: {fileID: 0}
+  RoadsideParkingSecondaryFullRoad: {fileID: 0}
   _speedSignTenKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignThirtyKPH: {fileID: 9128038793144409781, guid: da6e69a00cc9afc488d2ce695ed080ed, type: 3}
@@ -98,6 +106,7 @@ MonoBehaviour:
   _speedSignOneHundredTwentyKPH: {fileID: 8070643699621653665, guid: 73f6f1753a0546b48867e642519b68fa, type: 3}
   _speedSignOneHundredThirtyKPH: {fileID: 1378736042997771929, guid: aa0d07a1b4228624287023f0703d50be, type: 3}
   NoEntryOneDirectionSignPrefab: {fileID: 100000, guid: 269e9f931d31d5145977872b6045218d, type: 3}
+  ParkingSignPrefab: {fileID: 538306130152936576, guid: 8fdbe5729cad8f742ac6e168fde2de9a, type: 3}
   LampPostPrefab: {fileID: 3558233629873542575, guid: 2eac61f19323a5f41b799d089d0ec797, type: 3}
 --- !u!114 &2234105199191049172
 MonoBehaviour:
@@ -240,6 +249,35 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
+--- !u!114 &8991514170355834578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c10b2344861a73409651f16c69784b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _totalFuelConsumption: 0
+--- !u!114 &841036290364271954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3821395399200801449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 459f7424166e2034e913845c8b81615f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ColorChangeSensitivityFactor: 1
+  EmissionEnabled: 0
+  ColorTransitionDuration: 0.5
+  MaxRedValue: 1
 --- !u!1 &6099411683997650963
 GameObject:
   m_ObjectHideFlags: 0

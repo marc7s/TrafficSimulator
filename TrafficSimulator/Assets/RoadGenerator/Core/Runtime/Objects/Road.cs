@@ -54,6 +54,7 @@ namespace RoadGenerator
         Start,
         End
     }
+
     public struct ConnectedRoad
     {
         public Road Road;
@@ -83,8 +84,9 @@ namespace RoadGenerator
         public SpeedLimit SpeedLimit = RoadSystem.DefaultSpeedLimit;
         public bool GenerateSpeedSigns = true;
         // If two road endpoints are within this distance of each other, they will be connected
-        public float ConnectionDistanceThreshold = 3f;
+        public float ConnectionDistanceThreshold = 0f;
         public bool IsOneWay = false;
+        public WayType RoadType;
 
         [Header ("Traffic sign settings")]
         public float SpeedSignDistanceFromIntersectionEdge = 5f;
@@ -108,6 +110,7 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] protected GameObject _laneContainer;
         [SerializeField][HideInInspector] protected GameObject _roadNodeContainer;
         [SerializeField][HideInInspector] protected GameObject _laneNodeContainer;
+        [SerializeField][HideInInspector] protected GameObject _busStopContainer;
         [SerializeField][HideInInspector] protected GameObject _POIContainer;
         [SerializeField][HideInInspector] protected VertexPath _path;
         [SerializeField][HideInInspector] public PathCreator PathCreator;
@@ -121,6 +124,8 @@ namespace RoadGenerator
         [HideInInspector] public List<POI> POIs = new List<POI>();
         [HideInInspector] public bool IsRoadClosed = false;
         [HideInInspector] protected bool _isBeingDestroyed = false;
+        [HideInInspector] public RoadsideParking RoadsideParkingPrimaryFullRoad;
+        [HideInInspector] public RoadsideParking RoadsideParkingSecondaryFullRoad;
         protected const string POI_CONTAINER_NAME = "POIs";
         protected const string LANE_NAME = "Lane";
         protected const string LANE_CONTAINER_NAME = "Lanes";
@@ -193,7 +198,7 @@ namespace RoadGenerator
             // Do nothing when nodes are moved
         }
         /// <summary>Connects this road with any other roads that have their endpoint close to this roads end points </summary>
-        protected void ConnectRoadIfEndPointsAreClose()
+        public void ConnectRoadIfEndPointsAreClose()
         {
             // Find and map the connected roads
             MapConnectedRoads();
@@ -241,6 +246,9 @@ namespace RoadGenerator
                 foreach (Road road in roadsToCheck)
                 {
                     if (road == currentRoad)
+                        continue;
+
+                    if (road.IsOneWay != currentRoad.IsOneWay)
                         continue;
 
                     currentRoad.UpdateStartConnectionRoad(road);
@@ -452,15 +460,27 @@ namespace RoadGenerator
             Vector3 startPos = bezierPath.GetFirstAnchorPos();
             BezierPath bezierPathOtherRoad = road.RoadObject.GetComponent<PathCreator>().bezierPath;
             Vector3 startPosOtherRoad = bezierPathOtherRoad.GetFirstAnchorPos();
-            Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();   
+            Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();
+
+            bool isStartPosOtherRoadIntersection = false;
+            bool isEndPosOtherRoadIntersection = false;
+
+            foreach (Intersection intersection in road.Intersections)
+            {
+                if (intersection.IntersectionPosition == startPosOtherRoad)
+                    isStartPosOtherRoadIntersection = true;
+
+                if (intersection.IntersectionPosition == endPosOtherRoad)
+                    isEndPosOtherRoadIntersection = true;
+            }
             
-            if (Vector3.Distance(startPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
+            if (!isStartPosOtherRoadIntersection && Vector3.Distance(startPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
             {
                 bezierPath.SetFirstAnchorPos(startPosOtherRoad);
                 ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.Start);
                 road.ConnectedToAtStart = new ConnectedRoad(this, EndOfRoadType.Start);
             }
-            else if (Vector3.Distance(endPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
+            else if (!isEndPosOtherRoadIntersection && Vector3.Distance(endPosOtherRoad, startPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
             {
                 bezierPath.SetFirstAnchorPos(endPosOtherRoad);
                 ConnectedToAtStart = new ConnectedRoad(road, EndOfRoadType.End);
@@ -478,13 +498,26 @@ namespace RoadGenerator
             BezierPath bezierPathOtherRoad = road.RoadObject.GetComponent<PathCreator>().bezierPath;
             Vector3 startPosOtherRoad = bezierPathOtherRoad.GetFirstAnchorPos();
             Vector3 endPosOtherRoad = bezierPathOtherRoad.GetLastAnchorPos();
-            if (Vector3.Distance(startPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
+
+            bool isStartPosOtherRoadIntersection = false;
+            bool isEndPosOtherRoadIntersection = false;
+
+            foreach (Intersection intersection in road.Intersections)
+            {
+                if (intersection.IntersectionPosition == startPosOtherRoad)
+                    isStartPosOtherRoadIntersection = true;
+
+                if (intersection.IntersectionPosition == endPosOtherRoad)
+                    isEndPosOtherRoadIntersection = true;
+            }
+
+            if (!isStartPosOtherRoadIntersection && Vector3.Distance(startPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtStart == null || road.ConnectedToAtStart?.Road == this))
             {
                 bezierPath.SetLastAnchorPos(startPosOtherRoad);
                 ConnectedToAtEnd = new ConnectedRoad(road, EndOfRoadType.Start);
                 road.ConnectedToAtStart = new ConnectedRoad(this, EndOfRoadType.End);
             }
-            else if (Vector3.Distance(endPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
+            else if (!isEndPosOtherRoadIntersection && Vector3.Distance(endPosOtherRoad, endPos) < ConnectionDistanceThreshold && (road.ConnectedToAtEnd == null || road.ConnectedToAtEnd?.Road == this))
             {
                 bezierPath.SetLastAnchorPos(endPosOtherRoad);
                 ConnectedToAtEnd = new ConnectedRoad(road, EndOfRoadType.End);
@@ -519,17 +552,47 @@ namespace RoadGenerator
             }
         }
 
+        // When the road is connected to another road with roadside parking, it should not have a smooth edge
+        public void UpdateRoadSideParkingSmoothEdge()
+        {
+            if (ConnectedToAtStart != null)
+            {
+                if (RoadsideParkingPrimaryFullRoad != null)
+                    RoadsideParkingPrimaryFullRoad.AllowStartingSmoothEdge = ConnectedToAtStart.Value.Road.RoadsideParkingPrimaryFullRoad == null;
+
+                if (RoadsideParkingSecondaryFullRoad != null)
+                    RoadsideParkingSecondaryFullRoad.AllowStartingSmoothEdge = ConnectedToAtStart.Value.Road.RoadsideParkingSecondaryFullRoad == null;
+            }
+
+            if (ConnectedToAtEnd != null)
+            {
+                if (RoadsideParkingPrimaryFullRoad != null)
+                    RoadsideParkingPrimaryFullRoad.AllowEndingSmoothEdge = ConnectedToAtEnd.Value.Road.RoadsideParkingPrimaryFullRoad == null;
+
+                if (RoadsideParkingSecondaryFullRoad != null)
+                    RoadsideParkingSecondaryFullRoad.AllowEndingSmoothEdge = ConnectedToAtEnd.Value.Road.RoadsideParkingSecondaryFullRoad == null;
+            }
+        }
+
         /// <summary>This function is called when the road has changed, like moving a node or adding/removing nodes</summary>
         public void OnChange()
         {
             if(RoadSystem == null)
                 return;
 
-            ConnectRoadIfEndPointsAreClose();
+           if (!RoadSystem.IsGeneratingOSM)
+           {
+                ConnectRoadIfEndPointsAreClose();
+                UpdateRoadSideParkingSmoothEdge();
+           }
+
             // Update the intersections and road when a node is changed
-            IntersectionCreator.UpdateIntersections(this);
+            if (!RoadSystem.UseOSM && Application.isEditor && !Application.isPlaying)
+                IntersectionCreator.UpdateIntersections(this);
+
             UpdateRoad();
         }
+        
 
         protected void UpdateRoad()
         {
@@ -539,9 +602,8 @@ namespace RoadGenerator
             
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
-            
-            PlaceTrafficSigns();
 
+            PlaceTrafficSigns();
             ShowLanes();
             ShowRoadNodes();
             ShowLaneNodes();
@@ -554,10 +616,10 @@ namespace RoadGenerator
             UpdateRoadNodes();
             UpdateLanes();
             UpdateMesh();
-            
+
             foreach(Intersection intersection in Intersections)
                 intersection.UpdateMesh();
-            
+
             PlaceTrafficSigns();
         }
 
@@ -939,7 +1001,6 @@ namespace RoadGenerator
         {
             // Calculating the path distance for each intersection on the road
             PriorityQueue<QueuedNode> queuedNodes = new PriorityQueue<QueuedNode>();
-
             foreach(Intersection intersection in Intersections)
             {
                 List<IntersectionArm> armsFromThisRoad = intersection.GetArms(this);
@@ -955,13 +1016,15 @@ namespace RoadGenerator
                 }
                 else if (armsFromThisRoad.Count == 1)
                 {
-                    bool endsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtEnd;
-                    bool junctionEdgeEndsIntersection = intersection.Type == IntersectionType.ThreeWayIntersectionAtStart;
+                    bool junctionEdgeEndsIntersection = intersection.IntersectionPosition == PathCreator.bezierPath.GetFirstAnchorPos();
+                    bool endsIntersection = !junctionEdgeEndsIntersection && intersection.Type != IntersectionType.ThreeWayIntersectionAtStart;
+
                     float anchorDistance = _path.GetClosestDistanceAlongPath(armsFromThisRoad[0].JunctionEdgePosition);
                     queuedNodes.Enqueue(new QueuedNode(RoadNodeType.JunctionEdge, anchorDistance, armsFromThisRoad[0].JunctionEdgePosition, junctionEdgeEndsIntersection, intersection));
                     queuedNodes.Enqueue(new QueuedNode(intersectionType, intersectionDistance, intersection.IntersectionPosition, endsIntersection, intersection));
                 }
             } 
+
             return queuedNodes;
         }
 
@@ -1059,10 +1122,24 @@ namespace RoadGenerator
                 AssignStopSign(data.RoadNode, data.IsForward ? LaneSide.Primary : LaneSide.Secondary, trafficSign);
             else if(data.TrafficSignType == TrafficSignType.YieldSign)
                 AssignYieldSign(data.RoadNode, data.IsForward ? LaneSide.Primary : LaneSide.Secondary, trafficSign);
-            
+
             return trafficSign;
         }
 
+        public void SpawnBusStop(RoadNode roadNode, bool IsForward, GameObject busStopPrefab, string busStopName)
+        {
+            Quaternion rotation = roadNode.Rotation * (IsForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
+            rotation *= busStopPrefab.transform.rotation;
+            GameObject busStop = Instantiate(busStopPrefab, roadNode.Position, rotation);
+            busStop.name = busStopName;
+            bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
+            Vector3 offsetDirection =  roadNode.Normal * (isDrivingRight ? 1 : -1) * (IsForward ? 1 : -1);
+            float distanceFromRoad = 1f;
+            busStop.transform.position += (distanceFromRoad + (LaneCount / (IsOneWay ? 1 : 2) * LaneWidth)) * offsetDirection;
+            TextMesh text = busStop.GetComponentInChildren<TextMesh>();
+            text.text = busStopName;
+            busStop.transform.parent = RoadSystem.BusStopContainer.transform;
+        }
         protected void AssignStopSign(RoadNode roadNode, LaneSide laneSide, GameObject stopSignObject)
         {
             StopSign stopSign = stopSignObject.GetComponent<StopSign>();
@@ -1109,7 +1186,9 @@ namespace RoadGenerator
                     
                     poiNode.IsNavigationNode = true;
                     
-                    poiNode.POI = poi;
+                    if(!poiNode.POIs.Contains(poi))
+                        poiNode.POIs.Add(poi);
+                    
                     toPlace.RemoveAt(0);
                     
                     // Update the RoadNode if the POI uses DistanceAlongRoad
@@ -1132,6 +1211,19 @@ namespace RoadGenerator
             }
         }
 
+        public void AddFullRoadSideParking(LaneSide laneSide)
+        {
+            GameObject roadsideParkingObject = Instantiate(RoadSystem.RoadSideParkingPrefab, _POIContainer.transform);
+            RoadsideParking roadsideParking = roadsideParkingObject.GetComponent<RoadsideParking>();
+            roadsideParking.LaneSide = laneSide;
+            roadsideParking.Road = this;
+            roadsideParking.ParkingType = RoadSideParkingType.FullRoad;
+
+            if (laneSide == LaneSide.Primary)
+                RoadsideParkingPrimaryFullRoad = roadsideParking;
+            else
+                RoadsideParkingSecondaryFullRoad = roadsideParking;
+        }
         private (Vector3, Quaternion) GetPOIOffsetPosition(RoadNode node, POI poi)
         {
             const float sideOffset = 3f;
@@ -1340,7 +1432,8 @@ namespace RoadGenerator
             laneObject.transform.parent = parent.transform;
 
             // Add a line renderer to the lane
-            laneObject.AddComponent<LineRenderer>();
+            LineRenderer lineRenderer = laneObject.AddComponent<LineRenderer>();
+            lineRenderer.positionCount = 0;
             
             // Draw the lane path
             DrawPath(laneObject, lane.StartNode.GetPositions(), color: color);
@@ -1363,7 +1456,8 @@ namespace RoadGenerator
                 laneNodePointerObject.transform.parent = parent.transform;
 
                 // Add a line renderer to the lane
-                laneNodePointerObject.AddComponent<LineRenderer>();
+                LineRenderer lineRenderer = laneNodePointerObject.AddComponent<LineRenderer>();
+                lineRenderer.positionCount = 0;
                 
                 // Draw the lane path
                 DrawPath(laneNodePointerObject, new Vector3[]{ curr.Position, curr.RoadNode.Position }, color: color);
@@ -1404,12 +1498,12 @@ namespace RoadGenerator
         void OnDestroy()
         {
             _isBeingDestroyed = true;
-            
+
             if(RoadSystem == null) 
                 return;
-            
+
             RoadSystem.RemoveRoad(this);
-            
+
             // Cleanup connected roads references
             if (ConnectedToAtStart != null)
             {
@@ -1429,9 +1523,6 @@ namespace RoadGenerator
                 Intersections.RemoveAt(i);
                 DestroyImmediate(intersection.gameObject);
             }
-
-            if(!_isBeingDestroyed)
-                RoadSystem.UpdateRoadSystemGraph();
         }
     }
 }

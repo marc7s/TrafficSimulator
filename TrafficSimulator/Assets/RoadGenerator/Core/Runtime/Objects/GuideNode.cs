@@ -17,7 +17,7 @@ namespace RoadGenerator
         /// <param name="next">The next lane node. Pass `null` if there is no next</param>
         /// <param name="distanceToPrevNode">The distance to the previous node</param>
         public GuideNode(Vector3 position, LaneNode laneNodeReference, LaneSide laneSide, int laneIndex, RoadNode roadNode, LaneNode prev, LaneNode next, float distanceToPrevNode) : 
-            base(position, laneSide, laneIndex, roadNode, prev, next, distanceToPrevNode)
+            base(position, laneSide, laneIndex, roadNode, prev, next, distanceToPrevNode, laneNodeReference.IsSteeringTarget, laneNodeReference.MirrorRotation)
             {
                 _laneNodeReference = laneNodeReference;
             }

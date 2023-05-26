@@ -9,7 +9,7 @@ namespace CarGenerator
     public class AutoDriveEditor : Editor 
     {
         #region SerializedProperties
-            private SerializedProperty _road;
+            private SerializedProperty _startingRoad;
             private SerializedProperty _laneIndex;
             private SerializedProperty _mode;
             private SerializedProperty _endBehaviour;
@@ -33,7 +33,7 @@ namespace CarGenerator
         #endregion
         public void OnEnable()
         {
-            _road = serializedObject.FindProperty("Road");
+            _startingRoad = serializedObject.FindProperty("StartingRoad");
             _laneIndex = serializedObject.FindProperty("LaneIndex");
             _mode = serializedObject.FindProperty("Mode");
             _endBehaviour = serializedObject.FindProperty("EndBehaviour");
@@ -62,33 +62,24 @@ namespace CarGenerator
             
             AutoDrive autoDrive = (AutoDrive)target;
             
-            if(!Application.isPlaying)
-            {
-                EditorGUILayout.PropertyField(_road);
-                EditorGUILayout.PropertyField(_laneIndex);
-                EditorGUILayout.PropertyField(_mode);
-                EditorGUILayout.PropertyField(_endBehaviour);
-            }
-
+            EditorGUILayout.PropertyField(_startingRoad);
+            EditorGUILayout.PropertyField(_laneIndex);
+            EditorGUILayout.PropertyField(_mode);
+            EditorGUILayout.PropertyField(_endBehaviour);
             EditorGUILayout.PropertyField(_showNavigationPath);
-
-            if(!Application.isPlaying)
-            {
-                EditorGUILayout.PropertyField(_originalNavigationMode);
-                EditorGUILayout.PropertyField(_showTargetLines);
-                EditorGUILayout.PropertyField(_logRepositioningInformation);
-                EditorGUILayout.PropertyField(_logNavigationErrors);
-                EditorGUILayout.PropertyField(_logBrakeReason);
-                EditorGUILayout.PropertyField(_brakeOffset);
-                EditorGUILayout.PropertyField(_maxRepositioningSpeed);
-                EditorGUILayout.PropertyField(_maxReverseDistance);
-                EditorGUILayout.PropertyField(_baseTLD);
-                EditorGUILayout.PropertyField(_TLDSpeedDivider);
-                EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
-                EditorGUILayout.PropertyField(_speed);
-                EditorGUILayout.PropertyField(_acceleration);
-            }
-
+            EditorGUILayout.PropertyField(_originalNavigationMode);
+            EditorGUILayout.PropertyField(_showTargetLines);
+            EditorGUILayout.PropertyField(_logRepositioningInformation);
+            EditorGUILayout.PropertyField(_logNavigationErrors);
+            EditorGUILayout.PropertyField(_logBrakeReason);
+            EditorGUILayout.PropertyField(_brakeOffset);
+            EditorGUILayout.PropertyField(_maxRepositioningSpeed);
+            EditorGUILayout.PropertyField(_maxReverseDistance);
+            EditorGUILayout.PropertyField(_baseTLD);
+            EditorGUILayout.PropertyField(_TLDSpeedDivider);
+            EditorGUILayout.PropertyField(_vehicleOccupancyOffset);
+            EditorGUILayout.PropertyField(_speed);
+            EditorGUILayout.PropertyField(_acceleration);
             EditorGUILayout.PropertyField(_totalDistance);
 
             if(_showNavigationPath.boolValue != autoDrive.ShowNavigationPath)

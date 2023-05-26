@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.UIElements;
 using User;
 using VehicleBrain;
@@ -80,6 +81,28 @@ namespace UI
             _tabs = Tabs.Settings;
         }
 
+        private void EnablePanel(VisualElement panel, Button button)
+        {
+            List<VisualElement> panels = new List<VisualElement>{ _statsPanel, _infoPanel, _settingsPanel };
+            List<Button> buttons = new List<Button>{ _statsButton, _infoButton, _settingsButton };
+            panels.Remove(panel);
+            buttons.Remove(button);
+
+            foreach (VisualElement p in panels)
+            {
+                p.visible = false;
+            }
+            foreach (Button b in buttons)
+            {
+                b.style.height = new Length(25, LengthUnit.Pixel);
+                b.RemoveFromClassList("panel-button-selected");
+            }
+            
+            panel.visible = true;
+            button.style.height = new Length(30, LengthUnit.Pixel);
+            button.AddToClassList("panel-button-selected");
+        }
+
         private void UpdatePanels()
         {
             switch(_tabs)
@@ -90,19 +113,13 @@ namespace UI
                     _settingsPanel.visible = false;
                     break;
                 case Tabs.Stats:
-                    _statsPanel.visible = true;
-                    _infoPanel.visible = false;
-                    _settingsPanel.visible = false;
+                    EnablePanel(_statsPanel, _statsButton);
                     break;
                 case Tabs.Info:
-                    _statsPanel.visible = false;
-                    _infoPanel.visible = true;
-                    _settingsPanel.visible = false;
+                    EnablePanel(_infoPanel, _infoButton);
                     break;
                 case Tabs.Settings:
-                    _statsPanel.visible = false;
-                    _infoPanel.visible = false;
-                    _settingsPanel.visible = true;
+                    EnablePanel(_settingsPanel, _settingsButton);
                     break;
             }
         }
@@ -115,21 +132,7 @@ namespace UI
             FuelConsumption fuelConsumption = _selectedCar?.gameObject.GetComponent<FuelConsumption>();
 
             _statsController.UpdateInfo(car, fuelConsumption);
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            if(!_overlayController._isStatisticsOpen)
-            {
-                _tabs = Tabs.None;
-            } else if (_overlayController._isStatisticsOpen && _tabs == Tabs.None)
-            {
-                _tabs = Tabs.Stats;
-            }
-
-            UpdatePanels();
-            UpdateCarInfo();
+            _infoController.UpdateInfo(car);
         }
     }
 }

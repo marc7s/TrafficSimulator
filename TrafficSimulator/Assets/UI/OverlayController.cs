@@ -1,6 +1,7 @@
 using Cam;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 using Simulation;
 using User;
 
@@ -9,38 +10,38 @@ namespace UI
     public class OverlayController : MonoBehaviour
     {
         private UIDocument _doc;
-        private MenuController _menuController;
+        private AudioSource _clickSound;
         
         // Overlay Button
         private Button _menuButton;
 
-        // Car statistics UI
-        private VisualElement _statisticsUI;
-        public bool _isStatisticsOpen = false;
-
-        // World statistics UI
-        private VisualElement _worldUI;
-        public bool _isWorldOpen = false;
-
         // Camera Buttons
         private StyleSheet _cameraButtonStyles;
-        private Button _defaultCameraButton;
-        private Button _focusedCameraButton;
-        private Button _fpvButton;
+        private Button _freecamCameraButton;
+        private Button _followCameraButton;
+        private Button _driverCameraButton;
         private Button _currentlyHighlightedCameraButton;
-
-        // Mode Buttons
-        private Button _statisticsButton;
-        private Button _worldOptionButton;
-        private Button _editorButton;
 
         // Clock Buttons
         private Button _rewindButton;
         private Button _pauseButton;
+        private VisualElement _pauseIcon;
+        private VisualElement _playIcon;
         private Button _fastForwardButton;
+        public bool _isPaused = false;
 
+        // Labels
         private Label _clockLabel;
+        private Label _fpsLabel;
+        private bool _showFPS = false;
 
+        private bool _qualityMode = false;
+        private int _carsToSpawn = 0;
+
+        private const int _fpsUpdateFrequency = 15;
+        private float _fpsLastUpdateTime = 0;
+
+        private const string FPS_COUNTER = "FPSCounter";
         private const string FULLSCREEN = "Fullscreen";
 
         private CameraManager _cameraManager;
@@ -48,110 +49,103 @@ namespace UI
         void Awake()
         {
             _doc = GetComponent<UIDocument>();
+
+            // Get the audio source
+            _clickSound = GetComponent<AudioSource>();
+
             _cameraButtonStyles = Resources.Load<StyleSheet>("CameraButtonStyle");
             _doc.rootVisualElement.styleSheets.Add(_cameraButtonStyles);
-            _menuController = GameObject.Find("UIMenu").GetComponent<MenuController>();
 
             // Labels
             _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
             _clockLabel.text = "0000:00:00:00:00:00";
-
+            _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
             
             FindCameraManager();
+
             // Buttons
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
 
-            _defaultCameraButton = _doc.rootVisualElement.Q<Button>("Default");
-            _defaultCameraButton.AddToClassList("button");
-            _defaultCameraButton.clicked += DefaultCameraButtonClicked;
+            _freecamCameraButton = _doc.rootVisualElement.Q<Button>("Freecam");
+            _freecamCameraButton.AddToClassList("button");
+            _freecamCameraButton.clicked += FreecamCameraButtonClicked;
 
-            _focusedCameraButton = _doc.rootVisualElement.Q<Button>("Focus");
-            _focusedCameraButton.AddToClassList("button");
-            _focusedCameraButton.clicked += FocusedCameraButtonOnClicked;
-            GreyOutButton(_focusedCameraButton);
+            _followCameraButton = _doc.rootVisualElement.Q<Button>("Follow");
+            _followCameraButton.AddToClassList("button");
+            _followCameraButton.clicked += FollowCameraButtonOnClicked;
+            GreyOutButton(_followCameraButton);
 
-            _fpvButton = _doc.rootVisualElement.Q<Button>("FPV");
-            _fpvButton.AddToClassList("button");
-            _fpvButton.clicked += FPVButtonOnClicked;
-            GreyOutButton(_fpvButton);
-
-            _statisticsButton = _doc.rootVisualElement.Q<Button>("Statistics");
-            _statisticsButton.clicked += StatisticsButtonOnClicked;
-
-            // Get car statistics UI visual element
-            _statisticsUI = _doc.rootVisualElement.Q<VisualElement>("StatisticsWindow");
-            _statisticsUI.pickingMode = PickingMode.Position;
-            _statisticsUI.visible = false;
-            // Make draggable
-            _statisticsUI.AddManipulator(new DragManipulator());
-            _statisticsUI.RegisterCallback<DropEvent>(evt => Debug.Log($"{evt.target} dropped on {evt.droppable}"));
-
-            // Get world statistics UI visual element
-            _worldUI = _doc.rootVisualElement.Q<VisualElement>("WorldWindow");
-            _worldUI.pickingMode = PickingMode.Position;
-            _worldUI.visible = false;
-            // Make draggable
-            _worldUI.AddManipulator(new DragManipulator());
-            _worldUI.RegisterCallback<DropEvent>(evt => Debug.Log($"{evt.target} dropped on {evt.droppable}"));
-
-            _worldOptionButton = _doc.rootVisualElement.Q<Button>("WorldOptions");
-            _worldOptionButton.clicked += WorldOptionButtonOnClicked;
-
-            _editorButton = _doc.rootVisualElement.Q<Button>("Editor");
-            _editorButton.clicked += EditorButtonOnClicked;
-
+            _driverCameraButton = _doc.rootVisualElement.Q<Button>("Driver");
+            _driverCameraButton.AddToClassList("button");
+            _driverCameraButton.clicked += DriverCameraButtonOnClicked;
+            GreyOutButton(_driverCameraButton);
+            
             _rewindButton = _doc.rootVisualElement.Q<Button>("Rewind");
             _rewindButton.clicked += RewindButtonOnClicked;
 
             _pauseButton = _doc.rootVisualElement.Q<Button>("Pause");
             _pauseButton.clicked += PauseButtonOnClicked;
 
+            _pauseIcon = _doc.rootVisualElement.Q<VisualElement>("Pause-icon");
+            _playIcon = _doc.rootVisualElement.Q<VisualElement>("Play-icon");
+
             _fastForwardButton = _doc.rootVisualElement.Q<Button>("Fastforward");
             _fastForwardButton.clicked += FastForwardButtonOnClicked;
 
-            _doc.rootVisualElement.visible = false;
+            // Load settings
+            _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
+            _clickSound.volume = PlayerPrefs.GetFloat("MasterVolume");
+            _qualityMode = PlayerPrefsGetBool("SimulationMode");
+            _carsToSpawn = PlayerPrefs.GetInt("CarsToSpawn");
         }
 
         private void Start()
         {
+            // Set FPS visibility
+            _fpsLabel.visible = PlayerPrefsGetBool(FPS_COUNTER);
+
+            // Subscribe to events
             UserSelectManager.Instance.OnSelectedGameObject += selectedGameObject =>
             {
                 if (selectedGameObject)
                 {
-                    RestoreButton(_fpvButton);
-                    RestoreButton(_focusedCameraButton);
+                    RestoreButton(_driverCameraButton);
+                    RestoreButton(_followCameraButton);
                 }
                 else
                 {
-                    GreyOutButton(_fpvButton);
-                    GreyOutButton(_focusedCameraButton);
+                    GreyOutButton(_driverCameraButton);
+                    GreyOutButton(_followCameraButton);
                 }
             };
             _cameraManager.OnCameraChanged += type =>
             {
                 // Reset all camera buttons to normal state
-                RemoveCameraButtonHighlight(_defaultCameraButton);
-                RemoveCameraButtonHighlight(_focusedCameraButton);
-                RemoveCameraButtonHighlight(_fpvButton);
+                RemoveCameraButtonHighlight(_freecamCameraButton);
+                RemoveCameraButtonHighlight(_followCameraButton);
+                RemoveCameraButtonHighlight(_driverCameraButton);
 
                 // Highlight the correct camera button based on the camera type
                 switch (type)
                 {
-                    case CameraManager.CustomCameraType.Default:
-                        HighlightCameraButton(_defaultCameraButton);
+                    case CameraManager.CustomCameraType.Freecam:
+                        HighlightCameraButton(_freecamCameraButton);
                         break;
-                    case CameraManager.CustomCameraType.Focus:
-                        HighlightCameraButton(_focusedCameraButton);
+                    case CameraManager.CustomCameraType.Follow:
+                        HighlightCameraButton(_followCameraButton);
                         break;
-                    case CameraManager.CustomCameraType.FirstPersonDriver:
-                        HighlightCameraButton(_fpvButton);
+                    case CameraManager.CustomCameraType.Driver:
+                        HighlightCameraButton(_driverCameraButton);
                         break;
                     default:
                         Debug.LogWarning("Unknown camera type.");
                         break;
                 }
             };
+            // Set the default camera button to highlighted
+            HighlightCameraButton(_freecamCameraButton);
+
         }
         
         private void FindCameraManager()
@@ -201,67 +195,74 @@ namespace UI
 
         private void MenuButtonOnClicked()
         {
-            _statisticsUI.visible = false;
-            _worldUI.visible = false;
+            PlayClickSound();
             _doc.rootVisualElement.visible = false;
-            _menuController.Enable();
+            SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
         }
 
-        private void DefaultCameraButtonClicked()
+        private void FreecamCameraButtonClicked()
         {
+            PlayClickSound();
             _cameraManager.ToggleDefaultCamera();
         }
 
-        private void FocusedCameraButtonOnClicked()
+        private void FollowCameraButtonOnClicked()
         {
-            _cameraManager.ToggleFocusCamera();
+            PlayClickSound();
+            _cameraManager.ToggleFollowCamera();
         }
 
-        private void FPVButtonOnClicked()
+        private void DriverCameraButtonOnClicked()
         {
-            _cameraManager.ToggleFirstPersonDriverCamera();
-        }
-
-        private void StatisticsButtonOnClicked()
-        {
-            _isStatisticsOpen = !_isStatisticsOpen;
-            _statisticsUI.visible = _isStatisticsOpen;
-        }
-
-        private void WorldOptionButtonOnClicked()
-        {
-            _isWorldOpen = !_isWorldOpen;
-            _worldUI.visible = _isWorldOpen;
-        }
-
-        private void EditorButtonOnClicked()
-        {
-            Debug.Log("Editor");
+            PlayClickSound();
+            _cameraManager.ToggleDriverCamera();
         }
 
         private void RewindButtonOnClicked()
         {
+            PlayClickSound();
             TimeManager.Instance.SetModeRewind();
         }
 
         private void PauseButtonOnClicked()
         {
+            PlayClickSound();
             TimeManager.Instance.SetModePause();
+            _isPaused = !_isPaused;
+            _pauseIcon.visible = !_isPaused;
+            _playIcon.visible = _isPaused;
         }
 
         private void FastForwardButtonOnClicked()
         {
+            PlayClickSound();
             TimeManager.Instance.SetModeFastForward();
         }
 
         void Update()
         {
             _clockLabel.text = TimeManager.Instance.Timestamp;
+
+            // FPS counter
+            if(_showFPS && Time.time >= _fpsLastUpdateTime + 1f / _fpsUpdateFrequency)
+                DisplayFPS(1f / Time.unscaledDeltaTime);
         }
 
-        public void Enable()
+        private void PlayClickSound()
         {
-            _doc.rootVisualElement.visible = true;
+            _clickSound.Play();
+        }
+
+        private void DisplayFPS(float fps)
+        {
+            _fpsLabel.text = "FPS: " + fps.ToString("F0");
+            _fpsLastUpdateTime = Time.time;
+        }
+
+        /// <summary>Wrapper to allow getting bools from PlayerPrefs</summary>
+        private bool PlayerPrefsGetBool(string name)
+        {
+            return PlayerPrefs.GetInt(name, 0) == 1;
         }
     }
 }
