@@ -8,7 +8,7 @@ namespace RoadGenerator
     {
         public PathCreator pathCreator;
         public EndOfPathInstruction endOfPathInstruction;
-        [Range(0.5f, 20)] public float Speed = 5;
+        [Range(0.5f, 100)] public float Speed = 5;
         [Range(1, 200)] public float RotationSpeed = 5;
         public float UpwardOffset = 0;
         public float DownwardRotation = 0;
