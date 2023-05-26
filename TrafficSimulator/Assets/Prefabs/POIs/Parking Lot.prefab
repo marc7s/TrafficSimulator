@@ -53,7 +53,7 @@ MonoBehaviour:
   Position: {x: 0, y: 0, z: 0}
   Rotation: {x: 0, y: 0, z: 0, w: 0}
   ParkNodePrefab: {fileID: 6519265059532225654, guid: 90597e2f7266e1c4fba95dc8b6517699, type: 3}
-  ParkingMaterial: {fileID: 2100000, guid: 9edbfb52859f94e43865eee4f3c53577, type: 2}
+  ParkingMaterial: {fileID: 2100000, guid: 90aaf3ed3d2313849b168f6eb2754e04, type: 2}
   ParkingSpaceMaterial: {fileID: 2100000, guid: 7114621396d195d4a904ee9ce386d582, type: 2}
   ParkingLineup: 0
   DrawParkNodes: 1

@@ -48,6 +48,7 @@ namespace POIs
         protected override void CreateParkingMesh()
         {
             List<Vector3> verts = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();
             List<int> tris = new List<int>();
 
@@ -57,6 +58,12 @@ namespace POIs
 
             // Add the four corner vertices
             verts.AddRange(new List<Vector3>{ pos - up - right, pos + up - right, pos + up + right, pos - up + right });
+
+            // Add the four corner uvs
+            uvs.AddRange(new List<Vector2>{ new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0) });
+
+            // Add the four corner uvs
+            normals.AddRange(new List<Vector3>{ Vector3.up, Vector3.up, Vector3.up, Vector3.up });
             
             // Add the top left triangle
             tris.AddRange(new List<int>{ 0, 1, 2 });
@@ -67,6 +74,7 @@ namespace POIs
             _mesh.Clear();
             _mesh.vertices = verts.ToArray();
             _mesh.normals = normals.ToArray();
+            _mesh.uv = uvs.ToArray();
             _mesh.subMeshCount = 2;
             _mesh.SetTriangles(tris, 0);
         }
