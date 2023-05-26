@@ -1,11 +1,15 @@
 using UnityEngine;
 using RoadGenerator;
+using System.Collections.Generic;
 
 namespace POIs
 {
     public class ParkingLot : Parking
     {
-        protected override void ParkingSetup() {}
+        protected override void ParkingSetup()
+        {
+            _useCustomSize = true;
+        }
         protected override Vector3 GetSize()
         {
             return new Vector3(20, 0.1f, 20);
@@ -15,7 +19,7 @@ namespace POIs
         {
             _parkingSpots.Clear();
             float forwardOffset = Size.z / 2;
-            Vector3 startPos = transform.position - transform.right * forwardOffset;
+            Vector3 startPos = Position - transform.right * forwardOffset;
             
             int parkingSpotsPerSide = Mathf.FloorToInt(Size.x / _parkingSize.x);
             float sideOffsetDelta = Size.x / parkingSpotsPerSide;
@@ -39,6 +43,40 @@ namespace POIs
                 }
                 forwardOffset *= -1;
             }
+        }
+
+        protected override void CreateParkingMesh()
+        {
+            List<Vector3> verts = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
+            List<Vector3> normals = new List<Vector3>();
+            List<int> tris = new List<int>();
+
+            Vector3 up = Rotation * Vector3.forward * Size.x / 2;
+            Vector3 right = Rotation * Vector3.right * Size.z / 2;
+            Vector3 pos = Position;
+
+            // Add the four corner vertices
+            verts.AddRange(new List<Vector3>{ pos - up - right, pos + up - right, pos + up + right, pos - up + right });
+
+            // Add the four corner uvs
+            uvs.AddRange(new List<Vector2>{ new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0) });
+
+            // Add the four corner uvs
+            normals.AddRange(new List<Vector3>{ Vector3.up, Vector3.up, Vector3.up, Vector3.up });
+            
+            // Add the top left triangle
+            tris.AddRange(new List<int>{ 0, 1, 2 });
+
+            // Add the bottom right triangle
+            tris.AddRange(new List<int>{ 0, 2, 3 });
+
+            _mesh.Clear();
+            _mesh.vertices = verts.ToArray();
+            _mesh.normals = normals.ToArray();
+            _mesh.uv = uvs.ToArray();
+            _mesh.subMeshCount = 2;
+            _mesh.SetTriangles(tris, 0);
         }
     }
 }
