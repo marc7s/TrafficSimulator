@@ -54,8 +54,6 @@ namespace POIs
             Vector3 startPos = GetEdgePosition(startNode, sideOffset);
             Vector3 endPos = GetEdgePosition(endNode, sideOffset);
             POINode lastParkingSpot = null;
-
-            //_parkingSpaceEdges.Add(startNode);
             
             // Go through all span nodes, ignoring the smooth edge nodes
             for(int i = 1; i < _spanNodes.Count - 1; i++)
@@ -64,9 +62,6 @@ namespace POIs
 
                 Vector3 newPosition = GetEdgePosition(curr, sideOffset);
                 bool first = lastParkingSpot == null;
-
-                //if(Vector3.Distance(GetEdgePosition(_parkingSpaceEdges[_parkingSpaceEdges.Count - 1], sideOffset), newPosition) >= forwardOffsetDelta)
-                //    _parkingSpaceEdges.Add(curr);
                 
                 if(first || Vector3.Distance(lastParkingSpot.Position, newPosition) >= forwardOffsetDelta)
                 {
@@ -98,8 +93,10 @@ namespace POIs
             while(curr != null)
             {
                 distance += Vector3.Distance(curr.Position, primaryDirection ? curr.Prev.Position : curr.Next.Position);
+                
                 if(_parkingSpaceMap.ContainsKey(curr))
                     return distance;
+                
                 curr = primaryDirection ? curr.Next : curr.Prev;
             }
             return null;
@@ -116,7 +113,6 @@ namespace POIs
             bool parkingStart = true;
             POINode prevParking = _parkingSpots[0];
             bool reachedEndSpot = false;
-            float distance = 0;
             bool primaryDirection = LaneSide == LaneSide.Primary;
             float? distanceToNextParkingSpot = GetDistanceToNextParkingSpot(_spanNodes[1], primaryDirection);
             float distanceToNextParkingSpotOriginal = distanceToNextParkingSpot.Value;
@@ -135,9 +131,9 @@ namespace POIs
                 if((first && _hasStartingSmoothEdge) || (last && _hasEndingSmoothEdge))
                 {
                     verts.Add(roadSide);
-                    float uv = first && primaryDirection ? 1 : 0;
 
-                    uvs.Add(new Vector2(0, uv));
+                    float y = last && parkingStart ? 0 : 1;
+                    uvs.Add(new Vector2(0, y));
                 }
                 else
                 {
@@ -152,20 +148,12 @@ namespace POIs
                     if (distanceToNextParkingSpot != null)
                         forwardUV = distanceToNextParkingSpot.Value / distanceToNextParkingSpotOriginal;
                     
-
-
-
-                    Debug.Log("Distance to next parking spot: " + distanceToNextParkingSpot);
-
-                   // Debug.Log(forwardUV);
                     float uvY;
 
                     if (parkingEdge)
                         uvY = parkingStart ? 0 : 1;
                     else
                         uvY = parkingStart ? forwardUV : 1 - forwardUV;
-           
-
                     
                     if(parkingEdge)
                     {
@@ -180,13 +168,19 @@ namespace POIs
                         }
 
                         distanceToNextParkingSpotOriginal = distanceToNextParkingSpot ?? -1;
-                        //distance = 0;
                     }
 
+                    float distanceSinceLast = Vector3.Distance(Vector3.Lerp(roadSide, outside, 0.5f), prevParking.Position);
+                    float postLastSpotY = Mathf.Clamp01(distanceSinceLast / _parkingSize.y);
+                    float yval = parkingStart && distanceSinceLast < _parkingSize.y ? 1 - postLastSpotY : postLastSpotY;
 
+                    bool isFirstNonSmoothEdge = i == (_hasStartingSmoothEdge ? 1 : 0);
+                    
+                    float y = reachedEndSpot ? yval : uvY;
+                    y = isFirstNonSmoothEdge ? 1 : y;
 
-                    uvs.Add(new Vector2(0, uvY));
-                    uvs.Add(new Vector2(1, uvY));
+                    uvs.Add(new Vector2(0, y));
+                    uvs.Add(new Vector2(1, y));
                 }
             }
 
