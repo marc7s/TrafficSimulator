@@ -10,22 +10,20 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
         ThreeMinutes,
         ThirtySeconds
     }
-
-    private const string DefaultText = "Estimated CO<sub>2</sub>: ";
-    private const string Units = " kg";
-    private TextMeshProUGUI _carbonDioxideEstimateText;
+    [SerializeField] private InfoField _carbonDioxideEstimateField;
     private WorldDataGatherer _worldDataGatherer;
     private CO2DisplayTimeSpan _currentDisplay = CO2DisplayTimeSpan.None;
+    private bool _isSetup = false;
 
     private void Start()
     {
-        _carbonDioxideEstimateText = GetComponent<TextMeshProUGUI>();
         _worldDataGatherer = GameObject.Find("RoadSystem").GetComponent<WorldDataGatherer>();
+        _isSetup = true;
     }
 
     private void DisplayCO2(float co2Amount)
     {
-        _carbonDioxideEstimateText.text = DefaultText + co2Amount.ToString("0.0000") + Units;
+        _carbonDioxideEstimateField.Display(co2Amount, "kg", 3);
     }
     
     public void SetDisplayTimeToNone()
@@ -35,21 +33,36 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
 
     public void DisplayAllTime()
     {
-        if (_currentDisplay == CO2DisplayTimeSpan.AllTime) return;
+        if (_currentDisplay == CO2DisplayTimeSpan.AllTime) 
+            return;
+
+        if(!_isSetup)
+            Start();
+        
         DisplayCO2(_worldDataGatherer.Co2EmissionsAllTime);
         _currentDisplay = CO2DisplayTimeSpan.AllTime;
     }
 
     public void Display3Min()
     {
-        if (_currentDisplay == CO2DisplayTimeSpan.ThreeMinutes) return;
+        if (_currentDisplay == CO2DisplayTimeSpan.ThreeMinutes) 
+            return;
+
+        if(!_isSetup)
+            Start();
+        
         DisplayCO2(_worldDataGatherer.Co2EmissionsLast3Min);
         _currentDisplay = CO2DisplayTimeSpan.ThreeMinutes;
     }
 
     public void Display30Seconds()
     {
-        if (_currentDisplay == CO2DisplayTimeSpan.ThirtySeconds) return;
+        if (_currentDisplay == CO2DisplayTimeSpan.ThirtySeconds) 
+            return;
+
+        if(!_isSetup)
+            Start();
+        
         DisplayCO2(_worldDataGatherer.Co2EmissionsLast30Sec);
         _currentDisplay = CO2DisplayTimeSpan.ThirtySeconds;
     }

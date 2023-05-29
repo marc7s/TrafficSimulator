@@ -10,10 +10,12 @@ using VehicleBrain;
 public class VehicleInfoDisplay : MonoBehaviour
 {
     public AutoDrive vehicleAutoDrive;
-    public TextMeshProUGUI modelNameText;
-    public TextMeshProUGUI roadNameText; 
-    public TextMeshProUGUI activityText; 
-    public TextMeshProUGUI distanceTravelledText; 
+    public FuelConsumption vehicleFuelConsumption;
+    
+    [SerializeField] private InfoField RoadNameField;
+    [SerializeField] private InfoField ActivityField; 
+    [SerializeField] private InfoField TotalDistanceField;
+    [SerializeField] private InfoField FuelAmountField;
     
     private void Start()
     {
@@ -24,7 +26,7 @@ public class VehicleInfoDisplay : MonoBehaviour
     private void Update()
     {
         if(vehicleAutoDrive != null) 
-            UpdateDistanceTravelledText();
+            UpdateTotalDistanceText();
     }
 
     private void ToggledVehicle(Selectable selectable)
@@ -47,11 +49,12 @@ public class VehicleInfoDisplay : MonoBehaviour
                 Unsubscribe(vehicleAutoDrive);
 
             vehicleAutoDrive = selectable.GetComponent<AutoDrive>();
+            vehicleFuelConsumption = selectable.GetComponent<FuelConsumption>();
             Subscribe(vehicleAutoDrive);
 
             UpdateRoadName();
             UpdateActivityText();
-            UpdateModelNameText();
+            UpdateFuelAmountText();
         }
     }
 
@@ -75,36 +78,31 @@ public class VehicleInfoDisplay : MonoBehaviour
 
     private void ClearVehicleInfo()
     {
-        modelNameText.text = "";
-        roadNameText.text = "";
-        distanceTravelledText.text = "";
+        FuelAmountField.Hide();
+        RoadNameField.Hide();
+        TotalDistanceField.Hide();
 
-        // The vehicle selected text is the most centered, so use it temporarily until a vehicle is selected
-        activityText.text = "No vehicle selected";
+        // The vehicle activity text is the most centered, so use it temporarily until a vehicle is selected
+        ActivityField.DisplayNoHeader("No vehicle selected");
     }
 
-    private string Header(string text)
+    private void UpdateFuelAmountText()
     {
-        return $"<b><color=black>{text}: </color></b>";
-    }
-
-    private void UpdateModelNameText()
-    {
-        modelNameText.text = Header("Model") + Regex.Replace(vehicleAutoDrive.gameObject.name, @"\d|\s*\(Clone\)", "");
+        FuelAmountField.Display(vehicleFuelConsumption.CurrentFuelAmount, "L", 1);
     }
     
     private void UpdateActivityText()
     {
-        activityText.text = Header("Activity") + vehicleAutoDrive.GetVehicleActivityDescription();
+        ActivityField.Display(vehicleAutoDrive.GetVehicleActivityDescription());
     }
 
     private void UpdateRoadName()
     {
-        roadNameText.text = Header("Road") + vehicleAutoDrive.Agent.Context.CurrentRoad?.name ?? "N/A";
+        RoadNameField.Display(vehicleAutoDrive.Agent.Context.CurrentRoad?.name ?? "N/A");
     }
 
-    private void UpdateDistanceTravelledText()
+    private void UpdateTotalDistanceText()
     {
-        distanceTravelledText.text = Header("Distance") + (vehicleAutoDrive.TotalDistance / 1000).ToString("0.00") + " km";
+        TotalDistanceField.Display(vehicleAutoDrive.TotalDistance / 1000, "km", 2);
     }
 }
