@@ -14,7 +14,8 @@ namespace Old_UI
         }
         private GraphChartBase _graph;
         private WorldDataGatherer _worldDataGatherer;
-        private TimeSpan _currentGraph = TimeSpan.None; 
+        private TimeSpan _currentGraph = TimeSpan.None;
+        private bool _isSetup = false;
 
         private void Start()
         {
@@ -23,6 +24,8 @@ namespace Old_UI
 
             if (_graph != null)
                 _graph.Scrollable = false;
+
+            _isSetup = true;
         }
         
         public void SetCurrentGraphToNone()
@@ -47,12 +50,16 @@ namespace Old_UI
 
         private void LoadGraph(TimeSpan timeSpan)
         {
+            if(!_isSetup)
+                Start();
+
             int timeSpanInSeconds;
-            if (_currentGraph == timeSpan || timeSpan == TimeSpan.None) return;
-            if (timeSpan == TimeSpan.AllTime)
-                timeSpanInSeconds = _worldDataGatherer.TotalSecondsElapsed;
-            else
-                timeSpanInSeconds = (int) timeSpan;
+            
+            if (_currentGraph == timeSpan || timeSpan == TimeSpan.None) 
+                return;
+            
+            timeSpanInSeconds = timeSpan == TimeSpan.AllTime ? _worldDataGatherer.TotalSecondsElapsed : (int) timeSpan;
+            
             _currentGraph = timeSpan;
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory("Emission");
@@ -62,9 +69,8 @@ namespace Old_UI
             int endIndex = startIndex + timeSpanInSeconds;
 
             for (int i = startIndex; i < endIndex && i < totalSecondsElapsed; i++)
-            {
                 _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
-            }
+
             _graph.DataSource.EndBatch();
         }
     }

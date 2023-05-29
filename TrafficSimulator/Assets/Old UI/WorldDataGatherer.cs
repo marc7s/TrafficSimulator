@@ -3,10 +3,8 @@ using UnityEngine;
 
 public class WorldDataGatherer : MonoBehaviour
 {
-    public int TotalSecondsElapsed;
-    public float TotalFuelConsumed;
-    public float TotalCo2Emissions => TotalFuelConsumed * 2.3f; // co2 per kilogram
-    
+    [HideInInspector] public int TotalSecondsElapsed;
+    [HideInInspector] public float TotalFuelConsumed;
 
     // This would require the streaming graph which the project had not obtained at the time of writing the code
     // to implement for real. Set one hour to represent all time;
@@ -21,12 +19,15 @@ public class WorldDataGatherer : MonoBehaviour
     
     // Buffer size to store fuel consumption for the hour.
     private const int BufferSize = 3600; 
+    
     // Circular buffer to store fuel consumption. 
-    public float[] FuelConsumedPerSecondHistory = new float[BufferSize]; 
+    [HideInInspector] public float[] FuelConsumedPerSecondHistory = new float[BufferSize]; 
     private int _bufferIndex = 0; 
 
     private float _fuelConsumedThisSecond = 0;
     private float _timeElapsedThisSecond = 0;
+
+    public float TotalCo2Emissions => TotalFuelConsumed * 2.3f; // co2 per kilogram
     
     public void AddFuelConsumed(float fuelConsumed)
     {
