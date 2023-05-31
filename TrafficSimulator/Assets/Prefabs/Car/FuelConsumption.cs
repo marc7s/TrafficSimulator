@@ -28,8 +28,9 @@ namespace VehicleBrain {
         private VehicleController _vehicleController;
         private Rigidbody _rigidbody;
         public float _maxFuelCapacity = 60; // L
-        public double _totalFuelConsumed = 0;
+        public float _totalFuelConsumed = 0;
         public float FuelConsumedSinceLastFrame = 0;
+        public float CurrentFuelAmount = 0;
         private Vector3 _lastPosition = Vector3.zero;
 
         // Vehicle specific values used in the fuel consumption calculation
@@ -60,6 +61,7 @@ namespace VehicleBrain {
         // Update is called once per frame
         void Update()
         {
+            FuelConsumedSinceLastFrame = 0;
             if (_fuelMode == FuelMode.Realistic)
             {
                 Q_CalculateResistance();
@@ -76,6 +78,7 @@ namespace VehicleBrain {
         {
             _lastSpeed = _vehicleController.speed;
             _lastPosition = transform.position;
+            CurrentFuelAmount = Mathf.Clamp(_maxFuelCapacity - _totalFuelConsumed, 0, float.MaxValue);
         }
 
         // Calculate the fuel consumed since last frame and add it to the total fuel consumed
