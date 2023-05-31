@@ -59,7 +59,6 @@ namespace UI
         private const string FPS_COUNTER = "FPSCounter";
         private const string FULLSCREEN = "Fullscreen";
 
-
         void Awake()
         {
             _doc = GetComponent<UIDocument>();
