@@ -1,4 +1,5 @@
 //#define DEBUG_INTERSECTION
+//#define DEBUG_INTERSECTION_NAVIGATION
 
 using UnityEngine;
 using System.Collections.Generic;
@@ -71,7 +72,8 @@ namespace RoadGenerator
 
         public YieldType YieldType
         {
-            get {
+            get
+            {
                 switch(FlowType)
                 {
                     case FlowType.TrafficLights:
@@ -235,7 +237,6 @@ namespace RoadGenerator
 #endif           
 
             // The mesh code is based on the vertice layout found at TrafficSimulator/Assets/RoadGenerator/Documentation/IntersectionMeshGeneration   
-
             List<Vector3> verts = new List<Vector3>();
             List<Vector2> uvs = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();
@@ -266,6 +267,7 @@ namespace RoadGenerator
      
                 // Find one of the side arms
                 IntersectionArm sideArm = null;
+                
                 foreach(IntersectionArm intersectionArm in IntersectionArms)
                 {
                     if (intersectionArm != bottomArm)
@@ -852,6 +854,16 @@ namespace RoadGenerator
                     _intersectionGuidePaths.Add((entrySection.JunctionNode.ID, exitSection.JunctionNode.ID), CreateGuidePath(entrySection, exitSection, GetYieldToNodes(entrySection, exitSection), GetYieldToBlockingNodes(entrySection, exitSection)));
                 }
             }
+
+#if DEBUG_INTERSECTION_NAVIGATION
+            Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
+            foreach(GuideNode guidePath in _intersectionGuidePaths.Values)
+            {
+                groups.Add(guidePath.ID, (guidePath.GetPositions().ToArray(), guidePath.GetRotations(), new Vector3[]{}));
+            }
+
+            DebugUtility.AddMarkGroups(groups);
+#endif
         }
 
         /// <summary> Get a list of all nodes a path going between these sections needs to yield to </summary>
