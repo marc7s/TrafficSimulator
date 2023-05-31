@@ -127,6 +127,7 @@ namespace UI
                     GreyOutButton(_followCameraButton);
                 }
             };
+            
             _cameraManager.OnCameraChanged += type =>
             {
                 // Reset all camera buttons to normal state
@@ -151,6 +152,7 @@ namespace UI
                         break;
                 }
             };
+            
             // Set the default camera button to highlighted
             HighlightCameraButton(_freecamCameraButton);
             ActivateCarSpawner();
