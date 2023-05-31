@@ -857,10 +857,9 @@ namespace RoadGenerator
 
 #if DEBUG_INTERSECTION_NAVIGATION
             Dictionary<string, (Vector3[], Quaternion[], Vector3[])> groups = new Dictionary<string, (Vector3[], Quaternion[], Vector3[])>();
+            
             foreach(GuideNode guidePath in _intersectionGuidePaths.Values)
-            {
                 groups.Add(guidePath.ID, (guidePath.GetPositions().ToArray(), guidePath.GetRotations(), new Vector3[]{}));
-            }
 
             DebugUtility.AddMarkGroups(groups);
 #endif
