@@ -80,16 +80,13 @@ namespace RoadGenerator
 
         public struct SpawnableLaneNode
         {
-            private float _distance;
-            private LaneNode _node;
-
-            public float Distance { get => _distance; set => _distance = value; }
-            public LaneNode Node { get => _node; set => _node = value; }
+            public float Distance;
+            public LaneNode Node;
 
             public SpawnableLaneNode(float distance, LaneNode node)
             {
-                _distance = distance;
-                _node = node;
+                Distance = distance;
+                Node = node;
             }
         }
 
@@ -353,6 +350,7 @@ namespace RoadGenerator
 
             bool isThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
 
+            // Check if the node is an intersection, a junction edge, has a vehicle, is null, is the last node in the lane or is a navigation node
             return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !isThreeWayIntersection && !node.RoadNode.IsNavigationNode;
         }
 
