@@ -120,14 +120,29 @@ namespace RoadGenerator
             _overlayController = FindObjectOfType<OverlayController>();
 
             // Subscribe to start event
-            //_overlayController.OnSimulationStart += SimulationStartHandler;
+            _overlayController.OnSimulationStart += SimulationStartHandler;
+            _overlayController.OnSimulationStop += SimulationStopHandler;
         }
 
-        private void Start()
+        private void SimulationStartHandler()
+        {
+            Debug.LogError("Simulation started");
+            Setup();
+            MenuStart(_overlayController.CarsToSpawn);
+        }
+
+        private void SimulationStopHandler()
+        {
+            Debug.LogError("Simulation stopped");
+            RemoveCars();
+        }
+
+
+        private void Setup()
         {
             _vehicleTypes = _randomVehicleTypes ? new List<GameObject>(){ _sedanPrefab, _sportsCar1Prefab, _sportsCar2Prefab, _suv1Prefab, _suv2Prefab, _van1Prefab, _van2Prefab } : new List<GameObject>(){ _sedanPrefab };
 
-            _carLength = GetLongestCarLength(_vehicleTypes);
+            _carLength = GetLongestCarLength(_vehicleTypes) + 1f;
 
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
             _roadSystem.Setup();
@@ -137,23 +152,13 @@ namespace RoadGenerator
             AddLanesToList();
             CalculateLaneIndexes();
             CalculateMaxCarsForLanes();
-
         }
 
-        private void SimulationStartHandler()
+        private void MenuStart(int totalCars)
         {
-            Debug.Log("Simulation started");
-            //Starter();
-            MenuStart(_overlayController.CarsToSpawn);
-        }
-
-        private void MenuStart(int totalCars = 100)
-        {
-            RemoveCars();
-
             TotalCars = totalCars;
             _mode = SpawnMode.Total;
-            Setup();
+            Run();
         }
 
         private void RemoveCars()
@@ -166,19 +171,21 @@ namespace RoadGenerator
             }
         }
 
-        public void Setup()
+        public void Run()
         {
             if (!_spawned)
             {
                 _spawned = true;
                 SpawnCars();
-                Debug.Log("Total cars spawned: " + _carCounter);
+                Debug.LogError("Total cars spawned: " + _carCounter);
             }
             else
+            {
                 Debug.Log("Cars already spawned");
+            }
         }
 
-        
+        /*
         void Update()
         {
             if (!_spawned)
@@ -191,8 +198,8 @@ namespace RoadGenerator
                 }
             }
         }
+        */
         
-
         private float GetLongestCarLength(List<GameObject> cars)
         {
             float longestCarLength = 0;
@@ -240,7 +247,7 @@ namespace RoadGenerator
                 maxCars += carsInLane.Count;
             }
 
-            Debug.Log("Max cars: " + maxCars);
+            Debug.LogError("Max cars: " + maxCars);
         }
 
         /// <summary>Remove 1 capacity from each lane until there are no cars left or no lanes left </summary>

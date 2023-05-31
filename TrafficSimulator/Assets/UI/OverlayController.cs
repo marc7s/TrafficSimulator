@@ -51,6 +51,7 @@ namespace UI
         public int CarsToSpawn => _carsToSpawn;
 
         public Action OnSimulationStart;
+        public Action OnSimulationStop;
 
         
         void Awake()
@@ -159,6 +160,11 @@ namespace UI
         {
             OnSimulationStart?.Invoke();
         }
+
+        private void DeactivateCarSpawner()
+        {
+            OnSimulationStop?.Invoke();
+        }
         
         private void FindCameraManager()
         {
@@ -208,6 +214,7 @@ namespace UI
         private void MenuButtonOnClicked()
         {
             PlayClickSound();
+            DeactivateCarSpawner();
             _doc.rootVisualElement.visible = false;
             SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
         }
