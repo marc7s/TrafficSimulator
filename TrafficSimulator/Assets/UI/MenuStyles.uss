@@ -23,7 +23,7 @@
 }
 
 .unity-progress-bar__progress {
-    background-color: Blue;
+    background-color: blue;
 }
 
 .unity-progress-bar__container {
@@ -35,7 +35,7 @@
 .unity-progress-bar__background {
     width: 400px;
     height: 50px;
-    background-color: Black;
+    background-color: black;
 }
 
 .unity-progress-bar {
