@@ -5,5 +5,5 @@ Latest version of the [documentation](https://github.com/marc7s/Traffic-Simulato
 
 # How to build
 1. Open the build settings through `File -> Build Settings`
-2. Select the `StartMenu` scene as index 0 in the build settings, then add the scene to build as index 1
+2. Select the `StartMenu` scene as index 0 in the build settings, then add all the scenes for the scene selector to the list
 3. Run `Build` or `Build And Run`
