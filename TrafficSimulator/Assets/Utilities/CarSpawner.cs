@@ -110,10 +110,11 @@ namespace RoadGenerator
 
         void Awake()
         {
-            if (GameObject.Find("CarContainer") == null)
+            GameObject carContainer = GameObject.Find("CarContainer");
+            if (carContainer == null)
                 _carContainer = new GameObject("CarContainer");
             else
-                _carContainer = GameObject.Find("CarContainer");
+                _carContainer = carContainer;
             
             _carContainer.transform.parent = transform;
 
