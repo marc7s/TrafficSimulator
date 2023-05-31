@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using System.Text.RegularExpressions;
+using System;
 
 namespace UI
 {
@@ -36,6 +37,16 @@ namespace UI
         private VisualElement _loadingScreenContainer;
         private ProgressBar _loadingBar;
 
+        // Scene Selection UI
+        private VisualElement _sceneSelectionContainer;
+        private VisualElement _currentSceneContainer;
+        [SerializeField] private VisualTreeAsset _sceneSelectionUI;
+        [SerializeField] private VisualTreeAsset _sceneTemplate;
+        private Button _sceneSelectionButton;
+        private Button _sceneSelectionBackButton;
+        private SceneLoader.SceneInfo _currentSceneInfo;
+        private VisualElement _currentSceneElement;
+
         // Car Spawner Input
         private TextField _carSpawnerInput;
         private string _carSpawnerInputText = "";
@@ -59,7 +70,7 @@ namespace UI
             _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("MenuDisplay");
 
             // Start Menu UI
-            _startMenuContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuButtons");
+            _startMenuContainer = _doc.rootVisualElement.Q<VisualElement>("StartMenuContainer");
 
             _startButton = _doc.rootVisualElement.Q<Button>("StartButton");
             _startButton.clicked += StartButtonOnClicked;
@@ -106,20 +117,57 @@ namespace UI
             _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
             SetFPSVisibility(_showFPS);
             _clickSound.volume = PlayerPrefs.GetFloat("MasterVolume");
-            _masterVolumeSlider.value = PlayerPrefs.GetFloat("MasterVolume")*100;
+            _masterVolumeSlider.value = PlayerPrefs.GetFloat("MasterVolume") * 100;
+
+            // Load scenes
+            _sceneSelectionContainer = _sceneSelectionUI.CloneTree();
+            
+            // Add the current scene container to the start menu
+            _currentSceneContainer = _startMenuContainer.Q<VisualElement>("SelectedScene");
+            _currentSceneElement = _sceneTemplate.CloneTree();
+            _currentSceneContainer.Add(_currentSceneElement);
+
+            // Connect the scene selection button
+            _sceneSelectionButton = _doc.rootVisualElement.Q<Button>("SceneSelectionButton");
+            _sceneSelectionButton.clicked += SceneSelectionButtonOnClicked;
+
+            // Connect the scene selection back button
+            _sceneSelectionBackButton = _sceneSelectionContainer.Q<Button>("BackButton");
+            _sceneSelectionBackButton.clicked += SceneSelectionBackButtonOnClicked;
+            
+            // Load the scenes and connect the callback when a scene is switched
+            SceneLoader.LoadScenes(_sceneSelectionContainer, _sceneTemplate);
+            SceneLoader.OnSceneSwitch += ChangeSelectedScene;
+            
+            // Load the default scene
+            Action onClick = () => SceneSelectionButtonOnClicked();
+            SceneLoader.SetSceneInfo(ref _currentSceneElement, SceneLoader.DefaultScene, onClick);
+            _currentSceneInfo = SceneLoader.DefaultScene;
+        }
+
+        private void ChangeSelectedScene(SceneLoader.SceneInfo sceneInfo)
+        {
+            _currentSceneInfo = sceneInfo;
+
+            // Add an onclick event to the scene, so clicking the current scene takes you to the scene selection menu
+            Action onClick = () => SceneSelectionButtonOnClicked();
+            SceneLoader.SetSceneInfo(ref _currentSceneElement, _currentSceneInfo, onClick);
+            
+            // Go back to the start menu
+            SceneSelectionBackButtonOnClicked();
         }
 
         // Hide Menu UI and activate Overlay UI
         private void StartButtonOnClicked()
         {
             PlayClickSound();
+            
             if (_carSpawnerInput.text.Equals("Number of cars to simulate..."))
-            {
                 return;
-            }
+            
             PlayerPrefs.SetInt("CarsToSpawn", int.Parse(_carSpawnerInput.text));
             // ------------------------------------- TODO CHANGE TO GAME SCENE ------------------------------------- //
-            StartCoroutine(LoadSceneAsync((SceneManager.GetActiveScene().buildIndex + 1)));
+            StartCoroutine(LoadSceneAsync("Scenes/Build/" + _currentSceneInfo.SceneName));
         }
 
         private void SettingsButtonOnClicked()
@@ -130,6 +178,17 @@ namespace UI
             _displayedContainer.Add(_settingsContainer);
             
             _fpsToggle.value = PlayerPrefsGetBool(FPS_COUNTER);
+            
+            _fullscreenToggle.value = Screen.fullScreen;
+        }
+
+        private void SceneSelectionButtonOnClicked()
+        {
+            PlayClickSound();
+            
+            // Clear the displayed container and add the scene selection UI
+            _displayedContainer.Clear();
+            _displayedContainer.Add(_sceneSelectionContainer);
             
             _fullscreenToggle.value = Screen.fullScreen;
         }
@@ -174,6 +233,15 @@ namespace UI
         private void SettingsBackButtonOnClicked()
         {
             PlayClickSound();
+            // Clear the displayed container and add the start menu UI
+            _displayedContainer.Clear();
+            _displayedContainer.Add(_startMenuContainer);
+        }
+
+        private void SceneSelectionBackButtonOnClicked()
+        {
+            PlayClickSound();
+            
             // Clear the displayed container and add the start menu UI
             _displayedContainer.Clear();
             _displayedContainer.Add(_startMenuContainer);
@@ -250,20 +318,20 @@ namespace UI
                 DisplayFPS(1f / Time.unscaledDeltaTime);
         }
 
-        IEnumerator LoadSceneAsync(int sceneIndex)
+        IEnumerator LoadSceneAsync(string sceneName)
         {
             // Empty root VisualElement and add loading UI
             _displayedContainer.Clear();
             _displayedContainer.Add(_loadingScreenContainer);
 
-            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneIndex, LoadSceneMode.Single);
+            AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
 
             while (!asyncLoad.isDone)
             {
-                float progress = Mathf.Clamp01(asyncLoad.progress)*100;
+                float progress = Mathf.Clamp01(asyncLoad.progress) * 100;
                 
                 _loadingBar.value = progress;
-                _loadingBar.title = (progress) + "%";
+                _loadingBar.title = progress + "%";
 
                 yield return null;
             }

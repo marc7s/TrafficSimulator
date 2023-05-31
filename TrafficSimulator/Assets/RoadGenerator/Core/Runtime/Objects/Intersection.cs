@@ -121,7 +121,7 @@ namespace RoadGenerator
 
         private Mesh _mesh;
         [SerializeField][HideInInspector] private GameObject _guideNodeContainer;
-        [HideInInspector] public const float DefaultIntersectionLength = 20f;
+        [HideInInspector] public const float DefaultIntersectionLength = 15f;
         [ReadOnly] public float IntersectionLength = DefaultIntersectionLength;
         [HideInInspector] public const float IntersectionBoundsLengthMultiplier = 1.2f;
         private const string GUIDE_NODE_CONTAINER_NAME = "Guide Nodes";

@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="SceneContainer" style="width: 100px; height: 120px;">
+        <ui:Button display-tooltip-when-elided="true" name="Scene" style="border-left-color: rgb(255, 255, 255); border-right-color: rgb(255, 255, 255); border-top-color: rgb(255, 255, 255); border-bottom-color: rgb(255, 255, 255); border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; width: auto; height: auto; background-color: rgba(88, 88, 88, 0); justify-content: center; flex-shrink: 1; cursor: initial;">
+            <ui:VisualElement name="SceneIcon" style="border-left-color: rgb(0, 255, 9); border-right-color: rgb(0, 255, 9); border-top-color: rgb(0, 255, 9); border-bottom-color: rgb(0, 255, 9); height: 100px; -unity-background-scale-mode: scale-and-crop;" />
+            <ui:VisualElement name="SceneName" style="height: 20px; -unity-text-align: upper-center; justify-content: center; align-items: center;">
+                <ui:Label text="Scene Name" display-tooltip-when-elided="true" name="Name" style="color: rgb(255, 255, 255); font-size: 10px; -unity-text-align: middle-center;" />
+            </ui:VisualElement>
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>

@@ -24,6 +24,7 @@ namespace RoadGenerator
         Service,
         Building,
         Terrain,
+        RaceWay,
         Unclassified
     }
 
@@ -113,10 +114,10 @@ namespace RoadGenerator
         private Dictionary<Vector3, bool> _trafficLightAtJunction = new Dictionary<Vector3, bool>();
         private List<XmlNode> _busStops = new List<XmlNode>();
         private List<XmlNode> _trees = new List<XmlNode>();
-        private double _minLat = 0;
-        private double _minLon = 0;
-        private double _maxLat = 0;
-        private double _maxLon = 0;
+        private float _minLat = 0;
+        private float _minLon = 0;
+        private float _maxLat = 0;
+        private float _maxLon = 0;
         private Terrain _terrain;
         private List<TerrainArea> _terrainAreas = new List<TerrainArea>();
 
@@ -144,10 +145,10 @@ namespace RoadGenerator
                 switch(node.Name)
                 {
                     case "bounds":
-                        _minLat = double.Parse(node.Attributes["minlat"].Value.Replace(".", ","));
-                        _minLon = double.Parse(node.Attributes["minlon"].Value.Replace(".", ","));
-                        _maxLat = double.Parse(node.Attributes["maxlat"].Value.Replace(".", ","));
-                        _maxLon = double.Parse(node.Attributes["maxlon"].Value.Replace(".", ","));
+                        _minLat = float.Parse(node.Attributes["minlat"].Value.Replace(".", ","));
+                        _minLon = float.Parse(node.Attributes["minlon"].Value.Replace(".", ","));
+                        _maxLat = float.Parse(node.Attributes["maxlat"].Value.Replace(".", ","));
+                        _maxLon = float.Parse(node.Attributes["maxlon"].Value.Replace(".", ","));
                         break;
                     case "node":
                         if (!_nodesDict.ContainsKey(node.Attributes["id"].Value))
@@ -284,6 +285,9 @@ namespace RoadGenerator
 
         public bool IsPointInPolygon(Vector2 point, Vector2[] polygon)
         {
+            if (polygon == null || polygon.Length < 3)
+                return false;
+
             int polygonLength = polygon.Length;
             int i = 0;
             bool inside = false;
@@ -329,7 +333,7 @@ namespace RoadGenerator
             terrainData.size = maxSize;
             _terrain.gameObject.SetActive(true);
             _terrain.gameObject.transform.position = new Vector3(0, -10.01f, 0);
-            float baseheight = 10;
+            float baseHeight = 10;
 
             int res = terrainData.heightmapResolution;
             float[,] heights = terrainData.GetHeights(0, 0, res, res);
@@ -339,10 +343,9 @@ namespace RoadGenerator
             {
                 for (int y = 0; y < res; y++)
                 {
-                    Vector3 basePos = LatLonToPosition(_minLat, _minLon);
-                    Vector2 basPos2D = new Vector2(basePos.x, basePos.z);
+                    Vector2 basPos2D = Vector2.zero;
                     Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / res, y * terrainData.size.z / res);
-                    heights[y, x] = heights[y, x] = baseheight;
+                    heights[y, x] = baseHeight;
                     bool isInsideInnerArea = false;
 
                     foreach (TerrainArea terrainBounds in _terrainAreas)
@@ -359,8 +362,8 @@ namespace RoadGenerator
                                 // The terrain point is inside the terrain type area
                                 if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
                                 {
-                                    //isInsideInnerArea = true;
-                                   // break;
+                                    isInsideInnerArea = true;
+                                    break;
                                 }
                             }
 
@@ -380,10 +383,8 @@ namespace RoadGenerator
             {
                 for (int x = 0; x < terrainData.alphamapWidth; x++)
                 {
-                    Vector3 basePos = LatLonToPosition(_minLat, _minLon);
-                    Vector2 basePos2D = new Vector2(basePos.x, basePos.z);
+                    Vector2 basePos2D = Vector2.zero;
                     Vector2 terrainPosition =  basePos2D + new Vector2(x * terrainData.size.x / terrainData.alphamapWidth, y * terrainData.size.z / terrainData.alphamapHeight);
-
                     // Setup an array to record the mix of texture weights at this point
                     float[] splatWeights = new float[terrainData.alphamapLayers];
 
@@ -406,7 +407,6 @@ namespace RoadGenerator
 
                             if (isInsideInnerArea)
                                 break;
-
 
                             if (terrainBounds.TerrainType == TerrainType.Grass)
                                 splatWeights[(int)TerrainType.Grass] = 1f;
@@ -759,6 +759,8 @@ namespace RoadGenerator
                     return WayType.Path;
                 case "unclassified":
                     return WayType.Unclassified;
+                case "raceway":
+                    return WayType.RaceWay;
                 default:
                     return null;
             }
@@ -811,7 +813,7 @@ namespace RoadGenerator
                 return;
             }
 
-            if (wayData.Name == null && wayData.WayType != WayType.RailTram)
+            if (wayData.Name == null && wayData.WayType != WayType.RailTram && wayData.WayType != WayType.RaceWay)
                 return;
 
             if (wayData.WayType == WayType.RailTram)
@@ -842,6 +844,9 @@ namespace RoadGenerator
                 road.IsOneWay = true;
                 road.LaneWidth /= 2;
             }
+
+            if (wayData.WayType == WayType.RaceWay)
+                road.LaneWidth = 5;
 
             if (wayData.ParkingType != null && wayData.ParkingType != ParkingType.None)
             {
@@ -907,13 +912,12 @@ namespace RoadGenerator
 
         private Vector3 GetNodePosition(XmlNode node)
         {
-            const int LatLonToMeterRatio = 111000;
-
             try
             {
-                float xPos = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")) - _minLon) * LatLonToMeterRatio;
-                float zPos = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")) - _minLat) * LatLonToMeterRatio;
-                return new Vector3(xPos, 0, zPos);
+                float lat = (float)(double.Parse(node.Attributes["lat"].Value.Replace(".", ",")));
+                float lon = (float)(double.Parse(node.Attributes["lon"].Value.Replace(".", ",")));
+
+                return LatLonToPosition(lat, lon);
             }
             catch
             {
@@ -922,15 +926,40 @@ namespace RoadGenerator
             }
         }
 
-        private Vector3 LatLonToPosition(double lat, double lon)
+        /// <summary> Calculates the distance between two lat lon points using the Haversine formula </summary>
+        private static double Haversine(double lat1, double lat2, double lon1, double lon2)
         {
-            const int LatLonToMeterRatio = 111000;
-            float xPos = (float)(lon - _minLon) * LatLonToMeterRatio;
-            float zPos = (float)(lat - _minLat) * LatLonToMeterRatio;
+            const float degToRad = Mathf.PI / 180;
+            lat1 *= degToRad;
+            lat2 *= degToRad;
+            lon1 *= degToRad;
+            lon2 *= degToRad;
 
-            return new Vector3(xPos, 0, zPos);
+            const int earthRadius = 6378100;
+                    
+            double sdlat = Math.Sin((lat2 - lat1) / 2);
+            double sdlon = Math.Sin((lon2 - lon1) / 2);
+            double q = sdlat * sdlat + Math.Cos(lat1) * Math.Cos(lat2) * sdlon * sdlon;
+            double d = 2 * earthRadius * Math.Asin(Math.Sqrt(q));
+
+            return d;
         }
 
+        private Vector3 LatLonToPosition(float lat, float lon)
+        {
+            float x = (float)Haversine((double)lat, (double)lat, (double)_minLon, (double)lon);
+            float z = (float)Haversine((double)_minLat, (double)lat, (double)lon, (double)lon);
+
+            // If the lat is less than the min lat, the x value should be negative
+            if (lon < _minLon)
+                x *= -1;
+            
+            // If the lon is less than the min lon, the z value should be negative
+            if (lat < _minLat)
+                z *= -1;
+
+            return new Vector3(x, 0, z);
+        }
 
         void GenerateBuilding(IEnumerator ienum, WayData wayData)
         {
