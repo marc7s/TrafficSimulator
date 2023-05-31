@@ -1106,12 +1106,11 @@ namespace VehicleBrain
         private void P_MoveTowardsTargetNode()
         {
             float lerpTime = P_GetLerpTime();
-            lerpTime = Mathf.Clamp(lerpTime, 0, 1);
             Vector3 targetPosition = P_GetLerpPosition(lerpTime);
             Quaternion targetRotation = P_GetLerpQuaternion(lerpTime);
 
 
-            transform.position += Vector3.forward * Time.deltaTime * 0.3f;
+            transform.position = targetPosition;
             transform.rotation = targetRotation;
         }
 

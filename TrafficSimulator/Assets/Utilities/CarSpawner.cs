@@ -73,9 +73,9 @@ namespace RoadGenerator
 
         private bool _spawned = false;
 
-        private List<CarsForLane> spawnableLanes = new List<CarsForLane>();
+        private List<CarsForLane> _spawnableLanes = new List<CarsForLane>();
 
-        // Create a empty gameobject to hold all cars
+        // Create an empty Gameobject to hold all vehicles
         private GameObject _carContainer;
 
         public struct SpawnableLaneNode
@@ -113,27 +113,36 @@ namespace RoadGenerator
 
         void Awake()
         {
-            _carContainer = new GameObject("CarContainer");
+            if (GameObject.Find("CarContainer") == null)
+                _carContainer = new GameObject("CarContainer");
+            else
+                _carContainer = GameObject.Find("CarContainer");
+            
             _carContainer.transform.parent = transform;
 
-            // Get ui controllers
-            _overlayController = FindObjectOfType<OverlayController>();
+            // Get Overlay Controller
+            if (FindObjectOfType<OverlayController>() != null)
+            {
+                _overlayController = FindObjectOfType<OverlayController>();
 
-            // Subscribe to start event
-            _overlayController.OnSimulationStart += SimulationStartHandler;
-            _overlayController.OnSimulationStop += SimulationStopHandler;
+                // Subscribe to start event
+                _overlayController.OnSimulationStart += SimulationStartHandler;
+                _overlayController.OnSimulationStop += SimulationStopHandler;
+            }
+            else
+            {
+                Debug.LogError("No Overlay Controller found in scene");
+            }
         }
 
         private void SimulationStartHandler()
         {
-            Debug.LogError("Simulation started");
             Setup();
             MenuStart(_overlayController.CarsToSpawn);
         }
 
         private void SimulationStopHandler()
         {
-            Debug.LogError("Simulation stopped");
             RemoveCars();
         }
 
@@ -167,6 +176,7 @@ namespace RoadGenerator
             {
                 foreach (Transform child in _carContainer.transform)
                     Destroy(child.gameObject);
+                
                 _spawned = false;
             }
         }
@@ -177,28 +187,12 @@ namespace RoadGenerator
             {
                 _spawned = true;
                 SpawnCars();
-                Debug.LogError("Total cars spawned: " + _carCounter);
             }
             else
             {
                 Debug.Log("Cars already spawned");
             }
         }
-
-        /*
-        void Update()
-        {
-            if (!_spawned)
-            {
-                if (Time.time > SpawnDelay)
-                {
-                    _spawned = true;
-                    SpawnCars();
-                    Debug.Log("Total cars spawned: " + _carCounter);
-                }
-            }
-        }
-        */
         
         private float GetLongestCarLength(List<GameObject> cars)
         {
@@ -236,24 +230,22 @@ namespace RoadGenerator
         /// <summary>Calculate the maximum amount of vehicles per lane </summary>
         private void CalculateMaxCarsForLanes()
         {
-            spawnableLanes.Clear();
+            _spawnableLanes.Clear();
 
             int maxCars = 0;
             for (int i = 0; i < _lanes.Count; i++)
             {
                 List<SpawnableLaneNode> carsInLane = GetSpawnableLaneNodesInLane(_lanes[i]);
-                spawnableLanes.Add(new CarsForLane(_lanes[i], carsInLane));
+                _spawnableLanes.Add(new CarsForLane(_lanes[i], carsInLane));
                 
                 maxCars += carsInLane.Count;
             }
-
-            Debug.LogError("Max cars: " + maxCars);
         }
 
         /// <summary>Remove 1 capacity from each lane until there are no cars left or no lanes left </summary>
         private List<CarsForLane> T_CalculateCarsPerLane(int carCount)
         {
-            List<CarsForLane> availableLanes = new List<CarsForLane>(spawnableLanes);
+            List<CarsForLane> availableLanes = new List<CarsForLane>(_spawnableLanes);
             List<CarsForLane> fullLanes = new List<CarsForLane>();
 
             while (carCount >= 1 && availableLanes.Count > 0)
@@ -286,7 +278,7 @@ namespace RoadGenerator
         private List<CarsForLane> R_CalculateCarsPerLane()
         {
             int carCount = 0;
-            List<CarsForLane> availableLanes = new List<CarsForLane>(spawnableLanes);
+            List<CarsForLane> availableLanes = new List<CarsForLane>(_spawnableLanes);
 
             foreach (CarsForLane lane in availableLanes)
                 carCount += Mathf.CeilToInt(lane.Capacity * LaneCarRatio);
@@ -314,7 +306,7 @@ namespace RoadGenerator
                 {
                     distance += curr.DistanceToPrevNode;
                     spawnableNodes.Add(new SpawnableLaneNode(distance, curr));
-                    curr = CalculateNextNode(curr, ((_carLength / 2) + offset));
+                    curr = CalculateNextNode(curr, _carLength / 2 + offset);
                 }
                 else
                 {
@@ -332,10 +324,7 @@ namespace RoadGenerator
 
             // Return if there are no cars to spawn
             if (carsToSpawn == 0)
-            {
-                Debug.Log("No cars to spawn");
                 return;
-            }
 
             // Calculate cars to spawn per lane
             List<CarsForLane> allLanes = _mode == SpawnMode.Total ? T_CalculateCarsPerLane(carsToSpawn) : R_CalculateCarsPerLane();
@@ -361,21 +350,18 @@ namespace RoadGenerator
         {
             if(node == null)
                 return false;
-                
-            bool isThreeWayIntersection = true;
-            bool temp = false;
 
-            isThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
-            temp = !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !isThreeWayIntersection && !node.RoadNode.IsNavigationNode;
+            bool isThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
 
-            return temp;
+            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !isThreeWayIntersection && !node.RoadNode.IsNavigationNode;
         }
 
         /// <summary>Spawns a car at the current lane node</summary>
         private void SpawnCar(int index)
         {
             _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-            // Make CarContainer parent
+            
+            // Add the car to the container
             _currentCar.transform.parent = _carContainer.transform;
 
             AutoDrive autoDrive = _currentCar.GetComponent<AutoDrive>();
@@ -415,7 +401,7 @@ namespace RoadGenerator
             LaneNode curr = startNode.Next;
             float currentLength = 0;
             
-            while(curr != null && ((curr.Type == RoadNodeType.JunctionEdge || curr.IsIntersection()) || currentLength < targetLength))
+            while(curr != null && (curr.Type == RoadNodeType.JunctionEdge || curr.IsIntersection() || currentLength < targetLength))
             {
                 currentLength += curr.DistanceToPrevNode;
                 curr = curr.Next;

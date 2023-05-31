@@ -75,7 +75,6 @@ namespace User
         
         private void Awake()
         {
-            return;
             applicationIsQuitting = false;
             InitializeSingletonInstance();
             _mainCamera = Camera.main;
