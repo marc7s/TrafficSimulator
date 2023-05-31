@@ -21,6 +21,12 @@ namespace RoadGenerator
         Path
     }
 
+    public enum StartMode
+    {
+        UI,
+        Delay
+    }
+
     public class CarSpawner : MonoBehaviour
     {
         [Header("Connections")]
@@ -72,6 +78,7 @@ namespace RoadGenerator
         private float _carLength;
 
         private bool _spawned = false;
+        private StartMode _startMode = StartMode.UI;
 
         private List<CarsForLane> _spawnableLanes = new List<CarsForLane>();
 
@@ -111,6 +118,7 @@ namespace RoadGenerator
         void Awake()
         {
             GameObject carContainer = GameObject.Find("CarContainer");
+            
             if (carContainer == null)
                 _carContainer = new GameObject("CarContainer");
             else
@@ -119,18 +127,31 @@ namespace RoadGenerator
             _carContainer.transform.parent = transform;
 
             // Get Overlay Controller
-            if (FindObjectOfType<OverlayController>() != null)
-            {
-                _overlayController = FindObjectOfType<OverlayController>();
+            _overlayController = FindObjectOfType<OverlayController>();
 
+            // Set the start mode depending on if the UI start menu is available
+            if (_overlayController != null && FindObjectOfType<MenuController>() != null)
+            {
                 // Subscribe to start event
                 _overlayController.OnSimulationStart += SimulationStartHandler;
                 _overlayController.OnSimulationStop += SimulationStopHandler;
+
+                _startMode = StartMode.UI;
             }
             else
             {
-                Debug.LogError("No Overlay Controller found in scene");
+                Setup();
+                _startMode = StartMode.Delay;
             }
+        }
+
+        void Update()
+        {
+            if(_startMode != StartMode.Delay || _spawned)
+                return;
+            
+            if (Time.time > SpawnDelay)
+                Run();
         }
 
         private void SimulationStartHandler()
@@ -341,6 +362,8 @@ namespace RoadGenerator
                     _carCounter++;
                 }
             }
+
+            Debug.Log($"Spawned {_carCounter} cars");
         }
 
         /// <summary>Checks multiple conditions to determine if a car is able to spawn on node</summary>
