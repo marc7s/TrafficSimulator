@@ -926,20 +926,21 @@ namespace RoadGenerator
             }
         }
 
+        // Calculates the distance between two lat lon points using the Haversine formula
         private static double Haversine(double lat1, double lat2, double lon1, double lon2)
         {
-            float defToRad = Mathf.PI / 180;
-            lat1 *= defToRad;
-            lat2 *= defToRad;
-            lon1 *= defToRad;
-            lon2 *= defToRad;
+            float degToRad = Mathf.PI / 180;
+            lat1 *= degToRad;
+            lat2 *= degToRad;
+            lon1 *= degToRad;
+            lon2 *= degToRad;
 
-            const double r = 6378100; // meters
+            const double earthRadius = 6378100;
                     
             var sdlat = Math.Sin((lat2 - lat1) / 2);
             var sdlon = Math.Sin((lon2 - lon1) / 2);
             var q = sdlat * sdlat + Math.Cos(lat1) * Math.Cos(lat2) * sdlon * sdlon;
-            var d = 2 * r * Math.Asin(Math.Sqrt(q));
+            var d = 2 * earthRadius * Math.Asin(Math.Sqrt(q));
 
             return d;
         }
