@@ -10,13 +10,17 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="MenuDisplay" style="flex-shrink: 0; width: 100%; height: auto; flex-grow: 1; align-items: center; justify-content: center;">
-                <ui:VisualElement name="StartMenuButtons" style="align-items: center; padding-bottom: 0; flex-shrink: 0;">
-                    <ui:VisualElement style="align-items: center; justify-content: center; flex-shrink: 0; padding-bottom: 20px;">
-                        <ui:TextField picking-mode="Ignore" name="CarSpawnerInput" text="Number of cars to simulate...   " style="font-size: 17px; width: 251px;" />
+                <ui:VisualElement name="StartMenuContainer">
+                    <ui:VisualElement name="SelectedScene" style="justify-content: center; align-items: center; margin-bottom: 20px;" />
+                    <ui:VisualElement name="StartMenuButtons" style="align-items: center; padding-bottom: 0; flex-shrink: 0;">
+                        <ui:VisualElement style="align-items: center; justify-content: center; flex-shrink: 0; padding-bottom: 20px;">
+                            <ui:TextField picking-mode="Ignore" name="CarSpawnerInput" text="Number of cars to simulate...   " style="font-size: 17px; width: 251px;" />
+                        </ui:VisualElement>
+                        <ui:Button text="Start" display-tooltip-when-elided="true" name="StartButton" focusable="false" class="menu-button text color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
+                        <ui:Button text="Change Scene" display-tooltip-when-elided="true" name="SceneSelectionButton" focusable="false" class="menu-button text color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
+                        <ui:Button text="Settings" display-tooltip-when-elided="true" name="SettingsButton" focusable="false" class="menu-button color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
+                        <ui:Button text="Exit" display-tooltip-when-elided="true" name="ExitButton" focusable="false" class="menu-button color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
                     </ui:VisualElement>
-                    <ui:Button text="Start" display-tooltip-when-elided="true" name="StartButton" focusable="false" class="menu-button text color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
-                    <ui:Button text="Settings" display-tooltip-when-elided="true" name="SettingsButton" focusable="false" class="menu-button color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
-                    <ui:Button text="Exit" display-tooltip-when-elided="true" name="ExitButton" focusable="false" class="menu-button color-theme-button" style="height: 43px; width: 251px; margin-top: 10px; margin-left: 10px; margin-right: 10px; margin-bottom: 10px;" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
