@@ -175,6 +175,7 @@ namespace VehicleBrain
         [HideInInspector] public LaneNode CustomStartNode = null;
         // Used for road registration
         [HideInInspector] public Action RoadChanged;
+        public string LicensePlate => _agent?.Setting.Vehicle.LicensePlate;
 
         // Private variables
         private AutoDriveAgent _agent;

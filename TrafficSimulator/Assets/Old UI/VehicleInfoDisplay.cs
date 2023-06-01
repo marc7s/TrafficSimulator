@@ -12,6 +12,7 @@ public class VehicleInfoDisplay : MonoBehaviour
     public AutoDrive vehicleAutoDrive;
     public FuelConsumption vehicleFuelConsumption;
     
+    [SerializeField] private TextMeshProUGUI Name;
     [SerializeField] private InfoField RoadNameField;
     [SerializeField] private InfoField ActivityField; 
     [SerializeField] private InfoField TotalDistanceField;
@@ -20,7 +21,9 @@ public class VehicleInfoDisplay : MonoBehaviour
     private void Start()
     {
         UserSelectManager.Instance.OnSelectedGameObject += ToggledVehicle;
-        ClearVehicleInfo();
+
+        // Update the info since a vehicle may currently be selected
+        ToggledVehicle(UserSelectManager.Instance.SelectedGameObject);
     }
 
     private void Update()
@@ -52,6 +55,7 @@ public class VehicleInfoDisplay : MonoBehaviour
             vehicleFuelConsumption = selectable.GetComponent<FuelConsumption>();
             Subscribe(vehicleAutoDrive);
 
+            UpdateName();
             UpdateRoadName();
             UpdateActivityText();
             UpdateFuelAmountText();
@@ -78,6 +82,7 @@ public class VehicleInfoDisplay : MonoBehaviour
 
     private void ClearVehicleInfo()
     {
+        Name.enabled = false;
         FuelAmountField.Hide();
         RoadNameField.Hide();
         TotalDistanceField.Hide();
@@ -94,6 +99,12 @@ public class VehicleInfoDisplay : MonoBehaviour
     private void UpdateActivityText()
     {
         ActivityField.Display(vehicleAutoDrive.GetVehicleActivityDescription());
+    }
+
+    private void UpdateName()
+    {
+        Name.enabled = true;
+        Name.text = vehicleAutoDrive.name;
     }
 
     private void UpdateRoadName()

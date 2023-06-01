@@ -399,8 +399,9 @@ namespace RoadGenerator
         /// <summary>Spawns a car at the current lane node</summary>
         private void SpawnCar(int index)
         {
-            _currentCar = Instantiate(GetRandomCar(_vehicleTypes), _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
-            
+            GameObject car = GetRandomCar(_vehicleTypes);
+            _currentCar = Instantiate(car, _laneNodeCurrent.Position, _laneNodeCurrent.Rotation);
+
             // Add the car to the container
             _currentCar.transform.parent = _carContainer.transform;
 
@@ -436,6 +437,9 @@ namespace RoadGenerator
             }
 
             autoDrive.Setup();
+
+            // Set the name of the GameObject
+            _currentCar.name = $"{car.name} {autoDrive.LicensePlate}";
 
             if(_maxSpeedMode == CarSpawnerMaxSpeed.LimitMaxSpeed)
                 autoDrive.SetMaxSpeed(_maxSpeed);
