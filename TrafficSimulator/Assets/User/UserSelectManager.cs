@@ -34,8 +34,8 @@ namespace User
         private bool _hasSelectedGameObject;
         private HashSet<Vehicle> _ragdollVehicles = new HashSet<Vehicle>();
         private InputAction _pointInput;
-        public bool IsHoveringOldUIElement = false;
-        public bool IsHoveringNewUIElement = false;
+        [HideInInspector] public bool IsHoveringOldUIElement = false;
+        [HideInInspector] public bool IsHoveringNewUIElement = false;
 
         public bool IsHoveringUIElement => IsHoveringOldUIElement || IsHoveringNewUIElement;
 
