@@ -9,6 +9,138 @@ namespace RoadGenerator
 {
     public enum WayType
     {
+        Road,
+        Rail,
+        Building,
+        Terrain,
+        Water
+    }
+    public class Way
+    {
+        public string ID;
+        public string Name;
+        public List<Vector3> Points;
+
+        public Way(XmlNode node, List<Vector3> points)
+        {
+            ID = node.Attributes["id"].Value;
+            Points = points;
+        }
+    }
+
+    public class RoadWay : Way
+    {
+        public RoadWayType RoadType;
+        public bool IsOneWay = false;
+        public bool IsLit = false;
+        public int? MaxSpeed;
+        public int? LaneAmount;
+        public ServiceType? ServiceType2;
+        public SideWalkType? SideWalkType2;
+        public ParkingType? ParkingType2;
+
+        public RoadWay(XmlNode node, List<Vector3> points, RoadWayType roadWayType) : base(node, points)
+        {
+            RoadType = roadWayType;
+            IEnumerator ienum = node.GetEnumerator();
+
+            while (ienum.MoveNext())
+            {
+                XmlNode currentNode = (XmlNode) ienum.Current;
+                if (currentNode.Name != "tag") 
+                    continue;
+
+                try
+                {
+                    switch (currentNode.Attributes["k"].Value)
+                    {
+                        case "name":
+                            Name = currentNode.Attributes["v"].Value;
+                            break;
+                        case "maxspeed":
+                            MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
+                            break;
+                        case "service":
+                            if (currentNode.Attributes["v"].Value == "driveway")
+                                ServiceType2 = ServiceType.DriveWay;
+                            break;
+                        case "lit":
+                            if (currentNode.Attributes["v"].Value == "yes")
+                                IsLit = true;
+                            else 
+                                IsLit = false;
+                            break;
+                        case "oneway":
+                            IsOneWay = currentNode.Attributes["v"].Value == "yes";
+                            break;
+                        case "parking:right":
+                            if (currentNode.Attributes["v"].Value == "lane")
+                                ParkingType2 = ParkingType.Right;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                ParkingType2 = ParkingType.Right;
+                            break;
+                        case "parking:left":
+                            if (currentNode.Attributes["v"].Value == "lane")
+                                ParkingType2 = ParkingType.Left;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                ParkingType2 = ParkingType.Left;
+                            break;
+                        case "parking:both":
+                            if (currentNode.Attributes["v"].Value == "lane")
+                                ParkingType2 = ParkingType.Both;
+                            else if (currentNode.Attributes["v"].Value == "street_side")
+                                ParkingType2 = ParkingType.Both;
+                            break;
+                    }
+                }
+                catch
+                {
+                    Debug.Log("Error parsing way data");
+                }
+            }
+        }
+    }
+
+    public class BuildingWay : Way
+    {
+        public float? Height;
+        public int? BuildingLevels;
+        public bool IsMultiPolygon;
+        public string StreetName;
+        public string StreetAddress;
+
+        public BuildingWay(XmlNode node, List<Vector3> points) : base(node, points)
+        {
+
+        }
+    }
+
+    public class WaterWay : Way
+    {
+        public bool IsMultiPolygon;
+
+        public WaterWay(XmlNode node, List<Vector3> points) : base(node, points)
+        {
+
+        }
+    }
+    
+    public class TerrainWay : Way
+    {
+        public TerrainType TerrainType;
+        public TerrainArea TerrainArea;
+
+        public TerrainWay(XmlNode node, List<Vector3> outerPoints, List<List<Vector3>> innerAreas = null) : base(node, outerPoints)
+        {
+            TerrainType terrainType = MapGenerator.GetTerrainType(node);
+
+            TerrainArea terrainArea = new TerrainArea(terrainType, outerPoints, innerAreas);
+            TerrainArea = terrainArea;
+        }
+    }
+
+    public enum RoadWayType
+    {
         Residential,
         Path,
         Footway,
@@ -18,14 +150,16 @@ namespace RoadGenerator
         Secondary,
         Trunk,
         Steps,
-        RailTrain,
-        RailTram,
         Tertiary,
         Service,
-        Building,
-        Terrain,
         RaceWay,
         Unclassified
+    }
+
+    public enum RailWayType
+    {
+        RailTrain,
+        RailTram
     }
 
     public struct BuildingData
@@ -44,10 +178,7 @@ namespace RoadGenerator
     }
 
     public struct WayData
-    {
-        public string WayID;
-        public WayType WayType;
-        // Lane amount for one direction
+    {   
         public int? LaneAmount;
         public int? MaxSpeed;
         public bool? IsLit;
@@ -91,10 +222,10 @@ namespace RoadGenerator
         public TerrainType TerrainType;
         public List<Vector3> OuterArea;
         public List<List<Vector3>> InnerAreas;
-        public TerrainArea(TerrainType terrainType, List<Vector3> area, List<List<Vector3>> innerAreas = null)
+        public TerrainArea(TerrainType terrainType, List<Vector3> outerArea, List<List<Vector3>> innerAreas = null)
         {
             TerrainType = terrainType;
-            OuterArea = area;
+            OuterArea = outerArea;
             InnerAreas = innerAreas ?? new List<List<Vector3>>();
         }
     }
@@ -119,7 +250,7 @@ namespace RoadGenerator
         private float _maxLat = 0;
         private float _maxLon = 0;
         private Terrain _terrain;
-        private List<TerrainArea> _terrainAreas = new List<TerrainArea>();
+        private List<TerrainWay> _terrains = new List<TerrainWay>();
 
         public void GenerateMap(RoadSystem roadSystem)
         {
@@ -192,22 +323,23 @@ namespace RoadGenerator
             {
                 if (node.Name == "way") 
                 {
-                    WayData? wayData = GetWayData(node);
+                    Way way = CreateWay(node);
                     IEnumerator ienum = node.GetEnumerator();
 
-                    if (wayData == null)
+                    if (way == null)
                         continue;
 
-                    if (wayData?.WayType == WayType.Terrain && roadSystem.ShouldGenerateTerrain)
-                        AddTerrain(ienum, wayData.Value);
-                    else if (wayData?.WayType != WayType.Building && roadSystem.ShouldGenerateRoads) 
-                        GenerateRoad(ienum, wayData.Value);
-                    else if (wayData?.WayType == WayType.Building && roadSystem.ShouldGenerateBuildings)
-                        GenerateBuilding(ienum, wayData.Value);
+                    if (way is TerrainWay)
+                        _terrains.Add((TerrainWay)way);
+                    else if (way is RoadWay) 
+                        GenerateRoad(ienum, (RoadWay)way);
+                    else if (way is BuildingWay)
+                        GenerateBuilding(ienum, (BuildingWay)way);
                 }
                 else if (node.Name == "relation")
                 {
-                    WayData? wayData = GetWayData(node);
+                    /*
+                    WayData? wayData = CreateWay(node);
                     IEnumerator ienum = node.GetEnumerator();
 
                     // When the building is multipolygon
@@ -252,6 +384,7 @@ namespace RoadGenerator
 
                         AddTerrain(ienum, wayData.Value, outerPoints, innerPoints);
                     }
+                    */
                 }
             }
 
@@ -270,17 +403,6 @@ namespace RoadGenerator
 
             foreach (Road road in roadSystem.DefaultRoads)
                 road.OnChange();
-        }
-
-        private void AddTerrain(IEnumerator ienum, WayData wayData, List<Vector3> multiPolygonOuterPoints = null, List<List<Vector3>> multiPolygonInnerPoints = null)
-        {
-            List<Vector3> points = multiPolygonOuterPoints ?? GetWayNodePositions(ienum);
-
-            if (points.Count < 3)
-                return;
-
-            TerrainArea terrainArea = new TerrainArea(wayData.TerrainType.Value, points, multiPolygonInnerPoints);
-            _terrainAreas.Add(terrainArea);
         }
 
         public bool IsPointInPolygon(Vector2 point, Vector2[] polygon)
@@ -327,6 +449,7 @@ namespace RoadGenerator
 
         private void GenerateTerrain()
         {
+            /*
             TerrainData terrainData = _terrain.terrainData;
             Vector3 maxSize = LatLonToPosition(_maxLat, _maxLon);
             maxSize.y = 10f;
@@ -348,7 +471,7 @@ namespace RoadGenerator
                     heights[y, x] = baseHeight;
                     bool isInsideInnerArea = false;
 
-                    foreach (TerrainArea terrainBounds in _terrainAreas)
+                    foreach (TerrainArea terrainBounds in _terrains)
                     {
                         if (terrainBounds.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.OuterArea).ToArray()))
                         {
@@ -390,7 +513,7 @@ namespace RoadGenerator
 
                     bool foundTerrain = false;
                     bool isInsideInnerArea = false;
-                    foreach (TerrainArea terrainBounds in _terrainAreas)
+                    foreach (TerrainArea terrainBounds in _terrains)
                     {
                         // The terrain point is inside the terrain type area
                         if (IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainBounds.OuterArea).ToArray()))
@@ -439,6 +562,7 @@ namespace RoadGenerator
             }
             // Finally assign the new splatmap to the terrainData:
             terrainData.SetAlphamaps(0, 0, splatmapData);
+            */
         }
 
         private void AddIntersections()
@@ -605,20 +729,54 @@ namespace RoadGenerator
             }
         }
 
-        private WayData? GetWayData(XmlNode node)
+        private Way CreateWay(XmlNode node)
+        {
+            XmlNode typeNode;
+            WayType? wayType = GetWayType(node, out typeNode);
+
+            if (wayType == null)
+                return null;
+
+            if (wayType == WayType.Building && !_roadSystem.ShouldGenerateBuildings)
+                return null;
+            
+            if ((wayType == WayType.Terrain || wayType == WayType.Water) && !_roadSystem.ShouldGenerateTerrain)
+                return null;
+
+            if (wayType == WayType.Road && !_roadSystem.ShouldGenerateRoads)
+                return null;
+            
+            List<Vector3> points = GetWayNodePositions(node.GetEnumerator());
+
+            switch(wayType)
+            {
+                case WayType.Road:
+                    RoadWayType? roadType = GetRoadType(typeNode);
+                    if (roadType == null)
+                        return null;
+                    return new RoadWay(node, points, roadType.Value);
+                case WayType.Building:
+                    return new BuildingWay(node, points);
+                case WayType.Terrain:
+                    return new TerrainWay(node, points);
+                case WayType.Water: 
+                    return new WaterWay(node, points);
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary> Returns the way type of a way. Returns null for unsupported ways </summary>
+        public WayType? GetWayType(XmlNode node, out XmlNode typeNode)
         {
             IEnumerator ienum = node.GetEnumerator();
-            WayType? wayType = null;
-            BuildingData buildingData = new BuildingData();
-            WayData wayData = new WayData();
-            ParkingType parkingType = ParkingType.None;
-            wayData.WayID = node.Attributes["id"].Value;
-            TerrainType? terrainType = null;
-            
+
             // Search for type of way
             while (ienum.MoveNext())
             {
                 XmlNode currentNode = (XmlNode) ienum.Current;
+                typeNode = currentNode;
+
                 if (currentNode.Name != "tag") 
                     continue;
 
@@ -627,147 +785,66 @@ namespace RoadGenerator
                     switch (currentNode.Attributes["k"].Value)
                     {
                         case "highway":
-                            wayType = GetRoadType(currentNode);
-                            break;
+                            return WayType.Road;
                         case "building":
-                            wayType = WayType.Building;
-                            break;
+                            return WayType.Building;
                         case "water":
-                            if (currentNode.Attributes["v"].Value == "lake")
-                            {
-                                terrainType = TerrainType.Water;
-                                wayType = WayType.Terrain;
-                            }
-
-                            break;
+                            return WayType.Water;
                         case "natural":
                             if (currentNode.Attributes["v"].Value == "water")
-                            {
-                                terrainType = TerrainType.Water;
-                                wayType = WayType.Terrain;
-                            }
+                                return WayType.Water;
                             break;
                         case "waterway":
-                            terrainType = TerrainType.Water;
-                            wayType = WayType.Terrain;
-                            break;
-                        case "name":
-                            wayData.Name = currentNode.Attributes["v"].Value;
-                            break;
+                            return WayType.Water;
                         case "landuse":
-                            terrainType = GetTerrainType(currentNode);
-                            wayType = WayType.Terrain;
-                            break;
-                        case "maxspeed":
-                            wayData.MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
-                            break;
-                        case "junction":
-                            if (currentNode.Attributes["v"].Value == "roundabout")
-                                return null;
-                            break;
-                        case "height":
-                            buildingData.Height = int.Parse(currentNode.Attributes["v"].Value);
-                            break;
-                        case "addr:housenumber":
-                            buildingData.StreetAddress = currentNode.Attributes["v"].Value;
-                            break;
-                        case "addr:street":
-                            buildingData.StreetName = currentNode.Attributes["v"].Value;
-                            break;
-                        case "service":
-                            if (currentNode.Attributes["v"].Value == "driveway")
-                                wayData.ServiceType = ServiceType.DriveWay;
-                            break;
-                        case "lit":
-                            if (currentNode.Attributes["v"].Value == "yes")
-                                wayData.IsLit = true;
-                            else 
-                                wayData.IsLit = false;
-                            break;
-                        case "railway":
-                            wayType = WayType.RailTram;
-                            break;
-                        case "building:levels":
-                            buildingData.BuildingLevels = int.Parse(currentNode.Attributes["v"].Value);
-                            break;
-                        case "type":
-                            if (currentNode.Attributes["v"].Value == "multipolygon")
-                                buildingData.IsMultiPolygon = true;
-                            break;
-                        case "oneway":
-                            wayData.IsOneWay = currentNode.Attributes["v"].Value == "yes";
-                            break;
-                        case "parking:right":
-                            if (currentNode.Attributes["v"].Value == "lane")
-                                parkingType = ParkingType.Right;
-                            else if (currentNode.Attributes["v"].Value == "street_side")
-                                parkingType = ParkingType.Right;
-                            break;
-                        case "parking:left":
-                            if (currentNode.Attributes["v"].Value == "lane")
-                                parkingType = ParkingType.Left;
-                            else if (currentNode.Attributes["v"].Value == "street_side")
-                                parkingType = ParkingType.Left;
-                            break;
-                        case "parking:both":
-                            if (currentNode.Attributes["v"].Value == "lane")
-                                parkingType = ParkingType.Both;
-                            else if (currentNode.Attributes["v"].Value == "street_side")
-                                parkingType = ParkingType.Both;
-                            break;
+                            return WayType.Terrain;
                     }
                 }
                 catch
                 {
-                    Debug.Log("Error parsing way data");
+                    typeNode = null;
+                    return null;
                 }
             }
-
-            if (wayType == null)
-                return null;
-
-            wayData.WayType = wayType.Value;
-            wayData.BuildingData = buildingData;
-            wayData.ParkingType = parkingType;
-            wayData.TerrainType = terrainType;
-
-            return wayData;
+            typeNode = null;
+            return null;
         }
+        
 
         //https://wiki.openstreetmap.org/wiki/Map_features#Highway
-        private WayType? GetRoadType(XmlNode node)
+        public static RoadWayType? GetRoadType(XmlNode node)
         {
             switch (node.Attributes["v"].Value)
             {
                 case "motorway":
-                    return WayType.Motorway;
+                    return RoadWayType.Motorway;
                 case "residential":
-                    return WayType.Residential;
+                    return RoadWayType.Residential;
                 case "tertiary":
-                    return WayType.Tertiary;
+                    return RoadWayType.Tertiary;
                 case "secondary":
-                    return WayType.Secondary;
+                    return RoadWayType.Secondary;
                 case "primary":
-                    return WayType.Primary;
+                    return RoadWayType.Primary;
                 case "trunk":
-                    return WayType.Trunk;
+                    return RoadWayType.Trunk;
                 case "service":
-                    return WayType.Service;
+                    return RoadWayType.Service;
                 case "footway":
-                    return WayType.Footway;
+                    return RoadWayType.Footway;
                 case "path":
-                    return WayType.Path;
+                    return RoadWayType.Path;
                 case "unclassified":
-                    return WayType.Unclassified;
+                    return null;
                 case "raceway":
-                    return WayType.RaceWay;
+                    return RoadWayType.RaceWay;
                 default:
                     return null;
             }
         }
 
         // https://wiki.openstreetmap.org/wiki/Key:landuse
-        private TerrainType GetTerrainType(XmlNode node)
+        public static TerrainType GetTerrainType(XmlNode node)
         {
             switch (node.Attributes["v"].Value)
             {
@@ -803,20 +880,17 @@ namespace RoadGenerator
         }
 
         // https://wiki.openstreetmap.org/wiki/Map_features#Highway
-        void GenerateRoad(IEnumerator ienum, WayData wayData) 
+        void GenerateRoad(IEnumerator ienum, RoadWay roadWay) 
         {
             List <Vector3> roadPoints = GetWayNodePositions(ienum);
 
-            if (wayData.WayType == WayType.Footway || wayData.WayType == WayType.Path)
+            if (roadWay.RoadType == RoadWayType.Footway || roadWay.RoadType == RoadWayType.Path)
             {
-                GenerateFootWay(roadPoints, wayData);
+              //  GenerateFootWay(roadPoints, wayData);
                 return;
             }
 
-            if (wayData.Name == null && wayData.WayType != WayType.RailTram && wayData.WayType != WayType.RaceWay)
-                return;
-
-            if (wayData.WayType == WayType.RailTram)
+            if (roadWay.Name == null && roadWay.RoadType != RoadWayType.RaceWay)
                 return;
 
             // Total Length of road
@@ -835,38 +909,38 @@ namespace RoadGenerator
             List<Vector3> roadPoints2 = new List<Vector3>();
             roadPoints2.Add(roadPoints[0]);
             roadPoints2.Add(roadPoints[1]);
-            Road road = SpawnRoad(roadPoints2, wayData);
+            Road road = SpawnRoad(roadPoints2, (RoadWay)roadWay);
 
-            road.RoadType = wayData.WayType;
+            road.RoadType = roadWay.RoadType;
 
-            if (wayData.IsOneWay == true || wayData.WayType == WayType.RailTram)
+            if (roadWay.IsOneWay == true)
             {
                 road.IsOneWay = true;
                 road.LaneWidth /= 2;
             }
 
-            if (wayData.WayType == WayType.RaceWay)
+            if (roadWay.RoadType == RoadWayType.RaceWay)
                 road.LaneWidth = 5;
 
-            if (wayData.ParkingType != null && wayData.ParkingType != ParkingType.None)
+            if (roadWay.ParkingType2 != null && roadWay.ParkingType2 != ParkingType.None)
             {
-                if (wayData.ParkingType == ParkingType.Left || wayData.ParkingType == ParkingType.Both)
+                if (roadWay.ParkingType2 == ParkingType.Left || roadWay.ParkingType2 == ParkingType.Both)
                     road.AddFullRoadSideParking(LaneSide.Secondary);
                 
-                if (wayData.ParkingType == ParkingType.Right || wayData.ParkingType == ParkingType.Both)
+                if (roadWay.ParkingType2 == ParkingType.Right || roadWay.ParkingType2 == ParkingType.Both)
                     road.AddFullRoadSideParking(LaneSide.Primary);
                 // Avoid spawning lamppoles if there is parking on the road
-                wayData.IsLit = false;
+                roadWay.IsLit = false;
             }
 
-            if (wayData.MaxSpeed != null)
-                road.SpeedLimit = (SpeedLimit)wayData.MaxSpeed;
+            if (roadWay.MaxSpeed != null)
+                road.SpeedLimit = (SpeedLimit)roadWay.MaxSpeed;
 
             // When the speedlimit is not known in residential areas, set it to 30km/h
-            if (wayData.WayType == WayType.Residential && wayData.MaxSpeed == null)
+            if (roadWay.RoadType == RoadWayType.Residential && roadWay.MaxSpeed == null)
                 road.SpeedLimit = SpeedLimit.ThirtyKPH;
 
-            road.ShouldSpawnLampPoles = wayData.IsLit != null ? wayData.IsLit.Value : false;
+            road.ShouldSpawnLampPoles = !roadWay.IsLit;
 
             PathCreator pathCreator = road.GetComponent<PathCreator>();
 
@@ -879,8 +953,9 @@ namespace RoadGenerator
             for (int i = 2; i < roadPoints.Count; i++)
                 pathCreator.bezierPath.AddSegmentToEnd(roadPoints[i]);
             
-            if (wayData.WayType != WayType.RailTram)
-            {
+            
+           // if (roadWay.RoadType != WayType.RailTram)
+            //{
                 foreach (Vector3 point in roadPoints) 
                 {
                     if (!_roadsAtNode.ContainsKey(point))
@@ -888,12 +963,12 @@ namespace RoadGenerator
                     else
                         _roadsAtNode[point].Add(road);
                 }
-            }
-
+            //}
+            
             road.OnChange();
         }
 
-        List<Vector3> GetWayNodePositions(IEnumerator ienum)
+        public List<Vector3> GetWayNodePositions(IEnumerator ienum)
         {
             List <Vector3> nodePositions = new List<Vector3>();
             while (ienum.MoveNext())
@@ -961,13 +1036,13 @@ namespace RoadGenerator
             return new Vector3(x, 0, z);
         }
 
-        void GenerateBuilding(IEnumerator ienum, WayData wayData)
+        void GenerateBuilding(IEnumerator ienum, BuildingWay buildingWay)
         {
             float defaultBuildingHeight = 25;
-            float height = wayData.BuildingData.Height ?? defaultBuildingHeight;
+            float height = buildingWay.Height ?? defaultBuildingHeight;
 
-            if (wayData.BuildingData.Height == null && wayData.BuildingData.BuildingLevels != null)
-                height = wayData.BuildingData.BuildingLevels.Value * 3.5f;
+            if (buildingWay.Height == null && buildingWay.BuildingLevels != null)
+                height = buildingWay.BuildingLevels.Value * 3.5f;
 
             System.Random random = new System.Random();
             float randomEpsilon = (float)random.NextDouble() * 0.2f;
@@ -985,7 +1060,7 @@ namespace RoadGenerator
 
             GameObject house = Instantiate(BuildingPrefab, buildingPointsBottom[0], Quaternion.identity);
 
-            house.name = GetBuildingName(wayData);
+            house.name = GetBuildingName(buildingWay);
 
             house.transform.parent = _roadSystem.BuildingContainer.transform;
             Mesh buildingMesh = AssignMeshComponents(house);
@@ -1010,17 +1085,17 @@ namespace RoadGenerator
             CreateBuildingMesh(buildingMesh, buildingPoints, triangles);
         }
 
-        private string GetBuildingName(WayData wayData)
+        private string GetBuildingName(BuildingWay buildingWay)
         {
             string defaultBuildingName = "Building";
 
-            if (wayData.Name != null)
-                return wayData.Name;
+            if (buildingWay.Name != null)
+                return buildingWay.Name;
  
-            if(wayData.BuildingData.StreetName == null || wayData.BuildingData.StreetAddress == null)
+            if(buildingWay.StreetName == null || buildingWay.StreetAddress == null)
                 return defaultBuildingName;
 
-            return wayData.BuildingData.StreetName + " " + wayData.BuildingData.StreetAddress;
+            return buildingWay.StreetName + " " + buildingWay.StreetAddress;
         }
 
         private struct BuildingPoints
@@ -1155,15 +1230,15 @@ namespace RoadGenerator
             return mesh;
         }
 
-        Road SpawnRoad(List<Vector3> points, WayData wayData)
+        Road SpawnRoad(List<Vector3> points, RoadWay roadWay)
         {
-            GameObject prefab = wayData.WayType == WayType.RailTram ? RailPrefab : RoadPrefab;
+            GameObject prefab = RoadPrefab;
 
             // Instantiate a new road prefab
             GameObject roadObj = Instantiate(prefab, points[0], Quaternion.identity);
 
             // Set the name of the road
-            roadObj.name = wayData.Name;
+            roadObj.name = roadWay.Name;
 
             // Uncomment for testing purposes
             // roadObj.name = wayData.WayID;
