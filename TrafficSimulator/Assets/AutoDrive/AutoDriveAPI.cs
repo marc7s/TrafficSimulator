@@ -119,6 +119,7 @@ namespace VehicleBrain
                     Context.SetLoopNode(loopNode);
                 }
             }
+            
             Context.BrakeTarget = node;
             Context.PrevTarget = node;
             return node.Next;
@@ -327,7 +328,7 @@ namespace VehicleBrain
                     return guideStart;
             }
             
-            if (Context.NavigationMode == NavigationMode.Random && node.Type == RoadNodeType.JunctionEdge && node.Intersection != null)
+            if (Context.NavigationMode == NavigationMode.Random && node.Type == RoadNodeType.JunctionEdge && node.Next?.IsIntersection() == true && node.Intersection != null)
                 return UpdateAndGetGuideNode(node);
 
             if(node.Next == null)
