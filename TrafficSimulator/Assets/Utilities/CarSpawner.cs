@@ -21,6 +21,18 @@ namespace RoadGenerator
         Path
     }
 
+    public enum CarSpawnerMaxSpeed
+    {
+        FollowPrefabs,
+        LimitMaxSpeed
+    }
+
+    public enum CarSpawnerBaseTLD
+    {
+        FollowPrefabs,
+        OverrideBaseTLD
+    }
+
     public enum StartMode
     {
         UI,
@@ -45,6 +57,12 @@ namespace RoadGenerator
         [SerializeField] private bool _randomVehicleTypes = true;
         [SerializeField] private SpawnMode _mode = SpawnMode.Total;
         [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
+        
+        [SerializeField] private CarSpawnerMaxSpeed _maxSpeedMode = CarSpawnerMaxSpeed.FollowPrefabs;
+        [SerializeField] private float _maxSpeed = 7f;
+        
+        [SerializeField] private CarSpawnerBaseTLD _overrideBaseTLD = CarSpawnerBaseTLD.FollowPrefabs;
+        [SerializeField] private float _baseTLD = 10f;
 
         [Header("Debug Settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -399,6 +417,9 @@ namespace RoadGenerator
             autoDrive.ShowTargetLines = _showTargetLines;
             autoDrive.LogBrakeReason = _logBrakeReason;
             autoDrive.ShowNavigationPath = _showNavigationPath;
+
+            if(_overrideBaseTLD == CarSpawnerBaseTLD.OverrideBaseTLD)
+                autoDrive.BaseTLD = _baseTLD;
             
             // Overwrite the navigation mode if a custom one is set
             switch(_navigationMode)
@@ -415,6 +436,9 @@ namespace RoadGenerator
             }
 
             autoDrive.Setup();
+
+            if(_maxSpeedMode == CarSpawnerMaxSpeed.LimitMaxSpeed)
+                autoDrive.SetMaxSpeed(_maxSpeed);
         }
 
         /// <summary>Calculates the next node in a lane based on the target length</summary>

@@ -234,6 +234,22 @@ namespace VehicleBrain
             }
         }
 
+        public void SetMaxSpeed(float maxSpeed)
+        {
+            float forwardSpeed = maxSpeed;
+            float reverseSpeed = Mathf.Clamp(_originalMaxSpeedReverse, 0, maxSpeed);
+            
+            Speed = forwardSpeed;
+            _originalMaxSpeedForward = forwardSpeed;
+            _originalMaxSpeedReverse = reverseSpeed;
+            
+            if(_vehicleController != null)
+            {
+                _vehicleController.maxSpeedForward = forwardSpeed;
+                _vehicleController.maxSpeedReverse = reverseSpeed;
+            }
+        }
+
         void Start()
         {
             if(!_isSetup)
