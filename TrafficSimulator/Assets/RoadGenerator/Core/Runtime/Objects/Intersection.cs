@@ -1089,7 +1089,11 @@ namespace RoadGenerator
             // Pick a random guide path
             int randomLaneNodeIndex = UnityEngine.Random.Range(0, guidePaths.Count);
             if(guidePaths.Count == 0)
+            {
+                Debug.LogError(this + " has no guide paths! Distance from entry to intersection center: " + Vector3.Distance(current.Position, this.IntersectionCenterLaneNode.Position));
                 return (null, null);
+            }
+                
             GuideNode guidePath = guidePaths[randomLaneNodeIndex];
             LaneNode finalNode = guidePath.Last;
 

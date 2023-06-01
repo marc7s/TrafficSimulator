@@ -18,9 +18,6 @@ namespace RoadGenerator
             // Update the intersection, forcing all roads to build their road nodes as well
             intersection.UpdateMesh();
 
-            // Create the intersection navigation data
-            intersection.MapIntersectionNavigation();
-
             List<(LaneNode, List<Vector3>)> nodeGroups = new List<(LaneNode, List<Vector3>)>();
             Road[] roads = intersection.GetIntersectionRoads().ToArray();
 
