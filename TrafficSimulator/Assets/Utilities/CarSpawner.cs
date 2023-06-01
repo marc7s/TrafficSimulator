@@ -342,7 +342,7 @@ namespace RoadGenerator
             int carsToSpawn = TotalCars;
 
             // Return if there are no cars to spawn
-            if (carsToSpawn == 0)
+            if (carsToSpawn == 0 && _mode == SpawnMode.Total)
                 return;
 
             // Calculate cars to spawn per lane
@@ -363,7 +363,7 @@ namespace RoadGenerator
                 }
             }
 
-            Debug.Log($"Spawned {_carCounter} cars");
+            Debug.Log($"Spawned {_carCounter}{(_mode == SpawnMode.Total ? $"/{TotalCars}" : "")} cars");
         }
 
         /// <summary>Checks multiple conditions to determine if a car is able to spawn on node</summary>
