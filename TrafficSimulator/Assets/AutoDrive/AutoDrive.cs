@@ -175,7 +175,7 @@ namespace VehicleBrain
         [HideInInspector] public LaneNode CustomStartNode = null;
         // Used for road registration
         [HideInInspector] public Action RoadChanged;
-        public string LicensePlate{get; private set;}
+        public string LicensePlate => _agent?.Setting.Vehicle.LicensePlate;
 
         // Private variables
         private AutoDriveAgent _agent;
@@ -249,39 +249,6 @@ namespace VehicleBrain
                 _vehicleController.maxSpeedForward = forwardSpeed;
                 _vehicleController.maxSpeedReverse = reverseSpeed;
             }
-        }
-
-        /// <summary> Generates a random sequence of `length` capital letters </summary>
-        private string GenRandCharSeq(int length)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            string sequence = "";
-            
-            for(int i = 0; i < length; i++)
-                sequence += chars[UnityEngine.Random.Range(0, chars.Length)];
-
-            return sequence;
-        }
-
-        /// <summary> Generates a random sequence of `length` numbers </summary>
-        private string GenRandNumSeq(int length)
-        {
-            const string chars = "0123456789";
-            string sequence = "";
-            
-            for(int i = 0; i < length; i++)
-                sequence += chars[UnityEngine.Random.Range(0, chars.Length)];
-
-            return sequence;
-        }
-
-        /// <summary> Generates a random license plate following the two Swedish formats `ABC123` and the newer `ABC12D`</summary>
-        private string GetRandomLicensePlate()
-        {
-            
-            const float newFormatChance = 0.15f;
-            
-            return UnityEngine.Random.value <= newFormatChance ? $"{GenRandCharSeq(3)}{GenRandNumSeq(2)}{GenRandCharSeq(1)}" : $"{GenRandCharSeq(3)}{GenRandNumSeq(3)}";
         }
 
         void Start()
@@ -393,8 +360,6 @@ namespace VehicleBrain
             // Teleport the vehicle to the start of the lane
             ResetToNode(_agent.Context.CurrentNode);
             UpdateOccupiedNodes();
-
-            LicensePlate = GetRandomLicensePlate();
             
             _isSetup = true;
         }
