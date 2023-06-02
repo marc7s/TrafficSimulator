@@ -172,6 +172,7 @@ namespace Simulation
         public void SetModePause()
         {
             Mode = Mode != TimeMode.Paused ? TimeMode.Paused : TimeMode.Running;
+            Time.timeScale = Mode == TimeMode.Paused ? 0 : 1;
         }
 
         /// </summary> Formats a date time to the correct resolution </summary>
