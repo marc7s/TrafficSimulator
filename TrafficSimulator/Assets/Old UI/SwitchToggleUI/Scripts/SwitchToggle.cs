@@ -1,49 +1,55 @@
-﻿using UnityEngine ;
-using UnityEngine.UI ;
-using DG.Tweening ;
+﻿using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
 
-public class SwitchToggle : MonoBehaviour {
-   [SerializeField] RectTransform uiHandleRectTransform ;
-   [SerializeField] Color backgroundActiveColor ;
-   [SerializeField] Color handleActiveColor ;
+public class SwitchToggle : MonoBehaviour 
+{
+   [SerializeField] RectTransform _UIHandleRectTransform;
+   [SerializeField] private Color _backgroundActiveColor;
+   [SerializeField] private Color _handleActiveColor;
 
-   Image backgroundImage, handleImage ;
+   private Image _backgroundImage; 
+   private Image _handleImage;
 
-   Color backgroundDefaultColor, handleDefaultColor ;
+   private Color _backgroundDefaultColor;
+   private Color _handleDefaultColor;
 
-   Toggle toggle ;
+   private Toggle _toggle;
 
-   Vector2 handlePosition ;
+   private Vector2 _handlePosition;
 
-   void Awake ( ) {
-      toggle = GetComponent <Toggle> ( ) ;
+   void Awake()
+   {
+      _toggle = GetComponent<Toggle>();
 
-      handlePosition = uiHandleRectTransform.anchoredPosition ;
+      _handlePosition = _UIHandleRectTransform.anchoredPosition;
 
-      backgroundImage = uiHandleRectTransform.parent.GetComponent <Image> ( ) ;
-      handleImage = uiHandleRectTransform.GetComponent <Image> ( ) ;
+      _backgroundImage = _UIHandleRectTransform.parent.GetComponent <Image> ( );
+      _handleImage = _UIHandleRectTransform.GetComponent<Image>();
 
-      backgroundDefaultColor = backgroundImage.color ;
-      handleDefaultColor = handleImage.color ;
+      _backgroundDefaultColor = _backgroundImage.color;
+      _handleDefaultColor = _handleImage.color;
 
-      toggle.onValueChanged.AddListener (OnSwitch) ;
+      _toggle.onValueChanged.AddListener(OnSwitch);
 
-      if (toggle.isOn)
-         OnSwitch (true) ;
+      if(_toggle.isOn)
+         OnSwitch(true);
    }
 
-   void OnSwitch (bool on) {
+   void OnSwitch(bool on)
+   {
       //uiHandleRectTransform.anchoredPosition = on ? handlePosition * -1 : handlePosition ; // no anim
-      uiHandleRectTransform.DOAnchorPos (on ? handlePosition * -1 : handlePosition, .4f).SetEase (Ease.InOutBack) ;
+      _UIHandleRectTransform.DOAnchorPos(on ? _handlePosition * -1 : _handlePosition, .4f).SetEase (Ease.InOutBack);
 
       //backgroundImage.color = on ? backgroundActiveColor : backgroundDefaultColor ; // no anim
-      backgroundImage.DOColor (on ? backgroundActiveColor : backgroundDefaultColor, .6f) ;
+      _backgroundImage.DOColor(on ? _backgroundActiveColor : _backgroundDefaultColor, .6f);
 
       //handleImage.color = on ? handleActiveColor : handleDefaultColor ; // no anim
-      handleImage.DOColor (on ? handleActiveColor : handleDefaultColor, .4f) ;
+      _handleImage.DOColor(on ? _handleActiveColor : _handleDefaultColor, .4f);
    }
 
-   void OnDestroy ( ) {
-      toggle.onValueChanged.RemoveListener (OnSwitch) ;
+   void OnDestroy()
+   {
+      _toggle.onValueChanged.RemoveListener(OnSwitch);
    }
 }
