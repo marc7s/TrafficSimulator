@@ -30,7 +30,7 @@ namespace UI
         private VisualElement _pauseIcon;
         private VisualElement _playIcon;
         private Button _fastForwardButton;
-        public bool _isPaused = false;
+        private bool _isPaused = false;
 
         // Labels
         private Label _clockLabel;
@@ -66,7 +66,7 @@ namespace UI
 
             // Labels
             _clockLabel = _doc.rootVisualElement.Q<Label>("Clock");
-            _clockLabel.text = "0000:00:00:00:00:00";
+            _clockLabel.text = "0000-00-00 00:00:00";
             _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
             
             FindCameraManager();
@@ -218,7 +218,7 @@ namespace UI
             PlayClickSound();
             DeactivateCarSpawner();
             _doc.rootVisualElement.visible = false;
-            SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
+            SceneManager.LoadScene(0,  LoadSceneMode.Single);
         }
 
         private void FreecamCameraButtonClicked()

@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Vehicle
+  - UIMenu
   layers:
   - Default
   - TransparentFX
