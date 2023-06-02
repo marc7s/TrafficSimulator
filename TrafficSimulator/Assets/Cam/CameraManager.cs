@@ -33,7 +33,8 @@ namespace Cam
 
         public CameraInputHandler InputHandler { get; private set; }
         private CinemachineBrain _cmBrain;
-        private void Start()
+        
+        public void Start()
         {
             InputHandler = new CameraInputHandler();
             _cmBrain = Camera.main.GetComponent<CinemachineBrain>();

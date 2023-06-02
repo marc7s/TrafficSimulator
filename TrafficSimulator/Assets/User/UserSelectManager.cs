@@ -81,11 +81,12 @@ namespace User
             CanSelectNewObject = true;
         }
 
-        private void Start()
+        public void Start()
         {
             if(UserInputManager.Instance == null)
                 return;
             
+            applicationIsQuitting = false;
             SetupInputActions();
             SubscribeToInput();
         }

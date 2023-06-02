@@ -406,7 +406,7 @@ GameObject:
   - component: {fileID: 8508769868879871014}
   m_Layer: 0
   m_Name: CameraManager
-  m_TagString: Untagged
+  m_TagString: CameraManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -449,6 +449,8 @@ MonoBehaviour:
   _currentActiveCameraIndex: 0
   _previousActiveCameraIndex: 0
   CameraTarget: {fileID: 8508769868535305750}
+  _initialCameraPosition: {x: 0, y: 0, z: 0}
+  _overrideInitialPosition: 0
 --- !u!1 &8508769869172610286
 GameObject:
   m_ObjectHideFlags: 0

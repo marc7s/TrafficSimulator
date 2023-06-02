@@ -204,10 +204,24 @@ namespace RoadGenerator
             CalculateMaxCarsForLanes();
         }
 
+        private DrivingMode GetMenuDrivingMode()
+        {
+            switch(PlayerPrefs.GetString("SimulationMode"))
+            {
+                case "Quality":
+                    return DrivingMode.Quality;
+                case "Performance":
+                    return DrivingMode.Performance;
+                default:
+                    return DrivingMode.Quality;
+            }
+        }
+
         private void MenuStart(int totalCars)
         {
             TotalCars = totalCars;
             _mode = SpawnMode.Total;
+            _drivingMode = GetMenuDrivingMode();
             _startTime = Time.time;
             _uiStart = true;
         }

@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Vehicle
   - UIMenu
+  - ManualCar
+  - UIGraphs
+  - UserManager
+  - CameraManager
   layers:
   - Default
   - TransparentFX
