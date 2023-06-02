@@ -50,7 +50,6 @@ namespace UI
 
         public int CarsToSpawn => _carsToSpawn;
 
-        public Action OnSimulationStart;
         public Action OnSimulationStop;
 
         
@@ -155,12 +154,6 @@ namespace UI
             
             // Set the default camera button to highlighted
             HighlightCameraButton(_freecamCameraButton);
-            ActivateCarSpawner();
-        }
-
-        private void ActivateCarSpawner()
-        {
-            OnSimulationStart?.Invoke();
         }
 
         private void DeactivateCarSpawner()
