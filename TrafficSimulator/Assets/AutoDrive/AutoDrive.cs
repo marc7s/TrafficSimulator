@@ -359,7 +359,6 @@ namespace VehicleBrain
 
             // Teleport the vehicle to the start of the lane
             ResetToNode(_agent.Context.CurrentNode);
-            UpdateOccupiedNodes();
             
             _isSetup = true;
         }

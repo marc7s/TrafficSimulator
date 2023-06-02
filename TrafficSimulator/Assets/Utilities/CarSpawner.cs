@@ -70,6 +70,7 @@ namespace RoadGenerator
         [SerializeField] private bool _showNavigationPath = false;
 
         private OverlayController _overlayController;
+        private MenuController _menuController;
 
         // Total number of cars to spawn in mode Total
         public int TotalCars = 5;
@@ -78,7 +79,7 @@ namespace RoadGenerator
         [Range(0, 1)] public float LaneCarRatio = 0.5f; 
         
         // Delay before spawning cars
-        public float SpawnDelay = 1f;
+        [Range(1, 10)] public float SpawnDelay = 1f;
 
         private RoadSystem _roadSystem;
         private List<DefaultRoad> _roads;
@@ -102,6 +103,8 @@ namespace RoadGenerator
 
         // Create an empty Gameobject to hold all vehicles
         private GameObject _carContainer;
+        private float _startTime = 0;
+        private bool _uiStart = false;
 
         public struct SpawnableLaneNode
         {
@@ -147,34 +150,35 @@ namespace RoadGenerator
             // Get Overlay Controller
             _overlayController = FindObjectOfType<OverlayController>();
 
+            // Get Overlay Controller
+            _menuController = FindObjectOfType<MenuController>();
+
             // Set the start mode depending on if the UI start menu is available
-            if (_overlayController != null && FindObjectOfType<MenuController>() != null)
+            if (_overlayController != null && _menuController != null)
             {
                 // Subscribe to start event
-                _overlayController.OnSimulationStart += SimulationStartHandler;
+                _menuController.OnSimulationStart += SimulationStartHandler;
                 _overlayController.OnSimulationStop += SimulationStopHandler;
 
                 _startMode = StartMode.UI;
             }
             else
             {
-                Setup();
                 _startMode = StartMode.Delay;
             }
         }
 
         void Update()
         {
-            if(_startMode != StartMode.Delay || _spawned)
+            if(_spawned || (_startMode == StartMode.UI && !_uiStart))
                 return;
             
-            if (Time.time > SpawnDelay)
+            if (Time.time - _startTime > SpawnDelay)
                 Run();
         }
 
         private void SimulationStartHandler()
         {
-            Setup();
             MenuStart(_overlayController.CarsToSpawn);
         }
 
@@ -204,7 +208,8 @@ namespace RoadGenerator
         {
             TotalCars = totalCars;
             _mode = SpawnMode.Total;
-            Run();
+            _startTime = Time.time;
+            _uiStart = true;
         }
 
         private void RemoveCars()
@@ -222,6 +227,7 @@ namespace RoadGenerator
         {
             if (!_spawned)
             {
+                Setup();
                 _spawned = true;
                 SpawnCars();
             }

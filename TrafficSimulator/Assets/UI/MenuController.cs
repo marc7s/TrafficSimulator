@@ -59,6 +59,7 @@ namespace UI
         private const string FPS_COUNTER = "FPSCounter";
         private const string FULLSCREEN = "Fullscreen";
         private static GameObject _instance = null;
+        public Action OnSimulationStart;
 
         void Awake()
         {
@@ -374,6 +375,7 @@ namespace UI
             }
 
             _instance.SetActive(false);
+            OnSimulationStart?.Invoke();
         }
     }
 }
