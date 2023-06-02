@@ -48,7 +48,7 @@ namespace Cam
             }
         }
 
-        public override void SetActive(CameraManager cameraManager)
+        public override void SetActive(CameraManager cameraManager, Vector3? initialPosition = null)
         {
             base.SetActive(cameraManager);
             UserSelectManager.Instance.CanSelectNewObject = false;

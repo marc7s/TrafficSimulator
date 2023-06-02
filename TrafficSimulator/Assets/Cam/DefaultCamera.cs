@@ -63,7 +63,7 @@ namespace Cam
                 FollowTransform.position = _toggledGameObject.transform.position;
         }
 
-        public override void SetActive(CameraManager cameraManager)
+        public override void SetActive(CameraManager cameraManager, Vector3? initialPosition = null)
         {
             base.SetActive(cameraManager);
             FollowOffset = _initialFollowOffset;
@@ -72,6 +72,10 @@ namespace Cam
             UserSelectManager.Instance.OnSelectedGameObject += HandleNewGameObjectSelection;
             UserSelectManager.Instance.OnDoubleClickedSelectedGameObject += HandleGameObjectDoubleClickSelection;
             FollowTransform.rotation = RotationOrigin;
+
+            // Set the starting position if it was set
+            if(initialPosition != null)
+                FollowTransform.position = initialPosition.Value;
         }
 
         public override void SetInactive(CameraManager cameraManager)
