@@ -6,8 +6,7 @@ namespace Statistics
     public class EmissionColor : MonoBehaviour
     {
         private RoadDataGatherer _roadDataGatherer;
-        public float ColorChangeSensitivityFactor = 1.0f; 
-        public bool EmissionEnabled = false;
+        [HideInInspector] public bool EmissionEnabled = false;
         private bool _previousEmissionEnabled;
         public float ColorTransitionDuration = 0.5f; 
         public float MaxRedValue = 1.0f; 
@@ -40,8 +39,7 @@ namespace Statistics
             while (true)
             {
                 Material[] materials = _rend.materials;
-                float colorValue = _roadDataGatherer.CurrentFuelConsumption * ColorChangeSensitivityFactor;
-                colorValue = Mathf.Clamp(colorValue, 0, MaxRedValue); 
+                float colorValue = Mathf.Clamp(_roadDataGatherer.CurrentFuelConsumptionRatio, 0, MaxRedValue);
                 Color targetColor = Color.Lerp(Color.green, Color.red, colorValue); 
 
                 float timeElapsed = 0.0f;
@@ -69,7 +67,8 @@ namespace Statistics
                 }
 
                 // If EmissionEnabled is false, stop the coroutine.
-                if (!EmissionEnabled) break;
+                if (!EmissionEnabled) 
+                    break;
             }
         }
     }

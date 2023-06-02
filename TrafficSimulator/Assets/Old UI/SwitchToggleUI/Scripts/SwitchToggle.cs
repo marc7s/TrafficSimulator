@@ -24,7 +24,7 @@ public class SwitchToggle : MonoBehaviour
 
       _handlePosition = _UIHandleRectTransform.anchoredPosition;
 
-      _backgroundImage = _UIHandleRectTransform.parent.GetComponent <Image> ( );
+      _backgroundImage = _UIHandleRectTransform.parent.GetComponent<Image>();
       _handleImage = _UIHandleRectTransform.GetComponent<Image>();
 
       _backgroundDefaultColor = _backgroundImage.color;
@@ -39,7 +39,7 @@ public class SwitchToggle : MonoBehaviour
    void OnSwitch(bool on)
    {
       //uiHandleRectTransform.anchoredPosition = on ? handlePosition * -1 : handlePosition ; // no anim
-      _UIHandleRectTransform.DOAnchorPos(on ? _handlePosition * -1 : _handlePosition, .4f).SetEase (Ease.InOutBack);
+      _UIHandleRectTransform.DOAnchorPos(on ? _handlePosition * -1 : _handlePosition, .4f).SetEase(Ease.InOutBack);
 
       //backgroundImage.color = on ? backgroundActiveColor : backgroundDefaultColor ; // no anim
       _backgroundImage.DOColor(on ? _backgroundActiveColor : _backgroundDefaultColor, .6f);
