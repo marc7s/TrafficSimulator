@@ -8,7 +8,7 @@ namespace RoadGenerator
 {
     public class BuildingGenerator
     {
-        public void GenerateBuildings(List<BuildingWay> buildingWays, GameObject buildingPrefab, Material BuildingWallMaterial, Material BuildingRoofMaterial, Transform buildingContainer)
+        public void GenerateBuildings(List<BuildingWay> buildingWays, GameObject buildingPrefab, Material buildingWallMaterial, Material buildingRoofMaterial, Transform buildingContainer)
         {
             foreach (BuildingWay buildingWay in buildingWays)
             {
@@ -20,9 +20,7 @@ namespace RoadGenerator
                 if (buildingWay.Height == null && buildingWay.BuildingLevels != null)
                     height = buildingWay.BuildingLevels.Value * 3.5f;
 
-                System.Random random = new System.Random();
-                float randomEpsilon = (float)random.NextDouble() * 0.2f;
-                height += randomEpsilon;
+                height += UnityEngine.Random.value * 0.2f;
 
                 List<Vector3> buildingPointsBottom = buildingWay.Points;
                 List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
@@ -36,13 +34,13 @@ namespace RoadGenerator
 
                 building.name = GetBuildingName(buildingWay);
 
-                BuildingMeshCreator.GenerateBuildingMesh(building, buildingPointsBottom, buildingPointsTop, buildingPoints, BuildingWallMaterial, BuildingRoofMaterial);
+                BuildingMeshCreator.GenerateBuildingMesh(building, buildingPointsBottom, buildingPointsTop, buildingPoints, buildingWallMaterial, buildingRoofMaterial);
             }
         }
 
         private static string GetBuildingName(BuildingWay buildingWay)
         {
-            string defaultBuildingName = "Building";
+            const string defaultBuildingName = "Building";
 
             if (buildingWay.Name != null)
                 return buildingWay.Name;
