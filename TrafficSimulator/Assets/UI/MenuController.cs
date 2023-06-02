@@ -368,7 +368,7 @@ namespace UI
                 float progress = Mathf.Clamp01(asyncLoad.progress) * 100;
                 
                 _loadingBar.value = progress;
-                _loadingBar.title = progress + "%";
+                _loadingBar.title = (int)progress + "%";
 
                 yield return null;
             }
