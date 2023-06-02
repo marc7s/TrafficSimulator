@@ -218,7 +218,7 @@ namespace UI
             PlayClickSound();
             DeactivateCarSpawner();
             _doc.rootVisualElement.visible = false;
-            SceneManager.LoadScene((SceneManager.GetActiveScene().buildIndex - 1),  LoadSceneMode.Single);
+            SceneManager.LoadScene(0,  LoadSceneMode.Single);
         }
 
         private void FreecamCameraButtonClicked()
