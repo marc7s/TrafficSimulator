@@ -58,13 +58,39 @@ namespace UI
 
         private const string FPS_COUNTER = "FPSCounter";
         private const string FULLSCREEN = "Fullscreen";
+        private static GameObject _instance = null;
 
         void Awake()
         {
+            bool initialSetup = false;
+            
+            if(_instance == null)
+            {
+                _instance = gameObject;
+                initialSetup = true;
+            }
+            
+            foreach(GameObject go in GameObject.FindGameObjectsWithTag("UIMenu"))
+            {
+                if(go != _instance)
+                    Destroy(go);
+            }
+
+            _instance.SetActive(true);
+            _instance.GetComponent<MenuController>().Setup();
+
+            if(this.gameObject != _instance)
+                return;
+
+            if(initialSetup)
+                DontDestroyOnLoad(this.gameObject);
+        }
+
+        public void Setup()
+        {
             _doc = GetComponent<UIDocument>();
 
-            // Get the audio source
-            _clickSound = GetComponent<AudioSource>();
+            SetupClickSound();
 
             // Set the displayed container to the start menu
             _displayedContainer = _doc.rootVisualElement.Q<VisualElement>("MenuDisplay");
@@ -116,7 +142,7 @@ namespace UI
             // Load settings
             _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
             SetFPSVisibility(_showFPS);
-            _clickSound.volume = PlayerPrefs.GetFloat("MasterVolume");
+            
             _masterVolumeSlider.value = PlayerPrefs.GetFloat("MasterVolume") * 100;
 
             // Load scenes
@@ -143,6 +169,15 @@ namespace UI
             Action onClick = () => SceneSelectionButtonOnClicked();
             SceneLoader.SetSceneInfo(ref _currentSceneElement, SceneLoader.DefaultScene, onClick);
             _currentSceneInfo = SceneLoader.DefaultScene;
+        }
+
+        private void SetupClickSound()
+        {
+            if(_clickSound == null)
+            {
+                _clickSound = GetComponent<AudioSource>();
+                _clickSound.volume = PlayerPrefs.GetFloat("MasterVolume");
+            }
         }
 
         private void ChangeSelectedScene(SceneLoader.SceneInfo sceneInfo)
@@ -291,6 +326,7 @@ namespace UI
 
         private void PlayClickSound()
         {
+            SetupClickSound();
             _clickSound.Play();
         }
 
@@ -335,6 +371,8 @@ namespace UI
 
                 yield return null;
             }
+
+            _instance.SetActive(false);
         }
     }
 }
