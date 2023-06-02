@@ -187,7 +187,7 @@ namespace RoadGenerator
         {
             XmlNodeList relations = _doc.GetElementsByTagName("relation");
             foreach(XmlNode node in relations)
-            {     
+            {
                 Way way = CreateWay(node);
                 IEnumerator ienum = node.GetEnumerator();
 
@@ -198,7 +198,7 @@ namespace RoadGenerator
 
                     if (!buildingWay.IsMultiPolygon)
                         return;
-                        
+
                     while (ienum.MoveNext())
                     {
                         XmlNode currentNode = (XmlNode) ienum.Current; 
@@ -219,6 +219,7 @@ namespace RoadGenerator
                     while (ienum.MoveNext())
                     {
                         XmlNode currentNode = (XmlNode) ienum.Current; 
+
                         if (currentNode.Name == "member" && currentNode.Attributes["type"].Value == "way")
                         {
                             if (currentNode.Attributes["role"].Value == "outer" && _wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
@@ -235,6 +236,7 @@ namespace RoadGenerator
                             }
                         }
                     }
+
                     TerrainWay terrainWay = (TerrainWay)way;
                     _terrains.Add(new TerrainWay(node, outerPoints, innerPoints, terrainWay.TerrainType));
                 }

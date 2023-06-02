@@ -12,6 +12,7 @@ namespace RoadGenerator
         private float[,,] _splatmapData;
         private TerrainData _terrainData;
         private float _baseHeight = 10;
+
         public void GenerateTerrain(Terrain terrain, List<TerrainWay> terrains, Vector3 terrainSize)
         {
             _terrains = terrains;

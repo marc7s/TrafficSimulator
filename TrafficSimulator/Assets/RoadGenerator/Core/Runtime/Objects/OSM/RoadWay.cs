@@ -27,6 +27,7 @@ namespace RoadGenerator
             while (ienum.MoveNext())
             {
                 XmlNode currentNode = (XmlNode) ienum.Current;
+
                 if (currentNode.Name != "tag") 
                     continue;
 
