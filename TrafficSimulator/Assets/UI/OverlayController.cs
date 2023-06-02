@@ -4,27 +4,48 @@ using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using Simulation;
 using User;
-using RoadGenerator;
 using System;
+using System.Collections.Generic;
 
 namespace UI 
 {
+    public enum ManualCarInputMode
+    {
+        Keyboard,
+        Controller,
+        FanatecWheel
+    }
+
     public class OverlayController : MonoBehaviour
     {
         private UIDocument _doc;
         private AudioSource _clickSound;
+        private CameraManager _cameraManager;
+        private GameObject _userManager;
+        private GameObject _uiGraphs;
+        private GameObject _mainCamera;
         
-        // Overlay Button
+        // Overlay button
         private Button _menuButton;
 
-        // Camera Buttons
+        // Manual car
+        private Button _driveButton;
+        private bool _isDrivingManually = false;
+        [SerializeField] private GameObject _manualCarKeyboardPrefab;
+        [SerializeField] private GameObject _manualCarControllerPrefab;
+        [SerializeField] private GameObject _manualCarFanatecWheelPrefab;
+        [SerializeField] private Vector3 _manualCarSpawnPosition = Vector3.zero;
+        [SerializeField] [Range(0, 360)] private float _manualCarSpawnRotation = 0;
+
+        // Camera buttons
         private StyleSheet _cameraButtonStyles;
+        private VisualElement _cameraButtonContainer;
         private Button _freecamCameraButton;
         private Button _followCameraButton;
         private Button _driverCameraButton;
         private Button _currentlyHighlightedCameraButton;
 
-        // Clock Buttons
+        // Clock buttons
         private Button _rewindButton;
         private Button _pauseButton;
         private VisualElement _pauseIcon;
@@ -45,8 +66,6 @@ namespace UI
 
         private const string FPS_COUNTER = "FPSCounter";
         private const string FULLSCREEN = "Fullscreen";
-
-        private CameraManager _cameraManager;
 
         public int CarsToSpawn => _carsToSpawn;
 
@@ -69,10 +88,18 @@ namespace UI
             _fpsLabel = _doc.rootVisualElement.Q<Label>("FPSLabel");
             
             FindCameraManager();
+            FindUserManager();
+            FindUIGraphs();
+            FindMainCamera();
 
             // Buttons
             _menuButton = _doc.rootVisualElement.Q<Button>("MenuButton");
             _menuButton.clicked += MenuButtonOnClicked;
+
+            _driveButton = _doc.rootVisualElement.Q<Button>("DriveButton");
+            _driveButton.clicked += DriveButtonOnClicked;
+
+            _cameraButtonContainer = _doc.rootVisualElement.Q<VisualElement>("CameraAndModeButtons");
 
             _freecamCameraButton = _doc.rootVisualElement.Q<Button>("Freecam");
             _freecamCameraButton.AddToClassList("button");
@@ -156,18 +183,102 @@ namespace UI
             HighlightCameraButton(_freecamCameraButton);
         }
 
+        private ManualCarInputMode GetManualCarInputMode()
+        {
+            switch(PlayerPrefs.GetString("ManualCarInputMode"))
+            {
+                case "Keyboard":
+                    return ManualCarInputMode.Keyboard;
+                case "Controller":
+                    return ManualCarInputMode.Controller;
+                case "Fanatec Wheel":
+                    return ManualCarInputMode.FanatecWheel;
+                default:
+                    return ManualCarInputMode.Keyboard;
+            }
+        }
+
+        private GameObject GetManualCarPrefab(ManualCarInputMode inputMode)
+        {
+            switch(inputMode)
+            {
+                case ManualCarInputMode.Keyboard:
+                    return _manualCarKeyboardPrefab;
+                case ManualCarInputMode.Controller:
+                    return _manualCarControllerPrefab;
+                case ManualCarInputMode.FanatecWheel:
+                    return _manualCarFanatecWheelPrefab;
+                default:
+                    return _manualCarKeyboardPrefab;
+            }
+        }
+
         private void DeactivateCarSpawner()
         {
             OnSimulationStop?.Invoke();
         }
+
+        private void ToggleManualDrive()
+        {
+            _isDrivingManually = !_isDrivingManually;
+            _driveButton.text = _isDrivingManually ? "Exit" : "Drive";
+            _cameraButtonContainer.visible = !_isDrivingManually;
+
+            if(_isDrivingManually)
+            {
+                GameObject manualCar = GameObject.Instantiate(GetManualCarPrefab(GetManualCarInputMode()));
+                manualCar.transform.position = _manualCarSpawnPosition;
+                manualCar.transform.rotation = Quaternion.Euler(0, _manualCarSpawnRotation, 0);
+                
+                ChangeActiveState(new List<GameObject> { _cameraManager.gameObject, _userManager, _uiGraphs, _mainCamera }, false);
+            }
+            else
+            {
+                foreach(GameObject manualCar in GameObject.FindGameObjectsWithTag("ManualCar"))
+                    Destroy(manualCar);
+
+                ChangeActiveState(new List<GameObject> { _cameraManager.gameObject, _userManager, _uiGraphs, _mainCamera }, true);
+                
+                if(_userManager != null)
+                    _userManager.GetComponent<UserSelectManager>()?.Start();
+
+                if(_cameraManager != null)
+                    _cameraManager.Start();
+            }
+        }
+
+        private void ChangeActiveState(List<GameObject> gameObjects, bool newState)
+        {
+            foreach (GameObject go in gameObjects)
+                go?.SetActive(newState);
+        }
         
         private void FindCameraManager()
         {
-            GameObject go = GameObject.Find("CameraManager");
+            GameObject go = GameObject.FindGameObjectWithTag("CameraManager");
             if (go != null)
-            {
                 _cameraManager = go.GetComponent<CameraManager>();
-            }
+        }
+
+        private void FindUserManager()
+        {
+            GameObject go = GameObject.FindGameObjectWithTag("UserManager");
+            if (go != null)
+                _userManager = go;
+        }
+
+        private void FindUIGraphs()
+        {
+            GameObject go = GameObject.FindGameObjectWithTag("UIGraphs");
+            if (go != null)
+                _uiGraphs = go;
+        }
+
+        private void FindMainCamera()
+        {
+            GameObject go = GameObject.FindGameObjectWithTag("MainCamera");
+            if (go != null)
+                _mainCamera = go;
         }
         
         private void GreyOutButton(Button button)
@@ -211,7 +322,18 @@ namespace UI
             PlayClickSound();
             DeactivateCarSpawner();
             _doc.rootVisualElement.visible = false;
+            
+            // Return to camera mode if driving manually when pressing menu button
+            if(_isDrivingManually)
+                ToggleManualDrive();
+            
             SceneManager.LoadScene(0,  LoadSceneMode.Single);
+        }
+
+        private void DriveButtonOnClicked()
+        {
+            PlayClickSound();
+            ToggleManualDrive();
         }
 
         private void FreecamCameraButtonClicked()

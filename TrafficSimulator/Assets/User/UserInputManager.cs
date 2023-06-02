@@ -27,5 +27,11 @@ namespace User
             if (this != null) 
                 _playerInputActions.Default.Enable();
         }
+
+        private void OnDisable()
+        {
+            if (this != null) 
+                _playerInputActions.Default.Disable();
+        }
     }
 }

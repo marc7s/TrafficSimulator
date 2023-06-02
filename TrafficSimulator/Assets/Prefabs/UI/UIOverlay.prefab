@@ -63,7 +63,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61b4a5d1b3db54a4995b97a78612657b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isPaused: 0
+  _manualCarKeyboardPrefab: {fileID: 6380633828477897570, guid: 8c2bb7bd5abdcc74db702d1009a3014e, type: 3}
+  _manualCarControllerPrefab: {fileID: 6380633828477897570, guid: afc059cfbcfa76c47898f4ac16098572, type: 3}
+  _manualCarFanatecWheelPrefab: {fileID: 6380633828477897570, guid: 87f5137bd2ed2524ca6c500622091067, type: 3}
+  _manualCarSpawnPosition: {x: 0, y: 0, z: 0}
+  _manualCarSpawnRotation: 0
 --- !u!114 &4006453847868056513
 MonoBehaviour:
   m_ObjectHideFlags: 0

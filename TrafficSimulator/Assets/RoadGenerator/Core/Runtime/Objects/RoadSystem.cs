@@ -131,12 +131,14 @@ namespace RoadGenerator
                     Debug.LogError("No surface found in line of sight to spawn road. Make sure the surface you are looking at has a collider");
                     return;
                 }
+                
                 spawnPoint = hit.point;
                 
                 Vector3 roadStartPoint = spawnPoint + Vector3.left * NEW_ROAD_LENGTH / 2;
                 Vector3 roadEndPoint = roadStartPoint + Vector3.right * NEW_ROAD_LENGTH;
                 
-                if(PositionsAreInRoadSystem(new Vector3[]{ roadStartPoint, roadEndPoint })){
+                if(PositionsAreInRoadSystem(new Vector3[]{ roadStartPoint, roadEndPoint }))
+                {
                     Debug.LogError($"Cannot spawn a road at {hit.point}, there is already a road there");
                     return;
                 }
@@ -329,6 +331,7 @@ namespace RoadGenerator
             _isSetup = true;
             
             DefaultRoads.Clear();
+            
             // Find roads
             foreach(Transform roadT in RoadContainer.transform)
             {
@@ -342,6 +345,7 @@ namespace RoadGenerator
             }
 
             Intersections.Clear();
+            
             // Find intersections
             foreach(Transform intersectionT in _intersectionContainer.transform)
             {

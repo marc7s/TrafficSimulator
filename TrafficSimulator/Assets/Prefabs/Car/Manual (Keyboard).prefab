@@ -3043,8 +3043,8 @@ GameObject:
   - component: {fileID: 3757735537286086049}
   - component: {fileID: 5642387982062803922}
   m_Layer: 7
-  m_Name: Manual (Keyboard Controller)
-  m_TagString: Untagged
+  m_Name: Manual (Keyboard)
+  m_TagString: ManualCar
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3123,7 +3123,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_ActionEvents: []
-  m_NeverAutoSwitchControlSchemes: 0
+  m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: Keyboard
   m_DefaultActionMap: Driving
   m_SplitScreenIndex: -1
@@ -3583,6 +3583,7 @@ MonoBehaviour:
   _maxFuelCapacity: 60
   _totalFuelConsumed: 0
   FuelConsumedSinceLastFrame: 0
+  CurrentFuelAmount: 0
 --- !u!114 &3204221514871440517
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -27,6 +27,7 @@ namespace UI
 
         private Toggle _fullscreenToggle;
         private DropdownField _simulationModeDropdown;
+        private DropdownField _manualCarInputDropdown;
         private Slider _masterVolumeSlider;
         private Slider _fovSlider;
         private Label _fpsLabel;
@@ -124,11 +125,14 @@ namespace UI
             _fullscreenToggle = _settingsContainer.Q<Toggle>("FullscreenToggle");
             _fullscreenToggle.RegisterValueChangedCallback(evt => OnFullscreenToggleChanged(evt.newValue));
             
-            _simulationModeDropdown = _settingsContainer.Q<DropdownField>("SimulationModeDropDown");
+            _simulationModeDropdown = _settingsContainer.Q<DropdownField>("SimulationModeDropdown");
             _simulationModeDropdown.RegisterValueChangedCallback(evt => OnSimulationModeDropdownChanged(evt.newValue));
+
+            _manualCarInputDropdown = _settingsContainer.Q<DropdownField>("ManualCarInputDropdown");
+            _manualCarInputDropdown.RegisterValueChangedCallback(evt => OnManualCarInputDropdownChanged(evt.newValue));
             
             _masterVolumeSlider = _settingsContainer.Q<Slider>("MasterVolumeSlider");
-            _masterVolumeSlider.RegisterValueChangedCallback(evt => OnMasterVolumeSliderChanged(evt.newValue/100));
+            _masterVolumeSlider.RegisterValueChangedCallback(evt => OnMasterVolumeSliderChanged(evt.newValue / 100));
             
             _fovSlider = _settingsContainer.Q<Slider>("FOVSlider");
             _fovSlider.RegisterValueChangedCallback(evt => OnFOVSliderChanged(evt.newValue));
@@ -144,6 +148,10 @@ namespace UI
             // Load settings
             _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
             SetFPSVisibility(_showFPS);
+
+            _simulationModeDropdown.value = PlayerPrefs.GetString("SimulationMode");
+
+            _manualCarInputDropdown.value = PlayerPrefs.GetString("ManualCarInputMode");
             
             _masterVolumeSlider.value = PlayerPrefs.GetFloat("MasterVolume") * 100;
 
@@ -250,8 +258,13 @@ namespace UI
         }
         private void OnSimulationModeDropdownChanged(string value)
         {
-            //TODO implement quality settings
-            PlayerPrefsSetBool("SimulationMode", value.Equals("Quality"));
+            PlayerPrefs.SetString("SimulationMode", value);
+            PlayClickSound();
+        }
+
+        private void OnManualCarInputDropdownChanged(string value)
+        {
+            PlayerPrefs.SetString("ManualCarInputMode", value);
             PlayClickSound();
         }
 
