@@ -2592,6 +2592,7 @@ GameObject:
   - component: {fileID: 1834792388}
   - component: {fileID: 1834792389}
   - component: {fileID: 1834792390}
+  - component: {fileID: 9148878989863949133}
   m_Layer: 5
   m_Name: RoadColorSwitch
   m_TagString: Untagged
@@ -2667,7 +2668,19 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 9148878989863949133}
+        m_TargetAssemblyTypeName: RoadColorSwitch, Assembly-CSharp
+        m_MethodName: OnSwitchToggle
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_IsOn: 0
 --- !u!114 &1834792390
 MonoBehaviour:
@@ -2681,9 +2694,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb7087d4d4073eb4ba574932dd7d01fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiHandleRectTransform: {fileID: 806211107}
-  backgroundActiveColor: {r: 0.021084309, g: 0.5, b: 0, a: 1}
-  handleActiveColor: {r: 0, g: 1, b: 0.034784317, a: 1}
+  _UIHandleRectTransform: {fileID: 806211107}
+  _backgroundActiveColor: {r: 0, g: 0.6981132, b: 0.07939322, a: 1}
+  _handleActiveColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &9148878989863949133
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1834792387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bc9663b2b09b41429a1afe0ef23f859, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1924523181
 GameObject:
   m_ObjectHideFlags: 0
@@ -4141,13 +4166,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08a8863763701574b9a4fd6a3d623bf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vehicleAutoDrive: {fileID: 0}
-  vehicleFuelConsumption: {fileID: 0}
-  Name: {fileID: 9045650103086330894}
-  RoadNameField: {fileID: 6598155982064573666}
-  ActivityField: {fileID: 0}
-  TotalDistanceField: {fileID: 0}
-  FuelAmountField: {fileID: 0}
+  VehicleAutoDrive: {fileID: 0}
+  VehicleFuelConsumption: {fileID: 0}
+  _name: {fileID: 9045650103086330894}
+  _roadNameField: {fileID: 6598155982064573666}
+  _activityField: {fileID: 2726222156903312975}
+  _totalDistanceField: {fileID: 2479511070887719969}
+  _fuelAmountField: {fileID: 7074398139654555399}
 --- !u!114 &1819337317
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5570,6 +5595,7 @@ GameObject:
   - component: {fileID: 7710527333393293007}
   - component: {fileID: 6580238112761087211}
   - component: {fileID: 5882438311846026279}
+  - component: {fileID: 7074398139654555399}
   m_Layer: 5
   m_Name: CurrentFuelAmount Container
   m_TagString: Untagged
@@ -5637,6 +5663,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7074398139654555399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3847173696304437928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 918a7c4be4bfe8848ba4a06fa56b5b07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _header: {fileID: 3535304421463896183}
+  _value: {fileID: 2126313015}
 --- !u!1 &5373003707409353885
 GameObject:
   m_ObjectHideFlags: 0
@@ -5939,6 +5979,7 @@ GameObject:
   - component: {fileID: 5030167706347761209}
   - component: {fileID: 4798088786596240090}
   - component: {fileID: 5607846024742908826}
+  - component: {fileID: 2726222156903312975}
   m_Layer: 5
   m_Name: CurrentActivity Container
   m_TagString: Untagged
@@ -6006,6 +6047,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2726222156903312975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7993239402150876417}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 918a7c4be4bfe8848ba4a06fa56b5b07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _header: {fileID: 102495524220640202}
+  _value: {fileID: 1558074594}
 --- !u!1 &8134650552736963647
 GameObject:
   m_ObjectHideFlags: 0
@@ -6017,6 +6072,7 @@ GameObject:
   - component: {fileID: 1454151737792769167}
   - component: {fileID: 4953769626942688310}
   - component: {fileID: 2646083708671677649}
+  - component: {fileID: 2479511070887719969}
   m_Layer: 5
   m_Name: CurrentDistanceTravelled Container
   m_TagString: Untagged
@@ -6084,6 +6140,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2479511070887719969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8134650552736963647}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 918a7c4be4bfe8848ba4a06fa56b5b07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _header: {fileID: 223894364703752587}
+  _value: {fileID: 1516353106}
 --- !u!1 &8265819811557650294
 GameObject:
   m_ObjectHideFlags: 0
