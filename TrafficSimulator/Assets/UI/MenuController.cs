@@ -62,28 +62,29 @@ namespace UI
 
         void Awake()
         {
-            bool initialSetup = false;
-            
+            // If this is the first instance, set the static instance variable
             if(_instance == null)
             {
                 _instance = gameObject;
-                initialSetup = true;
+                
+                // Do not destroy the game object when loading a new scene
+                DontDestroyOnLoad(_instance);
             }
             
+            // A new GameObject is created when returning to the main menu since it reloads the scene, so we need to destroy it
             foreach(GameObject go in GameObject.FindGameObjectsWithTag("UIMenu"))
             {
                 if(go != _instance)
                     Destroy(go);
             }
 
+            // Reactivate and setup the MenuController instance
             _instance.SetActive(true);
             _instance.GetComponent<MenuController>().Setup();
 
+            // If this is not the correct instance, return
             if(this.gameObject != _instance)
                 return;
-
-            if(initialSetup)
-                DontDestroyOnLoad(this.gameObject);
         }
 
         public void Setup()
