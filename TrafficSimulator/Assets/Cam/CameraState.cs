@@ -34,8 +34,9 @@ namespace Cam
         /// <summary>
         /// Sets this camera to be the active camera.
         /// </summary>
-        /// <param name="cameraManager">the <see cref="CameraManager"/> responsible for this camera</param>
-        public virtual void SetActive(CameraManager cameraManager)
+        /// <param name="cameraManager">The <see cref="CameraManager"/> responsible for this camera</param>
+        /// <param name="initialPosition">The (optional) initial position for this camera</param>
+        public virtual void SetActive(CameraManager cameraManager, Vector3? initialPosition = null)
         {
             VirtualCamera.Priority = 1;
             CameraManager = cameraManager;

@@ -26,6 +26,10 @@ namespace Cam
         [SerializeField] private int _currentActiveCameraIndex = 0;
         [SerializeField] private int _previousActiveCameraIndex;
         [SerializeField] public Selectable CameraTarget;
+        
+        [Header("Initial Position")]
+        [SerializeField] private Vector3 _initialCameraPosition;
+        [SerializeField] private bool _overrideInitialPosition = false;
 
         public CameraInputHandler InputHandler { get; private set; }
         private CinemachineBrain _cmBrain;
@@ -40,7 +44,8 @@ namespace Cam
                 return;
             }
             
-            _cameras[FindDefaultCameraIndex()].SetActive(this);
+            _currentActiveCameraIndex = FindDefaultCameraIndex();
+            _cameras[_currentActiveCameraIndex].SetActive(this, _overrideInitialPosition ? _initialCameraPosition : null);
         }
 
         private void Update()
@@ -82,7 +87,8 @@ namespace Cam
         {
             for (int i = 0; i < _cameras.Length; i++)
             {
-                if (_cameras[i].IsDefault) return i;
+                if (_cameras[i].IsDefault) 
+                    return i;
             }
 
             // Set the first camera to default
