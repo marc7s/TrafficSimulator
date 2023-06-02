@@ -94,7 +94,7 @@ MonoBehaviour:
   _roadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
   _railPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
   _intersectionPrefab: {fileID: 4601614798071418940, guid: efab1fc7f7d445c4786eb13acc0fac8e, type: 3}
-  _mapGenerator: {fileID: 3251158373978459654}
+  _mapGenerator: {fileID: 6661484095507596310}
   _roadSystemGraphNodePrefab: {fileID: 6519265059532225654, guid: 454238e3f781fa44fa41bcc016a4e5fd, type: 3}
   _roadSideParkingPrefab: {fileID: 8366617983722215298, guid: 67b0a69f6f70fe346a8ecd3a3e95306f, type: 3}
   _parkingLotPrefab: {fileID: 3515437566898414979, guid: b09c3367fc5f1834792f19ddf614ea95, type: 3}
@@ -4616,21 +4616,33 @@ PrefabInstance:
       propertyPath: m_Name
       value: MapGenerator
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5182822186109989344, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+--- !u!1 &1560953495410068102 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9176898902921508192, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
+  m_PrefabInstance: {fileID: 7706637533628383206}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6661484095507596310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1560953495410068102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a665b691970ec04b84470c1658e4ee0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RoadPrefab: {fileID: 3821395399200801449, guid: 878e8ed2f2f6c0943a280ba3fa655f2e, type: 3}
+  RailPrefab: {fileID: 3821395399200801449, guid: 12a1438e7634e3f4e93a98e86805feaa, type: 3}
+  BuildingPrefab: {fileID: 6271160807420945312, guid: 7f65bab3d77170f4aa0f6be406f09110, type: 3}
+  BuildingWallMaterial: {fileID: 2100000, guid: ddcb4c492c056d446b51b2485a97784d, type: 2}
+  BuildingRoofMaterial: {fileID: 2100000, guid: 83be0eadf8736cc448f4f8d5037ec191, type: 2}
 --- !u!4 &1980633667098319055 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8183011741568837417, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
   m_PrefabInstance: {fileID: 7706637533628383206}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &3251158373978459654 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5182822186109989344, guid: 9e574891ca7db0448b5d0532d5686918, type: 3}
-  m_PrefabInstance: {fileID: 7706637533628383206}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f878129d6d206d44aabd7b2b1cf20fbe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

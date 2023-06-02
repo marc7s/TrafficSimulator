@@ -86,7 +86,8 @@ namespace RoadGenerator
         // If two road endpoints are within this distance of each other, they will be connected
         public float ConnectionDistanceThreshold = 0f;
         public bool IsOneWay = false;
-        public WayType RoadType;
+        // OSM way type
+        public RoadWayType RoadType;
 
         [Header ("Traffic sign settings")]
         public float SpeedSignDistanceFromIntersectionEdge = 5f;
