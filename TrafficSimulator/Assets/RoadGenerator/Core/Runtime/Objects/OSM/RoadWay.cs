@@ -15,9 +15,9 @@ namespace RoadGenerator
         public bool IsLit = false;
         public int? MaxSpeed;
         public int? LaneAmount;
-        public ServiceType? ServiceType2;
-        public SideWalkType? SideWalkType2;
-        public ParkingType? ParkingType2;
+        public ServiceType? ServiceType;
+        public SideWalkType? SideWalkType;
+        public ParkingType? ParkingType;
 
         public RoadWay(XmlNode node, List<Vector3> points, XmlNode typeNode) : base(node, points)
         {
@@ -42,7 +42,7 @@ namespace RoadGenerator
                             break;
                         case "service":
                             if (currentNode.Attributes["v"].Value == "driveway")
-                                ServiceType2 = ServiceType.DriveWay;
+                                ServiceType = RoadGenerator.ServiceType.DriveWay;
                             break;
                         case "lit":
                             if (currentNode.Attributes["v"].Value == "yes")
@@ -55,21 +55,21 @@ namespace RoadGenerator
                             break;
                         case "parking:right":
                             if (currentNode.Attributes["v"].Value == "lane")
-                                ParkingType2 = ParkingType.Right;
+                                ParkingType = RoadGenerator.ParkingType.Right;
                             else if (currentNode.Attributes["v"].Value == "street_side")
-                                ParkingType2 = ParkingType.Right;
+                                ParkingType = RoadGenerator.ParkingType.Right;
                             break;
                         case "parking:left":
                             if (currentNode.Attributes["v"].Value == "lane")
-                                ParkingType2 = ParkingType.Left;
+                                ParkingType = RoadGenerator.ParkingType.Left;
                             else if (currentNode.Attributes["v"].Value == "street_side")
-                                ParkingType2 = ParkingType.Left;
+                                ParkingType = RoadGenerator.ParkingType.Left;
                             break;
                         case "parking:both":
                             if (currentNode.Attributes["v"].Value == "lane")
-                                ParkingType2 = ParkingType.Both;
+                                ParkingType = RoadGenerator.ParkingType.Both;
                             else if (currentNode.Attributes["v"].Value == "street_side")
-                                ParkingType2 = ParkingType.Both;
+                                ParkingType = RoadGenerator.ParkingType.Both;
                             break;
                     }
                 }

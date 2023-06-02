@@ -111,9 +111,6 @@ namespace RoadSystemGenerator
                 if(GUILayout.Button("Generate OSM roads"))
                     roadSystem.GenerateOSMRoads();
 
-                if(GUILayout.Button("Spawn bus stops"))
-                    roadSystem.SpawnBusStops();
-
                 if(GUILayout.Button("Delete all roads"))
                     roadSystem.DeleteAllRoads();
 

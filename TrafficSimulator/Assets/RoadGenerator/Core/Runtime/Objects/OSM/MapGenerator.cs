@@ -3,27 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Xml;
 using System;
-using System.Linq;
 
 namespace RoadGenerator
 {
-    public class Way
-    {
-        public string ID;
-        public string Name;
-        public List<Vector3> Points;
-
-        public Way(XmlNode node, List<Vector3> points)
-        {
-            XmlAttribute IDAttribute = node.Attributes["id"];
-
-            if (IDAttribute != null)
-                ID = IDAttribute.Value;
-
-            Points = points;
-        }
-    }
-
     public struct BuildingPoints
     {
         public Vector3 BottomPoint;
@@ -32,66 +14,6 @@ namespace RoadGenerator
         {
             BottomPoint = bottomPoint;
             TopPoint = topPoint;
-        }
-    }
-
-    public class BuildingWay : Way
-    {
-        public float? Height;
-        public int? BuildingLevels;
-        public bool IsMultiPolygon;
-        public string StreetName;
-        public string StreetAddress;
-
-        public BuildingWay(XmlNode node, List<Vector3> points) : base(node, points)
-        {
-            IEnumerator ienum = node.GetEnumerator();
-
-            while (ienum.MoveNext())
-            {
-                XmlNode currentNode = (XmlNode) ienum.Current;
-                if (currentNode.Name != "tag") 
-                    continue;
-
-                try
-                {
-                    switch (currentNode.Attributes["k"].Value)
-                    {
-                        case "height":
-                            Height = float.Parse(currentNode.Attributes["v"].Value.Replace(".", ","));
-                            break;
-                        case "building:levels":
-                            BuildingLevels = int.Parse(currentNode.Attributes["v"].Value);
-                            break;
-                        case "addr:street":
-                            StreetName = currentNode.Attributes["v"].Value;
-                            break;
-                        case "addr:housenumber":
-                            StreetAddress = currentNode.Attributes["v"].Value;
-                            break;
-                        case "type":
-                            if (currentNode.Attributes["v"].Value == "multipolygon")
-                                IsMultiPolygon = true;
-                            break;
-                    }
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-        }
-    }
-    
-    public class TerrainWay : Way
-    {
-        public TerrainType TerrainType;
-        public TerrainArea TerrainArea;
-
-        public TerrainWay(XmlNode node, List<Vector3> outerPoints, List<List<Vector3>> innerAreas = null, TerrainType? terrainType = null) : base(node, outerPoints)
-        {
-            TerrainType = terrainType ?? MapGenerator.GetTerrainType(node);
-            TerrainArea = new TerrainArea(TerrainType, outerPoints, innerAreas);
         }
     }
 
@@ -119,53 +41,53 @@ namespace RoadGenerator
         private RoadSystem _roadSystem;
         private Dictionary<string, XmlNode> _nodesDict = new Dictionary<string, XmlNode>();
         private Dictionary<string, XmlNode> _wayDict = new Dictionary<string, XmlNode>();
-        private Dictionary<Vector3, List<Road>> _roadsAtNode = new Dictionary<Vector3, List<Road>>();
         private Dictionary<Vector3, bool> _trafficLightAtJunction = new Dictionary<Vector3, bool>();
         private List<XmlNode> _busStops = new List<XmlNode>();
         private List<XmlNode> _trees = new List<XmlNode>();
-        private float _minLat = 0;
-        private float _minLon = 0;
-        private float _maxLat = 0;
-        private float _maxLon = 0;
+        private float _minLat;
+        private float _minLon;
+        private float _maxLat;
+        private float _maxLon;
         private Terrain _terrain;
         private List<TerrainWay> _terrains = new List<TerrainWay>();
-        XmlDocument _doc = new XmlDocument();
-
+        private XmlDocument _doc = new XmlDocument();
+        private List<RoadWay> _roadWays = new List<RoadWay>();
+        private List<BuildingWay> _buildingWays = new List<BuildingWay>();
         public void GenerateMap(RoadSystem roadSystem)
         {
-            roadSystem.UseOSM = true;
-            roadSystem.IsGeneratingOSM = true;
-            _terrain = roadSystem.Terrain;
-            _nodesDict.Clear();
-            _roadsAtNode.Clear();
-            _busStops.Clear();
-            _minLat = 0;
-            _minLon = 0;
-            _maxLat = 0;
-            _maxLon = 0;
-            _roadSystem = roadSystem;
+            Setup(roadSystem);
+
+            RoadWayGenerator roadWayGenerator = new RoadWayGenerator(roadSystem, _trafficLightAtJunction);
+            BuildingGenerator buildingGenerator = new BuildingGenerator();
+            TerrainGenerator terrainGenerator = new TerrainGenerator();
 
             // Loading the OSM file
             LoadOSMMap();
             // Parsing the Bounds of the map
             AssignMapBounds();
             // Mapping the nodes to dictionaries
-            MapNodes();
+            ParseNodes();
             // Generating the OSM ways
-            GenerateWays();
-            // Generating the OSM relations
-            GenerateRelations();
+            ParseWays();
+            // Parsing the OSM relations
+            ParseRelations();
+
+            // Generating the roads
+            roadWayGenerator.GenerateRoads(_roadWays);
+            
             // Generating the intersections
-            GenerateIntersections();
+            roadWayGenerator.GenerateIntersections();
+
+            buildingGenerator.GenerateBuildings(_buildingWays, BuildingPrefab, BuildingWallMaterial, BuildingRoofMaterial, roadSystem.BuildingContainer.transform);
 
             // Adding bus stops
-            if (roadSystem.ShouldGenerateBusStops)
-                AddBusStops();
+            roadWayGenerator.AddBusStops(_busStops, this);
 
             // Generating the terrain
             if (roadSystem.ShouldGenerateTerrain)
             {
-                GenerateTerrain();
+                Vector3 terrainSize = LatLonToPosition(_maxLat, _maxLon);
+                terrainGenerator.GenerateTerrain(_terrain, _terrains, terrainSize);
                 AddTrees();
             }
 
@@ -175,8 +97,25 @@ namespace RoadGenerator
                 road.OnChange();
         }
 
-        /// <summary> Generates the OSM ways in the road system. Generates roads, buildings and terrain </summary>
-        private void GenerateWays()
+        private void Setup(RoadSystem roadSystem)
+        {
+            roadSystem.UseOSM = true;
+            roadSystem.IsGeneratingOSM = true;
+            _terrain = roadSystem.Terrain;
+            _nodesDict.Clear();
+            _busStops.Clear();
+            _trees.Clear();
+            _roadWays.Clear();
+            _buildingWays.Clear();
+            _minLat = 0;
+            _minLon = 0;
+            _maxLat = 0;
+            _maxLon = 0;
+            _roadSystem = roadSystem;
+        }
+
+        /// <summary> Parses the OSM ways </summary>
+        private void ParseWays()
         {
             XmlNodeList ways = _doc.GetElementsByTagName("way");
             foreach(XmlNode node in ways)
@@ -189,14 +128,14 @@ namespace RoadGenerator
                 if (way is TerrainWay)
                     _terrains.Add((TerrainWay)way);
                 else if (way is RoadWay) 
-                    GenerateRoad((RoadWay)way);
+                    _roadWays.Add((RoadWay)way);
                 else if (way is BuildingWay)
-                    GenerateBuilding((BuildingWay)way);
+                    _buildingWays.Add((BuildingWay)way);
             }
         }
 
         /// <summary> Maps the OSM nodes to dictionaries </summary>
-        private void MapNodes()
+        private void ParseNodes()
         {
             // Adding all the nodes to a dictionary and mapping bus stops, traffic lights and trees
             foreach(XmlNode node in _doc.DocumentElement.ChildNodes)
@@ -220,7 +159,7 @@ namespace RoadGenerator
                         switch (childNode.Attributes["k"].Value)
                         {
                             case "highway":
-                                if (childNode.Attributes["v"].Value == "bus_stop")
+                                if (_roadSystem.ShouldGenerateBusStops && childNode.Attributes["v"].Value == "bus_stop")
                                     _busStops.Add(node);
                                 if (childNode.Attributes["v"].Value == "traffic_signals")
                                     _trafficLightAtJunction[GetNodePosition(node)] = true;
@@ -243,7 +182,8 @@ namespace RoadGenerator
         }
 
         /// <summary> Generates the relational OSM objects </summary>
-        private void GenerateRelations()
+        // https://wiki.openstreetmap.org/wiki/Relation
+        private void ParseRelations()
         {
             XmlNodeList relations = _doc.GetElementsByTagName("relation");
             foreach(XmlNode node in relations)
@@ -267,7 +207,7 @@ namespace RoadGenerator
                             if (_wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
                             {
                                 XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
-                                GenerateBuilding(new BuildingWay(wayNode, GetWayNodePositions(wayNode.GetEnumerator())));
+                                _buildingWays.Add(new BuildingWay(wayNode, GetWayNodePositions(wayNode.GetEnumerator()), _roadSystem.BuildingContainer.transform, BuildingPrefab));
                             }
                         }
                     }
@@ -311,286 +251,6 @@ namespace RoadGenerator
             _maxLon = float.Parse(boundsNode.Attributes["maxlon"].Value.Replace(".", ","));
         }
 
-
-        private List<Vector2> Vector3ToVector2(List<Vector3> points)
-        {
-            List<Vector2> vector2Points = new List<Vector2>();
-
-            foreach (Vector3 point in points)
-                vector2Points.Add(new Vector2(point.x, point.z));
-
-            return vector2Points;
-        }
-
-        private void GenerateTerrain()
-        {
-            TerrainData terrainData = _terrain.terrainData;
-            Vector3 maxSize = LatLonToPosition(_maxLat, _maxLon);
-            maxSize.y = 10f;
-            terrainData.size = maxSize;
-            _terrain.gameObject.SetActive(true);
-            _terrain.gameObject.transform.position = new Vector3(0, -10.01f, 0);
-            float baseHeight = 10;
-
-            int res = terrainData.heightmapResolution;
-            float[,] heights = terrainData.GetHeights(0, 0, res, res);
-            float[, ,] splatmapData = new float[terrainData.alphamapWidth, terrainData.alphamapHeight, terrainData.alphamapLayers];
-
-            for (int x = 0; x < res; x++)
-            {
-                for (int y = 0; y < res; y++)
-                {
-                    Vector2 basPos2D = Vector2.zero;
-                    Vector2 terrainPosition =  basPos2D + new Vector2(x * terrainData.size.x / res, y * terrainData.size.z / res);
-                    heights[y, x] = baseHeight;
-                    bool isInsideInnerArea = false;
-
-                    foreach (TerrainWay terrainWay in _terrains)
-                    {
-                        if (terrainWay.TerrainType == TerrainType.Water && IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainWay.TerrainArea.OuterArea).ToArray()))
-                        {
-                            if (terrainWay.TerrainArea.InnerAreas != null && terrainWay.TerrainArea.InnerAreas.Count > 0)
-                            {
-                                List<Vector3> innerArea = new List<Vector3>();
-
-                                foreach (List<Vector3> innerArea2 in terrainWay.TerrainArea.InnerAreas)
-                                    innerArea.AddRange(innerArea2);
-
-                                // The terrain point is inside the terrain type area
-                                if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
-                                {
-                                    isInsideInnerArea = true;
-                                    break;
-                                }
-                            }
-
-                            if (isInsideInnerArea)
-                                break;
-
-                            heights[y, x] = 0;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            terrainData.SetHeights(0, 0, heights);
-
-            for (int y = 0; y < terrainData.alphamapHeight; y++)
-            {
-                for (int x = 0; x < terrainData.alphamapWidth; x++)
-                {
-                    Vector2 basePos2D = Vector2.zero;
-                    Vector2 terrainPosition =  basePos2D + new Vector2(x * terrainData.size.x / terrainData.alphamapWidth, y * terrainData.size.z / terrainData.alphamapHeight);
-                    // Setup an array to record the mix of texture weights at this point
-                    float[] splatWeights = new float[terrainData.alphamapLayers];
-
-                    bool foundTerrain = false;
-                    bool isInsideInnerArea = false;
-                    foreach (TerrainWay terrainWay in _terrains)
-                    {
-                        // The terrain point is inside the terrain type area
-                        if (IsPointInPolygon(terrainPosition, Vector3ToVector2(terrainWay.TerrainArea.OuterArea).ToArray()))
-                        {
-                            foreach (List<Vector3> innerArea in terrainWay.TerrainArea.InnerAreas)
-                            {
-                                // The terrain point is inside the terrain type area
-                                if (IsPointInPolygon(terrainPosition, Vector3ToVector2(innerArea).ToArray()))
-                                {
-                                    isInsideInnerArea = true;
-                                    break;
-                                }
-                            }
-
-                            if (isInsideInnerArea)
-                                break;
-
-                            if (terrainWay.TerrainType == TerrainType.Grass)
-                                splatWeights[(int)TerrainType.Grass] = 1f;
-                            else if (terrainWay.TerrainType == TerrainType.Forest)
-                                splatWeights[(int)TerrainType.Forest] = 1f;
-                            else
-                                splatWeights[2] = 1f;
-
-                            foundTerrain = true;
-                            break;
-                        }
-                    }
-
-                    if (!foundTerrain)
-                        splatWeights[(int)TerrainType.Default] = 1f;
-
-                    // Sum of all textures weights must add to 1, so calculate normalization factor from sum of weights
-                    float z = splatWeights.Sum();
-
-                    // Loop through each terrain texture
-                    for(int i = 0; i<terrainData.alphamapLayers; i++)
-                    {
-                        // Normalize so that sum of all texture weights = 1
-                        splatWeights[i] /= z;
-
-                        // Assign this point to the splatmap array
-                        splatmapData[y, x, i] = splatWeights[i];
-                    }
-                }
-            }
-            // Finally assign the new splatmap to the terrainData:
-            terrainData.SetAlphamaps(0, 0, splatmapData);
-        }
-
-        /// <summary> Generates intersections where the OSM roads intersect </summary>
-        private void GenerateIntersections()
-        {
-            foreach (KeyValuePair<Vector3, List<Road>> roads in _roadsAtNode)
-            {
-                Vector3 position = roads.Key;
-
-                // Find nodes that are shared by more than one road
-                // This will mean it will either be an intersection or a road connection
-                if (roads.Value.Count < 2)
-                    continue;
-
-                if (roads.Value.Count == 2)
-                {
-                    Road road1 = roads.Value[0];
-                    Road road2 = roads.Value[1];
-
-                    PathCreator pathCreator1 = road1.PathCreator;
-                    PathCreator pathCreator2 = road2.PathCreator;
-
-                    // Currently skipping roads that are shorter than 15m, When the issues with intersections between short roads is fixed this can be removed
-                    if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15)
-                        continue;
-
-                    bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
-                    bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
-
-                    // If it is an intersection
-                    if (!(isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2))
-                    {
-                        Intersection intersection = IntersectionCreator.CreateIntersectionAtPosition(position, road1, road2);
-
-                        if (intersection != null)
-                            intersection.FlowType = _trafficLightAtJunction.ContainsKey(position) && _trafficLightAtJunction[position] ? FlowType.TrafficLights : FlowType.YieldSigns;
-                    }
-                }
-                else if (roads.Value.Count == 3)
-                {
-                    Road road1 = roads.Value[0];
-                    Road road2 = roads.Value[1];
-                    Road road3 = roads.Value[2];
-
-                    PathCreator pathCreator1 = road1.PathCreator;
-                    PathCreator pathCreator2 = road2.PathCreator;
-                    PathCreator pathCreator3 = road3.PathCreator;
-
-                    if (pathCreator1.path.length < 10 || pathCreator2.path.length < 10 || pathCreator3.path.length < 10)
-                    {
-                        Debug.Log("Road too short");
-                        continue;
-                    }
-
-                    IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3 });
-                }
-                else if (roads.Value.Count == 4)
-                {
-                    Road road1 = roads.Value[0];
-                    Road road2 = roads.Value[1];
-                    Road road3 = roads.Value[2];
-                    Road road4 = roads.Value[3];
-
-                    PathCreator pathCreator1 = road1.PathCreator;
-                    PathCreator pathCreator2 = road2.PathCreator;
-                    PathCreator pathCreator3 = road3.PathCreator;
-                    PathCreator pathCreator4 = road4.PathCreator;
-
-                    if (pathCreator1.path.length < 10 || pathCreator2.path.length < 10 || pathCreator3.path.length < 10 || pathCreator4.path.length < 10)
-                    {
-                        Debug.Log("Road too short");
-                        continue;
-                    }
-
-                    IntersectionCreator.CreateIntersectionAtPositionMultipleRoads(position, new List<Road> { road1, road2, road3, road4 });
-                }
-            
-            }
-
-            foreach (KeyValuePair<Vector3, List<Road>> roads in _roadsAtNode) 
-            {
-                if (roads.Value.Count == 2)
-                {
-                    Road road1 = roads.Value[0];
-                    Road road2 = roads.Value[1];
-                    PathCreator pathCreator1 = road1.PathCreator;
-                    PathCreator pathCreator2 = road2.PathCreator;
-
-                    bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;
-                    bool isNodeAtEndPointRoad2 = pathCreator2.path.GetPoint(pathCreator2.path.NumPoints - 1) == roads.Key || pathCreator2.path.GetPoint(0) == roads.Key;
-
-                    if (isNodeAtEndPointRoad1 && isNodeAtEndPointRoad2 && road1.ConnectedToAtStart == null && road1.ConnectedToAtEnd == null)
-                        road1.ConnectRoadIfEndPointsAreClose();
-                }
-            }
-        }
-
-        public void AddBusStops()
-        {
-            GameObject busStopPrefab = _roadSystem.DefaultBusStopPrefab;
-            string name = "";
-            string refName = "";
-
-            foreach (XmlNode busStopNode in _busStops)
-            {
-                foreach (XmlNode tagNode in busStopNode.ChildNodes)
-                {
-                    if (tagNode.Name == "tag")
-                    {
-                        switch (tagNode.Attributes["k"].Value)
-                        {
-                            case "name":
-                                name = tagNode.Attributes["v"].Value;
-                                break;
-                            case "ref":
-                                refName = tagNode.Attributes["v"].Value;
-                                break;
-                        }
-                    }
-                }
-
-                name = name + " " + refName;
-                Vector3 position = GetNodePosition(busStopNode);
-
-                if (_roadsAtNode.ContainsKey(position) == false)
-                    continue;
-
-                List<Road> roads = _roadsAtNode[position];
-
-                if (roads.Count == 0)
-                    continue;
-
-                Road road = roads[0];
-                RoadNode curr = road.StartRoadNode;
-                float minDistanceToBusStop = float.MaxValue;
-                RoadNode closestRoadNode = null;
-
-                while (curr != null)
-                {
-                    float distanceToBusStop = Vector3.Distance(curr.Position, position);
-
-                    if (distanceToBusStop < minDistanceToBusStop)
-                    {
-                        minDistanceToBusStop = distanceToBusStop;
-                        closestRoadNode = curr;
-                    }
-
-                    curr = curr.Next;
-                }
-
-                bool isForward = refName == "A";
-                road.SpawnBusStop(closestRoadNode, isForward, busStopPrefab, name);
-            }
-        }
-
         private void AddTrees()
         {
             GameObject treePrefab = _roadSystem.DefaultTreePrefab;
@@ -628,7 +288,7 @@ namespace RoadGenerator
                 case WayType.Road:
                     return new RoadWay(node, points, typeNode);
                 case WayType.Building:
-                    return new BuildingWay(node, points);
+                    return new BuildingWay(node, points, _roadSystem.BuildingContainer.transform, BuildingPrefab);
                 case WayType.Terrain:
                     return new TerrainWay(typeNode, points);
                 case WayType.Water:
@@ -681,23 +341,6 @@ namespace RoadGenerator
             typeNode = null;
             return null;
         }
-        
-
-        // https://wiki.openstreetmap.org/wiki/Key:landuse
-        public static TerrainType GetTerrainType(XmlNode node)
-        {
-            switch (node.Attributes["v"].Value)
-            {
-                case "grass":
-                    return TerrainType.Grass;
-                case "sand":
-                    return TerrainType.Sand;
-                case "forest":
-                    return TerrainType.Forest;
-                default:
-                    return TerrainType.Default;
-            }
-        }
 
         private void LoadOSMMap()
         {
@@ -706,8 +349,6 @@ namespace RoadGenerator
 
         private void GenerateFootWay(List <Vector3> points)
         {
-            return;
-            /*Debug.Log("Generating footway");
             FootWayMeshGenerator footWayMeshGenerator = new FootWayMeshGenerator();
             Mesh footWay = footWayMeshGenerator.GenerateMesh(points, 4, 0.1f);
             GameObject footWayObject = new GameObject();
@@ -716,95 +357,7 @@ namespace RoadGenerator
             meshFilter.mesh = footWay;
             MeshRenderer meshRenderer = footWayObject.AddComponent<MeshRenderer>();
             //meshRenderer.material = roadSystem.DefaultRoadMaterial;
-            footWayObject.name = "FootWay";*/
-        }
-
-        // https://wiki.openstreetmap.org/wiki/Map_features#Highway
-        void GenerateRoad(RoadWay roadWay) 
-        {
-            List <Vector3> roadPoints = roadWay.Points;
-
-            if (roadWay.RoadType == null)
-                return;
-
-            if (roadWay.RoadType == RoadWayType.Footway || roadWay.RoadType == RoadWayType.Path)
-            {
-                //GenerateFootWay(roadPoints, wayData);
-                return;
-            }
-
-            if (roadWay.Name == null && roadWay.RoadType != RoadWayType.RaceWay)
-                return;
-
-            // Total Length of road
-            float totalLength = 0;
-            
-            for (int i = 0; i < roadPoints.Count - 1; i++)
-                totalLength += Vector3.Distance(roadPoints[i], roadPoints[i + 1]);
-            
-            if (totalLength < 10)
-                return;
-
-            // Currently get error when roads have same start and end point, TODO fix
-            if (roadPoints[0] == roadPoints[roadPoints.Count - 1])
-                return;
-            
-            List<Vector3> roadPoints2 = new List<Vector3>();
-            roadPoints2.Add(roadPoints[0]);
-            roadPoints2.Add(roadPoints[1]);
-            Road road = SpawnRoad(roadPoints2, (RoadWay)roadWay);
-
-            road.RoadType = roadWay.RoadType.Value;
-
-            if (roadWay.IsOneWay == true)
-            {
-                road.IsOneWay = true;
-                road.LaneWidth /= 2;
-            }
-
-            if (roadWay.RoadType == RoadWayType.RaceWay)
-                road.LaneWidth = 5;
-
-            if (roadWay.ParkingType2 != null && roadWay.ParkingType2 != ParkingType.None)
-            {
-                if (roadWay.ParkingType2 == ParkingType.Left || roadWay.ParkingType2 == ParkingType.Both)
-                    road.AddFullRoadSideParking(LaneSide.Secondary);
-                
-                if (roadWay.ParkingType2 == ParkingType.Right || roadWay.ParkingType2 == ParkingType.Both)
-                    road.AddFullRoadSideParking(LaneSide.Primary);
-                // Avoid spawning lamppoles if there is parking on the road
-                roadWay.IsLit = false;
-            }
-
-            if (roadWay.MaxSpeed != null)
-                road.SpeedLimit = (SpeedLimit)roadWay.MaxSpeed;
-
-            // When the speedlimit is not known in residential areas, set it to 30km/h
-            if (roadWay.RoadType == RoadWayType.Residential && roadWay.MaxSpeed == null)
-                road.SpeedLimit = SpeedLimit.ThirtyKPH;
-
-            road.ShouldSpawnLampPoles = !roadWay.IsLit;
-
-            PathCreator pathCreator = road.GetComponent<PathCreator>();
-
-            // Roads with only two points will not render properly, this is a hack to render them
-            // TODO update the roads correctly
-            // Move point to the same place to rerender the road
-            if (roadPoints.Count == 2)
-                pathCreator.bezierPath.MovePoint(0, roadPoints[0]);
-
-            for (int i = 2; i < roadPoints.Count; i++)
-                pathCreator.bezierPath.AddSegmentToEnd(roadPoints[i]);
-
-            foreach (Vector3 point in roadPoints) 
-            {
-                if (!_roadsAtNode.ContainsKey(point))
-                    _roadsAtNode.Add(point, new List<Road> { road });
-                else
-                    _roadsAtNode[point].Add(road);
-            }
-        
-            road.OnChange();
+            footWayObject.name = "FootWay";
         }
 
         public List<Vector3> GetWayNodePositions(IEnumerator ienum)
@@ -824,7 +377,7 @@ namespace RoadGenerator
             return nodePositions;
         }
 
-        private Vector3 GetNodePosition(XmlNode node)
+        public Vector3 GetNodePosition(XmlNode node)
         {
             try
             {
@@ -873,115 +426,6 @@ namespace RoadGenerator
                 z *= -1;
 
             return new Vector3(x, 0, z);
-        }
-
-        void GenerateBuilding(BuildingWay buildingWay)
-        {
-            float defaultBuildingHeight = 25;
-            float height = buildingWay.Height ?? defaultBuildingHeight;
-
-            if (buildingWay.Height == null && buildingWay.BuildingLevels != null)
-                height = buildingWay.BuildingLevels.Value * 3.5f;
-
-            System.Random random = new System.Random();
-            float randomEpsilon = (float)random.NextDouble() * 0.2f;
-            height += randomEpsilon;
-
-            List<Vector3> buildingPointsBottom = buildingWay.Points;
-            List<BuildingPoints> buildingPoints = new List<BuildingPoints>();
-            List<Vector3> buildingPointsTop = new List<Vector3>();
-
-            foreach (Vector3 point in buildingPointsBottom)
-                buildingPoints.Add(new BuildingPoints(point, new Vector3(point.x, height, point.z)));
-
-            foreach (BuildingPoints point in buildingPoints)
-                buildingPointsTop.Add(point.TopPoint);
-
-            GameObject house = Instantiate(BuildingPrefab, buildingPointsBottom[0], Quaternion.identity);
-
-            house.name = GetBuildingName(buildingWay);
-
-            house.transform.parent = _roadSystem.BuildingContainer.transform;
-
-            BuildingMeshCreator.GenerateBuildingMesh(house, buildingPointsBottom, buildingPointsTop, buildingPoints, BuildingWallMaterial, BuildingRoofMaterial);
-        }
-
-        private string GetBuildingName(BuildingWay buildingWay)
-        {
-            string defaultBuildingName = "Building";
-
-            if (buildingWay.Name != null)
-                return buildingWay.Name;
- 
-            if(buildingWay.StreetName == null || buildingWay.StreetAddress == null)
-                return defaultBuildingName;
-
-            return buildingWay.StreetName + " " + buildingWay.StreetAddress;
-        }
-        public bool IsPointInPolygon(Vector2 point, Vector2[] polygon)
-        {
-            if (polygon == null || polygon.Length < 3)
-                return false;
-
-            int polygonLength = polygon.Length;
-            int i = 0;
-            bool inside = false;
-            // x, y for tested point.
-            float pointX = point.x, pointY = point.y;
-            // start / end point for the current polygon segment.
-            float startX;
-            float startY;
-            float endX;
-            float endY;
-            Vector2 endPoint = polygon[polygonLength - 1];
-            endX = endPoint.x;
-            endY = endPoint.y;
-
-            while (i < polygonLength)
-            {
-                startX = endX;
-                startY = endY;
-                endPoint = polygon[i++];
-                endX = endPoint.x;
-                endY = endPoint.y;
-                inside ^= (endY > pointY ^ startY > pointY) && ((pointX - endX) < (pointY - endY) * (startX - endX) / (startY - endY));
-            }
-
-            return inside;
-        }
-
-        Road SpawnRoad(List<Vector3> points, RoadWay roadWay)
-        {
-            GameObject prefab = RoadPrefab;
-
-            // Instantiate a new road prefab
-            GameObject roadObj = Instantiate(prefab, points[0], Quaternion.identity);
-
-            // Set the name of the road
-            roadObj.name = roadWay.Name;
-
-            // Uncomment for testing purposes
-            // roadObj.name = wayData.WayID;
-
-            roadObj.transform.parent = _roadSystem.RoadContainer.transform;
-
-            // Get the road from the prefab
-            Road road = roadObj.GetComponent<Road>();
-
-            // Move the road to the spawn point
-            PathCreator pathCreator = roadObj.GetComponent<PathCreator>();
-            pathCreator.bezierPath = new BezierPath(points, false, PathSpace.xz);
-            pathCreator.bezierPath.autoControlLength = 0.1f;
-
-            // Set the road pointers
-            road.RoadObject = roadObj;
-            road.RoadSystem = _roadSystem;
-
-            // Update the road to display it
-            road.OnChange();
-            _roadSystem.AddRoad(road as DefaultRoad);
-
-            return road;
         }
     }
 }

@@ -113,12 +113,12 @@ namespace RoadGenerator
                 _tramRails.Remove(road as TramRail);
         }
 
-        public void AddNewRoad(PathType pathType)
+        public Road AddNewRoad(PathType pathType)
         {
             Vector3 spawnPoint = Vector3.zero;
 
 #if UNITY_EDITOR
-            if(!SpawnRoadsAtOrigin)
+            if(!SpawnRoadsAtOrigin && !IsGeneratingOSM)
             {
                 int layerMask = LayerMask.GetMask("RoadSystem");
                 RaycastHit hit;
@@ -129,7 +129,7 @@ namespace RoadGenerator
                 if(!camera || !Physics.Raycast(camera.transform.position, camera.transform.forward, out hit, Mathf.Infinity, ~layerMask))
                 {
                     Debug.LogError("No surface found in line of sight to spawn road. Make sure the surface you are looking at has a collider");
-                    return;
+                    return null;
                 }
                 spawnPoint = hit.point;
                 
@@ -138,7 +138,7 @@ namespace RoadGenerator
                 
                 if(PositionsAreInRoadSystem(new Vector3[]{ roadStartPoint, roadEndPoint })){
                     Debug.LogError($"Cannot spawn a road at {hit.point}, there is already a road there");
-                    return;
+                    return null;
                 }
             }
 #endif
@@ -181,6 +181,7 @@ namespace RoadGenerator
 
                 AddRail(rail);
             }
+            return roadObj.GetComponent<Road>();
         }
 
         private GameObject GetPathPrefab(PathType pathType)
@@ -228,11 +229,6 @@ namespace RoadGenerator
             DeleteAllNature();
             _mapGenerator.GenerateMap(this);
             ChangeBuildingColors();
-        }
-
-        public void SpawnBusStops()
-        {
-            _mapGenerator.AddBusStops();
         }
 
         public void DeleteAllRoads()
