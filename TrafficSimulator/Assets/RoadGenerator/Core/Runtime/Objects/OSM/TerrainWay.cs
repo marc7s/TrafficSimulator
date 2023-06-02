@@ -21,7 +21,8 @@ namespace RoadGenerator
         // https://wiki.openstreetmap.org/wiki/Key:landuse
         private static TerrainType GetTerrainType(XmlNode node)
         {
-            switch (node.Attributes["v"].Value)
+            string value = node.Attributes["v"].Value;
+            switch (value)
             {
                 case "grass":
                     return TerrainType.Grass;

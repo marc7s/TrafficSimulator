@@ -17,6 +17,7 @@ namespace RoadGenerator
             _roadSystem = roadSystem;
             _trafficLightAtJunction = trafficLightAtJunction;
         }
+
         private Road SpawnRoad(List<Vector3> points, RoadWay roadWay)
         {
             Road road = _roadSystem.AddNewRoad(PathType.Road);
@@ -32,18 +33,18 @@ namespace RoadGenerator
             pathCreator.bezierPath = new BezierPath(points, false, PathSpace.xz);
             pathCreator.bezierPath.autoControlLength = 0.1f;
 
-            // Set the road pointers
-
             // Update the road to display it
             road.OnChange();
 
             return road;
         }
+
         public void GenerateRoads(List<RoadWay> roadWays)
         {
             foreach (RoadWay roadWay in roadWays)
                 GenerateRoad(roadWay);
         }
+
         // https://wiki.openstreetmap.org/wiki/Map_features#Highway
         private void GenerateRoad(RoadWay roadWay) 
         {
@@ -131,6 +132,7 @@ namespace RoadGenerator
         
             road.OnChange();
         }
+
         /// <summary> Generates intersections where the OSM roads intersect </summary>
         public void GenerateIntersections()
         {
@@ -225,6 +227,7 @@ namespace RoadGenerator
                 }
             }
         }
+
         public void AddBusStops(List<XmlNode> _busStops, MapGenerator mapGenerator)
         {
             if (_busStops.Count == 0)
@@ -252,7 +255,7 @@ namespace RoadGenerator
                     }
                 }
 
-                name = name + " " + refName;
+                name += " " + refName;
                 Vector3 position = mapGenerator.GetNodePosition(busStopNode);
 
                 if (_roadsAtNode.ContainsKey(position) == false)

@@ -1,25 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace RoadGenerator
 {
-    public class BuildingMeshCreator
+    public static class BuildingMeshCreator
     {
         public static void GenerateBuildingMesh(GameObject building, List<Vector3> buildingPointsBottom, List<Vector3> buildingPointsTop, List<BuildingPoints> buildingPoints, Material buildingWallMaterial, Material buildingRoofMaterial)
         {
             Mesh buildingMesh = AssignMeshComponents(building, buildingWallMaterial, buildingRoofMaterial);
 
             // Create roofs for buildings
-            List<Triangle> triangles = new List<Triangle>();
+            List<Triangle> triangles = new();
 
             try
             {
                 triangles.AddRange(TriangulateConcavePolygon(buildingPointsTop));
             }
-            catch (Exception){}
+            catch (Exception) { }
 
             buildingPointsTop.Reverse();
 
@@ -27,18 +25,18 @@ namespace RoadGenerator
             {
                 triangles.AddRange(TriangulateConcavePolygon(buildingPointsTop));
             }
-            catch (Exception){}
+            catch (Exception) { }
 
             CreateBuildingMesh(buildingMesh, buildingPoints, triangles);
         }
 
         private static void CreateBuildingMesh(Mesh buildingMesh, List<BuildingPoints> buildingPoints, List<Triangle> triangles)
         {
-            List<Vector3> bottomPoints = new List<Vector3>();
-            Dictionary<Vector3, int> positionToIndex = new Dictionary<Vector3, int>();
-            List<Vector3> verts = new List<Vector3>();
-            List<int> wallTris = new List<int>();
-            List<int> roofTris = new List<int>();
+            List<Vector3> bottomPoints = new();
+            Dictionary<Vector3, int> positionToIndex = new();
+            List<Vector3> verts = new();
+            List<int> wallTris = new();
+            List<int> roofTris = new();
 
             foreach (BuildingPoints buildingPoint in buildingPoints)
             {
@@ -53,13 +51,15 @@ namespace RoadGenerator
                 verts.Add(buildingPoint.TopPoint);
 
                 if (!positionToIndex.ContainsKey(buildingPoint.TopPoint))
+                {
                     positionToIndex.Add(buildingPoint.TopPoint, verts.Count - 1);
+                }
             }
 
             bool isBuildingClockwise = IsBuildingClockWise(bottomPoints);
             int index = -1;
             bool isFirstIteration = true;
-            
+
             foreach (BuildingPoints buildingPoint in buildingPoints)
             {
                 if (isFirstIteration)
@@ -68,9 +68,9 @@ namespace RoadGenerator
                     index += 2;
                     continue;
                 }
-                
+
                 index += 2;
-                AddBuildingWall(index, index -1, index - 2, index - 3, wallTris, isBuildingClockwise);
+                AddBuildingWall(index, index - 1, index - 2, index - 3, wallTris, isBuildingClockwise);
             }
 
             foreach (Triangle triangle in triangles)
@@ -137,17 +137,21 @@ namespace RoadGenerator
             buildingObject.transform.localScale = Vector3.one;
 
             // Ensure mesh renderer and filter components are assigned
-            if (!buildingObject.gameObject.GetComponent<MeshFilter>()) 
-                buildingObject.gameObject.AddComponent<MeshFilter>();
+            if (!buildingObject.gameObject.GetComponent<MeshFilter>())
+            {
+                _ = buildingObject.gameObject.AddComponent<MeshFilter>();
+            }
 
-            if (!buildingObject.GetComponent<MeshRenderer>()) 
-                buildingObject.gameObject.AddComponent<MeshRenderer>();
+            if (!buildingObject.GetComponent<MeshRenderer>())
+            {
+                _ = buildingObject.gameObject.AddComponent<MeshRenderer>();
+            }
 
             MeshRenderer _meshRenderer = buildingObject.GetComponent<MeshRenderer>();
-            _meshRenderer.sharedMaterials = new Material[]{ buildingWallMaterial, buildingRoofMaterial };
+            _meshRenderer.sharedMaterials = new Material[] { buildingWallMaterial, buildingRoofMaterial };
             MeshFilter _meshFilter = buildingObject.GetComponent<MeshFilter>();
 
-            Mesh mesh = new Mesh();
+            Mesh mesh = new();
 
             _meshFilter.sharedMesh = mesh;
             return mesh;
@@ -155,7 +159,7 @@ namespace RoadGenerator
         public static List<Triangle> TriangulateConcavePolygon(List<Vector3> points)
         {
             // The list with triangles the method returns
-            List<Triangle> triangles = new List<Triangle>();
+            List<Triangle> triangles = new();
 
             // If we just have three points, then we dont have to do all calculations
             if (points.Count == 3)
@@ -165,16 +169,18 @@ namespace RoadGenerator
             }
 
             // Step 1. Store the vertices in a list and we also need to know the next and prev vertex
-            List<Vertex> vertices = new List<Vertex>();
+            List<Vertex> vertices = new();
 
             for (int i = 0; i < points.Count; i++)
+            {
                 vertices.Add(new Vertex(points[i]));
+            }
 
             // Find the next and previous vertex
             for (int i = 0; i < vertices.Count; i++)
             {
-                int nextPos = ClampListIndex(i + 1, vertices.Count);
-                int prevPos = ClampListIndex(i - 1, vertices.Count);
+                int nextPos = WrapAroundList(i + 1, vertices.Count);
+                int prevPos = WrapAroundList(i - 1, vertices.Count);
 
                 vertices[i].PrevVertex = vertices[prevPos];
                 vertices[i].NextVertex = vertices[nextPos];
@@ -182,13 +188,17 @@ namespace RoadGenerator
 
             // Step 2. Find the reflex (concave) and convex vertices, and ear vertices
             for (int i = 0; i < vertices.Count; i++)
+            {
                 CheckIfReflexOrConvex(vertices[i]);
+            }
 
             // Have to find the ears after we have found if the vertex is reflex or convex
-            List<Vertex> earVertices = new List<Vertex>();
-            
+            List<Vertex> earVertices = new();
+
             for (int i = 0; i < vertices.Count; i++)
+            {
                 IsVertexEar(vertices[i], vertices, earVertices);
+            }
 
             // Step 3. Triangulate!
             while (true)
@@ -207,14 +217,14 @@ namespace RoadGenerator
                 Vertex earVertexPrev = earVertex.PrevVertex;
                 Vertex earVertexNext = earVertex.NextVertex;
 
-                Triangle newTriangle = new Triangle(earVertex, earVertexPrev, earVertexNext);
+                Triangle newTriangle = new(earVertex, earVertexPrev, earVertexNext);
 
                 triangles.Add(newTriangle);
 
                 // Remove the vertex from the lists
-                earVertices.Remove(earVertex);
+                _ = earVertices.Remove(earVertex);
 
-                vertices.Remove(earVertex);
+                _ = vertices.Remove(earVertex);
 
                 // Update the previous vertex and next vertex
                 earVertexPrev.NextVertex = earVertexNext;
@@ -224,8 +234,8 @@ namespace RoadGenerator
                 CheckIfReflexOrConvex(earVertexPrev);
                 CheckIfReflexOrConvex(earVertexNext);
 
-                earVertices.Remove(earVertexPrev);
-                earVertices.Remove(earVertexNext);
+                _ = earVertices.Remove(earVertexPrev);
+                _ = earVertices.Remove(earVertexNext);
 
                 IsVertexEar(earVertexPrev, vertices, earVertices);
                 IsVertexEar(earVertexNext, vertices, earVertices);
@@ -234,19 +244,20 @@ namespace RoadGenerator
             return triangles;
         }
 
-        public static int ClampListIndex(int index, int listSize)
+        public static int WrapAroundList(int index, int listSize)
         {
-            index = ((index % listSize) + listSize) % listSize;
-            return index;
+            return ((index % listSize) + listSize) % listSize;
         }
 
         public static bool IsTriangleOrientedClockwise(Vector2 p1, Vector2 p2, Vector2 p3)
         {
             bool isClockWise = true;
-            float determinant = p1.x * p2.y + p3.x * p1.y + p2.x * p3.y - p1.x * p3.y - p3.x * p2.y - p2.x * p1.y;
+            float determinant = (p1.x * p2.y) + (p3.x * p1.y) + (p2.x * p3.y) - (p1.x * p3.y) - (p3.x * p2.y) - (p2.x * p1.y);
 
             if (determinant > 0f)
+            {
                 isClockWise = false;
+            }
 
             return isClockWise;
         }
@@ -256,26 +267,25 @@ namespace RoadGenerator
             bool isWithinTriangle = false;
 
             //Based on Barycentric coordinates
-            float denominator = ((p2.y - p3.y) * (p1.x - p3.x) + (p3.x - p2.x) * (p1.y - p3.y));
+            float denominator = ((p2.y - p3.y) * (p1.x - p3.x)) + ((p3.x - p2.x) * (p1.y - p3.y));
 
-            float a = ((p2.y - p3.y) * (p.x - p3.x) + (p3.x - p2.x) * (p.y - p3.y)) / denominator;
-            float b = ((p3.y - p1.y) * (p.x - p3.x) + (p1.x - p3.x) * (p.y - p3.y)) / denominator;
+            float a = (((p2.y - p3.y) * (p.x - p3.x)) + ((p3.x - p2.x) * (p.y - p3.y))) / denominator;
+            float b = (((p3.y - p1.y) * (p.x - p3.x)) + ((p1.x - p3.x) * (p.y - p3.y))) / denominator;
             float c = 1 - a - b;
-
-            //The point is within the triangle or on the border if 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
-            //if (a >= 0f && a <= 1f && b >= 0f && b <= 1f && c >= 0f && c <= 1f)
-            //{
-            //    isWithinTriangle = true;
-            //}
 
             //The point is within the triangle
             if (a > 0f && a < 1f && b > 0f && b < 1f && c > 0f && c < 1f)
+            {
                 isWithinTriangle = true;
+            }
 
             return isWithinTriangle;
         }
 
-        // Check if a vertex if reflex or convex, and add to appropriate list
+        /// <summary>
+        /// Check if a vertex if reflex or convex, and add to appropriate list
+        /// </summary>
+        /// <param name="v"></param>
         private static void CheckIfReflexOrConvex(Vertex v)
         {
             v.IsReflex = false;
@@ -287,17 +297,28 @@ namespace RoadGenerator
             Vector2 c = v.NextVertex.GetPos2D_XZ();
 
             if (IsTriangleOrientedClockwise(a, b, c))
+            {
                 v.IsReflex = true;
+            }
             else
+            {
                 v.IsConvex = true;
+            }
         }
 
-        // Check if a vertex is an ear
+        /// <summary>
+        /// Check if a vertex is an ear
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="vertices"></param>
+        /// <param name="earVertices"></param>
         private static void IsVertexEar(Vertex v, List<Vertex> vertices, List<Vertex> earVertices)
         {
             // A reflex vertex cant be an ear!
             if (v.IsReflex)
+            {
                 return;
+            }
 
             // This triangle to check point in triangle
             Vector2 a = v.PrevVertex.GetPos2D_XZ();
@@ -323,76 +344,106 @@ namespace RoadGenerator
             }
 
             if (!hasPointInside)
+            {
                 earVertices.Add(v);
+            }
         }
 
         public class Vertex
         {
             public Vector3 Position;
 
-            // The outgoing halfedge (a halfedge that starts at this vertex)
-            // Doesnt matter which edge we connect to it
+            /// <summary>
+            /// The outgoing halfedge (a halfedge that starts at this vertex)
+            /// Doesnt matter which edge we connect to it
+            /// </summary>
             public HalfEdge HalfEdge;
 
-            // Which triangle is this vertex a part of?
+            /// <summary>
+            /// Which triangle is this vertex a part of?
+            /// </summary>
             public Triangle Triangle;
 
-            // The previous and next vertex this vertex is attached to
+            /// <summary>
+            /// The previous and next vertex this vertex is attached to
+            /// </summary>
             public Vertex PrevVertex;
             public Vertex NextVertex;
 
-            // Properties this vertex may have
-            // Reflex is concave
-            public bool IsReflex; 
+            /// <summary>
+            /// Properties this vertex may have
+            /// Reflex is concave
+            /// </summary>
+            public bool IsReflex;
             public bool IsConvex;
             public bool IsEar;
 
             public Vertex(Vector3 position)
             {
-                this.Position = position;
+                Position = position;
             }
 
-            // Get 2d pos of this vertex
+            /// <summary>
+            /// Get 2d pos of this vertex
+            /// </summary>
+            /// <returns></returns>
             public Vector2 GetPos2D_XZ()
             {
-                Vector2 pos_2d_xz = new Vector2(Position.x, Position.z);
+                Vector2 pos_2d_xz = new(Position.x, Position.z);
                 return pos_2d_xz;
             }
         }
 
         public class HalfEdge
         {
-            // The vertex the edge points to
+            /// <summary>
+            /// The vertex the edge points to
+            /// </summary>
             public Vertex Vertex;
 
-            // The face this edge is a part of
+            /// <summary>
+            /// The face this edge is a part of
+            /// </summary>
             public Triangle Triangle;
 
-            // The next edge
+            /// <summary>
+            /// The next edge
+            /// </summary>
             public HalfEdge NextEdge;
-            
-            // The previous
+
+            /// <summary>
+            /// The previous
+            /// </summary>
             public HalfEdge PrevEdge;
-            
-            // The edge going in the opposite direction
+
+            /// <summary>
+            /// The edge going in the opposite direction
+            /// </summary>
             public HalfEdge OppositeEdge;
 
-            // This structure assumes we have a vertex class with a reference to a half edge going from that vertex
-            // and a face (triangle) class with a reference to a half edge which is a part of this face 
+            /// <summary>
+            /// This structure assumes we have a vertex class with a reference to a half edge going from that vertex
+            /// and a face (triangle) class with a reference to a half edge which is a part of this face
+            /// </summary>
+            /// <param name="vertex"></param>
             public HalfEdge(Vertex vertex)
             {
-                this.Vertex = vertex;
+                Vertex = vertex;
             }
         }
 
         public class Triangle
         {
-            // Corners
+            /// <summary>
+            /// Corners
+            /// </summary>
             public Vertex Vertex1;
             public Vertex Vertex2;
             public Vertex Vertex3;
 
-            // If we are using the half edge mesh structure, we just need one half edge
+            /// <summary>
+            /// If we are using the half edge mesh structure, we just need one half edge
+            /// </summary>
             public HalfEdge HalfEdge;
 
             public Triangle(Vertex v1, Vertex v2, Vertex v3)
@@ -411,15 +462,15 @@ namespace RoadGenerator
 
             public Triangle(HalfEdge halfEdge)
             {
-                this.HalfEdge = halfEdge;
+                HalfEdge = halfEdge;
             }
 
-            // Change orientation of triangle from cw -> ccw or ccw -> cw
+            /// <summary>
+            /// Change orientation of triangle from cw -> ccw or ccw -> cw
+            /// </summary>
             public void ChangeOrientation()
             {
-                Vertex temp = Vertex1;
-                Vertex1 = Vertex2;
-                Vertex2 = temp;
+                (Vertex2, Vertex1) = (Vertex1, Vertex2);
             }
         }
 
@@ -428,7 +479,9 @@ namespace RoadGenerator
             public Vertex Vertex1;
             public Vertex Vertex2;
 
-            // Is this edge intersecting with another edge?
+            /// <summary>
+            /// Is this edge intersecting with another edge?
+            /// </summary>
             public bool IsIntersecting = false;
 
             public Edge(Vertex v1, Vertex v2)
@@ -443,23 +496,27 @@ namespace RoadGenerator
                 Vertex2 = new Vertex(v2);
             }
 
-            // Get vertex in 2d space (assuming x, z)
+            /// <summary>
+            /// Get vertex in 2d space (assuming x, z)
+            /// </summary>
+            /// <param name="v"></param>
+            /// <returns></returns>
             public Vector2 GetVertex2D(Vertex v)
             {
                 return new Vector2(v.Position.x, v.Position.z);
             }
 
-            // Flip edge
+            /// <summary>
+            /// Flip edge
+            /// </summary>
             public void FlipEdge()
             {
-                Vertex temp = Vertex1;
-                Vertex1 = Vertex2;
-                Vertex2 = temp;
+                (Vertex2, Vertex1) = (Vertex1, Vertex2);
             }
         }
 
         public class Plane
-        { 
+        {
             public Vector3 Position;
 
             public Vector3 Normal;

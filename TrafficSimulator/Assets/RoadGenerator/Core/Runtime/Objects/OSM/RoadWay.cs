@@ -33,43 +33,36 @@ namespace RoadGenerator
 
                 try
                 {
-                    switch (currentNode.Attributes["k"].Value)
+                    string key = currentNode.Attributes["k"].Value;
+                    string value = currentNode.Attributes["v"].Value;
+                    switch (key)
                     {
                         case "name":
-                            Name = currentNode.Attributes["v"].Value;
+                            Name = value;
                             break;
                         case "maxspeed":
-                            MaxSpeed = int.Parse(currentNode.Attributes["v"].Value);
+                            MaxSpeed = int.Parse(value);
                             break;
                         case "service":
-                            if (currentNode.Attributes["v"].Value == "driveway")
+                            if (value == "driveway")
                                 ServiceType = RoadGenerator.ServiceType.DriveWay;
                             break;
                         case "lit":
-                            if (currentNode.Attributes["v"].Value == "yes")
-                                IsLit = true;
-                            else 
-                                IsLit = false;
+                            IsLit = value == "yes";
                             break;
                         case "oneway":
-                            IsOneWay = currentNode.Attributes["v"].Value == "yes";
+                            IsOneWay = value == "yes";
                             break;
                         case "parking:right":
-                            if (currentNode.Attributes["v"].Value == "lane")
-                                ParkingType = RoadGenerator.ParkingType.Right;
-                            else if (currentNode.Attributes["v"].Value == "street_side")
+                            if (value == "lane" || value == "street_side")
                                 ParkingType = RoadGenerator.ParkingType.Right;
                             break;
                         case "parking:left":
-                            if (currentNode.Attributes["v"].Value == "lane")
-                                ParkingType = RoadGenerator.ParkingType.Left;
-                            else if (currentNode.Attributes["v"].Value == "street_side")
+                            if (value == "lane" || value == "street_side")
                                 ParkingType = RoadGenerator.ParkingType.Left;
                             break;
                         case "parking:both":
-                            if (currentNode.Attributes["v"].Value == "lane")
-                                ParkingType = RoadGenerator.ParkingType.Both;
-                            else if (currentNode.Attributes["v"].Value == "street_side")
+                            if (value == "lane" || value == "street_side")
                                 ParkingType = RoadGenerator.ParkingType.Both;
                             break;
                     }
@@ -83,7 +76,8 @@ namespace RoadGenerator
         //https://wiki.openstreetmap.org/wiki/Map_features#Highway
         private static RoadWayType? GetRoadType(XmlNode node)
         {
-            switch (node.Attributes["v"].Value)
+            string value = node.Attributes["v"].Value;
+            switch (value)
             {
                 case "motorway":
                     return RoadWayType.Motorway;

@@ -207,7 +207,7 @@ namespace RoadGenerator
                             if (_wayDict.ContainsKey(currentNode.Attributes["ref"].Value))
                             {
                                 XmlNode wayNode = _wayDict[currentNode.Attributes["ref"].Value];
-                                _buildingWays.Add(new BuildingWay(wayNode, GetWayNodePositions(wayNode.GetEnumerator()), _roadSystem.BuildingContainer.transform, BuildingPrefab));
+                                _buildingWays.Add(new BuildingWay(wayNode, GetWayNodePositions(wayNode.GetEnumerator())));
                             }
                         }
                     }
@@ -290,7 +290,7 @@ namespace RoadGenerator
                 case WayType.Road:
                     return new RoadWay(node, points, typeNode);
                 case WayType.Building:
-                    return new BuildingWay(node, points, _roadSystem.BuildingContainer.transform, BuildingPrefab);
+                    return new BuildingWay(node, points);
                 case WayType.Terrain:
                     return new TerrainWay(typeNode, points);
                 case WayType.Water:
@@ -331,7 +331,6 @@ namespace RoadGenerator
                         case "waterway":
                         case "water":
                             return WayType.Water;
-
                     }
                 }
                 catch
@@ -357,8 +356,7 @@ namespace RoadGenerator
             footWayObject.transform.parent = _roadSystem.RoadContainer.transform;
             MeshFilter meshFilter = footWayObject.AddComponent<MeshFilter>();
             meshFilter.mesh = footWay;
-            MeshRenderer meshRenderer = footWayObject.AddComponent<MeshRenderer>();
-            //meshRenderer.material = roadSystem.DefaultRoadMaterial;
+            MeshRenderer meshRenderer = footWayObject.AddComponent<MeshRenderer>();;
             footWayObject.name = "FootWay";
         }
 

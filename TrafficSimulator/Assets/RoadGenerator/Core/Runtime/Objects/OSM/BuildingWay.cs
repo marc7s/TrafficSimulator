@@ -17,7 +17,7 @@ namespace RoadGenerator
         public string StreetAddress;
         public GameObject BuildingObject;
 
-        public BuildingWay(XmlNode node, List<Vector3> points, Transform buildingTransform, GameObject buildingPrefab) : base(node, points)
+        public BuildingWay(XmlNode node, List<Vector3> points) : base(node, points)
         {
             IEnumerator ienum = node.GetEnumerator();
 
@@ -30,22 +30,24 @@ namespace RoadGenerator
 
                 try
                 {
-                    switch (currentNode.Attributes["k"].Value)
+                    string key = currentNode.Attributes["k"].Value;
+                    string value = currentNode.Attributes["v"].Value;
+                    switch (key)
                     {
                         case "height":
-                            Height = float.Parse(currentNode.Attributes["v"].Value.Replace(".", ","));
+                            Height = float.Parse(value.Replace(".", ","));
                             break;
                         case "building:levels":
-                            BuildingLevels = int.Parse(currentNode.Attributes["v"].Value);
+                            BuildingLevels = int.Parse(value);
                             break;
                         case "addr:street":
-                            StreetName = currentNode.Attributes["v"].Value;
+                            StreetName = value;
                             break;
                         case "addr:housenumber":
-                            StreetAddress = currentNode.Attributes["v"].Value;
+                            StreetAddress = value;
                             break;
                         case "type":
-                            if (currentNode.Attributes["v"].Value == "multipolygon")
+                            if (value == "multipolygon")
                                 IsMultiPolygon = true;
                             break;
                     }
