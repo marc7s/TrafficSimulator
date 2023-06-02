@@ -1834,7 +1834,7 @@ GameObject:
   - component: {fileID: 8740552995654376748}
   - component: {fileID: 4552512951152379661}
   m_Layer: 0
-  m_Name: Sedan
+  m_Name: Buster
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

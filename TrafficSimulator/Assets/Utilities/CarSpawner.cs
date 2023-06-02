@@ -439,7 +439,7 @@ namespace RoadGenerator
             autoDrive.Setup();
 
             // Set the name of the GameObject
-            _currentCar.name = $"{car.name} {autoDrive.LicensePlate}";
+            _currentCar.name = $"{car.name} | {autoDrive.LicensePlate}";
 
             if(_maxSpeedMode == CarSpawnerMaxSpeed.LimitMaxSpeed)
                 autoDrive.SetMaxSpeed(_maxSpeed);
