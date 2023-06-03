@@ -1133,18 +1133,14 @@ namespace RoadGenerator
 
         public void SpawnBusStop(RoadNode roadNode, bool IsForward, GameObject busStopPrefab, string busStopName)
         {
-            Quaternion rotation = roadNode.Rotation * (IsForward ? Quaternion.Euler(0, 180, 0) : Quaternion.identity);
-            rotation *= busStopPrefab.transform.rotation;
-            GameObject busStop = Instantiate(busStopPrefab, roadNode.Position, rotation);
-            busStop.name = busStopName;
-            bool isDrivingRight = RoadSystem.DrivingSide == DrivingSide.Right;
-            Vector3 offsetDirection =  roadNode.Normal * (isDrivingRight ? 1 : -1) * (IsForward ? 1 : -1);
-            float distanceFromRoad = 1f;
-            busStop.transform.position += (distanceFromRoad + (LaneCount / (IsOneWay ? 1 : 2) * LaneWidth)) * offsetDirection;
-            TextMesh text = busStop.GetComponentInChildren<TextMesh>();
-            text.text = busStopName;
-            busStop.transform.parent = RoadSystem.BusStopContainer.transform;
+            GameObject busStopObject = Instantiate(busStopPrefab, Vector3.zero, Quaternion.identity);
+            busStopObject.name = busStopName;
+            BusStop busStop = busStopObject.GetComponent<BusStop>();
+            busStopObject.transform.parent = _POIContainer.transform;
+            busStop.LaneSide = IsForward ? LaneSide.Primary : LaneSide.Secondary;
+            busStop.DistanceAlongRoad = PathCreator.path.GetClosestDistanceAlongPath(roadNode.Position);
         }
+
         protected void AssignStopSign(RoadNode roadNode, LaneSide laneSide, GameObject stopSignObject)
         {
             StopSign stopSign = stopSignObject.GetComponent<StopSign>();
