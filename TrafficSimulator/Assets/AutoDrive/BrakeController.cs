@@ -196,9 +196,9 @@ namespace VehicleBrain
                 case BrakeEventType.TrafficLight:
                     return (LaneNode node) => (BrakeEventType.TrafficLight, node.TrafficLight != null && node.Intersection?.ID != prevIntersectionID && (node.TrafficLight.CurrentState != TrafficLightState.Green || IntersectionIsFull(node.Intersection)));
                 case BrakeEventType.StopSign:
-                    return (LaneNode node) => (BrakeEventType.StopSign, node.StopSign != null && node.StopSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && (IntersectionIsFull(node.Intersection) || vehicle.CurrentSpeed > 1.5f));
+                    return (LaneNode node) => (BrakeEventType.StopSign, node.StopSign != null && node.StopSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && IntersectionIsFull(node.Intersection));
                 case BrakeEventType.YieldSign:
-                    return (LaneNode node) => (BrakeEventType.YieldSign, node.YieldSign != null && node.YieldSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && (IntersectionIsFull(node.Intersection) || vehicle.CurrentSpeed > 1.5f));
+                    return (LaneNode node) => (BrakeEventType.YieldSign, node.YieldSign != null && node.YieldSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && IntersectionIsFull(node.Intersection));
                 case BrakeEventType.Yield:
                     return (LaneNode node) => (BrakeEventType.Yield, node != currentNode && ShouldYield(agentInstance, ref node));
                 case BrakeEventType.YieldBlocking:
