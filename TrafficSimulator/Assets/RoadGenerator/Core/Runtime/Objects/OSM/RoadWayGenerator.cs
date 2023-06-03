@@ -26,7 +26,7 @@ namespace RoadGenerator
             road.gameObject.name = roadWay.Name;
 
             // Uncomment for testing purposes
-            // road.gameObject.name = wayData.WayID;
+            // road.gameObject.name = roadWay.ID;
 
             // Move the road to the spawn point
             PathCreator pathCreator = road.PathCreator;
@@ -82,7 +82,7 @@ namespace RoadGenerator
 
             road.RoadType = roadWay.RoadType.Value;
 
-            if (roadWay.IsOneWay == true)
+            if (roadWay.IsOneWay)
             {
                 road.IsOneWay = true;
                 road.LaneWidth /= 2;
@@ -98,6 +98,7 @@ namespace RoadGenerator
                 
                 if (roadWay.ParkingType == ParkingType.Right || roadWay.ParkingType == ParkingType.Both)
                     road.AddFullRoadSideParking(LaneSide.Primary);
+
                 // Avoid spawning lamppoles if there is parking on the road
                 roadWay.IsLit = false;
             }
@@ -109,7 +110,7 @@ namespace RoadGenerator
             if (roadWay.RoadType == RoadWayType.Residential && roadWay.MaxSpeed == null)
                 road.SpeedLimit = SpeedLimit.ThirtyKPH;
 
-            road.ShouldSpawnLampPoles = !roadWay.IsLit;
+            road.ShouldSpawnLampPoles = roadWay.IsLit;
 
             PathCreator pathCreator = road.GetComponent<PathCreator>();
 
@@ -154,7 +155,7 @@ namespace RoadGenerator
                     PathCreator pathCreator2 = road2.PathCreator;
 
                     // Currently skipping roads that are shorter than 15m, When the issues with intersections between short roads is fixed this can be removed
-                    if (pathCreator1.path.length < 15 || pathCreator2.path.length < 15)
+                    if (pathCreator1.path.length < 10 || pathCreator2.path.length < 10)
                         continue;
 
                     bool isNodeAtEndPointRoad1 = pathCreator1.path.GetPoint(pathCreator1.path.NumPoints - 1) == roads.Key || pathCreator1.path.GetPoint(0) == roads.Key;

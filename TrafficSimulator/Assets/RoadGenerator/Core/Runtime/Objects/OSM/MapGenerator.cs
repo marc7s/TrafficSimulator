@@ -74,7 +74,7 @@ namespace RoadGenerator
 
             // Generating the roads
             roadWayGenerator.GenerateRoads(_roadWays);
-            
+
             // Generating the intersections
             roadWayGenerator.GenerateIntersections();
 

@@ -73,6 +73,7 @@ namespace RoadGenerator
                 }
             }
         }
+
         //https://wiki.openstreetmap.org/wiki/Map_features#Highway
         private static RoadWayType? GetRoadType(XmlNode node)
         {
