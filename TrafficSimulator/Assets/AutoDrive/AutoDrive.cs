@@ -488,7 +488,7 @@ namespace VehicleBrain
         private IEnumerator Unpark()
         {
             // Wait until the exit not is not occupied before unparking
-            yield return new WaitUntil(() => !(_prevTarget.HasVehicle() && _prevTarget.Vehicle != _agent.Setting.Vehicle));
+            yield return new WaitUntil(() => CanUnparkToNode(_prevTarget));
             
             _agent.Context.CurrentParking.Unpark(_agent.Setting.Vehicle);
             _agent.Context.CurrentParking = null;
@@ -497,6 +497,38 @@ namespace VehicleBrain
             
             // The entry node to the parking was stored in prev target, so teleport back to that node
             ResetToNode(_prevTarget);
+        }
+
+        private bool CanUnparkToNode(LaneNode node)
+        {
+            LaneNode curr = node;
+            float distance = 0;
+
+            const float maxSpeed = 20;
+            const float maxTime = 2;
+            const float maxDistance = maxSpeed * maxTime;
+
+            while(curr != null && curr.Intersection == null && distance <= maxDistance)
+            {
+                if(curr.HasVehicle() && curr.Vehicle != _agent.Setting.Vehicle)
+                {
+                    // If another vehicle is within our own distance, we cannot unpark
+                    if(distance <= _agent.Setting.Vehicle.VehicleLength)
+                        return false;
+
+                    float otherVehicleSpeed = curr.Vehicle.CurrentSpeed;
+
+                    // If the other vehicle will reach the node within the maximum time, we cannot unpark
+                    // Otherwise we can, since this will be the closest vehicle
+                    return otherVehicleSpeed <= 1f || distance / otherVehicleSpeed <= maxTime;
+                }
+                    
+                curr = curr.Prev;
+                distance += curr.DistanceToPrevNode;
+            }
+            
+            // If we have searched far enough, it is safe to unpark
+            return true;
         }
 
         private void SetVehicleMovement(bool enabled)
@@ -1125,7 +1157,6 @@ namespace VehicleBrain
             Vector3 targetPosition = P_GetLerpPosition(lerpTime);
             Quaternion targetRotation = P_GetLerpQuaternion(lerpTime);
 
-
             transform.position = targetPosition;
             transform.rotation = targetRotation;
         }
@@ -1134,12 +1165,10 @@ namespace VehicleBrain
         {
             bool shouldBrake = _brakeController.ShouldAct(ref _agent);
             PEngine.SetAccelerationPercent(shouldBrake ? -1f : 1f);
-
             PEngine.Update();
             
             _agent.Context.CurrentBrakeInput = shouldBrake ? 1f : 0;
             _agent.Context.CurrentThrottleInput = 1f - _agent.Context.CurrentBrakeInput;
-            
             
             // Update the target if we have reached the current target, and we do not need to brake
             if (P_HasReachedTarget(_target))
@@ -1160,7 +1189,6 @@ namespace VehicleBrain
 
                 // When the currentNode is changed, the navigation path needs to be updated
                 _agent.Context.UpdateNavigationPathLine();
-
                 _agent.Context.DisplayNavigationPathLine();
             
                 SetTarget(GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop));
