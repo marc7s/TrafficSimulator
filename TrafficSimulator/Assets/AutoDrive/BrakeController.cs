@@ -46,14 +46,19 @@ namespace VehicleBrain
                 (BrakeEventType actingType, bool shouldActAtNode) = ShouldActAtNode(ref agent, curr);
                     
                 if(shouldActAtNode)
+                {
+                    if(actingType == BrakeEventType.YieldBlocking)
+                        agent.Context.ResetBrakeTime();
+                    
                     return (actingType, true);
+                }
 
                 prev = curr;
                 curr = agent.Next(curr);
                 distance += GetNodeDistance(curr, prev);
             }
-
-            return (default, false);
+            
+            return (default, agent.Context.CurrentDrivingState == DrivingState.Stopped && !agent.Context.CanStartDrivingAgain);
         }
 
         private static float GetNodeDistance(LaneNode curr, LaneNode prev)
