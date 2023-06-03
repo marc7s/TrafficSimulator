@@ -412,9 +412,10 @@ namespace RoadGenerator
         /// <summary> Checks if an intersection already exists at the given position </summary>
         public bool DoesIntersectionExist(Vector3 position)
         {
+            const float epsilon = 2f;
             foreach (Intersection intersection in _intersections)
             {
-                if (Vector3.Distance(position, intersection.IntersectionPosition) < intersection.IntersectionLength)
+                if (Vector3.Distance(position, intersection.IntersectionPosition) < epsilon)
                     return true;
             }
             

@@ -123,7 +123,7 @@ namespace RoadGenerator
 
         private Mesh _mesh;
         [SerializeField][HideInInspector] private GameObject _guideNodeContainer;
-        [HideInInspector] public const float DefaultIntersectionLength = 15f;
+        [HideInInspector] public const float DefaultIntersectionLength = 20f;
         [ReadOnly] public float IntersectionLength = DefaultIntersectionLength;
         [HideInInspector] public const float IntersectionBoundsLengthMultiplier = 1.2f;
         private const string GUIDE_NODE_CONTAINER_NAME = "Guide Nodes";
@@ -492,10 +492,18 @@ namespace RoadGenerator
             tris.Add(side1Index1);
             tris.Add(side2Index1);
             tris.Add(side2Index2);
+
+            tris.Add(side2Index2);
+            tris.Add(side2Index1);
+            tris.Add(side1Index1);
             
             tris.Add(side2Index2);
             tris.Add(side1Index2);
             tris.Add(side1Index1);
+
+            tris.Add(side1Index1);
+            tris.Add(side1Index2);
+            tris.Add(side2Index2);
         }
 
         /// <summary> Returns the position of a mid point corner used for creating the intersections. Uses line intersection with a fallback for lerps </summary>
