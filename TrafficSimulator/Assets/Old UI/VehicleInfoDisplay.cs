@@ -9,14 +9,14 @@ using VehicleBrain;
 
 public class VehicleInfoDisplay : MonoBehaviour
 {
-    public AutoDrive vehicleAutoDrive;
-    public FuelConsumption vehicleFuelConsumption;
+    [HideInInspector] public AutoDrive VehicleAutoDrive;
+    [HideInInspector] public FuelConsumption VehicleFuelConsumption;
     
-    [SerializeField] private TextMeshProUGUI Name;
-    [SerializeField] private InfoField RoadNameField;
-    [SerializeField] private InfoField ActivityField; 
-    [SerializeField] private InfoField TotalDistanceField;
-    [SerializeField] private InfoField FuelAmountField;
+    [SerializeField] private TextMeshProUGUI _name;
+    [SerializeField] private InfoField _roadNameField;
+    [SerializeField] private InfoField _activityField; 
+    [SerializeField] private InfoField _totalDistanceField;
+    [SerializeField] private InfoField _fuelAmountField;
     
     private void Start()
     {
@@ -28,7 +28,7 @@ public class VehicleInfoDisplay : MonoBehaviour
 
     private void Update()
     {
-        if(vehicleAutoDrive != null) 
+        if(VehicleAutoDrive != null) 
             UpdateTotalDistanceText();
     }
 
@@ -36,24 +36,24 @@ public class VehicleInfoDisplay : MonoBehaviour
     {
         if (selectable == null)
         {
-            if(vehicleAutoDrive != null)
-                Unsubscribe(vehicleAutoDrive);
+            if(VehicleAutoDrive != null)
+                Unsubscribe(VehicleAutoDrive);
            
-            vehicleAutoDrive = null;
+            VehicleAutoDrive = null;
             ClearVehicleInfo();
             return;
         }
 
-        bool isOtherAutoDrive = selectable.gameObject.GetComponent<AutoDrive>() && !selectable.gameObject.GetComponent<AutoDrive>().Equals(vehicleAutoDrive);
+        bool isOtherAutoDrive = selectable.gameObject.GetComponent<AutoDrive>() && !selectable.gameObject.GetComponent<AutoDrive>().Equals(VehicleAutoDrive);
         
-        if (vehicleAutoDrive == null || isOtherAutoDrive)
+        if (VehicleAutoDrive == null || isOtherAutoDrive)
         {
-            if (vehicleAutoDrive != null)
-                Unsubscribe(vehicleAutoDrive);
+            if (VehicleAutoDrive != null)
+                Unsubscribe(VehicleAutoDrive);
 
-            vehicleAutoDrive = selectable.GetComponent<AutoDrive>();
-            vehicleFuelConsumption = selectable.GetComponent<FuelConsumption>();
-            Subscribe(vehicleAutoDrive);
+            VehicleAutoDrive = selectable.GetComponent<AutoDrive>();
+            VehicleFuelConsumption = selectable.GetComponent<FuelConsumption>();
+            Subscribe(VehicleAutoDrive);
 
             UpdateName();
             UpdateRoadName();
@@ -67,8 +67,8 @@ public class VehicleInfoDisplay : MonoBehaviour
         if(autoDrive == null)
             return;
 
-        vehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
-        vehicleAutoDrive.Agent.Context.OnRoadChanged += UpdateRoadName;
+        VehicleAutoDrive.Agent.Context.OnActivityChanged += UpdateActivityText;
+        VehicleAutoDrive.Agent.Context.OnRoadChanged += UpdateRoadName;
     }
 
     private void Unsubscribe(AutoDrive autoDrive)
@@ -76,44 +76,44 @@ public class VehicleInfoDisplay : MonoBehaviour
         if(autoDrive == null)
             return;
 
-        vehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
-        vehicleAutoDrive.Agent.Context.OnRoadChanged -= UpdateRoadName;
+        VehicleAutoDrive.Agent.Context.OnActivityChanged -= UpdateActivityText;
+        VehicleAutoDrive.Agent.Context.OnRoadChanged -= UpdateRoadName;
     }
 
     private void ClearVehicleInfo()
     {
-        Name.enabled = false;
-        FuelAmountField.Hide();
-        RoadNameField.Hide();
-        TotalDistanceField.Hide();
+        _name.enabled = false;
+        _fuelAmountField.Hide();
+        _roadNameField.Hide();
+        _totalDistanceField.Hide();
 
         // The vehicle activity text is the most centered, so use it temporarily until a vehicle is selected
-        ActivityField.DisplayNoHeader("No vehicle selected");
+        _activityField.DisplayNoHeader("No vehicle selected");
     }
 
     private void UpdateFuelAmountText()
     {
-        FuelAmountField.Display(vehicleFuelConsumption.CurrentFuelAmount, "L", 1);
+        _fuelAmountField.Display(VehicleFuelConsumption.CurrentFuelAmount, "L", 1);
     }
     
     private void UpdateActivityText()
     {
-        ActivityField.Display(vehicleAutoDrive.GetVehicleActivityDescription());
+        _activityField.Display(VehicleAutoDrive.GetVehicleActivityDescription());
     }
 
     private void UpdateName()
     {
-        Name.enabled = true;
-        Name.text = vehicleAutoDrive.name;
+        _name.enabled = true;
+        _name.text = VehicleAutoDrive.name;
     }
 
     private void UpdateRoadName()
     {
-        RoadNameField.Display(vehicleAutoDrive.Agent.Context.CurrentRoad?.name ?? "N/A");
+        _roadNameField.Display(VehicleAutoDrive.Agent.Context.CurrentRoad?.name ?? "N/A");
     }
 
     private void UpdateTotalDistanceText()
     {
-        TotalDistanceField.Display(vehicleAutoDrive.TotalDistance / 1000, "km", 2);
+        _totalDistanceField.Display(VehicleAutoDrive.TotalDistance / 1000, "km", 2);
     }
 }

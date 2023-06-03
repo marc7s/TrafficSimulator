@@ -18,7 +18,24 @@ public class CarbonDioxideTextDisplayer : MonoBehaviour
     private void Start()
     {
         _worldDataGatherer = GameObject.Find("RoadSystem").GetComponent<WorldDataGatherer>();
+        _worldDataGatherer.OnNewStatisticsSample += UpdateCO2;
         _isSetup = true;
+    }
+
+    private void UpdateCO2()
+    {
+        switch(_currentDisplay)
+        {
+            case CO2DisplayTimeSpan.AllTime:
+                DisplayCO2(_worldDataGatherer.Co2EmissionsAllTime);
+                break;
+            case CO2DisplayTimeSpan.ThreeMinutes:
+                DisplayCO2(_worldDataGatherer.Co2EmissionsLast3Min);
+                break;
+            case CO2DisplayTimeSpan.ThirtySeconds:
+                DisplayCO2(_worldDataGatherer.Co2EmissionsLast30Sec);
+                break;
+        }
     }
 
     private void DisplayCO2(float co2Amount)
