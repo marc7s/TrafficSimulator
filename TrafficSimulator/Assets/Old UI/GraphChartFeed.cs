@@ -1,24 +1,40 @@
 using ChartAndGraph;
 using UnityEngine;
 using RoadGenerator;
+using System;
 
 namespace Old_UI
 {
+    public enum TimeSpan
+    {
+        None = 0,
+        AllTime = -1,
+        ThreeMinutes = 180,
+        ThirtySeconds = 30
+    }
+
     public class GraphChartFeed : MonoBehaviour
     {
-        private enum TimeSpan
-        {
-            None = 0,
-            AllTime = -1,
-            ThreeMinutes = 180,
-            ThirtySeconds = 30
-        }
-
         public StatisticsType ChartType;
         private GraphChartBase _graph;
         private WorldDataGatherer _worldDataGatherer;
-        private TimeSpan _currentGraph = TimeSpan.None;
+        public Action OnTimeSpanChanged;
         private bool _isSetup = false;
+        private TimeSpan _currentTimeSpan = TimeSpan.None;
+        private static GraphChartFeed _activeGraphChartFeed;
+
+        public TimeSpan CurrentTimeSpan 
+        {
+            get => _currentTimeSpan;
+            set
+            {
+                bool changed = _currentTimeSpan != value;
+                _currentTimeSpan = value;
+
+                if(changed)
+                    OnTimeSpanChanged?.Invoke();
+            }
+        }
 
         private void Start()
         {
@@ -32,9 +48,19 @@ namespace Old_UI
             _isSetup = true;
         }
 
+        public void SetActiveGraph()
+        {
+            _activeGraphChartFeed = this;
+        }
+
+        public void ClearActiveGraph()
+        {
+            _activeGraphChartFeed = null;
+        }
+
         private void LoadNewData()
         {
-            LoadGraph(_currentGraph);
+            LoadGraph(CurrentTimeSpan);
         }
 
         private string GetCategory()
@@ -50,67 +76,68 @@ namespace Old_UI
             }
         }
 
-        private float[] GetDataset()
+        private WorldDataGatherer.DataHistory GetDataset()
         {
             switch(ChartType)
             {
                 case StatisticsType.Emissions:
-                    return _worldDataGatherer.FuelConsumedPerSecondHistory;
+                    return _worldDataGatherer.FuelConsumedPerSecondDataset;
                 case StatisticsType.Congestion:
-                    return _worldDataGatherer.CongestionPerSecondHistory;
+                    return _worldDataGatherer.CongestionPerSecondDataset;
                 default:
-                    return new float[]{};
+                    return new WorldDataGatherer.DataHistory(0);
             }
         }
         
         // Used by GraphTab prefab
         public void SetCurrentGraphToNone()
         {
-            _currentGraph = TimeSpan.None;
+            CurrentTimeSpan = TimeSpan.None;
         }
 
         // Used by GraphTab prefab
         public void LoadAllTimeGraph()
         {
-            LoadGraph(TimeSpan.AllTime);
+            CurrentTimeSpan = TimeSpan.AllTime;
         }
 
         // Used by GraphTab prefab
         public void LoadLast3MinGraph()
         {
-            LoadGraph(TimeSpan.ThreeMinutes);
+            CurrentTimeSpan = TimeSpan.ThreeMinutes;
         }
 
         // Used by GraphTab prefab
         public void LoadLast30SecondsGraph()
         {
-            LoadGraph(TimeSpan.ThirtySeconds);
+            CurrentTimeSpan = TimeSpan.ThirtySeconds;
         }
 
         private void LoadGraph(TimeSpan timeSpan)
         {
             if(!_isSetup)
                 Start();
-
-            int timeSpanInSeconds;
             
             if(timeSpan == TimeSpan.None)
                 return;
+
+            if(_activeGraphChartFeed != this)
+                return;
             
-            timeSpanInSeconds = timeSpan == TimeSpan.AllTime ? _worldDataGatherer.ElapsedSeconds : (int)timeSpan;
+            // Get the time span in seconds
+            int timeSpanInSeconds = timeSpan == TimeSpan.AllTime ? _worldDataGatherer.CurrentAllTimeSeconds : (int)timeSpan;
             
-            _currentGraph = timeSpan;
+            // In the beginning while data is still being collected, limit the time span to the amount of data collected
+            timeSpanInSeconds = Mathf.Min(timeSpanInSeconds, _worldDataGatherer.CurrentAllTimeSeconds);
+            
+            CurrentTimeSpan = timeSpan;
             _graph.DataSource.StartBatch();
             _graph.DataSource.ClearCategory(GetCategory());
 
-            int totalSecondsElapsed = _worldDataGatherer.ElapsedSeconds;
-            int startIndex = Mathf.Max(totalSecondsElapsed - timeSpanInSeconds, 0);
-            int endIndex = startIndex + timeSpanInSeconds;
-
-            float[] dataset = GetDataset();
-
-            for (int i = startIndex; i < endIndex && i < totalSecondsElapsed; i++)
-                _graph.DataSource.AddPointToCategory(GetCategory(), i, dataset[i]);
+            
+            // Convert the data stored in L/s to L/h and add it to the graph
+            for (int i = 0; i < timeSpanInSeconds; i++)
+                _graph.DataSource.AddPointToCategory(GetCategory(), i, GetDataset().GetValueNSecondsAgo(timeSpanInSeconds - i) * 3600);
 
             _graph.DataSource.EndBatch();
         }

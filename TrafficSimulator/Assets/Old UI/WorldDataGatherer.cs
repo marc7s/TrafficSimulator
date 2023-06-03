@@ -4,11 +4,10 @@ using System.Collections.Generic;
 
 public class WorldDataGatherer : MonoBehaviour
 {
-    private struct DataHistory
+    public class DataHistory
     {
         public float[] Data;
         public int Index;
-        public int SecondsElapsed;
 
         private int DataSize => Data.Length;
 
@@ -18,15 +17,24 @@ public class WorldDataGatherer : MonoBehaviour
             Index = (Index + 1) % DataSize;
         }
 
+        public float GetValueNSecondsAgo(int secondsAgo)
+        {
+            if(secondsAgo >= DataSize)
+            {
+                Debug.LogError($"Data out of bounds error. Data for {secondsAgo} seconds ago is not available with a buffer size of {DataSize} seconds");
+                return 0;
+            }
+
+            int index = (Index - secondsAgo + DataSize) % DataSize;
+            return Data[index];
+        }
+
         public float GetLastNSecondsTotal(int seconds, float conversionFactor = 1)
         {
             float total = 0;
             
             for(int i = 0; i < seconds; i++)
-            {
-                int index = (Index - i + DataSize - 1) % DataSize;
-                total += Data[index] * conversionFactor;
-            }
+                total += GetValueNSecondsAgo(i) * conversionFactor;
 
             return total;
         }
@@ -35,20 +43,22 @@ public class WorldDataGatherer : MonoBehaviour
         {
             Data = new float[size];
             Index = 0;
-            SecondsElapsed = 0;
         }
     }
 
-    private struct StatisticsSample
+    private class StatisticsSample
     {
         public string RoadID { get; private set; }
         public FuelSample? FuelSample { get; private set; }
         public CongestionSample? CongestionSample { get; private set; }
 
-        public StatisticsSample(string roadID, FuelSample? fuelSample, CongestionSample? congestionSample)
+        public void Update(FuelSample fuelSample)
         {
-            RoadID = roadID;
             FuelSample = fuelSample;
+        }
+
+        public void Update(CongestionSample congestionSample)
+        {
             CongestionSample = congestionSample;
         }
 
@@ -98,17 +108,16 @@ public class WorldDataGatherer : MonoBehaviour
     private Dictionary<string, StatisticsSample> _statisticsSamples = new Dictionary<string, StatisticsSample>();
     private float _elapsedTime = 0;
     public int ElapsedSeconds { get; private set; } = 0;
+    public int CurrentAllTimeSeconds => Mathf.Min(ElapsedSeconds, BufferSize);
     
     // Buffer size to store fuel consumption for the hour.
-    private const int BufferSize = 3600; 
+    private const int BufferSize = 3600;
     
     // Circular buffer to store fuel consumption
-    [HideInInspector] private DataHistory FuelConsumedPerSecondDataset = new DataHistory(BufferSize);
-    public float[] FuelConsumedPerSecondHistory => FuelConsumedPerSecondDataset.Data;
+    [HideInInspector] public DataHistory FuelConsumedPerSecondDataset { get; private set; } = new DataHistory(BufferSize);
 
     // Circular buffer to store congestion
-    [HideInInspector] private DataHistory CongestionPerSecondDataset = new DataHistory(BufferSize);
-    public float[] CongestionPerSecondHistory => CongestionPerSecondDataset.Data;
+    [HideInInspector] public DataHistory CongestionPerSecondDataset { get; private set; } = new DataHistory(BufferSize);
 
     public Action OnNewStatisticsSample;
     
@@ -117,7 +126,7 @@ public class WorldDataGatherer : MonoBehaviour
         FuelSample sample = new FuelSample(fuelConsumed);
 
         if(_statisticsSamples.ContainsKey(roadID))
-            _statisticsSamples[roadID] = new StatisticsSample(roadID, sample, _statisticsSamples[roadID].CongestionSample);
+            _statisticsSamples[roadID].Update(sample);
         else
             _statisticsSamples.Add(roadID, new StatisticsSample(roadID, sample));
     }
@@ -127,7 +136,7 @@ public class WorldDataGatherer : MonoBehaviour
         CongestionSample sample = new CongestionSample(vehicles, roadLength, congestionCoef);
 
         if(_statisticsSamples.ContainsKey(roadID))
-            _statisticsSamples[roadID] = new StatisticsSample(roadID, _statisticsSamples[roadID].FuelSample, sample);
+            _statisticsSamples[roadID].Update(sample);
         else
             _statisticsSamples.Add(roadID, new StatisticsSample(roadID, sample));
     }
