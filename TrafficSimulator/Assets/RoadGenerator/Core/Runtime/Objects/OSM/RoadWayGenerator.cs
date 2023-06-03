@@ -284,9 +284,9 @@ namespace RoadGenerator
                     curr = curr.Next;
                 }
 
-                int ASCIIIndexRefName = (int)refName[0];
+                int asciiIndexRefName = (int)refName[0];
                 // The busstop will be in the primary lane if the ref name is even, or if the road is one way
-                bool isForward = ASCIIIndexRefName % 2 == 0 || road.IsOneWay;
+                bool isForward = asciiIndexRefName % 2 == 0 || road.IsOneWay;
                 road.SpawnBusStop(closestRoadNode, isForward, busStopPrefab, name);
             }
         }
