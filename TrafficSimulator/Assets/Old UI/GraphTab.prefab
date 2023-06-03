@@ -98,7 +98,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
         m_MethodName: Display3Min
         m_Mode: 1
@@ -199,7 +199,6 @@ GameObject:
   - component: {fileID: 226603693}
   - component: {fileID: 226603696}
   - component: {fileID: 226603695}
-  - component: {fileID: 226603694}
   m_Layer: 5
   m_Name: EmissionText
   m_TagString: Untagged
@@ -224,8 +223,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 291.01752, y: -30}
-  m_SizeDelta: {x: 127.965004, y: 60}
+  m_AnchoredPosition: {x: 289.6975, y: -30}
+  m_SizeDelta: {x: 130.605, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &226603696
 CanvasRenderer:
@@ -282,8 +281,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 24
+  m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -324,19 +323,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &226603694
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 226603692}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c6adf60febb14f42be640ec0fdced7f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _carbonDioxideEstimateField: {fileID: 0}
 --- !u!1 &269907949
 GameObject:
   m_ObjectHideFlags: 0
@@ -737,7 +723,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Road Color
+  m_text: 'Emission Color
 
 '
   m_isRightToLeft: 0
@@ -1627,18 +1613,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
-        m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
-        m_MethodName: DisplayAllTime
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!1 &1057258950
 GameObject:
   m_ObjectHideFlags: 0
@@ -2457,7 +2431,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
         m_MethodName: Display30Seconds
         m_Mode: 1
@@ -2568,7 +2542,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
         m_MethodName: DisplayAllTime
         m_Mode: 1
@@ -3582,7 +3556,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
         m_MethodName: Display30Seconds
         m_Mode: 1
@@ -4114,6 +4088,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 7486112125908008986}
+        m_TargetAssemblyTypeName: Old_UI.GraphChartFeed, Assembly-CSharp
+        m_MethodName: ClearActiveGraph
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &806954501669510564
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4622,7 +4608,7 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 4839402911206954242}
         m_TargetAssemblyTypeName: Old_UI.GraphChartFeed, Assembly-CSharp
-        m_MethodName: LoadAllTimeGraph
+        m_MethodName: SetActiveGraph
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4632,9 +4618,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
-        m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
-        m_MethodName: DisplayAllTime
+      - m_Target: {fileID: 4839402911206954242}
+        m_TargetAssemblyTypeName: Old_UI.GraphChartFeed, Assembly-CSharp
+        m_MethodName: LoadAllTimeGraph
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4945,6 +4931,18 @@ MonoBehaviour:
         m_CallState: 2
       - m_Target: {fileID: 7486112125908008986}
         m_TargetAssemblyTypeName: Old_UI.GraphChartFeed, Assembly-CSharp
+        m_MethodName: SetActiveGraph
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 7486112125908008986}
+        m_TargetAssemblyTypeName: Old_UI.GraphChartFeed, Assembly-CSharp
         m_MethodName: LoadAllTimeGraph
         m_Mode: 1
         m_Arguments:
@@ -5117,7 +5115,7 @@ MonoBehaviour:
   maintainLabelSize: 0
   autoScrollHorizontally: 1
   horizontalScrolling: 0
-  autoScrollVertically: 0
+  autoScrollVertically: 1
   verticalScrolling: 0
   raycastTarget: 1
   MousePan:
@@ -5743,6 +5741,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c6adf60febb14f42be640ec0fdced7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _emissionGraphChartFeed: {fileID: 0}
   _carbonDioxideEstimateField: {fileID: 0}
 --- !u!1 &1176308243651697152
 GameObject:
@@ -6246,6 +6245,7 @@ GameObject:
   - component: {fileID: 1184510264637832042}
   - component: {fileID: 1738951733034057606}
   - component: {fileID: 799026055056368934}
+  - component: {fileID: 3663286762793864329}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -6353,6 +6353,20 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &3663286762793864329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1605568170135172812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c6adf60febb14f42be640ec0fdced7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _emissionGraphChartFeed: {fileID: 4839402911206954242}
+  _carbonDioxideEstimateField: {fileID: 1738951733034057606}
 --- !u!1 &2027566474562301927
 GameObject:
   m_ObjectHideFlags: 0
@@ -7344,7 +7358,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Fuel Consumption (L/s)
+  m_text: Fuel Consumption (L/h)
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -7424,7 +7438,6 @@ GameObject:
   - component: {fileID: 6972433772783648104}
   - component: {fileID: 4447778802297848571}
   - component: {fileID: 2755887618907592546}
-  - component: {fileID: 6147755683311733107}
   m_Layer: 5
   m_Name: EmissionHeader
   m_TagString: Untagged
@@ -7449,8 +7462,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 98.5175, y: -30}
-  m_SizeDelta: {x: 257.035, y: 60}
+  m_AnchoredPosition: {x: 97.1975, y: -30}
+  m_SizeDelta: {x: 254.395, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4447778802297848571
 CanvasRenderer:
@@ -7480,7 +7493,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Estimated CO<sub>2</sub>:'
+  m_text: 'Total Estimated CO<sub>2</sub>:'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -7507,8 +7520,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 20
+  m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -7549,19 +7562,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &6147755683311733107
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3482822376598141268}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c6adf60febb14f42be640ec0fdced7f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _carbonDioxideEstimateField: {fileID: 0}
 --- !u!1 &3847173696304437928
 GameObject:
   m_ObjectHideFlags: 0
@@ -8248,6 +8248,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c6adf60febb14f42be640ec0fdced7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _emissionGraphChartFeed: {fileID: 0}
   _carbonDioxideEstimateField: {fileID: 0}
 --- !u!1 &6984573080228428550
 GameObject:
@@ -8453,7 +8454,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
         m_MethodName: Display3Min
         m_Mode: 1
@@ -8640,7 +8641,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 226603694}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: CarbonDioxideTextDisplayer, Assembly-CSharp
         m_MethodName: DisplayAllTime
         m_Mode: 1
@@ -9653,7 +9654,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Road Color
+  m_text: 'Congestion Color
 
 '
   m_isRightToLeft: 0
