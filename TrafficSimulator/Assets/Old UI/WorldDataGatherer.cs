@@ -184,7 +184,8 @@ public class WorldDataGatherer : MonoBehaviour
             }
         }
 
-        FuelConsumedPerSecondDataset.Update(totalFuelConsumed);
+         // Convert the fuel consumption in L/s to L/h
+        FuelConsumedPerSecondDataset.Update(totalFuelConsumed * 3600);
         CongestionPerSecondDataset.Update(totalCongestionSamples == 0 ? 0 : (float)totalCongestedSamples / totalCongestionSamples);
         
         _statisticsSamples.Clear();

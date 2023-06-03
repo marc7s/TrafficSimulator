@@ -135,9 +135,9 @@ namespace Old_UI
             _graph.DataSource.ClearCategory(GetCategory());
 
             
-            // Convert the data stored in L/s to L/h and add it to the graph
+            // Add the data to the graph
             for (int i = 0; i < timeSpanInSeconds; i++)
-                _graph.DataSource.AddPointToCategory(GetCategory(), i, GetDataset().GetValueNSecondsAgo(timeSpanInSeconds - i) * 3600);
+                _graph.DataSource.AddPointToCategory(GetCategory(), i, GetDataset().GetValueNSecondsAgo(timeSpanInSeconds - i));
 
             _graph.DataSource.EndBatch();
         }
