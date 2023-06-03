@@ -108,7 +108,7 @@ MonoBehaviour:
   DefaultTrafficLightPrefab: {fileID: 7476330815903217974, guid: a1bb6ca9407ef114c95f242cb06867ae, type: 3}
   DefaultTrafficLightControllerPrefab: {fileID: 1556404638300249727, guid: 83aec4713c4405048b7fd7fce53fc2a6, type: 3}
   DefaultStopSignPrefab: {fileID: 786300210558158487, guid: 47b2ed8b0e18f9e47ad2002f97bf36d4, type: 3}
-  DefaultBusStopPrefab: {fileID: 5382483728603374489, guid: 4af6b3063bc1ab14bab3e575cca93f8c, type: 3}
+  DefaultBusStopPrefab: {fileID: 2991160074052163037, guid: 3fdb4287031f30a4fb117414f798607e, type: 3}
   DefaultTreePrefab: {fileID: 197626, guid: 8c2ce82804d5f694baebd9c091763c46, type: 3}
   DefaultYieldSignPrefab: {fileID: 4811144999697380177, guid: a02e087aa1f5e43499891fd70fefc5ba, type: 3}
   ShowGraph: 0

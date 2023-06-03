@@ -13,6 +13,9 @@ namespace POIs
         {
             if(!_useCustomSize)
                 Size = new Vector3(1, 2.75f, 1.5f);
+
+            TextMesh text = gameObject.GetComponentInChildren<TextMesh>();
+            text.text = gameObject.name;
         }
     }
 }
