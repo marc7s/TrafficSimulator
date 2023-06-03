@@ -31,7 +31,7 @@ namespace VehicleBrain
         None,
         Target,
         BrakeTarget,
-        CurrentPosition,
+        CurrentNode,
         OccupiedNodes,
         All
     }
@@ -1134,7 +1134,7 @@ namespace VehicleBrain
                     _targetLineRenderer.positionCount = 2;
                     _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.BrakeTarget?.Position ?? transform.position, transform.position });
                     break;
-                case ShowTargetLines.CurrentPosition:
+                case ShowTargetLines.CurrentNode:
                     _targetLineRenderer.positionCount = 2;
                     _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.CurrentNode?.Position ?? transform.position, transform.position });
                     break;
