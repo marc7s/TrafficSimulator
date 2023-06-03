@@ -411,7 +411,6 @@ namespace VehicleBrain
         public LaneNode BrakeTarget;
         public float CurrentBrakeInput;
         public float CurrentThrottleInput;
-        public DrivingState CurrentDrivingState;
         public NavigationNode NavigationPathEndNode;
         public Stack<NavigationNodeEdge> NavigationPath;
         public Stack<(POI, RoadNode, LaneSide)> NavigationPathTargets;
@@ -431,9 +430,40 @@ namespace VehicleBrain
         public Road CurrentRoad => CurrentNode?.RoadNode.Road;
 
         private VehicleActivity _currentActivity;
-        private VehicleAction  _currentAction;
+        private VehicleAction _currentAction;
         private bool _showNavigationPath;
         private LineRenderer _navigationPathLineRenderer;
+        private DrivingState _currentDrivingState;
+        private float _brakeTime = 0;
+        private float _startDrivingDelay = 0;
+
+        public DrivingState CurrentDrivingState
+        {
+            get => _currentDrivingState;
+            set
+            {
+                if(value == DrivingState.Stopped)
+                {
+                    bool wasStopped = _currentDrivingState != value;
+                    
+                    if(wasStopped)
+                    {
+                        ResetBrakeTime();
+                        _startDrivingDelay = UnityEngine.Random.Range(0, 10) / 10f * 3f;
+                    }
+                    
+                    _currentDrivingState = value;
+                }
+            }
+        }
+
+        public void ResetBrakeTime()
+        {
+            _brakeTime = Time.time;
+        }
+
+        public bool CanStartDrivingAgain => Time.time - _brakeTime > _startDrivingDelay;
+        
 
         public LaneNode CurrentNode
         {

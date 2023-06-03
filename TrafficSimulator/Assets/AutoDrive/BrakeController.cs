@@ -46,14 +46,19 @@ namespace VehicleBrain
                 (BrakeEventType actingType, bool shouldActAtNode) = ShouldActAtNode(ref agent, curr);
                     
                 if(shouldActAtNode)
+                {
+                    if(actingType == BrakeEventType.YieldBlocking)
+                        agent.Context.ResetBrakeTime();
+                    
                     return (actingType, true);
+                }
 
                 prev = curr;
                 curr = agent.Next(curr);
                 distance += GetNodeDistance(curr, prev);
             }
-
-            return (default, false);
+            
+            return (default, agent.Context.CurrentDrivingState == DrivingState.Stopped && !agent.Context.CanStartDrivingAgain);
         }
 
         private static float GetNodeDistance(LaneNode curr, LaneNode prev)
@@ -107,6 +112,11 @@ namespace VehicleBrain
         private static bool ShouldYield(AutoDriveAgent agent, ref LaneNode node)
         {
             return node.YieldNodes.Exists(nodePair => ShouldYieldForNode(agent, ref nodePair));
+        }
+
+        private static bool IntersectionIsFull(Intersection intersection)
+        {
+            return intersection != null && intersection.VehiclesInside >= 2;
         }
 
         private static bool ShouldYieldBlocking(AutoDriveAgent agent, ref LaneNode node)
@@ -184,11 +194,11 @@ namespace VehicleBrain
                 case BrakeEventType.RoadEnd:
                     return (LaneNode node) => (BrakeEventType.RoadEnd, endBehaviour == RoadEndBehaviour.Stop && node.Type == RoadNodeType.End && !(node.First == node && isEntering));
                 case BrakeEventType.TrafficLight:
-                    return (LaneNode node) => (BrakeEventType.TrafficLight, node.TrafficLight != null && node.TrafficLight.CurrentState != TrafficLightState.Green && node.Intersection?.ID != prevIntersectionID);
+                    return (LaneNode node) => (BrakeEventType.TrafficLight, node.TrafficLight != null && node.Intersection?.ID != prevIntersectionID && (node.TrafficLight.CurrentState != TrafficLightState.Green || IntersectionIsFull(node.Intersection)));
                 case BrakeEventType.StopSign:
-                    return (LaneNode node) => (BrakeEventType.StopSign, node.StopSign != null && node.StopSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && vehicle.CurrentSpeed > 1.5f);
+                    return (LaneNode node) => (BrakeEventType.StopSign, node.StopSign != null && node.StopSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && IntersectionIsFull(node.Intersection));
                 case BrakeEventType.YieldSign:
-                    return (LaneNode node) => (BrakeEventType.YieldSign, node.YieldSign != null && node.YieldSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && vehicle.CurrentSpeed > 1.5f);
+                    return (LaneNode node) => (BrakeEventType.YieldSign, node.YieldSign != null && node.YieldSign.LaneSide == currentNode.LaneSide && !isInsideIntersection && IntersectionIsFull(node.Intersection));
                 case BrakeEventType.Yield:
                     return (LaneNode node) => (BrakeEventType.Yield, node != currentNode && ShouldYield(agentInstance, ref node));
                 case BrakeEventType.YieldBlocking:

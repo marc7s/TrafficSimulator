@@ -31,7 +31,7 @@ namespace VehicleBrain
         None,
         Target,
         BrakeTarget,
-        CurrentPosition,
+        CurrentNode,
         OccupiedNodes,
         All
     }
@@ -136,6 +136,14 @@ namespace VehicleBrain
             }
         }
 
+        private enum TemporarySpeedLimit
+        {
+            InsideIntersection,
+            ApproachingYieldSign,
+            ApproachingStopSign,
+            Repositioning
+        }
+
         [Header("Connections")]
         [SerializeField] public Road StartingRoad;
         public GameObject NavigationTargetMarker;
@@ -191,6 +199,7 @@ namespace VehicleBrain
         private LaneNode _target;
         private LineRenderer _targetLineRenderer;
         private Rigidbody _rigidbody;
+        private List<(float, TemporarySpeedLimit)> _maxSpeedLimits = new List<(float, TemporarySpeedLimit)>();
 
         // Quality variables
         private const int _repositioningOffset = 1;
@@ -387,17 +396,22 @@ namespace VehicleBrain
 
         private void IntersectionEntryHandler(Intersection intersection)
         {
+            _maxSpeedLimits.RemoveAll(x => x.Item2 == TemporarySpeedLimit.ApproachingStopSign || x.Item2 == TemporarySpeedLimit.ApproachingYieldSign);
            _agent.Context.PrevIntersection = intersection;
            _agent.Context.IsInsideIntersection = true;
            _agent.Context.PrevEntryNodes[intersection] = _agent.Context.CurrentNode;
+
+           intersection.RegisterVehicleEntered(_agent.Setting.Vehicle);
         }
 
         private void IntersectionExitHandler(Intersection intersection)
         {
-            _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
+            _maxSpeedLimits.RemoveAll(x => x.Item2 == TemporarySpeedLimit.InsideIntersection);
             _agent.UnsetIntersectionTransition(intersection, _agent.Context.PrevEntryNodes[intersection]);
             _agent.Context.TurnDirection = TurnDirection.Straight;
             _agent.Context.IsInsideIntersection = false;
+
+            intersection.RegisterVehicleExited(_agent.Setting.Vehicle);
         }
 
         private void HandleActivity()
@@ -414,6 +428,7 @@ namespace VehicleBrain
                         Q_SteerTowardsTarget();
                         Q_UpdateTarget();
                         Q_UpdateCurrent();
+                        Q_SetTemporaryMaxSpeed();
                     }
                     else if (Mode == DrivingMode.Performance)
                     {
@@ -424,6 +439,7 @@ namespace VehicleBrain
                     if(_agent.Context.CurrentAction != VehicleAction.Driving)
                         break;
                     
+                    // Update the brake lights
                     _brakeLightController.SetBrakeLights(_agent.Context.IsBrakingOrStopped ?  BrakeLightState.On : BrakeLightState.Off);
                     UpdateIndicators();
                     
@@ -488,7 +504,7 @@ namespace VehicleBrain
         private IEnumerator Unpark()
         {
             // Wait until the exit not is not occupied before unparking
-            yield return new WaitUntil(() => !(_prevTarget.HasVehicle() && _prevTarget.Vehicle != _agent.Setting.Vehicle));
+            yield return new WaitUntil(() => CanUnparkToNode(_prevTarget));
             
             _agent.Context.CurrentParking.Unpark(_agent.Setting.Vehicle);
             _agent.Context.CurrentParking = null;
@@ -497,6 +513,45 @@ namespace VehicleBrain
             
             // The entry node to the parking was stored in prev target, so teleport back to that node
             ResetToNode(_prevTarget);
+        }
+
+        private bool CanUnparkToNode(LaneNode node)
+        {
+            LaneNode curr = node;
+            float distance = 0;
+
+            const float maxSpeed = 20;
+            const float maxTime = 2;
+            const float maxDistance = maxSpeed * maxTime;
+
+            while(curr != null && curr.Intersection == null && distance <= maxDistance)
+            {
+                if(curr.HasVehicle() && curr.Vehicle != _agent.Setting.Vehicle)
+                {
+                    // If another vehicle is within our own distance, we cannot unpark
+                    if(distance <= _agent.Setting.Vehicle.VehicleLength)
+                        return false;
+
+                    float otherVehicleSpeed = curr.Vehicle.CurrentSpeed;
+
+                    // If the other vehicle will reach the node within the maximum time, we cannot unpark
+                    // Otherwise we can, since this will be the closest vehicle
+                    return otherVehicleSpeed <= 1f || distance / otherVehicleSpeed <= maxTime;
+                }
+                    
+                curr = curr.Prev;
+                distance += curr.DistanceToPrevNode;
+            }
+            
+            // If we have searched far enough, it is safe to unpark
+            return true;
+        }
+
+        private void Q_SetTemporaryMaxSpeed()
+        {
+            _maxSpeedLimits.Sort();
+            _vehicleController.maxSpeedForward = _maxSpeedLimits.Count > 0 ? _maxSpeedLimits[0].Item1 : _originalMaxSpeedForward;
+            _vehicleController.maxSpeedReverse = _maxSpeedLimits.Count > 0 ? _maxSpeedLimits[0].Item1 : _originalMaxSpeedReverse;
         }
 
         private void SetVehicleMovement(bool enabled)
@@ -748,8 +803,7 @@ namespace VehicleBrain
 
                 // Slow down and limit the max speed to the repositioning speed or the max speed, whichever is lower
                 Q_SetBrakeInput(1f);
-                _vehicleController.maxSpeedForward = Math.Min(_vehicleController.maxSpeedForward, MaxRepositioningSpeed);
-                _vehicleController.maxSpeedReverse = Math.Min(_vehicleController.maxSpeedReverse, MaxRepositioningSpeed);
+                _maxSpeedLimits.Add((MaxRepositioningSpeed, TemporarySpeedLimit.Repositioning));
             }
             // If the vehicle has started repositioning and slowed down enough
             else if (_status == Status.RepositioningInitiated && _vehicleController.speed <= _vehicleController.maxSpeedForward)
@@ -783,8 +837,8 @@ namespace VehicleBrain
                     SetTarget(GetNextLaneNode(_repositioningTarget, _repositioningOffset, false));
                     
                     // Reset the max speed to the original, and set the acceleration to the max again
-                    _vehicleController.maxSpeedForward = _originalMaxSpeedForward;
-                    _vehicleController.maxSpeedReverse = _originalMaxSpeedReverse;
+                    _maxSpeedLimits.RemoveAll(x => x.Item2 == TemporarySpeedLimit.Repositioning);
+                    
                     Q_SetBrakeInput(0f);
                     Q_SetThrottleInput(1f);
                 }
@@ -796,9 +850,15 @@ namespace VehicleBrain
                 // when the target is the brake target and the traffic light is red, do not change the target
                 if (trafficLightShouldStop && _target == _agent.Context.BrakeTarget)
                     return;
+
+                if(_target.StopSign != null && _target.Next?.IsIntersection() == true)
+                    _maxSpeedLimits.Add((2f, TemporarySpeedLimit.ApproachingStopSign));
+
+                if(_target.YieldSign != null && _target.Next?.IsIntersection() == true)
+                    _maxSpeedLimits.Add((2f, TemporarySpeedLimit.ApproachingYieldSign));
                 
                 if(_target.Intersection != null)
-                    _vehicleController.maxSpeedForward = _intersectionMaxSpeed;
+                    _maxSpeedLimits.Add((_intersectionMaxSpeed, TemporarySpeedLimit.InsideIntersection));
 
                 // Set the target to the next point in the lane
                 SetTarget(GetNextLaneNode(_target, 0, false));
@@ -1074,7 +1134,7 @@ namespace VehicleBrain
                     _targetLineRenderer.positionCount = 2;
                     _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.BrakeTarget?.Position ?? transform.position, transform.position });
                     break;
-                case ShowTargetLines.CurrentPosition:
+                case ShowTargetLines.CurrentNode:
                     _targetLineRenderer.positionCount = 2;
                     _targetLineRenderer.SetPositions(new Vector3[]{ _agent.Context.CurrentNode?.Position ?? transform.position, transform.position });
                     break;
@@ -1125,7 +1185,6 @@ namespace VehicleBrain
             Vector3 targetPosition = P_GetLerpPosition(lerpTime);
             Quaternion targetRotation = P_GetLerpQuaternion(lerpTime);
 
-
             transform.position = targetPosition;
             transform.rotation = targetRotation;
         }
@@ -1134,12 +1193,10 @@ namespace VehicleBrain
         {
             bool shouldBrake = _brakeController.ShouldAct(ref _agent);
             PEngine.SetAccelerationPercent(shouldBrake ? -1f : 1f);
-
             PEngine.Update();
             
             _agent.Context.CurrentBrakeInput = shouldBrake ? 1f : 0;
             _agent.Context.CurrentThrottleInput = 1f - _agent.Context.CurrentBrakeInput;
-            
             
             // Update the target if we have reached the current target, and we do not need to brake
             if (P_HasReachedTarget(_target))
@@ -1160,7 +1217,6 @@ namespace VehicleBrain
 
                 // When the currentNode is changed, the navigation path needs to be updated
                 _agent.Context.UpdateNavigationPathLine();
-
                 _agent.Context.DisplayNavigationPathLine();
             
                 SetTarget(GetNextLaneNode(_target, 0, EndBehaviour == RoadEndBehaviour.Loop));
