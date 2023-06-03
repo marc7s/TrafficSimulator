@@ -390,6 +390,8 @@ namespace VehicleBrain
            _agent.Context.PrevIntersection = intersection;
            _agent.Context.IsInsideIntersection = true;
            _agent.Context.PrevEntryNodes[intersection] = _agent.Context.CurrentNode;
+
+           intersection.RegisterVehicleEntered(_agent.Setting.Vehicle);
         }
 
         private void IntersectionExitHandler(Intersection intersection)
@@ -398,6 +400,8 @@ namespace VehicleBrain
             _agent.UnsetIntersectionTransition(intersection, _agent.Context.PrevEntryNodes[intersection]);
             _agent.Context.TurnDirection = TurnDirection.Straight;
             _agent.Context.IsInsideIntersection = false;
+
+            intersection.RegisterVehicleExited(_agent.Setting.Vehicle);
         }
 
         private void HandleActivity()

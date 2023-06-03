@@ -75,7 +75,10 @@ namespace VehicleBrain
                 _currentRoad = road;
 
             if(intersection != null)
+            {
                 _currentIntersection = intersection;
+                intersection.RegisterVehicleEntered(_vehicle);
+            }
         }
 
         private void OnTriggerExit(Collider other)
@@ -97,6 +100,7 @@ namespace VehicleBrain
             {
                 _currentIntersection = null;
                 ExitNodes(_occupiedNodes.FindAll(node => node is GuideNode));
+                intersection.RegisterVehicleExited(_vehicle);
             }
         }
 

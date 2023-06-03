@@ -91,8 +91,11 @@ namespace RoadGenerator
 
         public bool YieldAtJunctionEdge
         {
-            get => YieldType == YieldType.Yielding || YieldType == YieldType.RightPriority;
+            get => new List<YieldType>(){ YieldType.TrafficLights, YieldType.Yielding, YieldType.RightPriority }.Contains(YieldType);
         }
+
+        private HashSet<Vehicle> _vehiclesInside = new HashSet<Vehicle>();
+        public int VehiclesInside => _vehiclesInside.Count;
 
         public List<Section> EntrySections => _intersectionEntrySections.Values.ToList();
         public List<Section> ExitSections => _intersectionExitSections.Values.ToList();
@@ -215,6 +218,18 @@ namespace RoadGenerator
                     roads.Add(arm.Road);
             }
             return roads;
+        }
+
+        public void RegisterVehicleEntered(Vehicle vehicle)
+        {
+            if(!_vehiclesInside.Contains(vehicle))
+                _vehiclesInside.Add(vehicle);
+        }
+
+        public void RegisterVehicleExited(Vehicle vehicle)
+        {
+            if(_vehiclesInside.Contains(vehicle))
+                _vehiclesInside.Remove(vehicle);
         }
 
         private void CreateIntersectionMesh()
