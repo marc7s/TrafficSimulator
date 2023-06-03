@@ -1,5 +1,6 @@
 using ChartAndGraph;
 using UnityEngine;
+using RoadGenerator;
 
 namespace Old_UI
 {
@@ -12,6 +13,8 @@ namespace Old_UI
             ThreeMinutes = 180,
             ThirtySeconds = 30
         }
+
+        public StatisticsType ChartType;
         private GraphChartBase _graph;
         private WorldDataGatherer _worldDataGatherer;
         private TimeSpan _currentGraph = TimeSpan.None;
@@ -20,6 +23,7 @@ namespace Old_UI
         private void Start()
         {
             _worldDataGatherer = GameObject.Find("RoadSystem").GetComponent<WorldDataGatherer>();
+            _worldDataGatherer.OnNewStatisticsSample += LoadNewData;
             _graph = GetComponent<GraphChartBase>();
 
             if (_graph != null)
@@ -27,22 +31,57 @@ namespace Old_UI
 
             _isSetup = true;
         }
+
+        private void LoadNewData()
+        {
+            LoadGraph(_currentGraph);
+        }
+
+        private string GetCategory()
+        {
+            switch(ChartType)
+            {
+                case StatisticsType.Emissions:
+                    return "Emission";
+                case StatisticsType.Congestion:
+                    return "Congestion";
+                default:
+                    return "";
+            }
+        }
+
+        private float[] GetDataset()
+        {
+            switch(ChartType)
+            {
+                case StatisticsType.Emissions:
+                    return _worldDataGatherer.FuelConsumedPerSecondHistory;
+                case StatisticsType.Congestion:
+                    return _worldDataGatherer.CongestionPerSecondHistory;
+                default:
+                    return new float[]{};
+            }
+        }
         
+        // Used by GraphTab prefab
         public void SetCurrentGraphToNone()
         {
             _currentGraph = TimeSpan.None;
         }
 
+        // Used by GraphTab prefab
         public void LoadAllTimeGraph()
         {
             LoadGraph(TimeSpan.AllTime);
         }
 
+        // Used by GraphTab prefab
         public void LoadLast3MinGraph()
         {
             LoadGraph(TimeSpan.ThreeMinutes);
         }
 
+        // Used by GraphTab prefab
         public void LoadLast30SecondsGraph()
         {
             LoadGraph(TimeSpan.ThirtySeconds);
@@ -55,21 +94,23 @@ namespace Old_UI
 
             int timeSpanInSeconds;
             
-            if (_currentGraph == timeSpan || timeSpan == TimeSpan.None) 
+            if(timeSpan == TimeSpan.None)
                 return;
             
-            timeSpanInSeconds = timeSpan == TimeSpan.AllTime ? _worldDataGatherer.TotalSecondsElapsed : (int) timeSpan;
+            timeSpanInSeconds = timeSpan == TimeSpan.AllTime ? _worldDataGatherer.ElapsedSeconds : (int)timeSpan;
             
             _currentGraph = timeSpan;
             _graph.DataSource.StartBatch();
-            _graph.DataSource.ClearCategory("Emission");
+            _graph.DataSource.ClearCategory(GetCategory());
 
-            int totalSecondsElapsed = _worldDataGatherer.TotalSecondsElapsed;
+            int totalSecondsElapsed = _worldDataGatherer.ElapsedSeconds;
             int startIndex = Mathf.Max(totalSecondsElapsed - timeSpanInSeconds, 0);
             int endIndex = startIndex + timeSpanInSeconds;
 
+            float[] dataset = GetDataset();
+
             for (int i = startIndex; i < endIndex && i < totalSecondsElapsed; i++)
-                _graph.DataSource.AddPointToCategory("Emission", i, _worldDataGatherer.FuelConsumedPerSecondHistory[i]);
+                _graph.DataSource.AddPointToCategory(GetCategory(), i, dataset[i]);
 
             _graph.DataSource.EndBatch();
         }

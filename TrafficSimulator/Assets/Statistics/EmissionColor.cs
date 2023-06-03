@@ -1,13 +1,14 @@
 using System.Collections;
 using UnityEngine;
+using RoadGenerator;
 
 namespace Statistics
 {
     public class EmissionColor : MonoBehaviour
     {
         private RoadDataGatherer _roadDataGatherer;
-        [HideInInspector] public bool EmissionEnabled = false;
-        private bool _previousEmissionEnabled;
+        [HideInInspector] public StatisticsType EmissionType = StatisticsType.None;
+        private StatisticsType _previousEmissionType;
         public float ColorTransitionDuration = 0.5f; 
         public float MaxRedValue = 1.0f; 
 
@@ -18,17 +19,30 @@ namespace Statistics
         {
             _rend = GetComponent<MeshRenderer>();
             _roadDataGatherer = GetComponent<RoadDataGatherer>();
-            _previousEmissionEnabled = EmissionEnabled;
+            _previousEmissionType = EmissionType;
             StartCoroutine(RoadColorUpdate());
         }
 
         private void Update()
         {
-            if(EmissionEnabled != _previousEmissionEnabled)
+            if(EmissionType != _previousEmissionType)
             {
+                _previousEmissionType = EmissionType;
                 StopCoroutine(RoadColorUpdate());
                 StartCoroutine(RoadColorUpdate());
-                _previousEmissionEnabled = EmissionEnabled;
+            }
+        }
+
+        private float GetColorRatio()
+        {
+            switch(EmissionType)
+            {
+                case StatisticsType.Emissions:
+                    return _roadDataGatherer.CurrentFuelConsumptionRatio;
+                case StatisticsType.Congestion:
+                    return _roadDataGatherer.CurrentCongestionRatio;
+                default:
+                    return 0.0f;
             }
         }
 
@@ -39,7 +53,7 @@ namespace Statistics
             while (true)
             {
                 Material[] materials = _rend.materials;
-                float colorValue = Mathf.Clamp(_roadDataGatherer.CurrentFuelConsumptionRatio, 0, MaxRedValue);
+                float colorValue = Mathf.Clamp(GetColorRatio(), 0, MaxRedValue);
                 Color targetColor = Color.Lerp(Color.green, Color.red, colorValue); 
 
                 float timeElapsed = 0.0f;
@@ -50,7 +64,7 @@ namespace Statistics
 
                     foreach (Material material in materials)
                     {
-                        if (EmissionEnabled)
+                        if (EmissionType != StatisticsType.None)
                         {
                             material.SetColor(EmissionColor1, currentColor);
                             material.EnableKeyword("_EMISSION");
@@ -66,8 +80,8 @@ namespace Statistics
                     yield return null;
                 }
 
-                // If EmissionEnabled is false, stop the coroutine.
-                if (!EmissionEnabled) 
+                // If Emission is disabled, stop the coroutine.
+                if (EmissionType == StatisticsType.None) 
                     break;
             }
         }

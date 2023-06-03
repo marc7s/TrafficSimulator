@@ -10,6 +10,13 @@ namespace RoadGenerator
         Right = -1
     }
 
+    public enum StatisticsType
+    {
+        None,
+        Emissions,
+        Congestion
+    }
+
     public struct ColorShade
     {
         public int RedMin;
@@ -98,6 +105,8 @@ namespace RoadGenerator
         [SerializeField][HideInInspector] public List<NavigationNode> RoadSystemGraph;
         [HideInInspector] public GameObject GraphContainer;
         private const float NEW_ROAD_LENGTH = 10f;
+
+        [HideInInspector] public StatisticsType CurrentStatisticsGathered;
         
         private bool _isSetup = false;
         public void AddIntersection(Intersection intersection) => _intersections.Add(intersection);

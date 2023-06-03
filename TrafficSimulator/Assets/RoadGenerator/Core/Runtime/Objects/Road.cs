@@ -104,6 +104,7 @@ namespace RoadGenerator
         public bool DrawLaneNodes = false;
         public bool DrawLaneNodePointers = false;
         
+        [HideInInspector] public string ID { get; private set; }
         [SerializeField][HideInInspector] public RoadNode StartRoadNode;
         [SerializeField][HideInInspector] public RoadNode EndRoadNode;
         [SerializeField][HideInInspector] public LaneNode EndLaneNode;
@@ -139,6 +140,9 @@ namespace RoadGenerator
         void Awake()
         {
             PathCreator = GetComponent<PathCreator>();
+            
+            if(ID == null)
+                ID = System.Guid.NewGuid().ToString();
         }
 
         private void SetupPOIs()

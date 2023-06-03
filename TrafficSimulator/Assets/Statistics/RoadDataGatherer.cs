@@ -54,7 +54,8 @@ namespace Statistics
             CurrentCongestionRatio = Mathf.Clamp01(_registeredVehicles.Count * _congestionRatioCoef / _totalRoadLength);
             
             _totalFuelConsumption += CurrentFuelConsumption;
-            _worldDataGatherer.AddFuelConsumed(CurrentFuelConsumption);
+            _worldDataGatherer.AddFuelConsumed(_road.ID, CurrentFuelConsumption);
+            _worldDataGatherer.AddCongestion(_road.ID, _registeredVehicles.Count, _totalRoadLength, _congestionRatioCoef);
         }
 
         public void RegisterVehicle(GameObject vehicle)
