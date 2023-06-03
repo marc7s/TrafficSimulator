@@ -52,10 +52,9 @@ namespace RoadGenerator
 
         [SerializeField] private GameObject _roadSystemObject;
 
-        [Header("Settings")]
+        [Header("Vehicle Settings")]
         [SerializeField] private DrivingMode _drivingMode = DrivingMode.Quality;
         [SerializeField] private bool _randomVehicleTypes = true;
-        [SerializeField] private SpawnMode _mode = SpawnMode.Total;
         [SerializeField] private CarSpawnerNavigationMode _navigationMode = CarSpawnerNavigationMode.FollowPrefabs;
         
         [SerializeField] private CarSpawnerMaxSpeed _maxSpeedMode = CarSpawnerMaxSpeed.FollowPrefabs;
@@ -63,6 +62,15 @@ namespace RoadGenerator
         
         [SerializeField] private CarSpawnerBaseTLD _overrideBaseTLD = CarSpawnerBaseTLD.FollowPrefabs;
         [SerializeField] private float _baseTLD = 10f;
+        
+        [Header("Spawn Settings")]
+        [SerializeField] private SpawnMode _mode = SpawnMode.Total;
+        
+        // Total number of cars to spawn in mode Total
+        public int TotalCars = 5;
+        
+        // Percentage of cars to spawn per lane in mode LaneRatio
+        [Range(0, 1)] public float LaneCarRatio = 0.5f;
 
         [Header("Debug Settings")]
         [SerializeField] private ShowTargetLines _showTargetLines = ShowTargetLines.None;
@@ -71,12 +79,6 @@ namespace RoadGenerator
 
         private OverlayController _overlayController;
         private MenuController _menuController;
-
-        // Total number of cars to spawn in mode Total
-        public int TotalCars = 5;
-        
-        // Percentage of cars to spawn per lane in mode LaneRatio
-        [Range(0, 1)] public float LaneCarRatio = 0.5f; 
         
         // Delay before spawning cars
         [Range(1, 10)] public float SpawnDelay = 1f;
