@@ -1216,6 +1216,7 @@ namespace RoadGenerator
         public void AddFullRoadSideParking(LaneSide laneSide)
         {
             GameObject roadsideParkingObject = Instantiate(RoadSystem.RoadSideParkingPrefab, _POIContainer.transform);
+            roadsideParkingObject.name = "Parking " + gameObject.name;
             RoadsideParking roadsideParking = roadsideParkingObject.GetComponent<RoadsideParking>();
             roadsideParking.LaneSide = laneSide;
             roadsideParking.Road = this;
