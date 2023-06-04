@@ -71,6 +71,24 @@ public partial class @Controller : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ReverseCamera"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""a13fdc8a-89d8-44b8-adb8-0999c676485e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CameraChange"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""885e71f2-0d3b-41c4-a527-b05fb170b6aa"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -154,11 +172,66 @@ public partial class @Controller : IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""a335bc66-de2b-4b96-ab1d-404df7be7e94"",
-                    ""path"": ""<Gamepad>/select"",
+                    ""path"": ""<Gamepad>/start"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Respawn"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3fe70cb8-6cf7-45f2-9a9e-4bf2924087d0"",
+                    ""path"": ""<Gamepad>/dpad/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReverseCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e440bfe8-ba3d-4111-a83e-b88cc9660d26"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReverseCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c65add7f-b4b3-43fb-a83c-6b3cdca7ad8d"",
+                    ""path"": ""<Gamepad>/select"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d2809506-d080-4b15-bff4-f3d25ccf8d09"",
+                    ""path"": ""<Gamepad>/dpad/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ca5e66ea-f22d-4bad-b079-db5ba23cff96"",
+                    ""path"": ""<Gamepad>/dpad/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraChange"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -174,6 +247,8 @@ public partial class @Controller : IInputActionCollection2, IDisposable
         m_Driving_Steer = m_Driving.FindAction("Steer", throwIfNotFound: true);
         m_Driving_Handbrake = m_Driving.FindAction("Handbrake", throwIfNotFound: true);
         m_Driving_Respawn = m_Driving.FindAction("Respawn", throwIfNotFound: true);
+        m_Driving_ReverseCamera = m_Driving.FindAction("ReverseCamera", throwIfNotFound: true);
+        m_Driving_CameraChange = m_Driving.FindAction("CameraChange", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -238,6 +313,8 @@ public partial class @Controller : IInputActionCollection2, IDisposable
     private readonly InputAction m_Driving_Steer;
     private readonly InputAction m_Driving_Handbrake;
     private readonly InputAction m_Driving_Respawn;
+    private readonly InputAction m_Driving_ReverseCamera;
+    private readonly InputAction m_Driving_CameraChange;
     public struct DrivingActions
     {
         private @Controller m_Wrapper;
@@ -247,6 +324,8 @@ public partial class @Controller : IInputActionCollection2, IDisposable
         public InputAction @Steer => m_Wrapper.m_Driving_Steer;
         public InputAction @Handbrake => m_Wrapper.m_Driving_Handbrake;
         public InputAction @Respawn => m_Wrapper.m_Driving_Respawn;
+        public InputAction @ReverseCamera => m_Wrapper.m_Driving_ReverseCamera;
+        public InputAction @CameraChange => m_Wrapper.m_Driving_CameraChange;
         public InputActionMap Get() { return m_Wrapper.m_Driving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -271,6 +350,12 @@ public partial class @Controller : IInputActionCollection2, IDisposable
                 @Respawn.started -= m_Wrapper.m_DrivingActionsCallbackInterface.OnRespawn;
                 @Respawn.performed -= m_Wrapper.m_DrivingActionsCallbackInterface.OnRespawn;
                 @Respawn.canceled -= m_Wrapper.m_DrivingActionsCallbackInterface.OnRespawn;
+                @ReverseCamera.started -= m_Wrapper.m_DrivingActionsCallbackInterface.OnReverseCamera;
+                @ReverseCamera.performed -= m_Wrapper.m_DrivingActionsCallbackInterface.OnReverseCamera;
+                @ReverseCamera.canceled -= m_Wrapper.m_DrivingActionsCallbackInterface.OnReverseCamera;
+                @CameraChange.started -= m_Wrapper.m_DrivingActionsCallbackInterface.OnCameraChange;
+                @CameraChange.performed -= m_Wrapper.m_DrivingActionsCallbackInterface.OnCameraChange;
+                @CameraChange.canceled -= m_Wrapper.m_DrivingActionsCallbackInterface.OnCameraChange;
             }
             m_Wrapper.m_DrivingActionsCallbackInterface = instance;
             if (instance != null)
@@ -290,6 +375,12 @@ public partial class @Controller : IInputActionCollection2, IDisposable
                 @Respawn.started += instance.OnRespawn;
                 @Respawn.performed += instance.OnRespawn;
                 @Respawn.canceled += instance.OnRespawn;
+                @ReverseCamera.started += instance.OnReverseCamera;
+                @ReverseCamera.performed += instance.OnReverseCamera;
+                @ReverseCamera.canceled += instance.OnReverseCamera;
+                @CameraChange.started += instance.OnCameraChange;
+                @CameraChange.performed += instance.OnCameraChange;
+                @CameraChange.canceled += instance.OnCameraChange;
             }
         }
     }
@@ -301,5 +392,7 @@ public partial class @Controller : IInputActionCollection2, IDisposable
         void OnSteer(InputAction.CallbackContext context);
         void OnHandbrake(InputAction.CallbackContext context);
         void OnRespawn(InputAction.CallbackContext context);
+        void OnReverseCamera(InputAction.CallbackContext context);
+        void OnCameraChange(InputAction.CallbackContext context);
     }
 }

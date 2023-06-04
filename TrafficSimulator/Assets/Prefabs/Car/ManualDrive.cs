@@ -16,6 +16,9 @@ namespace VehicleBrain
     [RequireComponent(typeof(Rigidbody))]
     public abstract class ManualDrive : MonoBehaviour
     {
+        [SerializeField] protected List<Camera> _forwardCameras = new List<Camera>();
+        private int _currentForwardCameraIndex = 0;
+        [SerializeField] protected Camera _reverseCamera;
         [SerializeField] protected bool _showOccupiedNodes = false;
         protected VehicleController _vehicleController;
         protected BoxCollider _collider;
@@ -34,6 +37,8 @@ namespace VehicleBrain
             
             _vehicle = GetComponent<Vehicle>();
             _vehicle.CurrentSpeedFunction = GetCurrentSpeed;
+
+            SetCamera(true);
             
             _lineRenderer = GetComponent<LineRenderer>();
             _lineRenderer.positionCount = 0;
@@ -41,6 +46,12 @@ namespace VehicleBrain
             _lineRenderer.sharedMaterial.SetColor("_Color", Color.green);
             _lineRenderer.startWidth = 0.3f;
             _lineRenderer.endWidth = 0.3f;
+        }
+
+        private void SetCamera(bool forward)
+        {
+            _forwardCameras[_currentForwardCameraIndex].gameObject.SetActive(forward);
+            _reverseCamera.gameObject.SetActive(!forward);
         }
 
         public float GetCurrentSpeed()
@@ -312,6 +323,21 @@ namespace VehicleBrain
             TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
             TimeManager.Instance.AddEvent(unPauseEvent);
             unPauseEvent.OnEvent += () => rigidbodyPause.pause = false;
+        }
+
+        protected void OnReverseCamera(InputValue value)
+        {
+            SetCamera(!value.isPressed);
+        }
+
+        protected void OnCameraChange(InputValue value)
+        {
+            if(!value.isPressed)
+                return;
+            
+            _forwardCameras[_currentForwardCameraIndex].gameObject.SetActive(false);
+            _currentForwardCameraIndex = (_currentForwardCameraIndex + 1) % _forwardCameras.Count;
+            SetCamera(true);
         }
     }
 }
