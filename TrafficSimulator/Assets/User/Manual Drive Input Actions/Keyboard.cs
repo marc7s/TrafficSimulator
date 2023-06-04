@@ -88,7 +88,7 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                 {
                     ""name"": ""negative"",
                     ""id"": ""cebb01e0-f64e-46cb-952c-f409ce67a910"",
-                    ""path"": ""<Keyboard>/s"",
+                    ""path"": ""<Keyboard>/leftShift"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -110,7 +110,7 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""7a6ea00e-5037-458b-97c7-75b3afec3e1a"",
-                    ""path"": ""<Keyboard>/space"",
+                    ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
