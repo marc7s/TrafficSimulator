@@ -140,6 +140,7 @@ namespace RoadGenerator
         void Awake()
         {
             PathCreator = GetComponent<PathCreator>();
+            _path = PathCreator.path;
             
             if(ID == null)
                 ID = System.Guid.NewGuid().ToString();
