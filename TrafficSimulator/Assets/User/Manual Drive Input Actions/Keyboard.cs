@@ -71,6 +71,24 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ReverseCamera"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""b173e0fb-ac7c-4f12-9189-f4795a7f163b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""CameraChange"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""5ad1b9c5-8953-42b7-b01d-59e2b5d32dbd"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -88,7 +106,7 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                 {
                     ""name"": ""negative"",
                     ""id"": ""cebb01e0-f64e-46cb-952c-f409ce67a910"",
-                    ""path"": ""<Keyboard>/s"",
+                    ""path"": ""<Keyboard>/leftShift"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -110,7 +128,7 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""7a6ea00e-5037-458b-97c7-75b3afec3e1a"",
-                    ""path"": ""<Keyboard>/space"",
+                    ""path"": ""<Keyboard>/s"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -172,6 +190,39 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                     ""action"": ""Respawn"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3111dc8d-dd13-4424-b57a-ed99398d649e"",
+                    ""path"": ""<Keyboard>/downArrow"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReverseCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6580ba72-1626-4b89-9e8e-13c9f88aae8b"",
+                    ""path"": ""<Keyboard>/rightCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReverseCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""62f575e3-b54e-4255-87c1-d6169e03905a"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -185,6 +236,8 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
         m_Driving_Steer = m_Driving.FindAction("Steer", throwIfNotFound: true);
         m_Driving_Handbrake = m_Driving.FindAction("Handbrake", throwIfNotFound: true);
         m_Driving_Respawn = m_Driving.FindAction("Respawn", throwIfNotFound: true);
+        m_Driving_ReverseCamera = m_Driving.FindAction("ReverseCamera", throwIfNotFound: true);
+        m_Driving_CameraChange = m_Driving.FindAction("CameraChange", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -249,6 +302,8 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
     private readonly InputAction m_Driving_Steer;
     private readonly InputAction m_Driving_Handbrake;
     private readonly InputAction m_Driving_Respawn;
+    private readonly InputAction m_Driving_ReverseCamera;
+    private readonly InputAction m_Driving_CameraChange;
     public struct DrivingActions
     {
         private @Keyboard m_Wrapper;
@@ -258,6 +313,8 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
         public InputAction @Steer => m_Wrapper.m_Driving_Steer;
         public InputAction @Handbrake => m_Wrapper.m_Driving_Handbrake;
         public InputAction @Respawn => m_Wrapper.m_Driving_Respawn;
+        public InputAction @ReverseCamera => m_Wrapper.m_Driving_ReverseCamera;
+        public InputAction @CameraChange => m_Wrapper.m_Driving_CameraChange;
         public InputActionMap Get() { return m_Wrapper.m_Driving; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -282,6 +339,12 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                 @Respawn.started -= m_Wrapper.m_DrivingActionsCallbackInterface.OnRespawn;
                 @Respawn.performed -= m_Wrapper.m_DrivingActionsCallbackInterface.OnRespawn;
                 @Respawn.canceled -= m_Wrapper.m_DrivingActionsCallbackInterface.OnRespawn;
+                @ReverseCamera.started -= m_Wrapper.m_DrivingActionsCallbackInterface.OnReverseCamera;
+                @ReverseCamera.performed -= m_Wrapper.m_DrivingActionsCallbackInterface.OnReverseCamera;
+                @ReverseCamera.canceled -= m_Wrapper.m_DrivingActionsCallbackInterface.OnReverseCamera;
+                @CameraChange.started -= m_Wrapper.m_DrivingActionsCallbackInterface.OnCameraChange;
+                @CameraChange.performed -= m_Wrapper.m_DrivingActionsCallbackInterface.OnCameraChange;
+                @CameraChange.canceled -= m_Wrapper.m_DrivingActionsCallbackInterface.OnCameraChange;
             }
             m_Wrapper.m_DrivingActionsCallbackInterface = instance;
             if (instance != null)
@@ -301,6 +364,12 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
                 @Respawn.started += instance.OnRespawn;
                 @Respawn.performed += instance.OnRespawn;
                 @Respawn.canceled += instance.OnRespawn;
+                @ReverseCamera.started += instance.OnReverseCamera;
+                @ReverseCamera.performed += instance.OnReverseCamera;
+                @ReverseCamera.canceled += instance.OnReverseCamera;
+                @CameraChange.started += instance.OnCameraChange;
+                @CameraChange.performed += instance.OnCameraChange;
+                @CameraChange.canceled += instance.OnCameraChange;
             }
         }
     }
@@ -312,5 +381,7 @@ public partial class @Keyboard : IInputActionCollection2, IDisposable
         void OnSteer(InputAction.CallbackContext context);
         void OnHandbrake(InputAction.CallbackContext context);
         void OnRespawn(InputAction.CallbackContext context);
+        void OnReverseCamera(InputAction.CallbackContext context);
+        void OnCameraChange(InputAction.CallbackContext context);
     }
 }

@@ -49,6 +49,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ReverseCamera",
+                    "type": "PassThrough",
+                    "id": "b173e0fb-ac7c-4f12-9189-f4795a7f163b",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "CameraChange",
+                    "type": "PassThrough",
+                    "id": "5ad1b9c5-8953-42b7-b01d-59e2b5d32dbd",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -66,7 +84,7 @@
                 {
                     "name": "negative",
                     "id": "cebb01e0-f64e-46cb-952c-f409ce67a910",
-                    "path": "<Keyboard>/s",
+                    "path": "<Keyboard>/leftShift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -88,7 +106,7 @@
                 {
                     "name": "",
                     "id": "7a6ea00e-5037-458b-97c7-75b3afec3e1a",
-                    "path": "<Keyboard>/space",
+                    "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -148,6 +166,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Respawn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3111dc8d-dd13-4424-b57a-ed99398d649e",
+                    "path": "<Keyboard>/downArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ReverseCamera",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6580ba72-1626-4b89-9e8e-13c9f88aae8b",
+                    "path": "<Keyboard>/rightCtrl",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ReverseCamera",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "62f575e3-b54e-4255-87c1-d6169e03905a",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CameraChange",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

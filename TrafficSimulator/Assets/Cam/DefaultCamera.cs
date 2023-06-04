@@ -65,7 +65,10 @@ namespace Cam
 
         public override void SetActive(CameraManager cameraManager, Vector3? initialPosition = null)
         {
-            base.SetActive(cameraManager);
+            if(_cinemachineTransposer == null)
+                Start();
+
+            base.SetActive(cameraManager, initialPosition);
             FollowOffset = _initialFollowOffset;
             FollowOffset = Mathf.Approximately(_beforeSwitchFollowOffset.magnitude, 0f) ? _initialFollowOffset : _beforeSwitchFollowOffset;
             UserSelectManager.Instance.CanSelectNewObject = true;

@@ -58,6 +58,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "ReverseCamera",
+                    "type": "PassThrough",
+                    "id": "5eb3086d-7b75-4e56-94ef-15aa3551c14d",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CameraChange",
+                    "type": "PassThrough",
+                    "id": "6590dc91-35ad-46fc-bd54-525f67273068",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -124,6 +142,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Respawn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3baa8eaf-b65c-495c-a71e-1e4d35eb20c4",
+                    "path": "<HID::Fanatec FANATEC Wheel>/button11",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ReverseCamera",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "10670376-bd29-4cca-84ab-c62248df8b2a",
+                    "path": "<HID::Fanatec FANATEC Wheel>/button9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CameraChange",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "12f60b90-674c-44ea-a7f4-a952342540cc",
+                    "path": "<HID::Fanatec FANATEC Wheel>/button8",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ReverseCamera",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
