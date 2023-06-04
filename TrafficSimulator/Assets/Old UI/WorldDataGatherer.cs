@@ -194,5 +194,5 @@ public class WorldDataGatherer : MonoBehaviour
     
     public float CalculateTotalFuelConsumedLastSeconds(int seconds) => CalculateTotalEmissionsLastSeconds(seconds, 1);
     public float CalculateTotalCo2EmissionsLastSeconds(int seconds) => CalculateTotalEmissionsLastSeconds(seconds, 2.3f);
-    private float CalculateTotalEmissionsLastSeconds(int seconds, float conversionFactor) => FuelConsumedPerSecondDataset.GetLastNSecondsTotal(seconds, conversionFactor);
+    private float CalculateTotalEmissionsLastSeconds(int seconds, float conversionFactor) => FuelConsumedPerSecondDataset.GetLastNSecondsTotal(seconds, conversionFactor / 3600);
 }
