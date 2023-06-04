@@ -4,6 +4,15 @@ The project was a suggestion by the five members and was completed over a period
 
 More documentation of the development process is available in the designated [repository](https://github.com/marc7s/Traffic-Simulator-Documentation).
 
+<br><br>
+The project members behind this thesis:
+* **[Martin Blom](https://github.com/Marre-B)**
+* **[Felix Jönsson](https://github.com/FelixJons)**
+* **[Hannes Kaulio](https://github.com/hannes44)**
+* **[Marcus Schagerberg](https://github.com/marc7s)**
+* **[Jakob Windt](https://github.com/belgien)**
+
+<br><br>
 # Contents of this file
 1. Purpose - Here the purpose and aim of the project is explained.
 2. Showcase - A demonstration of some of the features of the developed simulation tool.

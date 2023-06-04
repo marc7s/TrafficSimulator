@@ -3186,7 +3186,7 @@ MonoBehaviour:
     brake: 1
     handbrake: 1
   centerOfMassMode: 1
-  centerOfMassPosition: 0.5
+  centerOfMassPosition: 0.6
   centerOfMassHeightOffset: 0.05
   centerOfMassTransform: {fileID: 2165209554537660382}
   maxSpeedForward: 30
@@ -3197,9 +3197,9 @@ MonoBehaviour:
   maxSteerAngle: 45
   aeroDrag: 0.2
   aeroDownforce: 1
-  driveBalance: 0.5
+  driveBalance: 0
   brakeBalance: 0.7
-  tireFrictionBalance: 0.5
+  tireFrictionBalance: 0.53
   aeroBalance: 0.5
   handlingBias: 0.53
   maxDriveForce: 12000
@@ -3211,7 +3211,7 @@ MonoBehaviour:
   brakeMode: 0
   maxBrakeSlip: 2
   maxBrakeRatio: 0.5
-  handbrakeMode: 1
+  handbrakeMode: 0
   maxHandbrakeSlip: 2
   maxHandbrakeRatio: 0.5
   tractionControl: 0
@@ -3220,9 +3220,9 @@ MonoBehaviour:
   brakeAssistRatio: 1
   steeringLimit: 0
   steeringLimitRatio: 0.6
-  steeringAssist: 0
-  steeringAssistRatio: 0.5
-  steerInput: 0
+  steeringAssist: 1
+  steeringAssistRatio: 0.7
+  steerInput: -0
   throttleInput: 0
   brakeInput: -0
   handbrakeInput: 0
