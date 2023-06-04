@@ -1,9 +1,5 @@
 fileFormatVersion: 2
-<<<<<<<< HEAD:TrafficSimulator/Assets/Scenes/RoadGenerator/POIs.unity.meta
-guid: 7304643ce44beb741a05f6cf845dda83
-========
-guid: 9ef0a2c7d39070d4e970e67325451299
->>>>>>>> main:TrafficSimulator/Assets/Scenes/RoadGenerator/Intersection Mesh.unity.meta
+guid: bd54c3ce829ca8f43897f4d296fa6d44
 DefaultImporter:
   externalObjects: {}
   userData: 
