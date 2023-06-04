@@ -80,6 +80,24 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ReverseCamera"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""5eb3086d-7b75-4e56-94ef-15aa3551c14d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""CameraChange"",
+                    ""type"": ""PassThrough"",
+                    ""id"": ""6590dc91-35ad-46fc-bd54-525f67273068"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -148,6 +166,39 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
                     ""action"": ""Respawn"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3baa8eaf-b65c-495c-a71e-1e4d35eb20c4"",
+                    ""path"": ""<HID::Fanatec FANATEC Wheel>/button11"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReverseCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""10670376-bd29-4cca-84ab-c62248df8b2a"",
+                    ""path"": ""<HID::Fanatec FANATEC Wheel>/button9"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""CameraChange"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""12f60b90-674c-44ea-a7f4-a952342540cc"",
+                    ""path"": ""<HID::Fanatec FANATEC Wheel>/button8"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ReverseCamera"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -162,6 +213,8 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
         m_Drive_Handbrake = m_Drive.FindAction("Handbrake", throwIfNotFound: true);
         m_Drive_ReverseGear = m_Drive.FindAction("ReverseGear", throwIfNotFound: true);
         m_Drive_Respawn = m_Drive.FindAction("Respawn", throwIfNotFound: true);
+        m_Drive_ReverseCamera = m_Drive.FindAction("ReverseCamera", throwIfNotFound: true);
+        m_Drive_CameraChange = m_Drive.FindAction("CameraChange", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -227,6 +280,8 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
     private readonly InputAction m_Drive_Handbrake;
     private readonly InputAction m_Drive_ReverseGear;
     private readonly InputAction m_Drive_Respawn;
+    private readonly InputAction m_Drive_ReverseCamera;
+    private readonly InputAction m_Drive_CameraChange;
     public struct DriveActions
     {
         private @Fanatec m_Wrapper;
@@ -237,6 +292,8 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
         public InputAction @Handbrake => m_Wrapper.m_Drive_Handbrake;
         public InputAction @ReverseGear => m_Wrapper.m_Drive_ReverseGear;
         public InputAction @Respawn => m_Wrapper.m_Drive_Respawn;
+        public InputAction @ReverseCamera => m_Wrapper.m_Drive_ReverseCamera;
+        public InputAction @CameraChange => m_Wrapper.m_Drive_CameraChange;
         public InputActionMap Get() { return m_Wrapper.m_Drive; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -264,6 +321,12 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
                 @Respawn.started -= m_Wrapper.m_DriveActionsCallbackInterface.OnRespawn;
                 @Respawn.performed -= m_Wrapper.m_DriveActionsCallbackInterface.OnRespawn;
                 @Respawn.canceled -= m_Wrapper.m_DriveActionsCallbackInterface.OnRespawn;
+                @ReverseCamera.started -= m_Wrapper.m_DriveActionsCallbackInterface.OnReverseCamera;
+                @ReverseCamera.performed -= m_Wrapper.m_DriveActionsCallbackInterface.OnReverseCamera;
+                @ReverseCamera.canceled -= m_Wrapper.m_DriveActionsCallbackInterface.OnReverseCamera;
+                @CameraChange.started -= m_Wrapper.m_DriveActionsCallbackInterface.OnCameraChange;
+                @CameraChange.performed -= m_Wrapper.m_DriveActionsCallbackInterface.OnCameraChange;
+                @CameraChange.canceled -= m_Wrapper.m_DriveActionsCallbackInterface.OnCameraChange;
             }
             m_Wrapper.m_DriveActionsCallbackInterface = instance;
             if (instance != null)
@@ -286,6 +349,12 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
                 @Respawn.started += instance.OnRespawn;
                 @Respawn.performed += instance.OnRespawn;
                 @Respawn.canceled += instance.OnRespawn;
+                @ReverseCamera.started += instance.OnReverseCamera;
+                @ReverseCamera.performed += instance.OnReverseCamera;
+                @ReverseCamera.canceled += instance.OnReverseCamera;
+                @CameraChange.started += instance.OnCameraChange;
+                @CameraChange.performed += instance.OnCameraChange;
+                @CameraChange.canceled += instance.OnCameraChange;
             }
         }
     }
@@ -298,5 +367,7 @@ public partial class @Fanatec : IInputActionCollection2, IDisposable
         void OnHandbrake(InputAction.CallbackContext context);
         void OnReverseGear(InputAction.CallbackContext context);
         void OnRespawn(InputAction.CallbackContext context);
+        void OnReverseCamera(InputAction.CallbackContext context);
+        void OnCameraChange(InputAction.CallbackContext context);
     }
 }

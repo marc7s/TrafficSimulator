@@ -177,7 +177,7 @@ namespace UI
             
             // Load the default scene
             Action onClick = () => SceneSelectionButtonOnClicked();
-            SceneLoader.SetSceneInfo(ref _currentSceneElement, SceneLoader.DefaultScene, onClick);
+            SceneLoader.SetSceneInfo(ref _currentSceneElement, SceneLoader.GetSceneInfo(PlayerPrefs.GetString("LastSelectedScene", null)), onClick);
             _currentSceneInfo = SceneLoader.DefaultScene;
         }
 
@@ -197,6 +197,8 @@ namespace UI
             // Add an onclick event to the scene, so clicking the current scene takes you to the scene selection menu
             Action onClick = () => SceneSelectionButtonOnClicked();
             SceneLoader.SetSceneInfo(ref _currentSceneElement, _currentSceneInfo, onClick);
+
+            PlayerPrefs.SetString("LastSelectedScene", _currentSceneInfo.SceneName);
             
             // Go back to the start menu
             SceneSelectionBackButtonOnClicked();
