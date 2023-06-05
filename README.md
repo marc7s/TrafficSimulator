@@ -18,6 +18,7 @@ The project members behind this thesis:
 2. Showcase - A demonstration of some of the features of the developed simulation tool.
 3. RoadGenerator - As part of the development, a custom road system generator asset was built, based on Sebastian Lague's [Path Creator](https://github.com/SebLague/Path-Creator) tool. It was extended to include many features, such as intersection generation and vehicle navigation.
 4. How to build - A short tutorial of how to build the simulation tool.
+5. License - The license for this work.
 
 # 1. Purpose
 The purpose of the project is to design and construct a 3D traffic simulation tool
@@ -178,3 +179,15 @@ Before building, make sure you have all assets specified in `ASSETS.md` and that
 1. Open the build settings through `File -> Build Settings`
 2. Select the `StartMenu` scene as index 0 in the build settings, then add all the scenes for the scene selector to the list
 3. Run `Build` or `Build And Run`
+
+<br><br><br>
+
+# 5. License
+This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0
+International License][cc-by-nc-sa].
+
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
+[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
