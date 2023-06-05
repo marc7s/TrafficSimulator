@@ -33,7 +33,7 @@
             <ui:VisualElement style="flex-shrink: 0; flex-grow: 1; align-items: center; justify-content: center; width: 50%; flex-direction: column; height: 100%;" />
         </ui:VisualElement>
         <ui:VisualElement style="width: 100%; flex-direction: row; flex-shrink: 0; align-items: flex-end; justify-content: space-between;">
-            <ui:VisualElement name="ManualCarContainer" tabindex="0" style="flex-direction: column; align-items: center; width: 80px; flex-shrink: 0; flex-grow: 0; height: auto; justify-content: center;">
+            <ui:VisualElement name="ManualCarContainer" tabindex="0" style="flex-direction: column; align-items: center; width: 90px; flex-shrink: 0; flex-grow: 0; height: auto; justify-content: center;">
                 <ui:VisualElement name="ManualCarButtonContainer" class="camera-button-borders color-theme" style="height: 50px; padding-bottom: 0; width: 100%; min-width: 0; -unity-slice-left: 0; -unity-slice-top: 0; -unity-slice-right: 0; -unity-slice-bottom: 0; border-right-width: 5px; border-left-width: 0; border-top-right-radius: 30px; border-top-left-radius: 0; justify-content: center; border-bottom-right-radius: 0; border-top-width: 5px; border-bottom-width: 0; padding-right: 0; -unity-background-scale-mode: scale-and-crop; border-right-color: rgb(0, 0, 0);">
                     <ui:Button text="Drive" display-tooltip-when-elided="true" name="DriveButton" focusable="false" tooltip="Move camera with no constraints" class="color-theme-button" style="height: 25px;" />
                 </ui:VisualElement>

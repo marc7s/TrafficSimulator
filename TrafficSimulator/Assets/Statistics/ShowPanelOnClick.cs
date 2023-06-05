@@ -5,6 +5,7 @@ public class ShowPanelOnClick : MonoBehaviour
 { 
     [SerializeField] private GameObject _panel;
     [SerializeField] private Texture2D _hoverCursor;
+    private AudioSource _clickSound;
 
     private bool _isPanelVisible = false;
 
@@ -12,14 +13,22 @@ public class ShowPanelOnClick : MonoBehaviour
     {
         Button button = GetComponent<Button>();
         button.onClick.AddListener(TogglePanel);
-        // TODO: When finished with the graph tab, the panel should be inactive at start (set from editor)
         _isPanelVisible = _panel.activeSelf;
+
+        _clickSound = GetComponent<AudioSource>();
+        _clickSound.volume = PlayerPrefs.GetFloat("MasterVolume");
     }
 
     void TogglePanel()
     {
+        PlayClickSound();
         _isPanelVisible = !_isPanelVisible;
         _panel.SetActive(_isPanelVisible);
+    }
+
+    private void PlayClickSound()
+    {
+        _clickSound.Play();
     }
 
     public void OnMouseEnter()

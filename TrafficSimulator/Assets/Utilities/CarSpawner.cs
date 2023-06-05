@@ -197,7 +197,6 @@ namespace RoadGenerator
             _carLength = GetLongestCarLength(_vehicleTypes) + 1f;
 
             _roadSystem = _roadSystemObject.GetComponent<RoadSystem>();
-            _roadSystem.Setup();
 
             _roads = new List<DefaultRoad>(_roadSystem.DefaultRoads);
 
@@ -414,8 +413,20 @@ namespace RoadGenerator
 
             bool isThreeWayIntersection = node.RoadNode.Type == RoadNodeType.End && (node.Next?.IsIntersection() == true || node.Prev?.IsIntersection() == true);
 
-            // Check if the node is an intersection, a junction edge, has a vehicle, is null, is the last node in the lane or is a navigation node
-            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null || node.HasVehicle()) && !isThreeWayIntersection && !node.RoadNode.IsNavigationNode;
+            // Check a few nodes back so that there is no vehicle close behind
+            float distance = 0;
+            LaneNode curr = node;
+            while(curr != null && distance <= _carLength)
+            {
+                if(curr.HasVehicle())
+                    return false;
+                
+                distance += curr.DistanceToPrevNode;
+                curr = curr.Prev;
+            }
+
+            // Check if the node is an intersection, a junction edge, is null, is the last node in the lane or is a navigation node
+            return !(node.RoadNode.IsIntersection() || node.RoadNode.Type == RoadNodeType.JunctionEdge || node == null || node.Next == null) && !isThreeWayIntersection && !node.RoadNode.IsNavigationNode;
         }
 
         /// <summary>Spawns a car at the current lane node</summary>

@@ -521,7 +521,7 @@ namespace VehicleBrain
             float distance = 0;
 
             const float maxSpeed = 20;
-            const float maxTime = 2;
+            const float maxTime = 3;
             const float maxDistance = maxSpeed * maxTime;
 
             while(curr != null && curr.Intersection == null && distance <= maxDistance)
@@ -529,7 +529,7 @@ namespace VehicleBrain
                 if(curr.HasVehicle() && curr.Vehicle != _agent.Setting.Vehicle)
                 {
                     // If another vehicle is within our own distance, we cannot unpark
-                    if(distance <= _agent.Setting.Vehicle.VehicleLength)
+                    if(distance <= _agent.Setting.Vehicle.VehicleLength + 3f)
                         return false;
 
                     float otherVehicleSpeed = curr.Vehicle.CurrentSpeed;
