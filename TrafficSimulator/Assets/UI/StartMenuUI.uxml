@@ -1,12 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/MenuStyles.uss?fileID=7433441132597879392&amp;guid=2a52f77de35e43240844819b355f1b18&amp;type=3#MenuStyles" />
     <Style src="project://database/Assets/UI/GeneralTheme.uss?fileID=7433441132597879392&amp;guid=d78cb5c2f4b3da046954bc98f8dde196&amp;type=3#GeneralTheme" />
-    <ui:VisualElement name="root" style="height: 100%; justify-content: flex-start; align-items: flex-start; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; background-color: rgba(60, 58, 58, 0); width: 100%; flex-shrink: 0; flex-grow: 1; background-image: none; -unity-background-scale-mode: stretch-to-fill; flex-direction: row;">
-        <ui:VisualElement style="flex-shrink: 0; flex-grow: 1; height: 100%; width: 33%;" />
-        <ui:VisualElement style="width: 33%; height: 100%; background-color: rgba(0, 0, 0, 0.78); flex-shrink: 0; flex-grow: 1;">
+    <ui:VisualElement name="root" style="height: 100%; justify-content: center; align-items: center; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; background-color: rgba(60, 58, 58, 0); width: 100%; flex-shrink: 1; flex-grow: 1; background-image: none; -unity-background-scale-mode: stretch-to-fill; flex-direction: row;">
+        <ui:VisualElement style="width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.78); flex-shrink: 1; flex-grow: 1; max-width: 420px; min-width: 0;">
             <ui:VisualElement name="Head" style="align-items: flex-start; height: auto; width: 100%; justify-content: center; flex-shrink: 0; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; flex-direction: row;">
                 <ui:VisualElement class="primary-text-colour" style="flex-shrink: 0; flex-grow: 1; align-items: center; justify-content: center; width: 33%;">
-                    <ui:Label text="Traffic Simulator" display-tooltip-when-elided="false" name="TrafficSimulator" enable-rich-text="true" class="text" style="height: auto; width: auto; font-size: 45px; padding-left: 10px; padding-right: 10px; padding-top: 10px; padding-bottom: 10px; -unity-font-style: bold; -unity-font: url(&apos;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&amp;guid=1ab246c031f165547ba01ec17c9e608f&amp;type=3#NotInter-Regular&apos;); align-items: center; justify-content: center;" />
+                    <ui:Label text="Traffic Simulator" display-tooltip-when-elided="false" name="TrafficSimulator" enable-rich-text="true" class="text" style="height: auto; width: 400px; font-size: 45px; padding-left: 10px; padding-right: 10px; padding-top: 10px; padding-bottom: 10px; -unity-font-style: bold; -unity-font: url(&apos;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&amp;guid=1ab246c031f165547ba01ec17c9e608f&amp;type=3#NotInter-Regular&apos;); align-items: center; justify-content: center; -unity-text-align: upper-center;" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="MenuDisplay" style="flex-shrink: 0; width: 100%; height: auto; flex-grow: 1; align-items: center; justify-content: center;">
@@ -24,8 +23,6 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement style="flex-shrink: 0; flex-grow: 1; height: 100%; width: 33%; align-items: flex-end;">
-            <ui:Label text="FPS: 300" display-tooltip-when-elided="true" name="FPSLabel" style="display: flex; align-items: center; justify-content: flex-start; height: 19px; width: 66px; color: rgb(12, 255, 0); position: relative; top: auto; left: auto;" />
-        </ui:VisualElement>
+        <ui:Label text="FPS: 300" display-tooltip-when-elided="true" name="FPSLabel" style="display: flex; align-items: center; justify-content: flex-start; height: 19px; width: 66px; color: rgb(12, 255, 0); position: absolute; top: 0; left: auto; right: 0; margin-top: 7px; margin-right: 7px; -unity-text-align: upper-right;" />
     </ui:VisualElement>
 </ui:UXML>
