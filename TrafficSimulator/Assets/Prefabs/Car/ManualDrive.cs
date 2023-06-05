@@ -28,9 +28,11 @@ namespace VehicleBrain
         protected LineRenderer _lineRenderer = null;
         protected DefaultRoad _currentRoad = null;
         protected Intersection _currentIntersection = null;
+        protected BrakeLightController _brakeLightController = null;
 
         protected void Start()
         {
+            _brakeLightController = GetComponent<BrakeLightController>();
             _vehicleController = GetComponent<VehicleController>();
             _collider = GetComponent<BoxCollider>();
             _rigidbody = GetComponent<Rigidbody>();
@@ -71,6 +73,11 @@ namespace VehicleBrain
                     _lineRenderer.SetPositions(_occupiedNodes.ConvertAll(node => node.Position).ToArray());
                 }
             }
+
+            if (_vehicleController.brakeInput > 0)
+                _brakeLightController.SetBrakeLights(BrakeLightState.On);
+            else
+                _brakeLightController.SetBrakeLights(BrakeLightState.Off);
         }
 
         private void OnTriggerEnter(Collider other)
