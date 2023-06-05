@@ -48,6 +48,42 @@ namespace VehicleBrain
             _lineRenderer.sharedMaterial.SetColor("_Color", Color.green);
             _lineRenderer.startWidth = 0.3f;
             _lineRenderer.endWidth = 0.3f;
+
+            float volume = PlayerPrefs.GetFloat("MasterVolume", 0.5f);
+            SetVehicleVolume(Mathf.Clamp01(volume));
+        }
+
+        private void SetVehicleVolume(float volume)
+        {
+            const float maxVolume = 0.5f;
+            volume = volume * maxVolume;
+            VehicleAudio audio = GetComponent<VehicleAudio>();
+            
+            audio.engine.maxVolume = volume;
+            audio.engine.idleVolume = volume * 0.4f;
+            audio.engine.throttleVolumeBoost = volume * 0.4f;
+            
+            audio.engineExtras.turboMaxVolume = volume;
+            audio.engineExtras.turboDumpVolume = volume * 0.5f;
+            audio.engineExtras.transmissionMaxVolume = volume * 0.2f;
+            audio.engineExtras.transmissionMinVolume = Mathf.Clamp01(audio.engineExtras.transmissionMaxVolume - 0.1f * maxVolume);
+            
+            audio.wheels.skidMaxVolume = volume * 0.75f;
+            audio.wheels.offroadMaxVolume = volume * 0.6f;
+            audio.wheels.offroadMinVolume = Mathf.Clamp01(audio.wheels.offroadMaxVolume - 0.3f * maxVolume);
+            audio.wheels.bumpMaxVolume = volume * 0.6f;
+            audio.wheels.bumpMinVolume = Mathf.Clamp01(audio.wheels.bumpMaxVolume - 0.4f * maxVolume);
+            
+            audio.impacts.maxVolume = volume;
+            audio.impacts.minVolume = Mathf.Clamp01(audio.impacts.maxVolume - 0.3f * maxVolume);
+            audio.impacts.randomVolume = volume * 0.2f;
+            
+            audio.drags.maxVolume = volume;
+            audio.drags.minVolume = Mathf.Clamp01(audio.drags.maxVolume - 0.2f * maxVolume);
+            audio.drags.scratchMaxVolume = volume;
+            audio.drags.scratchMinVolume = Mathf.Clamp01(audio.drags.scratchMaxVolume - 0.1f * maxVolume);
+            
+            audio.wind.maxVolume = volume * 0.5f;
         }
 
         private void SetCamera(bool forward)
