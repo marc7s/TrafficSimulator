@@ -29,7 +29,6 @@ namespace VehicleBrain
         protected DefaultRoad _currentRoad = null;
         protected Intersection _currentIntersection = null;
         protected BrakeLightController _brakeLightController = null;
-        [Range(0,1)]public float test = 0.5f;
 
         protected void Start()
         {
@@ -51,7 +50,7 @@ namespace VehicleBrain
             _lineRenderer.endWidth = 0.3f;
 
             float volume = PlayerPrefs.GetFloat("MasterVolume", 0.5f);
-            SetVehicleVolume(volume);
+            SetVehicleVolume(Mathf.Clamp01(volume));
         }
 
         private void SetVehicleVolume(float volume)
@@ -80,6 +79,9 @@ namespace VehicleBrain
             audio.impacts.randomVolume = volume * 0.2f;
             
             audio.drags.maxVolume = volume;
+            audio.drags.minVolume = Mathf.Clamp01(audio.drags.maxVolume - 0.2f * maxVolume);
+            audio.drags.scratchMaxVolume = volume;
+            audio.drags.scratchMinVolume = Mathf.Clamp01(audio.drags.scratchMaxVolume - 0.1f * maxVolume);
             
             audio.wind.maxVolume = volume * 0.5f;
         }
@@ -107,8 +109,6 @@ namespace VehicleBrain
                     _lineRenderer.SetPositions(_occupiedNodes.ConvertAll(node => node.Position).ToArray());
                 }
             }
-
-            SetVehicleVolume(test);
 
             if (_vehicleController.brakeInput > 0)
                 _brakeLightController.SetBrakeLights(BrakeLightState.On);
