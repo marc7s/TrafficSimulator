@@ -1,4 +1,4 @@
-# TrafficSimulator
+# Traffic Simulator
 A bachelors thesis in Data Engineering and IT at [Chalmers University of Technology](https://www.chalmers.se/en/).
 The project was a suggestion by the five members and was completed over a period of 4,5 months. For more information about the project, you are welcome to read the thesis [here](https://github.com/marc7s/Traffic-Simulator-Documentation/blob/main/Project_report/Project_report.pdf).
 
@@ -31,6 +31,7 @@ tweaking, and easily see if their changes have a positive or negative impact acr
 relevant environmental dimensions such as congestion level or emissions.
 
 # 2. Showcase
+The following section will present the different features of the simulation. However, many features are left out for an easier read.
 
 ## UI Overview
 The User Interface, or UI for short, is the means with which the user interacts with the simulator. Therefore, effort was put into making it easy to use, following common looks and practices in order to make it intuitive. This section will showcase the different parts of the UI:
