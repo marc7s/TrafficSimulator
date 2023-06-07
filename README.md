@@ -98,6 +98,17 @@ The manual vehicle will interact with the other vehicles in the road systems, wh
 ![Manual Car](Images/ManualCar/ManualCar.png)<br>
 *A car being driven manually, able to interact with the traffic*<br><br><br>
 
+Control scheme: *`Controller`* / **`Keyboard`**
+
+* Throttle: *`Right Trigger`* / **`W`**
+* Reverse: *`Left Shoulder`* / **`Left Shift`**
+* Brake: *`Left Trigger`* / **`S`**
+* Steer: *`Left Stick`* / **`A` and `D`**
+* Handbrake: *`Right Shoulder` | `Button West`* / **`Space`**
+* Reset vehicle: *`Start`* / **`R`**
+* Look behind: *`D-Pad Down` | `Button North`* / **`Down Arrow` | `Right Control`**
+* Cycle camera: *`Select` | `D-Pad Left` | `D-Pad Right`* / **`C`**
+
 ## OpenStreetMap - OSM
 While it is possible to manually create road systems through the developed RoadGenerator tool in the Unity Editor (only available with the project open in Unity), an integration with OpenStreetMap allows for automatic generation of road systems. The integration contains a parser that can read OSM map data and generate roads, intersections, buildings, bus stops, parkings and more according to the real world data. It also configurates the roads to mirror the real world, matching settings such as road width, speed limits and one way roads.
 
