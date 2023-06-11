@@ -226,7 +226,9 @@ namespace UI
 
             if(_isDrivingManually)
             {
-                GameObject manualCar = GameObject.Instantiate(GetManualCarPrefab(GetManualCarInputMode()));
+                ManualCarInputMode inputMode = GetManualCarInputMode();
+                GameObject manualCar = GameObject.Instantiate(GetManualCarPrefab(inputMode));
+                manualCar.name = $"Manual Car - {inputMode}";
                 manualCar.transform.position = _manualCarSpawnPosition;
                 manualCar.transform.rotation = Quaternion.Euler(0, _manualCarSpawnRotation, 0);
                 
