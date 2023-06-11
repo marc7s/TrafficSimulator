@@ -3432,20 +3432,20 @@ MonoBehaviour:
   centerOfMassTransform: {fileID: 2165209554537660382}
   maxSpeedForward: 50
   maxSpeedReverse: 10
-  tireFriction: 1.5
+  tireFriction: 2.3
   rollingResistance: 0.05
-  antiRoll: 0.3
-  maxSteerAngle: 45
+  antiRoll: 0.5
+  maxSteerAngle: 40
   aeroDrag: 0.2
-  aeroDownforce: 1
+  aeroDownforce: 1.2
   driveBalance: 0
   brakeBalance: 0.7
   tireFrictionBalance: 0.52
   aeroBalance: 0.5
   handlingBias: 0.53
-  maxDriveForce: 12000
+  maxDriveForce: 8000
   forceCurveShape: 0.6
-  maxDriveSlip: 20
+  maxDriveSlip: 10
   driveForceToMaxSlip: 3000
   maxBrakeForce: 5000
   brakeForceToMaxSlip: 1000
