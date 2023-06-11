@@ -345,7 +345,7 @@ namespace RoadGenerator
 
         private void LoadOSMMap()
         {
-            _doc.Load("Assets/OsmMaps/Masthugget.osm");
+            _doc.Load("Assets/OSM Maps/Masthugget.osm");
         }
 
         private void GenerateFootWay(List <Vector3> points)
