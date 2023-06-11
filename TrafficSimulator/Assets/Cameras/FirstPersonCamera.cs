@@ -39,6 +39,8 @@ namespace Cam
             lookDirection *= Time.deltaTime * _mouseSensitivity;
 
             _yaw += lookDirection.x;
+            _yaw = Mathf.Clamp(_yaw, -90f, 90f);
+
             _pitch -= lookDirection.y;
             _pitch = Mathf.Clamp(_pitch, -90f, 90f);
         }
