@@ -436,7 +436,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _panel: {fileID: 4496471744622340927}
-  _hoverCursor: {fileID: 2800000, guid: 4e4e6195c5e2dbd4bb41a86d4f9777e5, type: 3}
+  _hoverCursor: {fileID: 2800000, guid: 98758df5d454a174e84981a2f48fcde3, type: 3}
+  _cursorHotspot: {x: 16, y: 0}
 --- !u!114 &1170167635
 MonoBehaviour:
   m_ObjectHideFlags: 0
