@@ -177,8 +177,9 @@ namespace UI
             
             // Load the default scene
             Action onClick = () => SceneSelectionButtonOnClicked();
-            SceneLoader.SetSceneInfo(ref _currentSceneElement, SceneLoader.GetSceneInfo(PlayerPrefs.GetString("LastSelectedScene", null)), onClick);
-            _currentSceneInfo = SceneLoader.DefaultScene;
+            SceneLoader.SceneInfo startingScene = SceneLoader.GetSceneInfo(PlayerPrefs.GetString("LastSelectedScene", null));
+            SceneLoader.SetSceneInfo(ref _currentSceneElement, startingScene, onClick);
+            _currentSceneInfo = startingScene;
         }
 
         private void SetupClickSound()

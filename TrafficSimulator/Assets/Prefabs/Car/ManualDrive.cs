@@ -18,6 +18,7 @@ namespace VehicleBrain
     {
         [SerializeField] protected List<Camera> _forwardCameras = new List<Camera>();
         private int _currentForwardCameraIndex = 0;
+        private bool _isRespawning = false;
         [SerializeField] protected Camera _reverseCamera;
         [SerializeField] protected bool _showOccupiedNodes = false;
         protected VehicleController _vehicleController;
@@ -355,17 +356,29 @@ namespace VehicleBrain
 
         protected void OnRespawn(InputValue value)
         {
-            if(!value.isPressed)
+            if(!value.isPressed || _isRespawning)
                 return;
             
+            _isRespawning = true;
             RigidbodyPause rigidbodyPause = _vehicleController.GetComponent<RigidbodyPause>();
             rigidbodyPause.pause = true;
-            transform.position = transform.position + Vector3.up;
-            transform.rotation = Quaternion.identity;
+            
+            // Reset the position, not allowing y-axis to go below 0
+            transform.position = new Vector3(transform.position.x, Mathf.Max(0, transform.position.y), transform.position.z) + Vector3.up * 0.5f;
+            
+            // Reset the rotation, only keeping the y component
+            transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+            
+            // Reset velocity and angular velocity
+            _vehicleController.cachedRigidbody.velocity = Vector3.zero;
+            _vehicleController.cachedRigidbody.angularVelocity = Vector3.zero;
         
             TimeManagerEvent unPauseEvent = new TimeManagerEvent(DateTime.Now.AddMilliseconds(1000));
             TimeManager.Instance.AddEvent(unPauseEvent);
-            unPauseEvent.OnEvent += () => rigidbodyPause.pause = false;
+            unPauseEvent.OnEvent += () => { 
+                rigidbodyPause.pause = false;
+                _isRespawning = false;
+            };
         }
 
         protected void OnReverseCamera(InputValue value)
