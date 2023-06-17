@@ -1,11 +1,12 @@
 # Traffic Simulator
-A bachelors thesis in Data Engineering and IT at [Chalmers University of Technology](https://www.chalmers.se/en/).
+A bachelor's thesis in Data Engineering and IT at [Chalmers University of Technology](https://www.chalmers.se/en/).
 The project was a suggestion by the five members and was completed over a period of 4,5 months. For more information about the project, you are welcome to read the thesis [here](https://github.com/marc7s/Traffic-Simulator-Documentation/blob/main/Project_report/Project_report.pdf).
 
 More documentation of the development process is available in the designated [repository](https://github.com/marc7s/Traffic-Simulator-Documentation).
 
-<br><br>
-The project members behind this thesis:
+<br>
+
+The authors of this thesis:
 * **[Martin Blom](https://github.com/Marre-B)**
 * **[Felix Jönsson](https://github.com/FelixJons)**
 * **[Hannes Kaulio](https://github.com/hannes44)**
@@ -17,8 +18,10 @@ The project members behind this thesis:
 1. Purpose - Here the purpose and aim of the project is explained.
 2. Showcase - A demonstration of some of the features of the developed simulation tool.
 3. RoadGenerator - As part of the development, a custom road system generator asset was built, based on Sebastian Lague's [Path Creator](https://github.com/SebLague/Path-Creator) tool. It was extended to include many features, such as intersection generation and vehicle navigation.
-4. How to build - A short tutorial of how to build the simulation tool.
+4. Try it yourself - Instructions for how to get access to the tool.
 5. License - The license for this work.
+
+<br>
 
 # 1. Purpose
 The purpose of the project is to design and construct a 3D traffic simulation tool
@@ -29,6 +32,8 @@ be presented in real-time through presentation of relevant statistics. By adjust
 the parameters of the simulation, the user should be able to witness the effect of their
 tweaking, and easily see if their changes have a positive or negative impact across
 relevant environmental dimensions such as congestion level or emissions.
+
+<br>
 
 # 2. Showcase
 The following section will present the different features of the simulation. However, many features are left out for an easier read.
@@ -169,6 +174,8 @@ A few different points of interest can be added to the road systems, such as bus
 ![Parking Lot](Images/POIs/ParkingLot.png)<br>
 *Vehicles parked at a parking lot*<br><br><br>
 
+<br>
+
 # 3. RoadGenerator
 As part of the project, an asset called RoadGenerator was developed to allow the creation of road systems. RoadGenerator contains many different features such as automatic intersection generation and an integration with OpenStreetMap to create virtual twins of real life locations to be simulated. Some of these features will be shown in the following section, while others have already been demonstrated in the previous section. Note that there are many additional features to RoadGenerator, and that this is a simplification since it is only a showcase and not documentation.
 
@@ -201,14 +208,15 @@ The RoadGenerator asset can be used to easily manually create and edit road syst
 ![Timelapse](Images/RoadGenerator/RoadCreationTimelapse.gif)<br>
 *A timelapse of a RoadSystem being created by hand*<br><br><br>
 
-# 4. How to build
-Before building, make sure you have all assets specified in `ASSETS.md` and that they are placed inside the `Unity Assets` folder, as well as all plugins specified in `PLUGINS.md` and that they are placed inside the `Plugins` folder.
+<br>
 
-1. Open the build settings through `File -> Build Settings`
-2. Select the `StartMenu` scene as index 0 in the build settings, then add all the scenes for the scene selector to the list
-3. Run `Build` or `Build And Run`
+# 4. Try it yourself
+There are two ways you can try the tool for yourself:
 
-<br><br><br>
+1. Download and run the Build, found under [Releases](https://github.com/marc7s/TrafficSimulator/releases).
+2. Try the [online version](https://play.unity.com/mg/other/version1-0-2). Note that the Masthugget map is excluded in this version due to resource constraints.
+
+<br>
 
 # 5. License
 This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0

@@ -5,6 +5,7 @@ public class ShowPanelOnClick : MonoBehaviour
 { 
     [SerializeField] private GameObject _panel;
     [SerializeField] private Texture2D _hoverCursor;
+    [SerializeField] private Vector2 _cursorHotspot = new Vector2(16, 0);
     private AudioSource _clickSound;
 
     private bool _isPanelVisible = false;
@@ -33,11 +34,11 @@ public class ShowPanelOnClick : MonoBehaviour
 
     public void OnMouseEnter()
     {
-        Cursor.SetCursor(_hoverCursor, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(_hoverCursor, _cursorHotspot, CursorMode.Auto);
     }
 
     public void OnMouseExit()
     {
-        Cursor.SetCursor(null, Vector2.zero, CursorMode.Auto);
+        Cursor.SetCursor(null, _cursorHotspot, CursorMode.Auto);
     }
 }
