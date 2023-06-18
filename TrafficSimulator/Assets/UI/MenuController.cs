@@ -149,11 +149,11 @@ namespace UI
             _showFPS = PlayerPrefsGetBool(FPS_COUNTER);
             SetFPSVisibility(_showFPS);
 
-            _simulationModeDropdown.value = PlayerPrefs.GetString("SimulationMode");
+            _simulationModeDropdown.value = PlayerPrefs.GetString("SimulationMode", "Quality");
 
-            _manualCarInputDropdown.value = PlayerPrefs.GetString("ManualCarInputMode");
+            _manualCarInputDropdown.value = PlayerPrefs.GetString("ManualCarInputMode", "Keyboard");
             
-            _masterVolumeSlider.value = PlayerPrefs.GetFloat("MasterVolume") * 100;
+            _masterVolumeSlider.value = PlayerPrefs.GetFloat("MasterVolume", 0.2f) * 100;
 
             // Load scenes
             _sceneSelectionContainer = _sceneSelectionUI.CloneTree();

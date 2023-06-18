@@ -12,7 +12,7 @@
                 <ui:DropdownField label="Simulation Mode" index="0" choices="Quality, Performance" name="SimulationModeDropdown" focusable="false" class="settings primary-text-colour" style="align-items: stretch; width: 300px; height: 37px; color: rgb(207, 207, 207);" />
                 <ui:DropdownField label="Manual Driving Input" index="0" choices="Keyboard,Controller,Fanatec Wheel" name="ManualCarInputDropdown" focusable="false" class="settings primary-text-colour" style="align-items: stretch; width: 300px; height: 37px; color: rgb(207, 207, 207);" />
                 <ui:Slider picking-mode="Ignore" label="FOV" value="42" high-value="100" name="FOVSlider" focusable="false" class="settings primary-text-colour" style="width: 300px; height: 37px; color: rgb(207, 207, 207); display: none;" />
-                <ui:Slider picking-mode="Ignore" label="Volume" value="42" high-value="100" name="MasterVolumeSlider" focusable="false" class="settings primary-text-colour" style="width: 300px; height: 37px; color: rgb(207, 207, 207);" />
+                <ui:Slider picking-mode="Ignore" label="Volume" value="20" high-value="100" name="MasterVolumeSlider" focusable="false" class="settings primary-text-colour" style="width: 300px; height: 37px; color: rgb(207, 207, 207);" />
                 <ui:Button text="Go Back" display-tooltip-when-elided="true" name="BackButton" class="menu-button color-theme-button" style="height: 59px; width: 200px; margin-top: 50px;" />
             </ui:VisualElement>
         </ui:VisualElement>
