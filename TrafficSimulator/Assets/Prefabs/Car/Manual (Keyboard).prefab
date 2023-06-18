@@ -3447,17 +3447,17 @@ MonoBehaviour:
   forceCurveShape: 0.6
   maxDriveSlip: 10
   driveForceToMaxSlip: 3000
-  maxBrakeForce: 5000
-  brakeForceToMaxSlip: 1000
+  maxBrakeForce: 4500
+  brakeForceToMaxSlip: 3500
   brakeMode: 0
-  maxBrakeSlip: 2
+  maxBrakeSlip: 1.5
   maxBrakeRatio: 0.5
   handbrakeMode: 0
   maxHandbrakeSlip: 2
   maxHandbrakeRatio: 0.5
   tractionControl: 0
   tractionControlRatio: 1
-  brakeAssist: 0
+  brakeAssist: 1
   brakeAssistRatio: 1
   steeringLimit: 0
   steeringLimitRatio: 0.6
